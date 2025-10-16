@@ -1,0 +1,43 @@
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Archivos de editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+
+# Node modules (si usas npm en el futuro)
+node_modules/
+package-lock.json
+
+# Archivos de entorno (si agregas variables sensibles)
+.env
+.env.local
+.env.production
+
+# Archivos de build (si usas bundlers)
+dist/
+build/
+
+# Archivos de backup
+*.bak
+*.backup
+*_backup.*
+
+# Carpetas de cache
+.cache/
+.temp/
+
+# Archivos específicos que no quieres subir
+# (descomenta si los tienes)
+# config-private.js
+# keys.js

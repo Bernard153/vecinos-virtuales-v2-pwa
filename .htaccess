@@ -1,0 +1,64 @@
+# Vecinos Virtuales - Configuración Apache
+
+# Habilitar rewrite
+RewriteEngine On
+
+# Forzar HTTPS (si está disponible)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Página de inicio
+DirectoryIndex index.html
+
+# Tipos MIME
+AddType text/html .html
+AddType text/css .css
+AddType application/javascript .js
+AddType application/json .json
+
+# Compresión GZIP
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Cache para recursos estáticos
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+</IfModule>
+
+# Seguridad
+<IfModule mod_headers.c>
+    # Prevenir clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # Prevenir MIME sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Proteger archivos sensibles
+<FilesMatch "\.(md|bat|txt|log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Permitir acceso a archivos específicos
+<Files "README.md">
+    Order allow,deny
+    Allow from all
+</Files>
+
+# Error pages
+ErrorDocument 404 /index.html
+ErrorDocument 403 /index.html

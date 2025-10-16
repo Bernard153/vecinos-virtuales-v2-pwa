@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Red social de barrio para comprar, vender, mejorar y conectar con tu comunidad">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vecinos Virtuales">
+    <title>Vecinos Virtuales - Conecta con tu Barrio</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Iconos para iOS -->
+    <link rel="apple-touch-icon" href="/images/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/images/icon-192x192.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/icon-72x72.png">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- PANTALLA DE CARGA -->
+    <div id="loading-screen" class="screen active">
+        <div class="screen-container">
+            <div class="logo-large">
+                <i class="fas fa-home"></i>
+            </div>
+            <h1>Vecinos Virtuales</h1>
+            <p class="subtitle">By O'skar</p>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- PANTALLA DE UBICACIÓN -->
+    <div id="location-screen" class="screen">
+        <div class="screen-container">
+            <div class="logo-large">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <h1>Vecinos Virtuales</h1>
+            <p class="subtitle">By O'skar</p>
+            <div id="location-content">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA DE REGISTRO -->
+    <div id="registration-screen" class="screen">
+        <div class="screen-container">
+            <div class="logo-large">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h1>Registro</h1>
+            <p class="subtitle">Barrio: <strong id="selected-neighborhood"></strong></p>
+            
+            <form id="registration-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.register();">
+                <div class="form-group">
+                    <label for="register-name">Nombre completo *</label>
+                    <input type="text" id="register-name" required placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email *</label>
+                    <input type="email" id="register-email" required placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="register-phone">Teléfono *</label>
+                    <input type="tel" id="register-phone" required placeholder="1234567890">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Contraseña *</label>
+                    <input type="password" id="register-password" required placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">Confirmar Contraseña *</label>
+                    <input type="password" id="register-confirm-password" required placeholder="Repite tu contraseña">
+                </div>
+                
+                <!-- Consentimientos Legales -->
+                <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #f59e0b;">
+                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
+                        <input type="checkbox" id="consent-age" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
+                        <span style="font-size: 0.9rem; color: #92400e;">
+                            <strong>Declaro que soy mayor de 18 años</strong>
+                        </span>
+                    </label>
+                    
+                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
+                        <input type="checkbox" id="consent-data" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
+                        <span style="font-size: 0.9rem;">
+                            Acepto que mis datos (nombre, teléfono) sean visibles para otros vecinos
+                        </span>
+                    </label>
+                    
+                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="consent-terms" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
+                        <span style="font-size: 0.9rem;">
+                            Acepto los <a href="terminos.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Términos y Condiciones</a> y la <a href="privacidad.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Política de Privacidad</a>
+                        </span>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-check"></i> Registrarse
+                </button>
+            </form>
+            
+            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+        </div>
+    </div>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen" class="screen">
+        <div class="screen-container">
+            <div class="logo-large">
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+            <h1>Iniciar Sesión</h1>
+            <p class="subtitle">Ingresa con tu cuenta</p>
+            
+            <form id="login-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.login();">
+                <div class="form-group">
+                    <label for="login-email">Email *</label>
+                    <input type="email" id="login-email" required placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña *</label>
+                    <input type="password" id="login-password" required placeholder="Tu contraseña">
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Ingresar
+                </button>
+                <div id="login-error" class="error-message" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="login-error-text"></span>
+                </div>
+            </form>
+            
+            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                <i class="fas fa-arrow-left"></i> Volver
+            </button>
+        </div>
+    </div>
+
+    <!-- APLICACIÓN PRINCIPAL -->
+    <div id="main-app" class="screen">
+        <!-- Header -->
+        <header class="app-header">
+            <button class="menu-toggle" id="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-info">
+                <span class="header-neighborhood">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="header-neighborhood"></span>
+                </span>
+                <span class="header-user">
+                    #<span id="header-user-number"></span>
+                </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <button class="user-avatar-btn" onclick="VV.avatars.showProfile()" title="Mi Perfil" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple)); border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; transition: transform 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                    <span class="user-avatar">😊</span>
+                </button>
+                <button class="cart-toggle" onclick="toggleCart()">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="cart-badge" id="cart-badge">0</span>
+                </button>
+                <button class="logout-btn" onclick="VV.auth.logout()" title="Cerrar Sesión">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+                <button class="logout-btn" onclick="VV.auth.deleteAccount()" title="Eliminar Cuenta" style="background: #ef4444;">
+                    <i class="fas fa-user-times"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="app-container">
+            <!-- Sidebar -->
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <i class="fas fa-home"></i>
+                    <span>Vecinos Virtuales</span>
+                </div>
+                
+                <div class="menu">
+                    <a href="#" class="menu-item active" data-section="dashboard">
+                        <i class="fas fa-home"></i>
+                        <span>Inicio</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="marketplace">
+                        <i class="fas fa-store"></i>
+                        <span>Mis Productos</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="shopping">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Comprar</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="improvements">
+                        <i class="fas fa-tools"></i>
+                        <span>Mejoras</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="cultural">
+                        <i class="fas fa-palette"></i>
+                        <span>Cultura, Deportes y Trueque</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="services">
+                        <i class="fas fa-users"></i>
+                        <span>Servicios</span>
+                    </a>
+                    
+                    <!-- Menús de admin (ocultos por defecto) -->
+                    <a href="#" class="menu-item" data-section="admin-neighborhoods" id="admin-neighborhoods-menu" style="display: none;">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <span>Todos los Barrios</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="admin-products" id="admin-products-menu" style="display: none;">
+                        <i class="fas fa-boxes"></i>
+                        <span>Todos los Productos</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="admin-improvements" id="admin-improvements-menu" style="display: none;">
+                        <i class="fas fa-hammer"></i>
+                        <span>Todas las Mejoras</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="users-management" id="users-menu-item" style="display: none;">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Todos los Usuarios</span>
+                    </a>
+                    <a href="#" class="menu-item" data-section="admin" id="admin-menu-item" style="display: none;">
+                        <i class="fas fa-cog"></i>
+                        <span>Anunciantes</span>
+                    </a>
+                    
+                    <!-- Menú de moderador (oculto por defecto) -->
+                    <a href="#" class="menu-item" data-section="moderator" id="moderator-menu-item" style="display: none;">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Moderación</span>
+                    </a>
+                    
+                    <!-- Menú para usuarios comunes -->
+                    <a href="#" class="menu-item" id="sponsor-request-menu-item" style="display: none;" onclick="VV.banner.showSponsorRequestForm(); return false;">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>Ser Anunciante</span>
+                    </a>
+                </div>
+                
+                <div class="sidebar-footer">
+                    <button class="contact-admin-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Tu Cuenta</span>
+                    </button>
+                    <div style="text-align: center; padding: 1rem 0.5rem; font-size: 0.75rem; color: var(--gray-500); border-top: 1px solid var(--gray-200); margin-top: 1rem;">
+                        <p style="margin: 0 0 0.25rem 0;">© 2025 Vecinos Virtuales</p>
+                        <p style="margin: 0; font-size: 0.7rem;">Todos los derechos reservados</p>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.7rem;">v2.1 PWA</p>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Contenido Principal -->
+            <main class="main-content">
+                <!-- DASHBOARD -->
+                <section id="dashboard" class="content-section active">
+                    <div class="welcome-banner" id="welcome-banner">
+                        <div class="welcome-content">
+                            <h2>¡Bienvenido, <span id="welcome-name"></span>!</h2>
+                            <div class="user-details">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span id="welcome-neighborhood"></span>
+                                <span class="user-badge">#<span id="welcome-number"></span></span>
+                            </div>
+                            <button class="btn-edit-banner" id="edit-banner-btn" style="display: none;" onclick="VV.admin.editBannerImage()">
+                                <i class="fas fa-image"></i> Cambiar Imagen de Portada
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Visor de Ofertas Destacadas -->
+                    <div id="featured-offers-section" style="margin: 2rem 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-star" style="color: var(--warning-orange);"></i>
+                                <span id="featured-title">Ofertas Destacadas del Barrio</span>
+                            </h3>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button id="admin-announcement-btn" class="btn-primary" onclick="VV.featured.createAnnouncement()" style="font-size: 0.85rem; padding: 0.5rem 1rem; display: none;">
+                                    <i class="fas fa-megaphone"></i> Publicar Anuncio
+                                </button>
+                                <button id="featured-request-btn" class="btn-secondary" onclick="VV.featured.requestFeatured()" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                    <i class="fas fa-bullhorn"></i> Destacar mi Oferta
+                                </button>
+                            </div>
+                        </div>
+                        <div id="featured-offers-carousel" style="position: relative; overflow: hidden;">
+                            <!-- Carrusel de ofertas destacadas -->
+                        </div>
+                    </div>
+
+                    <!-- Estado de Geolocalización -->
+                    <div id="geo-status" style="margin: 1.5rem 0;">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+
+                    <div class="main-modules-grid">
+                        <button class="module-card" onclick="VV.utils.showSection('marketplace')">
+                            <div class="module-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <h3>Voy a Vender</h3>
+                            <p>Publica tus productos</p>
+                        </button>
+                        
+                        <button class="module-card" onclick="VV.utils.showSection('shopping')">
+                            <div class="module-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <h3>Voy a Comprar</h3>
+                            <p>Encuentra lo que necesitas</p>
+                        </button>
+                        
+                        <button class="module-card" onclick="VV.utils.showSection('improvements')">
+                            <div class="module-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <h3>Mejoras</h3>
+                            <p>Propón ideas para el barrio</p>
+                        </button>
+                        
+                        <button class="module-card" onclick="VV.utils.showSection('cultural')">
+                            <div class="module-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                                <i class="fas fa-palette"></i>
+                            </div>
+                            <h3>Cultura, Deportes y Trueque</h3>
+                            <p>Arte, deportes, eventos y trueques</p>
+                        </button>
+                        
+                        <button class="module-card" onclick="VV.utils.showSection('services')">
+                            <div class="module-icon" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3>Servicios</h3>
+                            <p>Ofrece o busca servicios</p>
+                        </button>
+                        
+                        <button class="module-card" onclick="VV.raffle.showActiveRaffles()" style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: white;">
+                            <div class="module-icon" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-dice"></i>
+                            </div>
+                            <h3>Sorteos</h3>
+                            <p>Participa y gana premios</p>
+                        </button>
+                        
+                        <button class="module-card" onclick="VV.utils.showSection('map-section'); VV.map.init();" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white;">
+                            <div class="module-icon" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <h3>Mapa del Barrio</h3>
+                            <p>Vendedores, alertas y más</p>
+                        </button>
+                        
+                        <button class="module-card" onclick="requestSponsorStatus()" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white;">
+                            <div class="module-icon" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <h3>Ser Anunciante</h3>
+                            <p>Promociona tu negocio</p>
+                        </button>
+                    </div>
+
+                    <!-- Banner de Anunciantes para Desktop -->
+                    <div style="margin: 2rem 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-bullhorn" style="color: var(--warning-orange);"></i>
+                                Anunciantes del Barrio
+                            </h3>
+                            <button class="btn-secondary" onclick="VV.banner.showAllSponsors()" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                                <i class="fas fa-th"></i> Ver Todos
+                            </button>
+                        </div>
+                        <div id="desktop-sponsors-banner" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                            <!-- Banners de anunciantes -->
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Productos</h3>
+                                <p class="stat-number">15</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Mejoras</h3>
+                                <p class="stat-number">8</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">
+                                <i class="fas fa-palette"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Arte</h3>
+                                <p class="stat-number">12</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Vecinos</h3>
+                                <p class="stat-number">247</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MARKETPLACE (MIS PRODUCTOS) -->
+                <section id="marketplace" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-store"></i> Mis Productos</h2>
+                        <button class="btn-primary" onclick="VV.marketplace.showForm()">
+                            <i class="fas fa-plus"></i> Nuevo Producto
+                        </button>
+                    </div>
+                    <div class="products-grid" id="my-products"></div>
+                </section>
+
+                <!-- COMPRAR -->
+                <section id="shopping" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-shopping-bag"></i> Comprar en el Barrio</h2>
+                    </div>
+                    
+                    <!-- Disclaimer Legal -->
+                    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 0.75rem 1rem; margin-bottom: 1rem; border-radius: 6px;">
+                        <p style="margin: 0; font-size: 0.85rem; color: #92400e;">
+                            <i class="fas fa-info-circle"></i> <strong>Transacciones directas entre vecinos.</strong> 
+                            Vecinos Virtuales NO participa en las compras/ventas. Verifica siempre el producto antes de comprar.
+                        </p>
+                    </div>
+                    
+                    <div class="filters">
+                        <input type="text" id="product-search" placeholder="Buscar productos...">
+                        <select id="category-filter">
+                            <option value="">Todas las categorías</option>
+                        </select>
+                    </div>
+                    <div class="products-grid" id="all-products"></div>
+                </section>
+
+                <!-- MEJORAS -->
+                <section id="improvements" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-tools"></i> Mejoras del Barrio</h2>
+                        <button class="btn-primary" onclick="VV.improvements.showForm()">
+                            <i class="fas fa-plus"></i> Proponer Mejora
+                        </button>
+                    </div>
+                    
+                    <!-- Panel de Estadísticas -->
+                    <div id="improvements-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+                    
+                    <!-- Contenedor con Galería y Lista -->
+                    <div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;" class="improvements-container">
+                        <!-- Lista de Mejoras -->
+                        <div class="improvements-grid" id="improvements-list"></div>
+                        
+                        <!-- Galería de Fotos -->
+                        <div id="improvements-gallery" style="position: sticky; top: 90px; height: fit-content;">
+                            <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                <h3 style="margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-images"></i> Galería de Mejoras
+                                </h3>
+                                <div id="gallery-photos" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <style>
+                        @media (max-width: 768px) {
+                            .improvements-container {
+                                grid-template-columns: 1fr !important;
+                            }
+                            #improvements-gallery {
+                                position: relative !important;
+                                top: 0 !important;
+                            }
+                        }
+                    </style>
+                </section>
+
+                <!-- CULTURA Y TRUEQUE -->
+                <section id="cultural" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-palette"></i> Cultura, Deportes y Trueque</h2>
+                        <button class="btn-primary" onclick="VV.cultural.showForm()">
+                            <i class="fas fa-plus"></i> Publicar
+                        </button>
+                    </div>
+                    <div class="cultural-grid" id="cultural-posts"></div>
+                </section>
+
+                <!-- SERVICIOS -->
+                <section id="services" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-users"></i> Servicios del Barrio</h2>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-primary" onclick="VV.services.showForm()">
+                                <i class="fas fa-plus"></i> Ofrecer Servicio
+                            </button>
+                            <button class="btn-secondary" id="emergency-config-btn" onclick="VV.services.showEmergencyConfig()" style="display: none;">
+                                <i class="fas fa-phone-alt"></i> Teléfonos de Emergencia
+                            </button>
+                        </div>
+                    </div>
+                    <div class="filters">
+                        <input type="text" id="service-search" placeholder="Buscar servicios..." onkeyup="VV.services.search()">
+                        <select id="service-category-filter" onchange="VV.services.search()">
+                            <option value="">Todas las categorías</option>
+                            <option value="Emergencia">🚨 Emergencia</option>
+                            <option value="Plomería">Plomería</option>
+                            <option value="Electricidad">Electricidad</option>
+                            <option value="Carpintería">Carpintería</option>
+                            <option value="Limpieza">Limpieza</option>
+                            <option value="Jardinería">Jardinería</option>
+                            <option value="Tecnología">Tecnología</option>
+                            <option value="Educación">Educación</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="services-grid" id="services-list"></div>
+                </section>
+
+                <!-- GESTIÓN DE USUARIOS (ADMIN) -->
+                <section id="users-management" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
+                    </div>
+                    <div class="users-grid" id="users-management-list"></div>
+                </section>
+
+                <!-- ADMINISTRADOR -->
+                <section id="admin" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-cog"></i> Panel de Administrador</h2>
+                        <button class="btn-primary" onclick="VV.admin.showSponsorForm()">
+                            <i class="fas fa-plus"></i> Nuevo Anunciante
+                        </button>
+                    </div>
+
+                    <!-- Solicitudes Pendientes de Anunciantes -->
+                    <div id="sponsor-requests-container" style="display: none;">
+                        <h3><i class="fas fa-bell"></i> Solicitudes de Anunciantes</h3>
+                        <div id="sponsor-requests-list"></div>
+                    </div>
+
+                    <!-- Solicitudes Pendientes de Destacados -->
+                    <div id="featured-requests-container" style="display: none; margin-top: 2rem;">
+                        <h3><i class="fas fa-star"></i> Solicitudes de Ofertas Destacadas</h3>
+                        <div id="featured-requests-list"></div>
+                    </div>
+
+                    <div class="admin-tabs">
+                        <button class="tab-btn active" onclick="VV.admin.showTab('sponsors')">
+                            <i class="fas fa-bullhorn"></i> Anunciantes
+                        </button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('featured')">
+                            <i class="fas fa-star"></i> Destacados
+                        </button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('avatars')">
+                            <i class="fas fa-user-circle"></i> Avatares
+                        </button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('raffles')">
+                            <i class="fas fa-dice"></i> Sorteos
+                        </button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('moderator-logs')">
+                            <i class="fas fa-clipboard-list"></i> Actividad Moderadores
+                        </button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('stats')">
+                            <i class="fas fa-chart-bar"></i> Estadísticas
+                        </button>
+                    </div>
+
+                    <div id="admin-sponsors" class="admin-tab-content active">
+                        <div id="sponsors-management"></div>
+                    </div>
+
+                    <div id="admin-featured" class="admin-tab-content">
+                        <div id="featured-management"></div>
+                    </div>
+
+                    <div id="admin-avatars" class="admin-tab-content">
+                        <div id="avatars-management"></div>
+                    </div>
+
+                    <div id="admin-raffles" class="admin-tab-content">
+                        <div id="raffles-management"></div>
+                    </div>
+
+                    <div id="admin-moderator-logs" class="admin-tab-content">
+                        <div style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                            <select id="log-filter-neighborhood" onchange="VV.admin.loadModeratorLogs()" style="padding: 0.5rem; border-radius: 8px; border: 1px solid var(--gray-300);">
+                                <option value="">Todos los barrios</option>
+                            </select>
+                            <select id="log-filter-action" onchange="VV.admin.loadModeratorLogs()" style="padding: 0.5rem; border-radius: 8px; border: 1px solid var(--gray-300);">
+                                <option value="">Todas las acciones</option>
+                                <option value="ELIMINAR_USUARIO">Eliminar Usuario</option>
+                                <option value="ELIMINAR_PRODUCTO">Eliminar Producto</option>
+                                <option value="ELIMINAR_PUBLICACION">Eliminar Publicación</option>
+                            </select>
+                        </div>
+                        <div id="moderator-logs-list"></div>
+                    </div>
+
+                    <div id="admin-stats" class="admin-tab-content">
+                        <div class="stats-dashboard">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>Visualizaciones</h3>
+                                    <p class="stat-number" id="banner-views">0</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>Clics</h3>
+                                    <p class="stat-number" id="banner-clicks">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODERADOR -->
+                <section id="moderator" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-shield-alt"></i> Panel de Moderación</h2>
+                        <span style="color: var(--gray-600); font-size: 0.9rem;">Barrio: <strong id="moderator-neighborhood"></strong></span>
+                    </div>
+
+                    <div class="admin-tabs moderator-tabs">
+                        <button class="tab-btn active" onclick="VV.moderator.showTab('users')">
+                            <i class="fas fa-users"></i> Usuarios
+                        </button>
+                        <button class="tab-btn" onclick="VV.moderator.showTab('content')">
+                            <i class="fas fa-flag"></i> Contenido
+                        </button>
+                        <button class="tab-btn" onclick="VV.moderator.showTab('improvements')">
+                            <i class="fas fa-tasks"></i> Mejoras
+                        </button>
+                        <button class="tab-btn" onclick="VV.moderator.showTab('stats')">
+                            <i class="fas fa-chart-pie"></i> Estadísticas
+                        </button>
+                    </div>
+
+                    <div id="moderator-users" class="moderator-tab-content admin-tab-content active">
+                        <p style="color: var(--gray-600); margin-bottom: 1rem; padding: 1rem; background: var(--gray-50); border-radius: 8px;">
+                            <i class="fas fa-shield-alt"></i> Solo puedes ver usuarios de tu barrio. Los datos personales sensibles están protegidos.
+                        </p>
+                        <div class="users-grid" id="moderator-users-list"></div>
+                    </div>
+
+                    <div id="moderator-content" class="moderator-tab-content admin-tab-content">
+                        <h3><i class="fas fa-shopping-bag"></i> Productos</h3>
+                        <div id="moderator-products-list" style="margin-bottom: 2rem;"></div>
+                        
+                        <h3><i class="fas fa-palette"></i> Cultura, Deportes y Trueque</h3>
+                        <div id="moderator-cultural-list"></div>
+                    </div>
+
+                    <div id="moderator-improvements" class="moderator-tab-content admin-tab-content">
+                        <h3 style="color: var(--warning-orange);"><i class="fas fa-clock"></i> Pendientes</h3>
+                        <div id="moderator-improvements-pending" style="margin-bottom: 2rem;"></div>
+                        
+                        <h3 style="color: var(--success-green);"><i class="fas fa-check-circle"></i> Realizadas</h3>
+                        <div id="moderator-improvements-completed"></div>
+                    </div>
+
+                    <div id="moderator-stats" class="moderator-tab-content admin-tab-content">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon blue">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>Vecinos</h3>
+                                    <p class="stat-number" id="mod-stat-users">0</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon green">
+                                    <i class="fas fa-shopping-bag"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>Productos</h3>
+                                    <p class="stat-number" id="mod-stat-products">0</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon purple">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>Publicaciones</h3>
+                                    <p class="stat-number" id="mod-stat-cultural">0</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon orange">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <h3>Mejoras</h3>
+                                    <p class="stat-number" id="mod-stat-improvements">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ADMIN: TODOS LOS BARRIOS -->
+                <section id="admin-neighborhoods" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-map-marked-alt"></i> Vista Global de Barrios</h2>
+                    </div>
+                    <div id="admin-neighborhoods-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+                    <div id="admin-neighborhoods-list"></div>
+                </section>
+
+                <!-- ADMIN: TODOS LOS PRODUCTOS -->
+                <section id="admin-products" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-boxes"></i> Vista Global de Productos</h2>
+                    </div>
+                    <div class="filters" style="margin-bottom: 1.5rem;">
+                        <select id="admin-product-neighborhood-filter" onchange="VV.admin.loadAllProducts()" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1;">
+                            <option value="">Todos los barrios</option>
+                        </select>
+                        <select id="admin-product-category-filter" onchange="VV.admin.loadAllProducts()" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1;">
+                            <option value="">Todas las categorías</option>
+                        </select>
+                        <input type="text" id="admin-product-search" placeholder="Buscar productos..." onkeyup="VV.admin.loadAllProducts()" style="flex: 2;">
+                    </div>
+                    <div id="admin-products-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+                    <div id="admin-products-list" class="products-grid"></div>
+                </section>
+
+                <!-- ADMIN: TODAS LAS MEJORAS -->
+                <section id="admin-improvements" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-hammer"></i> Vista Global de Mejoras</h2>
+                    </div>
+                    <div class="filters" style="margin-bottom: 1.5rem;">
+                        <select id="admin-improvement-neighborhood-filter" onchange="VV.admin.loadAllImprovements()" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1;">
+                            <option value="">Todos los barrios</option>
+                        </select>
+                        <select id="admin-improvement-status-filter" onchange="VV.admin.loadAllImprovements()" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1;">
+                            <option value="">Todos los estados</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="in-progress">En Progreso</option>
+                            <option value="completed">Completadas</option>
+                        </select>
+                    </div>
+                    <div id="admin-improvements-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+                    <div id="admin-improvements-list" class="improvements-grid"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- SECCIÓN MAPA INTERACTIVO -->
+    <section id="map-section" class="content-section">
+        <div class="section-header">
+            <h2><i class="fas fa-map-marked-alt"></i> Mapa del Barrio</h2>
+            <button class="btn-secondary" onclick="VV.map.refreshMap()">
+                <i class="fas fa-sync-alt"></i> Actualizar
+            </button>
+        </div>
+        
+        <!-- Disclaimer Legal del Mapa -->
+        <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 0.75rem 1rem; margin-bottom: 1rem; border-radius: 6px;">
+            <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: #991b1b;">
+                <i class="fas fa-exclamation-triangle"></i> <strong>Información reportada por vecinos (no verificada)</strong>
+            </p>
+            <p style="margin: 0; font-size: 0.8rem; color: #991b1b;">
+                Ante emergencias reales contacta: 🚔 Policía 911 | 🚒 Bomberos 100 | 🏥 SAME 107
+            </p>
+        </div>
+        
+        <!-- Controles de Capas -->
+        <div style="background: white; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 1rem 0; font-size: 1rem; color: var(--gray-800);">
+                <i class="fas fa-layer-group"></i> ¿Qué quieres ver en el mapa?
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem;">
+                <label class="layer-toggle">
+                    <input type="checkbox" id="layer-commerce" checked onchange="VV.map.toggleLayer('commerce')">
+                    <span>🛒 Comercios y Vendedores</span>
+                </label>
+                <label class="layer-toggle">
+                    <input type="checkbox" id="layer-emergency" checked onchange="VV.map.toggleLayer('emergency')">
+                    <span>🚨 Emergencias y Servicios</span>
+                </label>
+                <label class="layer-toggle">
+                    <input type="checkbox" id="layer-security" checked onchange="VV.map.toggleLayer('security')">
+                    <span>⚠️ Inseguridad (Reportes)</span>
+                </label>
+                <label class="layer-toggle">
+                    <input type="checkbox" id="layer-events" checked onchange="VV.map.toggleLayer('events')">
+                    <span>🚧 Cortes y Eventos</span>
+                </label>
+                <label class="layer-toggle">
+                    <input type="checkbox" id="layer-transport" onchange="VV.map.toggleLayer('transport')">
+                    <span>🚌 Transporte Público</span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Contenedor del Mapa -->
+        <div id="map-container" style="height: 600px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); touch-action: pan-x pan-y;"></div>
+        
+        <!-- Leyenda -->
+        <div style="background: white; padding: 1rem; border-radius: 12px; margin-top: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="margin: 0 0 0.75rem 0; font-size: 0.95rem; color: var(--gray-800);">
+                <i class="fas fa-info-circle"></i> Leyenda
+            </h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; font-size: 0.85rem;">
+                <div><span style="color: var(--primary-blue);">🔵</span> Tu ubicación</div>
+                <div><span style="color: var(--success-green);">🟢</span> Comercio/Vendedor</div>
+                <div><span style="color: #ef4444;">🔴</span> Emergencia/Servicio</div>
+                <div><span style="color: var(--warning-orange);">🟠</span> Inseguridad</div>
+                <div><span style="color: #8b5cf6;">🟣</span> Corte/Evento</div>
+                <div><span style="color: #06b6d4;">🔷</span> Transporte</div>
+            </div>
+        </div>
+        
+        <!-- Botones de reporte -->
+        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn-primary" onclick="VV.map.reportSecurity()">
+                <i class="fas fa-exclamation-triangle"></i> Reportar Inseguridad
+            </button>
+            <button class="btn-secondary" onclick="VV.map.reportRoadblock()">
+                <i class="fas fa-road"></i> Reportar Corte
+            </button>
+            <button class="btn-secondary" onclick="VV.map.reportEvent()">
+                <i class="fas fa-calendar"></i> Publicar Evento
+            </button>
+        </div>
+    </section>
+
+    <!-- Carrito Lateral -->
+    <aside class="shopping-cart" id="shopping-cart">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> Mi Agenda</h3>
+            <button class="cart-close" onclick="toggleCart()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="cart-total-top">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple)); color: white; font-weight: 600; font-size: 1.1rem; position: sticky; top: 0; z-index: 10;">
+                <span>Total:</span>
+                <span>$<span id="cart-total-top">0.00</span></span>
+            </div>
+        </div>
+        <div class="cart-content">
+            <div id="cart-items"></div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span>$<span id="cart-total">0.00</span></span>
+            </div>
+            <p class="cart-count">
+                <span id="cart-count">0</span> productos
+            </p>
+        </div>
+    </aside>
+    </div>
+
+    <!-- Banner de Anunciantes (al pie) -->
+    <div id="banner-container" class="banner-container">
+        <!-- 3 cuadros fijos -->
+    </div>
+
+    <!-- Overlay para móvil -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Supabase Client Library -->
+ 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Scripts modulares -->
+    <script src="js/supabase-config.js"></script>
+    <script src="js/core.js"></script>
+    <script src="js/auth-supabase.js"></script>
+    <script src="js/marketplace.js"></script>
+    <script src="js/improvements.js"></script>
+    <script src="js/cultural.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/avatars.js"></script>
+    <script src="js/raffle.js"></script>
+    <script src="js/featured.js"></script>
+    <script src="js/geo.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/banner.js"></script>
+    <script src="js/app.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado:', registration.scope);
+                        
+                        // Mostrar botón de instalación
+                        let deferredPrompt;
+                        window.addEventListener('beforeinstallprompt', (e) => {
+                            e.preventDefault();
+                            deferredPrompt = e;
+                            
+                            // Crear botón de instalación si no existe
+                            if (!document.getElementById('install-button')) {
+                                const installBtn = document.createElement('button');
+                                installBtn.id = 'install-button';
+                                installBtn.innerHTML = '<i class="fas fa-download"></i> Instalar App';
+                                installBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: var(--primary-blue); color: white; border: none; padding: 12px 20px; border-radius: 25px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer;';
+                                document.body.appendChild(installBtn);
+                                
+                                installBtn.addEventListener('click', async () => {
+                                    if (deferredPrompt) {
+                                        deferredPrompt.prompt();
+                                        const { outcome } = await deferredPrompt.userChoice;
+                                        console.log(`Usuario ${outcome === 'accepted' ? 'aceptó' : 'rechazó'} instalar`);
+                                        deferredPrompt = null;
+                                        installBtn.remove();
+                                    }
+                                });
+                            }
+                        });
+                        
+                        // App instalada
+                        window.addEventListener('appinstalled', () => {
+                            console.log('🎉 App instalada correctamente');
+                            const installBtn = document.getElementById('install-button');
+                            if (installBtn) installBtn.remove();
+                        });
+                    })
+                    .catch(err => console.error('❌ Error registrando Service Worker:', err));
+            });
+        }
+    </script>
+</body>
+</html>

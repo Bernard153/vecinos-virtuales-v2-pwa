@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpiar Datos - Vecinos Virtuales</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            color: #856404;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            color: #0c5460;
+        }
+        .success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            color: #155724;
+        }
+        button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 0.5rem;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .stats {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .stats p {
+            margin: 0.5rem 0;
+            font-weight: 600;
+        }
+        .icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🗑️</div>
+        <h1>Limpiar Datos del Sistema</h1>
+        
+        <div class="warning">
+            <strong>⚠️ ADVERTENCIA:</strong> Esta acción eliminará TODOS los datos del sistema de forma permanente:
+            <ul>
+                <li>Todos los usuarios registrados</li>
+                <li>Todos los productos del marketplace</li>
+                <li>Todas las mejoras propuestas</li>
+                <li>Todas las publicaciones culturales</li>
+                <li>Todos los servicios</li>
+                <li>Todas las solicitudes de anunciantes</li>
+                <li>La sesión actual</li>
+            </ul>
+            <strong>Esta acción NO se puede deshacer.</strong>
+        </div>
+
+        <div class="stats" id="stats">
+            <h3>📊 Datos Actuales:</h3>
+            <p id="users-count">Cargando...</p>
+            <p id="products-count">Cargando...</p>
+            <p id="improvements-count">Cargando...</p>
+            <p id="cultural-count">Cargando...</p>
+            <p id="services-count">Cargando...</p>
+        </div>
+
+        <button onclick="limpiarTodo()">🗑️ ELIMINAR TODOS LOS DATOS</button>
+        <button class="btn-secondary" onclick="window.location.href='index.html'">← Volver sin cambios</button>
+
+        <div id="result" style="margin-top: 1rem;"></div>
+    </div>
+
+    <script>
+        // Cargar estadísticas al inicio
+        function cargarEstadisticas() {
+            let usersCount = 0;
+            let productsCount = 0;
+            let improvementsCount = 0;
+            let culturalCount = 0;
+            let servicesCount = 0;
+
+            // Contar usuarios
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('vecinosVirtuales_user_')) {
+                    usersCount++;
+                }
+            }
+
+            // Contar productos
+            const products = localStorage.getItem('vecinosVirtuales_products');
+            if (products) {
+                productsCount = JSON.parse(products).length;
+            }
+
+            // Contar mejoras
+            const improvements = localStorage.getItem('vecinosVirtuales_improvements');
+            if (improvements) {
+                improvementsCount = JSON.parse(improvements).length;
+            }
+
+            // Contar publicaciones culturales
+            const cultural = localStorage.getItem('vecinosVirtuales_cultural');
+            if (cultural) {
+                culturalCount = JSON.parse(cultural).length;
+            }
+
+            // Contar servicios
+            const services = localStorage.getItem('vecinosVirtuales_services');
+            if (services) {
+                servicesCount = JSON.parse(services).length;
+            }
+
+            document.getElementById('users-count').textContent = `👥 Usuarios: ${usersCount}`;
+            document.getElementById('products-count').textContent = `🛍️ Productos: ${productsCount}`;
+            document.getElementById('improvements-count').textContent = `🔧 Mejoras: ${improvementsCount}`;
+            document.getElementById('cultural-count').textContent = `🎨 Publicaciones culturales: ${culturalCount}`;
+            document.getElementById('services-count').textContent = `💼 Servicios: ${servicesCount}`;
+        }
+
+        function limpiarTodo() {
+            const confirmacion = confirm('⚠️ ¿Estás COMPLETAMENTE SEGURO de que quieres eliminar TODOS los datos?\n\nEsta acción NO se puede deshacer.\n\nHaz clic en OK para continuar.');
+            
+            if (!confirmacion) {
+                return;
+            }
+
+            const segundaConfirmacion = confirm('⚠️ ÚLTIMA ADVERTENCIA:\n\nSe eliminarán TODOS los usuarios, productos, mejoras, publicaciones y servicios.\n\n¿Continuar?');
+            
+            if (!segundaConfirmacion) {
+                return;
+            }
+
+            try {
+                // Eliminar todos los usuarios
+                const keysToDelete = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith('vecinosVirtuales_')) {
+                        keysToDelete.push(key);
+                    }
+                }
+
+                keysToDelete.forEach(key => localStorage.removeItem(key));
+
+                // También eliminar solicitudes de anunciantes
+                localStorage.removeItem('sponsorRequests');
+
+                // También eliminar logs de moderadores
+                localStorage.removeItem('moderatorLogs');
+
+                // También eliminar imagen de banner
+                localStorage.removeItem('welcomeBannerImage');
+
+                const result = document.getElementById('result');
+                result.innerHTML = `
+                    <div class="success">
+                        <strong>✅ ¡Datos eliminados exitosamente!</strong>
+                        <p style="margin-top: 0.5rem;">Se eliminaron ${keysToDelete.length} registros.</p>
+                        <p style="margin-top: 1rem;">
+                            <a href="index.html" style="color: #155724; font-weight: 600; text-decoration: underline;">
+                                → Ir a la aplicación para crear el primer usuario
+                            </a>
+                        </p>
+                    </div>
+                `;
+
+                // Actualizar estadísticas
+                setTimeout(cargarEstadisticas, 500);
+
+            } catch (error) {
+                const result = document.getElementById('result');
+                result.innerHTML = `
+                    <div class="warning">
+                        <strong>❌ Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Cargar estadísticas al cargar la página
+        cargarEstadisticas();
+    </script>
+</body>
+</html>

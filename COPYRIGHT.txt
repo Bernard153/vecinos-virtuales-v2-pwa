@@ -1,0 +1,90 @@
+================================================================================
+DECLARACIÓN DE DERECHOS DE AUTOR
+VECINOS VIRTUALES - Red Social de Barrio
+================================================================================
+
+AUTOR Y PROPIETARIO:
+    Oscar [Apellido]
+    [Tu Email]
+    [Tu Ciudad], Argentina
+
+OBRA:
+    Vecinos Virtuales - Plataforma Web Progresiva (PWA)
+    Red Social para Comunidades Barriales
+
+DESCRIPCIÓN:
+    Sistema integral de comunicación y comercio entre vecinos que incluye:
+    - Marketplace (compra/venta entre vecinos)
+    - Sistema de mejoras comunitarias
+    - Mapa interactivo con alertas
+    - Muro cultural
+    - Servicios profesionales
+    - Sistema de anunciantes
+    - Panel de administración
+    - Sistema de sorteos
+
+TECNOLOGÍAS:
+    - HTML5, CSS3, JavaScript (Vanilla)
+    - Supabase (Base de datos y autenticación)
+    - Leaflet.js (Mapas)
+    - Progressive Web App (PWA)
+
+PRIMERA PUBLICACIÓN:
+    Octubre 2025
+    URL: [Tu URL de Netlify cuando la tengas]
+
+VERSIÓN ACTUAL:
+    2.1 PWA
+
+REGISTRO:
+    - Código publicado en Netlify: [Fecha]
+    - Código respaldado en GitHub: [Fecha cuando lo subas]
+    - Registro DNDA: [Pendiente]
+    - Registro de Marca INPI: [Pendiente]
+
+DERECHOS:
+    Todos los derechos de autor, propiedad intelectual, marcas comerciales
+    y secretos comerciales relacionados con Vecinos Virtuales son propiedad
+    exclusiva de Oscar [Apellido].
+
+PROTECCIÓN LEGAL:
+    Esta obra está protegida por:
+    - Ley 11.723 de Propiedad Intelectual (Argentina)
+    - Ley 25.036 de Protección de Software (Argentina)
+    - Convenio de Berna para la Protección de Obras Literarias y Artísticas
+    - Tratado de la OMPI sobre Derecho de Autor (WCT)
+
+AVISO LEGAL:
+    Queda prohibida la reproducción total o parcial de esta obra por cualquier
+    medio o procedimiento, comprendidos la reprografía y el tratamiento
+    informático, sin la autorización previa y por escrito del titular del
+    copyright.
+
+    La infracción de los derechos de autor puede constituir un delito penal
+    (Art. 71 y siguientes de la Ley 11.723) y está sujeta a sanciones civiles
+    y penales.
+
+CONTACTO PARA LICENCIAMIENTO:
+    Email: [tu_email]
+    Asunto: "Licenciamiento Vecinos Virtuales"
+
+AGRADECIMIENTOS:
+    - Comunidad de [Tu Barrio]
+    - Librerías de código abierto utilizadas (ver LICENSE.txt)
+    - Supabase por la infraestructura
+    - Netlify por el hosting
+
+================================================================================
+
+"Creado con el propósito de fortalecer la comunidad y mejorar la vida
+en nuestros barrios. Porque juntos somos más fuertes."
+
+================================================================================
+
+Copyright © 2025 Oscar [Apellido]
+Todos los derechos reservados.
+
+Fecha de esta declaración: 16 de Octubre de 2025
+Lugar: [Tu Ciudad], Argentina
+
+================================================================================

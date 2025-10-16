@@ -1,0 +1,81 @@
+LICENCIA DE SOFTWARE PROPIETARIO
+VECINOS VIRTUALES - Red Social de Barrio
+
+Copyright © 2025 Oscar [Apellido]
+Todos los derechos reservados.
+
+================================================================================
+
+TÉRMINOS Y CONDICIONES DE USO DEL SOFTWARE
+
+1. PROPIEDAD INTELECTUAL
+   Este software, incluyendo todo el código fuente, diseño, estructura,
+   documentación y materiales relacionados (en adelante "el Software"),
+   es propiedad exclusiva de Oscar [Apellido] (en adelante "el Autor").
+
+2. DERECHOS RESERVADOS
+   Todos los derechos sobre el Software están reservados. Ninguna parte
+   del Software puede ser reproducida, distribuida, transmitida, exhibida,
+   publicada o difundida de ninguna forma sin el consentimiento previo
+   por escrito del Autor.
+
+3. RESTRICCIONES
+   Queda expresamente prohibido:
+   - Copiar, modificar o crear trabajos derivados del Software
+   - Distribuir, vender, alquilar o sublicenciar el Software
+   - Realizar ingeniería inversa, descompilar o desensamblar el Software
+   - Usar el Software para crear productos o servicios competidores
+   - Remover o alterar avisos de copyright o propiedad intelectual
+
+4. USO PERMITIDO
+   El Software se proporciona únicamente para uso de los vecinos
+   registrados en la plataforma Vecinos Virtuales, bajo los términos
+   y condiciones publicados en la aplicación.
+
+5. CÓDIGO ABIERTO Y LIBRERÍAS DE TERCEROS
+   Este Software utiliza las siguientes librerías de código abierto:
+   - Leaflet.js (BSD-2-Clause License)
+   - Font Awesome (Font Awesome Free License)
+   - Supabase Client (MIT License)
+   
+   Cada librería mantiene su licencia original y derechos de autor.
+
+6. GARANTÍA LIMITADA
+   EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍAS DE NINGÚN TIPO,
+   EXPRESAS O IMPLÍCITAS, INCLUYENDO PERO NO LIMITADO A GARANTÍAS DE
+   COMERCIABILIDAD, IDONEIDAD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN.
+
+7. LIMITACIÓN DE RESPONSABILIDAD
+   EN NINGÚN CASO EL AUTOR SERÁ RESPONSABLE POR DAÑOS DIRECTOS, INDIRECTOS,
+   INCIDENTALES, ESPECIALES, EJEMPLARES O CONSECUENTES (INCLUYENDO, PERO NO
+   LIMITADO A, ADQUISICIÓN DE BIENES O SERVICIOS SUSTITUTOS; PÉRDIDA DE USO,
+   DATOS O BENEFICIOS; O INTERRUPCIÓN DEL NEGOCIO) QUE SURJAN DEL USO O
+   IMPOSIBILIDAD DE USO DEL SOFTWARE.
+
+8. JURISDICCIÓN
+   Esta licencia se rige por las leyes de la República Argentina.
+   Cualquier disputa relacionada con esta licencia será resuelta en los
+   tribunales competentes de [Tu Ciudad/Provincia], Argentina.
+
+9. CONTACTO
+   Para consultas sobre licenciamiento, permisos especiales o uso comercial:
+   Email: [tu_email]
+   
+10. MODIFICACIONES
+    El Autor se reserva el derecho de modificar estos términos en cualquier
+    momento. El uso continuado del Software constituye aceptación de las
+    modificaciones.
+
+================================================================================
+
+PRIMERA PUBLICACIÓN: Octubre 2025
+VERSIÓN: 2.1 PWA
+PLATAFORMA: Vecinos Virtuales
+
+Este software fue desarrollado con el propósito de fortalecer la comunidad
+y mejorar la comunicación entre vecinos. Su uso debe ser siempre con fines
+constructivos y respetando los valores de buena convivencia.
+
+================================================================================
+
+Copyright © 2025 Oscar [Apellido]. Todos los derechos reservados.
