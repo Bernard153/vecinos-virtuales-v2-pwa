@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migración - Agregar Columna Reservable</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #e0f2fe;
+            color: #075985;
+            border: 2px solid #3b82f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .info-box strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .info-box code {
+            background: #075985;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        button {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        #result {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 2px solid #10b981;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+        .loading {
+            background: #fef3c7;
+            color: #92400e;
+            border: 2px solid #f59e0b;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .step {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .step::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        .step.pending::before {
+            content: "○";
+            color: #ccc;
+        }
+        .step.loading::before {
+            content: "⟳";
+            color: #f59e0b;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Migración de Base de Datos</h1>
+        <p class="subtitle">Agregar columna "reservable" a productos</p>
+        
+        <div class="info-box">
+            <strong>📋 ¿Qué hace este script?</strong>
+            Este script agregará la columna <code>reservable</code> a todos tus productos existentes.<br><br>
+            
+            <strong>⚠️ Importante:</strong><br>
+            • Solo necesitas ejecutarlo UNA VEZ<br>
+            • Todos los productos existentes quedarán como NO reservables por defecto<br>
+            • Podrás cambiar esto después editando cada producto<br>
+            • El proceso es seguro y reversible
+        </div>
+
+        <div id="steps" style="margin-bottom: 30px;">
+            <div class="step pending" id="step1">Conectando a Supabase...</div>
+            <div class="step pending" id="step2">Verificando productos existentes...</div>
+            <div class="step pending" id="step3">Agregando columna "reservable"...</div>
+            <div class="step pending" id="step4">Verificando migración...</div>
+        </div>
+        
+        <button onclick="runMigration()" id="migrateBtn">
+            🚀 Ejecutar Migración
+        </button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://selkbxqazwxxvinnulpb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlbGtieHFhend4eHZpbm51bHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDA5MTUsImV4cCI6MjA3NTQ3NjkxNX0.h5YA8tvXPhktoX8dWRalyPCUSndbZtkBHrOviiB1UiE';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        function updateStep(stepId, status) {
+            const step = document.getElementById(stepId);
+            step.className = `step ${status}`;
+        }
+        
+        function showResult(type, icon, message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = type;
+            resultDiv.innerHTML = `<span class="icon">${icon}</span>${message}`;
+        }
+        
+        async function runMigration() {
+            const btn = document.getElementById('migrateBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Ejecutando...';
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'none';
+            
+            try {
+                // Paso 1: Conectar
+                updateStep('step1', 'loading');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                updateStep('step1', '');
+                
+                // Paso 2: Verificar productos
+                updateStep('step2', 'loading');
+                const { data: products, error: fetchError } = await supabase
+                    .from('products')
+                    .select('id, product, reservable');
+                
+                if (fetchError) throw fetchError;
+                
+                console.log('Productos encontrados:', products.length);
+                updateStep('step2', '');
+                
+                // Paso 3: Agregar columna (actualizar todos los productos)
+                updateStep('step3', 'loading');
+                
+                // Verificar si ya tienen la columna
+                const hasColumn = products.length > 0 && products[0].hasOwnProperty('reservable');
+                
+                if (hasColumn) {
+                    // La columna ya existe, solo asegurarnos que todos tengan valor
+                    const productsToUpdate = products.filter(p => p.reservable === null || p.reservable === undefined);
+                    
+                    if (productsToUpdate.length > 0) {
+                        for (const product of productsToUpdate) {
+                            const { error: updateError } = await supabase
+                                .from('products')
+                                .update({ reservable: false })
+                                .eq('id', product.id);
+                            
+                            if (updateError) {
+                                console.error('Error actualizando producto:', product.id, updateError);
+                            }
+                        }
+                    }
+                    
+                    updateStep('step3', '');
+                    
+                    // Paso 4: Verificar
+                    updateStep('step4', 'loading');
+                    const { data: verifyData } = await supabase
+                        .from('products')
+                        .select('id, reservable')
+                        .limit(1);
+                    
+                    updateStep('step4', '');
+                    
+                    showResult('success', '✅', `
+                        <strong>¡Migración completada exitosamente!</strong><br><br>
+                        📊 Productos procesados: ${products.length}<br>
+                        📊 Productos actualizados: ${productsToUpdate.length}<br><br>
+                        
+                        <strong>Próximos pasos:</strong><br>
+                        1. Cierra esta ventana<br>
+                        2. Ve a tu app de Vecinos Virtuales<br>
+                        3. Edita tus productos y marca cuáles son reservables<br><br>
+                        
+                        <em>Todos los productos están configurados como NO reservables por defecto.</em>
+                    `);
+                    
+                } else {
+                    // La columna NO existe
+                    showResult('error', '❌', `
+                        <strong>La columna "reservable" no existe en la base de datos.</strong><br><br>
+                        
+                        <strong>Necesitas agregarla manualmente:</strong><br><br>
+                        
+                        <strong>Opción 1 - SQL Editor (Recomendado):</strong><br>
+                        1. Ve a Supabase → SQL Editor<br>
+                        2. Pega este código:<br>
+                        <code style="display: block; margin: 10px 0; padding: 10px; background: #1e293b; color: #e2e8f0; border-radius: 6px; font-size: 13px; overflow-x: auto;">
+ALTER TABLE products ADD COLUMN IF NOT EXISTS reservable BOOLEAN DEFAULT false;
+                        </code>
+                        3. Click "Run"<br>
+                        4. Vuelve aquí y ejecuta la migración nuevamente<br><br>
+                        
+                        <strong>Opción 2 - Esperar:</strong><br>
+                        Si Supabase tiene problemas temporales, espera unos minutos e intenta de nuevo.
+                    `);
+                }
+                
+            } catch (error) {
+                console.error('Error en migración:', error);
+                updateStep('step1', 'pending');
+                updateStep('step2', 'pending');
+                updateStep('step3', 'pending');
+                updateStep('step4', 'pending');
+                
+                showResult('error', '❌', `
+                    <strong>Error durante la migración:</strong><br><br>
+                    ${error.message}<br><br>
+                    
+                    <strong>Posibles causas:</strong><br>
+                    • Problema de conexión a internet<br>
+                    • Supabase está experimentando problemas temporales<br>
+                    • La columna aún no existe en la base de datos<br><br>
+                    
+                    <strong>Solución:</strong><br>
+                    1. Verifica tu conexión a internet<br>
+                    2. Espera unos minutos<br>
+                    3. Intenta nuevamente<br>
+                    4. Si persiste, agrega la columna manualmente en Supabase SQL Editor
+                `);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 Ejecutar Nuevamente';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Menú Móvil</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .debug-info {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-size: 12px;
+            z-index: 9999;
+        }
+        /* FORZAR MODO MÓVIL PARA PRUEBA */
+        .menu-toggle {
+            display: block !important;
+            z-index: 101;
+        }
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 70px;
+            width: 280px;
+            height: calc(100vh - 70px);
+            transition: left 0.3s ease;
+            z-index: 95;
+            background: white;
+        }
+        .sidebar.open {
+            left: 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .main-content {
+            margin-left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="main-app" class="screen active">
+        <!-- Header -->
+        <header class="app-header">
+            <button class="menu-toggle" id="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="header-info">
+                <span>Test Menú</span>
+            </div>
+        </header>
+
+        <div class="app-container">
+            <!-- Sidebar -->
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <i class="fas fa-home"></i>
+                    <span>Menú de Prueba</span>
+                </div>
+                
+                <div class="menu">
+                    <a href="#" class="menu-item active">
+                        <i class="fas fa-home"></i>
+                        <span>Opción 1</span>
+                    </a>
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-store"></i>
+                        <span>Opción 2</span>
+                    </a>
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Opción 3</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Contenido Principal -->
+            <main class="main-content">
+                <h1>Test del Menú Móvil</h1>
+                <p>Presiona el botón ☰ para abrir el menú</p>
+                <p>Ancho de pantalla: <span id="width"></span>px</p>
+                <p>Estado del menú: <span id="menu-status">Cerrado</span></p>
+            </main>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Debug Info -->
+    <div class="debug-info" id="debug"></div>
+
+    <script>
+        // Debug info
+        function updateDebug() {
+            const width = window.innerWidth;
+            document.getElementById('width').textContent = width;
+            document.getElementById('debug').innerHTML = `
+                Ancho: ${width}px | 
+                Menu visible: ${window.getComputedStyle(document.getElementById('menu-toggle')).display} |
+                Sidebar left: ${window.getComputedStyle(document.getElementById('sidebar')).left}
+            `;
+        }
+        
+        window.addEventListener('resize', updateDebug);
+        updateDebug();
+
+        // Setup menú
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const menuStatus = document.getElementById('menu-status');
+
+        if (menuToggle && sidebar) {
+            menuToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('active');
+                
+                menuStatus.textContent = sidebar.classList.contains('open') ? 'Abierto' : 'Cerrado';
+                menuStatus.style.color = sidebar.classList.contains('open') ? 'green' : 'red';
+                
+                console.log('Menu clicked! Open:', sidebar.classList.contains('open'));
+                updateDebug();
+            });
+
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                menuStatus.textContent = 'Cerrado';
+                menuStatus.style.color = 'red';
+            });
+
+            const menuLinks = sidebar.querySelectorAll('.menu-item');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    setTimeout(() => {
+                        sidebar.classList.remove('open');
+                        overlay.classList.remove('active');
+                        menuStatus.textContent = 'Cerrado';
+                        menuStatus.style.color = 'red';
+                    }, 100);
+                });
+            });
+        }
+    </script>
+</body>
+</html>

@@ -223,40 +223,14 @@ El banner siempre muestra 3 cuadros fijos. Edita `js/banner.js` para cambiar com
 ✅ **Precios ocultos** - Admin determina costos  
 ✅ **Responsividad total** - Optimizado para móviles  
 
-## 📱 Funcionalidades PWA (Progressive Web App)
+## 📱 Próximas Mejoras Sugeridas
 
-✅ **Instalable en celular** - Como una app nativa  
-✅ **Funciona offline** - Cache inteligente  
-✅ **Notificaciones push** - Alertas en tiempo real  
-✅ **Geolocalización** - Mapa interactivo  
-✅ **Acceso rápido** - Atajos desde home screen  
-
-## 🚀 Lanzamiento
-
-### **Opción 1: Netlify (Recomendado)**
-1. Crea cuenta en https://www.netlify.com
-2. Arrastra la carpeta del proyecto
-3. ¡Listo! URL: `https://tu-app.netlify.app`
-
-### **Opción 2: Vercel**
-```bash
-npm install -g vercel
-cd Vecinos-Virtuales-V2
-vercel
-```
-
-### **Documentación Completa:**
-- 📖 `docs/GUIA_LANZAMIENTO.md` - Estrategia completa
-- 📱 `docs/PRUEBAS_MOVIL.md` - Testing en dispositivos
-- 🗺️ `docs/MAPA_CONFIGURACION.md` - Configurar mapa
-
-## 🎯 Próximas Mejoras Sugeridas
-
-1. **Chat entre vecinos**
-2. **Sistema de reputación**
-3. **Exportar agenda de compras** (PDF)
-4. **Integración con pagos**
-5. **Analytics avanzado**
+1. **Backend real** (Firebase, Node.js)
+2. **Chat entre vecinos**
+3. **Notificaciones push**
+4. **Mapa interactivo**
+5. **Sistema de reputación**
+6. **Exportar agenda de compras** (PDF)
 
 ---
 

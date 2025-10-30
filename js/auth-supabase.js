@@ -431,65 +431,6 @@ VV.auth = {
         }
     },
     
-    // Eliminar cuenta permanentemente
-    async deleteAccount() {
-        const confirmation = confirm(
-            '⚠️ ADVERTENCIA: Esta acción es IRREVERSIBLE\n\n' +
-            'Se eliminarán PERMANENTEMENTE:\n' +
-            '• Tu cuenta y datos personales\n' +
-            '• Todos tus productos\n' +
-            '• Todas tus publicaciones\n' +
-            '• Todos tus comentarios\n' +
-            '• Todo tu historial\n\n' +
-            '¿Estás SEGURO de que quieres eliminar tu cuenta?'
-        );
-        
-        if (!confirmation) return;
-        
-        const doubleConfirm = prompt(
-            'Para confirmar, escribe tu email:\n' +
-            VV.data.user.email
-        );
-        
-        if (doubleConfirm !== VV.data.user.email) {
-            alert('Email incorrecto. Cancelando eliminación.');
-            return;
-        }
-        
-        try {
-            const userId = VV.data.user.id;
-            
-            // Eliminar todos los datos del usuario
-            // 1. Productos
-            await supabase.from('products').delete().eq('user_id', userId);
-            
-            // 2. Servicios
-            await supabase.from('services').delete().eq('user_id', userId);
-            
-            // 3. Mejoras
-            await supabase.from('improvements').delete().eq('user_id', userId);
-            
-            // 4. Posts culturales
-            await supabase.from('cultural_posts').delete().eq('user_id', userId);
-            
-            // 5. Alertas del mapa
-            await supabase.from('community_alerts').delete().eq('reported_by', userId);
-            
-            // 6. Usuario
-            await supabase.from('users').delete().eq('id', userId);
-            
-            // 7. Cerrar sesión de Supabase Auth
-            await supabase.auth.signOut();
-            
-            alert('✓ Tu cuenta ha sido eliminada permanentemente.\n\nGracias por usar Vecinos Virtuales.');
-            location.reload();
-            
-        } catch (error) {
-            console.error('Error eliminando cuenta:', error);
-            alert('Error al eliminar la cuenta. Por favor contacta al soporte.');
-        }
-    },
-    
     // Iniciar aplicación
     startApp() {
         // Cargar datos del usuario

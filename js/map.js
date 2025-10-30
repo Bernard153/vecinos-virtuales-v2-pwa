@@ -3,11 +3,12 @@
 VV.map = {
     mapInstance: null,
     layers: {
-        commerce: null,      // Comercios y Vendedores
-        emergency: null,     // Emergencias y Servicios
-        security: null,      // Inseguridad (reportes)
-        events: null,        // Cortes y Eventos
-        transport: null      // Transporte público
+        vendors: null,
+        services: null,
+        alerts: null,
+        roadblocks: null,
+        businesses: null,
+        events: null
     },
     userMarker: null,
     
@@ -26,15 +27,8 @@ VV.map = {
                            VV.geo.neighborhoods[VV.data.user.current_neighborhood]?.center ||
                            { lat: -34.6037, lng: -58.3816 }; // Buenos Aires por defecto
         
-        // Crear mapa con opciones para móvil
-        VV.map.mapInstance = L.map('map-container', {
-            zoomControl: true,
-            touchZoom: true,
-            scrollWheelZoom: true,
-            doubleClickZoom: true,
-            tap: true,
-            tapTolerance: 15
-        }).setView([userLocation.lat, userLocation.lng], 15);
+        // Crear mapa
+        VV.map.mapInstance = L.map('map-container').setView([userLocation.lat, userLocation.lng], 15);
         
         // Agregar capa de OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -42,12 +36,13 @@ VV.map = {
             maxZoom: 19
         }).addTo(VV.map.mapInstance);
         
-        // Crear grupos de capas (activadas por defecto las primeras 4)
-        VV.map.layers.commerce = L.layerGroup().addTo(VV.map.mapInstance);
-        VV.map.layers.emergency = L.layerGroup().addTo(VV.map.mapInstance);
-        VV.map.layers.security = L.layerGroup().addTo(VV.map.mapInstance);
-        VV.map.layers.events = L.layerGroup().addTo(VV.map.mapInstance);
-        VV.map.layers.transport = L.layerGroup(); // Desactivada por defecto
+        // Crear grupos de capas
+        VV.map.layers.vendors = L.layerGroup().addTo(VV.map.mapInstance);
+        VV.map.layers.services = L.layerGroup().addTo(VV.map.mapInstance);
+        VV.map.layers.alerts = L.layerGroup().addTo(VV.map.mapInstance);
+        VV.map.layers.roadblocks = L.layerGroup().addTo(VV.map.mapInstance);
+        VV.map.layers.businesses = L.layerGroup();
+        VV.map.layers.events = L.layerGroup();
         
         // Agregar marcador del usuario
         VV.map.userMarker = L.marker([userLocation.lat, userLocation.lng], {
@@ -74,17 +69,16 @@ VV.map = {
     // Cargar todos los marcadores
     async loadAllMarkers() {
         await Promise.all([
-            VV.map.loadCommerce(),
-            VV.map.loadEmergency(),
-            VV.map.loadSecurity(),
-            VV.map.loadEvents(),
-            VV.map.loadTransport()
+            VV.map.loadVendors(),
+            VV.map.loadServices(),
+            VV.map.loadAlerts(),
+            VV.map.loadRoadblocks()
         ]);
     },
     
-    // CAPA 1: Comercios y Vendedores (productos + anunciantes)
-    async loadCommerce() {
-        VV.map.layers.commerce.clearLayers();
+    // Cargar vendedores activos
+    async loadVendors() {
+        VV.map.layers.vendors.clearLayers();
         
         // Obtener productos con geolocalización activa
         const { data: products, error } = await supabase
@@ -110,15 +104,10 @@ VV.map = {
                 })
             });
             
-            let distance = 0;
-            try {
-                distance = VV.geo.calculateDistance(
-                    VV.data.user.current_location || VV.geo.neighborhoods[VV.data.user.current_neighborhood]?.center || { lat: 0, lng: 0 },
-                    product.location
-                );
-            } catch (e) {
-                console.warn('Error calculando distancia:', e);
-            }
+            const distance = VV.geo.calculateDistance(
+                VV.data.user.current_location || VV.geo.neighborhoods[VV.data.user.current_neighborhood].center,
+                product.location
+            );
             
             marker.bindPopup(`
                 <div style="min-width: 200px;">
@@ -137,63 +126,17 @@ VV.map = {
                 </div>
             `);
             
-            marker.addTo(VV.map.layers.commerce);
+            marker.addTo(VV.map.layers.vendors);
         });
         
-        console.log(`✅ ${products?.length || 0} comercios cargados`);
+        console.log(`✅ ${products?.length || 0} vendedores cargados`);
     },
     
-    // CAPA 2: Emergencias y Servicios (teléfonos de emergencia + servicios profesionales)
-    async loadEmergency() {
-        VV.map.layers.emergency.clearLayers();
+    // Cargar servicios
+    async loadServices() {
+        VV.map.layers.services.clearLayers();
         
-        // Puntos de emergencia predefinidos por barrio
-        const emergencyPoints = {
-            "Lomas de Tafí": [
-                { lat: -26.8241, lng: -65.2226, name: "Comisaría Lomas", type: "police", phone: "911", description: "Comisaría del barrio" },
-                { lat: -26.8250, lng: -65.2200, name: "Hospital Lomas", type: "hospital", phone: "107", description: "Centro de salud" }
-            ],
-            "Belgrano": [
-                { lat: -34.5600, lng: -58.4500, name: "Comisaría 13", type: "police", phone: "911", description: "Av. Cabildo 1234" },
-                { lat: -34.5650, lng: -58.4450, name: "Hospital Pirovano", type: "hospital", phone: "107", description: "Monroe 3555" }
-            ],
-            "Palermo": [
-                { lat: -34.5800, lng: -58.4200, name: "Comisaría 14", type: "police", phone: "911", description: "Av. Santa Fe 4321" },
-                { lat: -34.5850, lng: -58.4150, name: "Hospital Fernández", type: "hospital", phone: "107", description: "Cerviño 3356" }
-            ]
-        };
-        
-        // Agregar puntos de emergencia del barrio actual
-        const currentEmergency = emergencyPoints[VV.data.user.current_neighborhood] || [];
-        currentEmergency.forEach(point => {
-            const icons = {
-                police: '🚔',
-                hospital: '🏥',
-                fire: '🚒'
-            };
-            
-            const marker = L.marker([point.lat, point.lng], {
-                icon: L.divIcon({
-                    className: 'emergency-marker',
-                    html: '<div style="background: #ef4444; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>',
-                    iconSize: [18, 18]
-                })
-            });
-            
-            marker.bindPopup(`
-                <div style="min-width: 220px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: #ef4444;">${icons[point.type]} ${point.name}</h4>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${point.description}</p>
-                    <p style="margin: 0.5rem 0; font-size: 1rem; font-weight: 600; color: #ef4444;">
-                        <i class="fas fa-phone"></i> ${point.phone}
-                    </p>
-                </div>
-            `);
-            
-            marker.addTo(VV.map.layers.emergency);
-        });
-        
-        // Obtener servicios profesionales del barrio actual
+        // Obtener servicios del barrio actual
         const services = VV.data.services.filter(s => 
             s.neighborhood === VV.data.user.current_neighborhood && s.location
         );
@@ -201,15 +144,15 @@ VV.map = {
         services.forEach(service => {
             const marker = L.marker([service.location.lat, service.location.lng], {
                 icon: L.divIcon({
-                    className: 'emergency-marker',
-                    html: '<div style="background: #ef4444; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+                    className: 'service-marker',
+                    html: '<div style="background: #f59e0b; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
                     iconSize: [16, 16]
                 })
             });
             
             marker.bindPopup(`
                 <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: #ef4444;">🚨 ${service.title}</h4>
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--warning-orange);">⚙️ ${service.title}</h4>
                     <p style="margin: 0.25rem 0; font-size: 0.85rem;">${service.description}</p>
                     <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">
                         <i class="fas fa-user"></i> ${service.provider}
@@ -220,26 +163,26 @@ VV.map = {
                 </div>
             `);
             
-            marker.addTo(VV.map.layers.emergency);
+            marker.addTo(VV.map.layers.services);
         });
         
-        console.log(`✅ ${currentEmergency.length + services.length} puntos de emergencia cargados`);
+        console.log(`✅ ${services.length} servicios cargados`);
     },
     
-    // CAPA 3: Inseguridad (reportes vecinales de las últimas 48 horas)
-    async loadSecurity() {
-        VV.map.layers.security.clearLayers();
+    // Cargar alertas de seguridad
+    async loadAlerts() {
+        VV.map.layers.alerts.clearLayers();
         
-        // Obtener alertas de las últimas 48 horas
-        const twoDaysAgo = new Date();
-        twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+        // Obtener alertas de las últimas 24 horas
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
         
         const { data: alerts, error } = await supabase
             .from('community_alerts')
             .select('*')
             .eq('neighborhood', VV.data.user.current_neighborhood)
             .eq('type', 'security')
-            .gte('created_at', twoDaysAgo.toISOString())
+            .gte('created_at', yesterday.toISOString())
             .order('created_at', { ascending: false });
         
         if (error) {
@@ -252,8 +195,8 @@ VV.map = {
             
             const marker = L.marker([alert.location.lat, alert.location.lng], {
                 icon: L.divIcon({
-                    className: 'security-marker',
-                    html: '<div style="background: #f59e0b; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); animation: pulse 2s infinite;"></div>',
+                    className: 'alert-marker',
+                    html: '<div style="background: #ef4444; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); animation: pulse 2s infinite;"></div>',
                     iconSize: [16, 16]
                 })
             });
@@ -262,33 +205,33 @@ VV.map = {
             
             marker.bindPopup(`
                 <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: #f59e0b;">⚠️ ${alert.title}</h4>
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--error-red);">⚠️ ${alert.title}</h4>
                     <p style="margin: 0.25rem 0; font-size: 0.85rem;">${alert.description}</p>
                     <p style="margin: 0.5rem 0; font-size: 0.75rem; color: var(--gray-600);">
                         <i class="fas fa-clock"></i> Hace ${timeAgo}
                     </p>
                     <p style="margin: 0; font-size: 0.75rem; color: var(--gray-500); font-style: italic;">
-                        Reportado por vecinos
+                        Reportado por la comunidad
                     </p>
                 </div>
             `);
             
-            marker.addTo(VV.map.layers.security);
+            marker.addTo(VV.map.layers.alerts);
         });
         
-        console.log(`✅ ${alerts?.length || 0} reportes de inseguridad cargados`);
+        console.log(`✅ ${alerts?.length || 0} alertas cargadas`);
     },
     
-    // CAPA 4: Cortes y Eventos (cortes de calle + eventos comunitarios)
-    async loadEvents() {
-        VV.map.layers.events.clearLayers();
+    // Cargar cortes de calle
+    async loadRoadblocks() {
+        VV.map.layers.roadblocks.clearLayers();
         
-        // Obtener cortes activos y eventos
-        const { data: items, error } = await supabase
+        // Obtener cortes activos
+        const { data: roadblocks, error } = await supabase
             .from('community_alerts')
             .select('*')
             .eq('neighborhood', VV.data.user.current_neighborhood)
-            .in('type', ['roadblock', 'event'])
+            .eq('type', 'roadblock')
             .eq('active', true)
             .order('created_at', { ascending: false });
         
@@ -297,100 +240,33 @@ VV.map = {
             return;
         }
         
-        items?.forEach(item => {
-            if (!item.location) return;
+        roadblocks?.forEach(roadblock => {
+            if (!roadblock.location) return;
             
-            const isEvent = item.type === 'event';
-            const color = isEvent ? '#8b5cf6' : '#f59e0b';
-            const icon = isEvent ? '🎉' : '🚧';
-            
-            const marker = L.marker([item.location.lat, item.location.lng], {
+            const marker = L.marker([roadblock.location.lat, roadblock.location.lng], {
                 icon: L.divIcon({
-                    className: 'event-marker',
-                    html: `<div style="background: ${color}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                    className: 'roadblock-marker',
+                    html: '<div style="background: #f59e0b; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
                     iconSize: [16, 16]
                 })
             });
             
             marker.bindPopup(`
                 <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: ${color};">${icon} ${item.title}</h4>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${item.description}</p>
-                    ${item.end_time ? `
+                    <h4 style="margin: 0 0 0.5rem 0; color: #f59e0b;">🚧 ${roadblock.title}</h4>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${roadblock.description}</p>
+                    ${roadblock.end_time ? `
                         <p style="margin: 0.5rem 0; font-size: 0.75rem; color: var(--gray-600);">
-                            <i class="fas fa-clock"></i> ${isEvent ? 'Fecha:' : 'Hasta:'} ${new Date(item.end_time).toLocaleString('es-AR')}
+                            <i class="fas fa-clock"></i> Hasta: ${new Date(roadblock.end_time).toLocaleString('es-AR')}
                         </p>
                     ` : ''}
                 </div>
             `);
             
-            marker.addTo(VV.map.layers.events);
+            marker.addTo(VV.map.layers.roadblocks);
         });
         
-        console.log(`✅ ${items?.length || 0} cortes y eventos cargados`);
-    },
-    
-    // CAPA 5: Transporte Público (paradas de bus, taxis, remises)
-    async loadTransport() {
-        VV.map.layers.transport.clearLayers();
-        
-        // Puntos de transporte predefinidos por barrio
-        const transportPoints = {
-            "Lomas de Tafí": [
-                { lat: -26.8241, lng: -65.2226, name: "Parada Principal", type: "bus", description: "Av. Principal y Ruta 9", lines: ["101", "102"] },
-                { lat: -26.8250, lng: -65.2200, name: "Remisería Lomas", type: "taxi", description: "Servicio 24hs", phone: "381-4567890" }
-            ],
-            "Belgrano": [
-                { lat: -34.5600, lng: -58.4500, name: "Parada Cabildo", type: "bus", description: "Av. Cabildo y Juramento", lines: ["60", "152", "194"] },
-                { lat: -34.5620, lng: -58.4480, name: "Estación Belgrano C", type: "train", description: "Línea Mitre", lines: ["Mitre"] },
-                { lat: -34.5650, lng: -58.4450, name: "Radio Taxi Belgrano", type: "taxi", description: "Servicio 24hs", phone: "4788-8888" }
-            ],
-            "Palermo": [
-                { lat: -34.5800, lng: -58.4200, name: "Parada Santa Fe", type: "bus", description: "Av. Santa Fe y Pueyrredón", lines: ["39", "152", "111"] },
-                { lat: -34.5850, lng: -58.4150, name: "Estación Palermo", type: "train", description: "Línea San Martín", lines: ["San Martín"] },
-                { lat: -34.5820, lng: -58.4180, name: "Remisería Palermo", type: "taxi", description: "Servicio 24hs", phone: "4777-7777" }
-            ]
-        };
-        
-        // Agregar puntos de transporte del barrio actual
-        const currentTransport = transportPoints[VV.data.user.current_neighborhood] || [];
-        
-        currentTransport.forEach(point => {
-            const icons = {
-                bus: '🚌',
-                train: '🚆',
-                taxi: '🚕'
-            };
-            
-            const marker = L.marker([point.lat, point.lng], {
-                icon: L.divIcon({
-                    className: 'transport-marker',
-                    html: '<div style="background: #06b6d4; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-                    iconSize: [16, 16]
-                })
-            });
-            
-            marker.bindPopup(`
-                <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: #06b6d4;">${icons[point.type]} ${point.name}</h4>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${point.description}</p>
-                    ${point.lines ? `
-                        <p style="margin: 0.5rem 0; font-size: 0.85rem; color: var(--gray-600);">
-                            <i class="fas fa-route"></i> Líneas: ${point.lines.join(', ')}
-                        </p>
-                    ` : ''}
-                    ${point.phone ? `
-                        <p style="margin: 0.5rem 0; font-size: 0.85rem; color: var(--gray-600);">
-                            <i class="fas fa-phone"></i> ${point.phone}
-                        </p>
-                    ` : ''}
-                </div>
-            `);
-            
-            marker.addTo(VV.map.layers.transport);
-        });
-        
-        console.log(`✅ ${currentTransport.length} puntos de transporte cargados`);
+        console.log(`✅ ${roadblocks?.length || 0} cortes cargados`);
     },
     
     // Toggle de capas
@@ -416,8 +292,8 @@ VV.map = {
         VV.utils.showSuccess('Mapa actualizado');
     },
     
-    // Reportar inseguridad
-    reportSecurity() {
+    // Reportar alerta de seguridad
+    reportAlert() {
         if (!VV.data.user.current_location) {
             alert('Activa la geolocalización para reportar alertas');
             return;
@@ -433,7 +309,7 @@ VV.map = {
         
         overlay.innerHTML = `
             <div class="modal-form" style="max-width: 500px;">
-                <h3><i class="fas fa-exclamation-triangle"></i> Reportar Inseguridad</h3>
+                <h3><i class="fas fa-exclamation-triangle"></i> Reportar Alerta de Seguridad</h3>
                 
                 <form id="alert-report-form">
                     <div class="form-group">
@@ -502,9 +378,9 @@ VV.map = {
             
             if (error) throw error;
             
-            VV.utils.showSuccess('Reporte de inseguridad enviado');
+            VV.utils.showSuccess('Alerta reportada correctamente');
             VV.map.closeAlertReport();
-            await VV.map.loadSecurity();
+            await VV.map.loadAlerts();
             
         } catch (error) {
             console.error('Error reportando alerta:', error);
@@ -621,7 +497,7 @@ VV.map = {
             
             VV.utils.showSuccess('Corte reportado correctamente');
             VV.map.closeRoadblockReport();
-            await VV.map.loadEvents();
+            await VV.map.loadRoadblocks();
             
         } catch (error) {
             console.error('Error reportando corte:', error);
@@ -631,103 +507,6 @@ VV.map = {
     
     closeRoadblockReport() {
         const overlay = document.getElementById('roadblock-report-overlay');
-        if (overlay) overlay.classList.remove('active');
-    },
-    
-    // Reportar evento comunitario
-    reportEvent() {
-        if (!VV.data.user.current_location) {
-            alert('Activa la geolocalización para publicar eventos');
-            return;
-        }
-        
-        let overlay = document.getElementById('event-report-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'event-report-overlay';
-            overlay.className = 'modal-overlay';
-            document.body.appendChild(overlay);
-        }
-        
-        overlay.innerHTML = `
-            <div class="modal-form" style="max-width: 500px;">
-                <h3><i class="fas fa-calendar"></i> Publicar Evento Comunitario</h3>
-                
-                <form id="event-report-form">
-                    <div class="form-group">
-                        <label>Nombre del Evento *</label>
-                        <input type="text" id="event-title" required placeholder="Ej: Feria del Barrio">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Descripción *</label>
-                        <textarea id="event-description" rows="3" required placeholder="Describe el evento..."></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Fecha y Hora</label>
-                        <input type="datetime-local" id="event-datetime">
-                    </div>
-                    
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button type="submit" class="btn-primary" style="flex: 1;">
-                            <i class="fas fa-paper-plane"></i> Publicar Evento
-                        </button>
-                        <button type="button" class="btn-cancel" onclick="VV.map.closeEventReport()">
-                            Cancelar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        `;
-        
-        overlay.classList.add('active');
-        
-        document.getElementById('event-report-form').onsubmit = async (e) => {
-            e.preventDefault();
-            await VV.map.submitEvent();
-        };
-        
-        overlay.onclick = (e) => {
-            if (e.target === overlay) VV.map.closeEventReport();
-        };
-    },
-    
-    // Enviar evento
-    async submitEvent() {
-        const title = document.getElementById('event-title').value;
-        const description = document.getElementById('event-description').value;
-        const datetime = document.getElementById('event-datetime').value;
-        
-        try {
-            const { error } = await supabase
-                .from('community_alerts')
-                .insert({
-                    type: 'event',
-                    subtype: 'community',
-                    title: title,
-                    description: description,
-                    location: VV.data.user.current_location,
-                    neighborhood: VV.data.user.current_neighborhood,
-                    reported_by: VV.data.user.id,
-                    active: true,
-                    end_time: datetime ? new Date(datetime).toISOString() : null
-                });
-            
-            if (error) throw error;
-            
-            VV.utils.showSuccess('Evento publicado correctamente');
-            VV.map.closeEventReport();
-            await VV.map.loadEvents();
-            
-        } catch (error) {
-            console.error('Error publicando evento:', error);
-            alert('Error al publicar el evento');
-        }
-    },
-    
-    closeEventReport() {
-        const overlay = document.getElementById('event-report-overlay');
         if (overlay) overlay.classList.remove('active');
     }
 };

@@ -240,17 +240,7 @@ VV.marketplace = {
                 <form id="product-form">
                     <div class="form-group">
                         <label>Nombre del producto *</label>
-                        <input type="text" id="product-name" value="${product?.product || ''}" 
-                               list="product-suggestions" 
-                               autocomplete="off"
-                               placeholder="Ej: Pan, Leche, Tomate..."
-                               required>
-                        <datalist id="product-suggestions">
-                            ${VV.marketplace.getProductSuggestions()}
-                        </datalist>
-                        <p style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;">
-                            <i class="fas fa-lightbulb"></i> Escribe y verás sugerencias de productos existentes
-                        </p>
+                        <input type="text" id="product-name" value="${product?.product || ''}" required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -507,47 +497,15 @@ VV.marketplace = {
         VV.utils.showSuccess(`${quantity} ${product.unit} agregado a la agenda`);
     },
     
-    // Obtener sugerencias de productos existentes
-    getProductSuggestions() {
-        // Obtener nombres únicos de productos en el barrio actual
-        const currentNeighborhood = VV.data.user?.current_neighborhood || VV.data.user?.neighborhood;
-        
-        const uniqueProducts = [...new Set(
-            VV.data.products
-                .filter(p => p.neighborhood === currentNeighborhood && p.product)
-                .map(p => p.product.trim())
-        )].sort();
-        
-        return uniqueProducts.map(name => `<option value="${name}">`).join('');
-    },
-    
     // Comparar precios de productos similares
     compareProduct(productName) {
-        const currentNeighborhood = VV.data.user.current_neighborhood || VV.data.user.neighborhood;
-        
-        console.log('🔍 Comparando producto:', productName);
-        console.log('📍 Barrio actual:', currentNeighborhood);
-        console.log('📦 Total productos:', VV.data.products.length);
-        
-        // Filtrar productos similares (mismo nombre, mismo barrio)
-        const similarProducts = VV.data.products.filter(p => {
-            const matchName = p.product && p.product.toLowerCase().trim() === productName.toLowerCase().trim();
-            const matchNeighborhood = p.neighborhood === currentNeighborhood;
-            
-            console.log(`  - ${p.product} (${p.neighborhood}): nombre=${matchName}, barrio=${matchNeighborhood}`);
-            
-            return matchName && matchNeighborhood;
-        });
-        
-        console.log('✅ Productos encontrados:', similarProducts.length);
+        const similarProducts = VV.data.products.filter(p => 
+            p.product.toLowerCase() === productName.toLowerCase() &&
+            p.neighborhood === VV.data.neighborhood
+        );
         
         if (similarProducts.length === 0) {
-            alert(`No hay otros vendedores de "${productName}" en ${currentNeighborhood} para comparar`);
-            return;
-        }
-        
-        if (similarProducts.length === 1) {
-            alert(`Solo hay 1 vendedor de "${productName}" en ${currentNeighborhood}`);
+            alert('No hay productos para comparar');
             return;
         }
         
