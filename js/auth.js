@@ -689,10 +689,30 @@ VV.auth = {
     },
     
     // Cerrar sesión
-    logout() {
+    async logout() {
         if (confirm('¿Cerrar sesión?')) {
-            localStorage.removeItem('vecinosVirtualesUser');
-            location.reload();
+            try {
+                // Cerrar sesión en Supabase
+                const { error } = await supabase.auth.signOut();
+                if (error) console.error('Error cerrando sesión en Supabase:', error);
+                
+                // Limpiar localStorage completamente
+                localStorage.removeItem('vecinosVirtualesUser');
+                
+                // Limpiar datos en memoria
+                VV.data.user = null;
+                VV.data.neighborhood = null;
+                
+                // Redirigir a la página de login (forzar recarga completa)
+                window.location.href = window.location.origin + window.location.pathname;
+            } catch (error) {
+                console.error('Error en logout:', error);
+                // Forzar limpieza aunque haya error
+                localStorage.removeItem('vecinosVirtualesUser');
+                VV.data.user = null;
+                VV.data.neighborhood = null;
+                window.location.href = window.location.origin + window.location.pathname;
+            }
         }
     }
 };

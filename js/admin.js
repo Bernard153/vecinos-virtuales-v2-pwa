@@ -4,44 +4,57 @@ VV.admin = {
     sponsorRequests: [],
     
     // Cargar panel de admin
-    load() {
+    async load() {
         if (!VV.utils.isAdmin()) {
             alert('No tienes permisos de administrador');
             return;
         }
         
-        VV.admin.loadSponsorRequests();
-        VV.admin.loadFeaturedRequests();
-        VV.admin.loadSponsors();
+        await VV.admin.loadSponsorRequests();
+        await VV.admin.loadFeaturedRequests();
+        await VV.admin.loadSponsors();
     },
     
     // Cargar solicitudes pendientes
-    loadSponsorRequests() {
-        const requests = JSON.parse(localStorage.getItem('sponsorRequests') || '[]');
-        const pending = requests.filter(r => r.status === 'pending');
+    async loadSponsorRequests() {
+        try {
+            const { data: sponsors, error } = await supabase
+                .from('sponsors')
+                .select('*')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            console.log('📋 Solicitudes de anunciantes:', sponsors);
+            
+            const pending = sponsors || [];
         
         const container = document.getElementById('sponsor-requests-container');
         const list = document.getElementById('sponsor-requests-list');
         
         if (pending.length === 0) {
+            console.log('⚠️ No hay solicitudes de anunciantes pendientes');
             container.style.display = 'none';
             return;
         }
         
+        console.log(`✅ ${pending.length} solicitud(es) de anunciante(s) pendiente(s)`);
+        
         container.style.display = 'block';
         list.innerHTML = pending.map(req => `
-            <div class="sponsor-request-card">
+            <div class="sponsor-request-card" style="border-left: 4px solid var(--primary-blue);">
                 <div class="request-header">
                     <div>
-                        <h4>${req.logo} ${req.name}</h4>
+                        <h4><i class="fas fa-bullhorn"></i> ${req.business_name}</h4>
                         <p style="color: var(--gray-600); font-size: 0.85rem; margin-top: 0.25rem;">
-                            Solicitado por: ${req.userName} (${req.userEmail})
+                            Solicitado por: ${req.user_name} (${req.neighborhood})
                         </p>
                     </div>
                     <span class="request-tier-badge ${req.tier}">${req.tier.toUpperCase()}</span>
                 </div>
                 <div class="request-info">
-                    <p><i class="fas fa-info-circle"></i> ${req.description}</p>
+                    <p>${req.description}</p>
                     <p><i class="fas fa-phone"></i> ${req.contact}</p>
                     ${req.website ? `<p><i class="fas fa-globe"></i> ${req.website}</p>` : ''}
                 </div>
@@ -55,28 +68,13 @@ VV.admin = {
                 </div>
             </div>
         `).join('');
-        
-        // Badge en menú
-        const adminMenuItem = document.querySelector('[data-section="admin"]');
-        if (adminMenuItem && pending.length > 0) {
-            let badge = adminMenuItem.querySelector('.notification-badge');
-            if (!badge) {
-                badge = document.createElement('span');
-                badge.className = 'notification-badge';
-                badge.style.cssText = 'background: var(--error-red); color: white; font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 10px; margin-left: auto;';
-                adminMenuItem.appendChild(badge);
-            }
-            badge.textContent = pending.length;
+        } catch (error) {
+            console.error('Error cargando solicitudes de sponsors:', error);
         }
     },
     
     // Aprobar solicitud
-    approveSponsorRequest(requestId) {
-        const requests = JSON.parse(localStorage.getItem('sponsorRequests') || '[]');
-        const request = requests.find(r => r.id === requestId);
-        
-        if (!request) return;
-        
+    async approveSponsorRequest(requestId) {
         // Solicitar duración al admin
         const duration = prompt('¿Por cuántos días activar este anunciante? (Ej: 30, 60, 90)', '30');
         if (!duration || isNaN(duration)) {
@@ -84,55 +82,56 @@ VV.admin = {
             return;
         }
         
-        // Calcular fechas
-        const startDate = new Date();
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + parseInt(duration));
-        
-        // Crear anunciante
-        const newSponsor = {
-            id: VV.utils.generateId(),
-            name: request.name,
-            description: request.description,
-            logo: request.logo,
-            tier: request.tier,
-            contact: request.contact,
-            website: request.website,
-            status: 'active',
-            active: true,
-            views: 0,
-            clicks: 0,
-            startDate: startDate.toISOString(),
-            expiresAt: expiresAt.toISOString(),
-            duration: parseInt(duration),
-            createdAt: new Date().toISOString()
-        };
-        
-        VV.data.sponsors.push(newSponsor);
-        
-        // Actualizar solicitud
-        request.status = 'approved';
-        request.approvedAt = new Date().toISOString();
-        request.duration = parseInt(duration);
-        localStorage.setItem('sponsorRequests', JSON.stringify(requests));
-        
-        VV.admin.load();
-        VV.banner.init();
-        VV.utils.showSuccess(`Anunciante aprobado por ${duration} días`);
+        try {
+            // Calcular fecha de expiración
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + parseInt(duration));
+            
+            // Actualizar el sponsor en Supabase
+            const { error } = await supabase
+                .from('sponsors')
+                .update({
+                    status: 'active',
+                    active: true,
+                    duration: parseInt(duration),
+                    expires_at: expiresAt.toISOString(),
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', requestId);
+            
+            if (error) throw error;
+            
+            await VV.admin.load();
+            VV.banner.init();
+            VV.utils.showSuccess(`Anunciante aprobado por ${duration} días`);
+            
+        } catch (error) {
+            console.error('Error aprobando anunciante:', error);
+            alert('Error al aprobar el anunciante: ' + error.message);
+        }
     },
     
     // Rechazar solicitud
-    rejectSponsorRequest(requestId) {
+    async rejectSponsorRequest(requestId) {
         if (!confirm('¿Rechazar esta solicitud?')) return;
         
-        const requests = JSON.parse(localStorage.getItem('sponsorRequests') || '[]');
-        const request = requests.find(r => r.id === requestId);
-        
-        if (request) {
-            request.status = 'rejected';
-            localStorage.setItem('sponsorRequests', JSON.stringify(requests));
-            VV.admin.load();
+        try {
+            const { error } = await supabase
+                .from('sponsors')
+                .update({
+                    status: 'rejected',
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', requestId);
+            
+            if (error) throw error;
+            
+            await VV.admin.load();
             VV.utils.showSuccess('Solicitud rechazada');
+            
+        } catch (error) {
+            console.error('Error rechazando solicitud:', error);
+            alert('Error al rechazar la solicitud: ' + error.message);
         }
     },
     
@@ -608,7 +607,7 @@ VV.admin = {
     },
     
     // Gestión de usuarios
-    async loadUsers() {
+    async loadUsers(filterNeighborhood = 'all') {
         if (!VV.utils.isAdmin()) {
             alert('No tienes permisos');
             return;
@@ -630,16 +629,39 @@ VV.admin = {
             return;
         }
         
+        // Obtener barrios únicos
+        const neighborhoods = [...new Set(users.map(u => u.neighborhood))].sort();
+        
+        // Filtrar usuarios si hay filtro
+        const filteredUsers = filterNeighborhood === 'all' 
+            ? users 
+            : users.filter(u => u.neighborhood === filterNeighborhood);
+        
         // Agrupar usuarios por barrio
         const usersByNeighborhood = {};
-        users.forEach(user => {
+        filteredUsers.forEach(user => {
             if (!usersByNeighborhood[user.neighborhood]) {
                 usersByNeighborhood[user.neighborhood] = [];
             }
             usersByNeighborhood[user.neighborhood].push(user);
         });
         
-        let html = '';
+        // Selector de barrio
+        let html = `
+            <div style="grid-column: 1/-1; margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 8px; box-shadow: var(--shadow-sm);">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700);">
+                    <i class="fas fa-filter"></i> Filtrar por barrio:
+                </label>
+                <select onchange="VV.admin.loadUsers(this.value)" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 1rem;">
+                    <option value="all" ${filterNeighborhood === 'all' ? 'selected' : ''}>📍 Todos los barrios (${users.length} usuarios)</option>
+                    ${neighborhoods.map(n => `
+                        <option value="${n}" ${filterNeighborhood === n ? 'selected' : ''}>
+                            ${n} (${users.filter(u => u.neighborhood === n).length} usuarios)
+                        </option>
+                    `).join('')}
+                </select>
+            </div>
+        `;
         
         // Mostrar usuarios agrupados por barrio
         Object.keys(usersByNeighborhood).sort().forEach(neighborhood => {
@@ -1008,7 +1030,7 @@ window.requestSponsorStatus = function() {
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" onclick="document.getElementById('sponsor-request-overlay').classList.remove('active')">Cancelar</button>
-                    <button type="submit" class="btn-save">
+                    <button type="button" class="btn-save" onclick="window.submitSponsorRequest()">
                         <i class="fas fa-paper-plane"></i> Enviar Solicitud
                     </button>
                 </div>
@@ -1018,35 +1040,55 @@ window.requestSponsorStatus = function() {
     
     overlay.classList.add('active');
     
-    document.getElementById('sponsor-request-form').onsubmit = (e) => {
-        e.preventDefault();
-        
-        const request = {
-            id: VV.utils.generateId(),
-            name: document.getElementById('request-name').value.trim(),
-            description: document.getElementById('request-description').value.trim(),
-            logo: document.getElementById('request-logo').value.trim(),
-            tier: document.getElementById('request-tier').value,
-            contact: document.getElementById('request-contact').value.trim(),
-            website: document.getElementById('request-website').value.trim(),
-            userId: VV.data.user.id,
-            userName: VV.data.user.name,
-            userEmail: VV.data.user.email,
-            status: 'pending',
-            createdAt: new Date().toISOString()
-        };
-        
-        const requests = JSON.parse(localStorage.getItem('sponsorRequests') || '[]');
-        requests.push(request);
-        localStorage.setItem('sponsorRequests', JSON.stringify(requests));
-        
-        overlay.classList.remove('active');
-        VV.utils.showSuccess('Solicitud enviada. El administrador la revisará pronto.');
-    };
-    
     overlay.onclick = (e) => {
         if (e.target === overlay) overlay.classList.remove('active');
     };
+}
+
+// Función global para enviar solicitud de anunciante
+window.submitSponsorRequest = async function() {
+    console.log('🚀 Enviando solicitud de anunciante...');
+    
+    const businessName = document.getElementById('request-name').value.trim();
+    const description = document.getElementById('request-description').value.trim();
+    const logo = document.getElementById('request-logo').value.trim();
+    const tier = document.getElementById('request-tier').value;
+    const contact = document.getElementById('request-contact').value.trim();
+    const website = document.getElementById('request-website').value.trim();
+    
+    if (!businessName || !description || !logo || !tier || !contact) {
+        alert('Por favor completa todos los campos obligatorios');
+        return;
+    }
+    
+    try {
+        const { error } = await supabase
+            .from('sponsors')
+            .insert({
+                business_name: businessName,
+                description: description,
+                logo: logo,
+                tier: tier,
+                contact: contact,
+                website: website,
+                user_id: VV.data.user.id,
+                user_name: VV.data.user.name,
+                neighborhood: VV.data.neighborhood,
+                status: 'pending',
+                active: false
+            });
+        
+        if (error) throw error;
+        
+        console.log('✅ Solicitud de anunciante enviada exitosamente');
+        
+        document.getElementById('sponsor-request-overlay').classList.remove('active');
+        VV.utils.showSuccess('Solicitud enviada. El administrador la revisará pronto.');
+        
+    } catch (error) {
+        console.error('❌ Error enviando solicitud de anunciante:', error);
+        alert('Error al enviar la solicitud: ' + error.message);
+    }
 }
 
 // ========== FUNCIONES GLOBALES PARA ADMIN ==========
@@ -1329,11 +1371,12 @@ VV.admin.loadAllImprovements = async function() {
     if (neighborhoodFilter) filtered = filtered.filter(i => i.neighborhood === neighborhoodFilter);
     if (statusFilter) filtered = filtered.filter(i => i.status === statusFilter);
     
-    // Estadísticas
+    // Estadísticas (basadas en los datos FILTRADOS)
     const statsContainer = document.getElementById('admin-improvements-stats');
-    const pending = VV.data.improvements.filter(i => i.status === 'pending').length;
-    const inProgress = VV.data.improvements.filter(i => i.status === 'in-progress').length;
-    const completed = VV.data.improvements.filter(i => i.status === 'completed').length;
+    const pending = filtered.filter(i => i.status === 'pending').length;
+    const inProgress = filtered.filter(i => i.status === 'in-progress').length;
+    const completed = filtered.filter(i => i.status === 'completed').length;
+    const filteredNeighborhoods = [...new Set(filtered.map(i => i.neighborhood))].length;
     
     statsContainer.innerHTML = `
         <div class="stat-card">
@@ -1369,7 +1412,7 @@ VV.admin.loadAllImprovements = async function() {
             </div>
             <div class="stat-info">
                 <h3>Barrios</h3>
-                <p class="stat-number">${neighborhoods.length}</p>
+                <p class="stat-number">${filteredNeighborhoods}</p>
             </div>
         </div>
     `;
@@ -1448,105 +1491,123 @@ VV.admin.deleteImprovement = function(improvementId) {
 
 // ========== GESTIÓN DE OFERTAS DESTACADAS ==========
 
-VV.admin.loadFeaturedRequests = function() {
-    const requests = JSON.parse(localStorage.getItem('featuredRequests') || '[]');
-    const pending = requests.filter(r => r.status === 'pending');
-    
-    const container = document.getElementById('featured-requests-container');
-    const list = document.getElementById('featured-requests-list');
-    
-    if (pending.length === 0) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    container.style.display = 'block';
-    list.innerHTML = pending.map(req => `
-        <div class="sponsor-request-card" style="border-left: 4px solid var(--warning-orange);">
-            <div class="request-header">
-                <div>
-                    <h4><i class="fas fa-star"></i> ${req.productName}</h4>
-                    <p style="color: var(--gray-600); font-size: 0.85rem; margin-top: 0.25rem;">
-                        Solicitado por: ${req.userName} #${req.userNumber} (${req.neighborhood})
-                    </p>
+VV.admin.loadFeaturedRequests = async function() {
+    try {
+        // Cargar solicitudes pendientes desde Supabase
+        const { data: requests, error } = await supabase
+            .from('featured_offers')
+            .select('*')
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        console.log('📋 Solicitudes de ofertas destacadas:', requests);
+        
+        const container = document.getElementById('featured-requests-container');
+        const list = document.getElementById('featured-requests-list');
+        
+        if (!requests || requests.length === 0) {
+            console.log('⚠️ No hay solicitudes pendientes');
+            container.style.display = 'none';
+            return;
+        }
+        
+        console.log(`✅ ${requests.length} solicitud(es) pendiente(s)`);
+        container.style.display = 'block';
+        
+        list.innerHTML = requests.map(req => `
+            <div class="sponsor-request-card" style="border-left: 4px solid var(--warning-orange);">
+                <div class="request-header">
+                    <div>
+                        <h4><i class="fas fa-star"></i> ${req.title}</h4>
+                        <p style="color: var(--gray-600); font-size: 0.85rem; margin-top: 0.25rem;">
+                            Solicitado por: ${req.user_name} #${req.user_number} (${req.neighborhood})
+                        </p>
+                    </div>
+                    <span class="request-tier-badge" style="background: var(--warning-orange);">${req.duration} DÍAS</span>
                 </div>
-                <span class="request-tier-badge" style="background: var(--warning-orange);">${req.duration} DÍAS</span>
+                <div class="request-info">
+                    <p><strong>Título:</strong> ${req.title}</p>
+                    ${req.description ? `<p><strong>Descripción:</strong> ${req.description}</p>` : ''}
+                    <p><strong>Duración solicitada:</strong> ${req.duration} días</p>
+                    <p><strong>Fecha de solicitud:</strong> ${new Date(req.created_at).toLocaleDateString()}</p>
+                </div>
+                <div class="request-actions">
+                    <input type="number" id="duration-${req.id}" value="${req.duration}" min="1" max="90" style="width: 80px; padding: 0.5rem; margin-right: 0.5rem; border: 1px solid var(--gray-300); border-radius: 4px;">
+                    <label style="margin-right: 1rem; color: var(--gray-600);">días</label>
+                    <button class="btn-approve" onclick="VV.admin.approveFeaturedRequest('${req.id}')">
+                        <i class="fas fa-check"></i> Aprobar
+                    </button>
+                    <button class="btn-reject" onclick="VV.admin.rejectFeaturedRequest('${req.id}')">
+                        <i class="fas fa-times"></i> Rechazar
+                    </button>
+                </div>
             </div>
-            <div class="request-info">
-                <p><strong>Producto:</strong> ${req.productName}</p>
-                <p><strong>Precio:</strong> $${req.productPrice}/${req.productUnit}</p>
-                ${req.message ? `<p><strong>Mensaje:</strong> ${req.message}</p>` : ''}
-            </div>
-            <div class="request-actions">
-                <button class="btn-approve" onclick="VV.admin.approveFeaturedRequest('${req.id}')">
-                    <i class="fas fa-check"></i> Aprobar
-                </button>
-                <button class="btn-reject" onclick="VV.admin.rejectFeaturedRequest('${req.id}')">
-                    <i class="fas fa-times"></i> Rechazar
-                </button>
-            </div>
-        </div>
-    `).join('');
+        `).join('');
+    } catch (error) {
+        console.error('Error cargando solicitudes de destacados:', error);
+    }
 };
 
-VV.admin.approveFeaturedRequest = function(requestId) {
-    const requests = JSON.parse(localStorage.getItem('featuredRequests') || '[]');
-    const request = requests.find(r => r.id === requestId);
-    
-    if (!request) return;
-    
-    // Calcular fecha de expiración
-    const startDate = new Date();
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + (request.duration || 7));
-    
-    const featuredOffer = {
-        id: VV.utils.generateId(),
-        requestId: request.id,
-        productId: request.productId,
-        productName: request.productName,
-        productPrice: request.productPrice,
-        productUnit: request.productUnit,
-        productImage: request.productImage,
-        message: request.message || '',
-        duration: request.duration || 7,
-        userId: request.userId,
-        userName: request.userName,
-        userNumber: request.userNumber,
-        neighborhood: request.neighborhood,
-        status: 'active',
-        goodVotes: 0,
-        badVotes: 0,
-        blocked: false,
-        startDate: startDate.toISOString(),
-        expiresAt: expiresAt.toISOString(),
-        createdAt: new Date().toISOString()
-    };
-    
-    const allFeatured = JSON.parse(localStorage.getItem('featuredOffers') || '[]');
-    allFeatured.push(featuredOffer);
-    localStorage.setItem('featuredOffers', JSON.stringify(allFeatured));
-    
-    // Actualizar solicitud
-    request.status = 'approved';
-    request.approvedAt = new Date().toISOString();
-    localStorage.setItem('featuredRequests', JSON.stringify(requests));
-    
-    VV.admin.load();
-    VV.utils.showSuccess(`Oferta destacada aprobada por ${request.duration} días`);
+VV.admin.approveFeaturedRequest = async function(requestId) {
+    try {
+        // Obtener la duración personalizada del input
+        const durationInput = document.getElementById(`duration-${requestId}`);
+        const customDuration = durationInput ? parseInt(durationInput.value) : null;
+        
+        if (!customDuration || customDuration < 1 || customDuration > 90) {
+            alert('Por favor ingresa una duración válida (1-90 días)');
+            return;
+        }
+        
+        // Calcular fecha de expiración
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + customDuration);
+        
+        // Actualizar la oferta en Supabase
+        const { error } = await supabase
+            .from('featured_offers')
+            .update({
+                status: 'active',
+                duration: customDuration,
+                expires_at: expiresAt.toISOString(),
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', requestId);
+        
+        if (error) throw error;
+        
+        VV.admin.load();
+        VV.utils.showSuccess(`Oferta destacada aprobada por ${customDuration} días`);
+        
+    } catch (error) {
+        console.error('Error aprobando oferta:', error);
+        alert('Error al aprobar la oferta: ' + error.message);
+    }
 };
 
-VV.admin.rejectFeaturedRequest = function(requestId) {
+VV.admin.rejectFeaturedRequest = async function(requestId) {
     if (!confirm('¿Rechazar esta solicitud?')) return;
     
-    const requests = JSON.parse(localStorage.getItem('featuredRequests') || '[]');
-    const request = requests.find(r => r.id === requestId);
-    
-    if (request) {
-        request.status = 'rejected';
-        localStorage.setItem('featuredRequests', JSON.stringify(requests));
+    try {
+        // Actualizar el estado a rechazado en Supabase
+        const { error } = await supabase
+            .from('featured_offers')
+            .update({
+                status: 'rejected',
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', requestId);
+        
+        if (error) throw error;
+        
         VV.admin.load();
         VV.utils.showSuccess('Solicitud rechazada');
+        
+    } catch (error) {
+        console.error('Error rechazando oferta:', error);
+        alert('Error al rechazar la oferta: ' + error.message);
     }
 };
 
