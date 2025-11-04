@@ -1,15 +1,5 @@
 // ========== MÓDULO MARKETPLACE ==========
 
-// Función helper para normalizar nombres de barrios
-const normalizeNeighborhood = (name) => {
-    return name?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() || '';
-};
-
-// Función helper para comparar barrios (ignora tildes y mayúsculas)
-const isSameNeighborhood = (neighborhood1, neighborhood2) => {
-    return normalizeNeighborhood(neighborhood1) === normalizeNeighborhood(neighborhood2);
-};
-
 VV.marketplace = {
     // Cargar mis productos
     load() {
