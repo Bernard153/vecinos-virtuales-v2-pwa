@@ -224,42 +224,20 @@ VV.admin = {
                         <label>Descripción *</label>
                         <input type="text" id="sponsor-description" value="${sponsor?.description || ''}" required>
                     </div>
-                    <div class="form-group">
-                        <label>Logo / Icono *</label>
-                        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 0.5rem;">
-                            <input type="text" id="sponsor-logo" value="${sponsor?.logo || '🏪'}" 
-                                   style="width: 80px; font-size: 2rem; text-align: center;" 
-                                   placeholder="🏪" required readonly>
-                            <button type="button" class="btn-secondary" onclick="VV.admin.showEmojiPicker()" 
-                                    style="padding: 0.5rem 1rem;">
-                                <i class="fas fa-smile"></i> Elegir Emoji
-                            </button>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Logo (emoji) *</label>
+                            <input type="text" id="sponsor-logo" value="${sponsor?.logo || ''}" placeholder="🏪" required>
                         </div>
-                        <div id="emoji-picker" style="display: none; background: white; border: 2px solid var(--gray-300); border-radius: 8px; padding: 1rem; margin-top: 0.5rem; max-height: 200px; overflow-y: auto;">
-                            <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: var(--gray-700);">Selecciona un emoji:</p>
-                            <div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 0.5rem;">
-                                ${['🏪', '🍕', '🍔', '☕', '🍰', '🥖', '🥗', '🍜', '🏥', '💊', '🔧', '🔨', '⚡', '💡', '🚗', '🚕', '🏠', '🏡', '🎨', '🎭', '🎪', '🎬', '📚', '📖', '✂️', '💇', '💅', '👔', '👗', '👟', '⚽', '🏋️', '🎯', '🎮', '🎸', '🎹', '📱', '💻', '🖨️', '📷', '🎥', '🌮', '🌯', '🥙', '🍱', '🍛', '🍝', '🍣', '🍤', '🍦', '🧁', '🍩', '🍪', '🎂', '🍷', '🍺', '🥂', '☕', '🧃', '🥤', '🧋'].map(emoji => 
-                                    `<button type="button" onclick="VV.admin.selectEmoji('${emoji}')" 
-                                             style="font-size: 2rem; padding: 0.5rem; border: 2px solid var(--gray-200); border-radius: 8px; background: white; cursor: pointer; transition: all 0.2s;"
-                                             onmouseover="this.style.transform='scale(1.2)'; this.style.borderColor='var(--primary-blue)';"
-                                             onmouseout="this.style.transform='scale(1)'; this.style.borderColor='var(--gray-200)';">
-                                        ${emoji}
-                                    </button>`
-                                ).join('')}
-                            </div>
+                        <div class="form-group">
+                            <label>Nivel *</label>
+                            <select id="sponsor-tier" required>
+                                <option value="">Seleccionar</option>
+                                <option value="premium" ${sponsor?.tier === 'premium' ? 'selected' : ''}>Premium</option>
+                                <option value="gold" ${sponsor?.tier === 'gold' ? 'selected' : ''}>Gold</option>
+                                <option value="silver" ${sponsor?.tier === 'silver' ? 'selected' : ''}>Silver</option>
+                            </select>
                         </div>
-                        <p style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;">
-                            <i class="fas fa-info-circle"></i> El emoji se mostrará si no subes una imagen
-                        </p>
-                    </div>
-                    <div class="form-group">
-                        <label>Nivel *</label>
-                        <select id="sponsor-tier" required>
-                            <option value="">Seleccionar</option>
-                            <option value="premium" ${sponsor?.tier === 'premium' ? 'selected' : ''}>Premium</option>
-                            <option value="gold" ${sponsor?.tier === 'gold' ? 'selected' : ''}>Gold</option>
-                            <option value="silver" ${sponsor?.tier === 'silver' ? 'selected' : ''}>Silver</option>
-                        </select>
                     </div>
                     <div class="form-group">
                         <label>Teléfono *</label>
@@ -270,34 +248,12 @@ VV.admin = {
                         <input type="url" id="sponsor-website" value="${sponsor?.website || ''}" placeholder="https://...">
                     </div>
                     <div class="form-group">
-                        <label>Imagen del banner (opcional - recomendado)</label>
-                        <div style="background: var(--gray-50); border: 2px dashed var(--gray-300); border-radius: 8px; padding: 1rem; text-align: center;">
-                            <input type="file" id="sponsor-image" accept="image/*" 
-                                   onchange="VV.admin.previewImage(this)"
-                                   style="display: none;">
-                            <button type="button" class="btn-secondary" 
-                                    onclick="document.getElementById('sponsor-image').click()"
-                                    style="margin-bottom: 0.5rem;">
-                                <i class="fas fa-upload"></i> Subir Imagen
-                            </button>
-                            <p style="font-size: 0.85rem; color: var(--gray-600); margin: 0.5rem 0;">
-                                Formatos: JPG, PNG, GIF (máx 5MB)<br>
-                                Tamaño recomendado: 400x200px
-                            </p>
-                            ${sponsor?.imageUrl ? `
-                                <div style="margin-top: 0.5rem;">
-                                    <img src="${sponsor.imageUrl}" alt="Preview" 
-                                         style="max-width: 200px; max-height: 100px; border-radius: 8px; border: 2px solid var(--success-green);">
-                                    <p style="font-size: 0.85rem; color: var(--success-green); margin-top: 0.5rem;">
-                                        <i class="fas fa-check"></i> Imagen actual
-                                    </p>
-                                </div>
-                            ` : ''}
-                            <div id="image-preview" style="margin-top: 0.5rem;"></div>
-                        </div>
-                        <p style="font-size: 0.85rem; color: var(--primary-blue); margin-top: 0.5rem;">
-                            <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> Si no subes imagen, se mostrará el emoji seleccionado
+                        <label>Imagen del banner (opcional)</label>
+                        <input type="file" id="sponsor-image" accept="image/*">
+                        <p style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;">
+                            <i class="fas fa-info-circle"></i> Si no subes imagen, se usará el emoji como logo
                         </p>
+                        ${sponsor?.imageUrl ? `<p style="font-size: 0.85rem; color: var(--success-green); margin-top: 0.5rem;"><i class="fas fa-check"></i> Imagen actual cargada</p>` : ''}
                     </div>
                     <div class="form-group">
                         <label>Mostrar en barrios *</label>
@@ -2033,45 +1989,6 @@ VV.admin.loadRafflesManagement = function() {
             `}
         </div>
     `;
-};
-
-// Funciones auxiliares para selector de emojis
-VV.admin.showEmojiPicker = function() {
-    const picker = document.getElementById('emoji-picker');
-    if (picker) {
-        picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
-    }
-};
-
-VV.admin.selectEmoji = function(emoji) {
-    const logoInput = document.getElementById('sponsor-logo');
-    if (logoInput) {
-        logoInput.value = emoji;
-    }
-    VV.admin.showEmojiPicker(); // Cerrar el picker
-};
-
-VV.admin.previewImage = function(input) {
-    const preview = document.getElementById('image-preview');
-    if (!preview) return;
-    
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            preview.innerHTML = `
-                <div style="margin-top: 0.5rem;">
-                    <img src="${e.target.result}" alt="Preview" 
-                         style="max-width: 200px; max-height: 100px; border-radius: 8px; border: 2px solid var(--primary-blue);">
-                    <p style="font-size: 0.85rem; color: var(--success-green); margin-top: 0.5rem;">
-                        <i class="fas fa-check"></i> Nueva imagen seleccionada
-                    </p>
-                </div>
-            `;
-        };
-        
-        reader.readAsDataURL(input.files[0]);
-    }
 };
 
 console.log('✅ Módulo ADMIN cargado');
