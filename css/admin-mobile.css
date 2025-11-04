@@ -1,6 +1,6 @@
 /* admin-mobile.css - Estilos para el menú de administración móvil */
 #admin-menu-toggle {
-    display: none; /* Oculto por defecto, se muestra con JS */
+    display: none; /* Oculto por defecto, y se muestra con JS */
     position: fixed;
     top: 20px;
     left: 20px;
