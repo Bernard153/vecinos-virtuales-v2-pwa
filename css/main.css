@@ -260,6 +260,12 @@ body {
     font-size: 1.5rem;
     color: var(--gray-700);
     cursor: pointer;
+    padding: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.menu-toggle:active {
+    transform: scale(0.95);
 }
 
 .header-info {
@@ -734,11 +740,14 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 85;
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .overlay.active {
-    display: block;
+    opacity: 1;
+    visibility: visible;
 }
 
 /* ========== BOTÓN VER ANUNCIANTES ========== */
@@ -780,16 +789,24 @@ body {
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .menu-toggle {
-        display: block;
+        display: block !important;
+        z-index: 101;
     }
     
     .sidebar {
+        position: fixed;
         left: -280px;
-        transition: var(--transition);
+        top: 70px;
+        width: 280px;
+        height: calc(100vh - 70px);
+        transition: left 0.3s ease;
+        z-index: 95;
+        background: white;
     }
     
     .sidebar.open {
         left: 0;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
     }
     
     .main-content {
@@ -799,6 +816,34 @@ body {
     
     .app-header {
         padding: 0 1rem;
+    }
+    
+    .header-info {
+        gap: 0.5rem;
+    }
+    
+    .header-neighborhood {
+        font-size: 0.85rem;
+    }
+    
+    /* Destacados responsive */
+    .featured-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    
+    .featured-header h3 {
+        font-size: 1.1rem !important;
+    }
+    
+    #featured-title {
+        font-size: 0.95rem;
+    }
+    
+    #featured-request-btn,
+    #admin-announcement-btn {
+        width: 100%;
+        justify-content: center;
     }
     
     .shopping-cart {

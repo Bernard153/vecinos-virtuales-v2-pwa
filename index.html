@@ -121,7 +121,7 @@
     <div id="main-app" class="screen">
         <!-- Header -->
         <header class="app-header">
-            <button class="menu-toggle" id="menu-toggle">
+            <button class="menu-toggle" id="menu-toggle" style="display: none;">
                 <i class="fas fa-bars"></i>
             </button>
             <div class="header-info">
@@ -167,6 +167,10 @@
                     <a href="#" class="menu-item" data-section="shopping">
                         <i class="fas fa-shopping-bag"></i>
                         <span>Comprar</span>
+                    </a>
+                    <a href="#" class="menu-item" onclick="event.preventDefault(); VV.reservations.showManagePanel();">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Mis Reservas</span>
                     </a>
                     <a href="#" class="menu-item" data-section="improvements">
                         <i class="fas fa-tools"></i>
@@ -244,17 +248,17 @@
 
                     <!-- Visor de Ofertas Destacadas -->
                     <div id="featured-offers-section" style="margin: 2rem 0;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div class="featured-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
                             <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                                 <i class="fas fa-star" style="color: var(--warning-orange);"></i>
-                                <span id="featured-title">Ofertas Destacadas del Barrio</span>
+                                <span id="featured-title">Ofertas Destacadas</span>
                             </h3>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button id="admin-announcement-btn" class="btn-primary" onclick="VV.featured.createAnnouncement()" style="font-size: 0.85rem; padding: 0.5rem 1rem; display: none;">
-                                    <i class="fas fa-megaphone"></i> Publicar Anuncio
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button id="admin-announcement-btn" class="btn-primary" onclick="VV.featured.createAnnouncement()" style="font-size: 0.85rem; padding: 0.5rem 1rem; display: none; white-space: nowrap;">
+                                    <i class="fas fa-megaphone"></i> <span class="btn-text">Publicar Anuncio</span>
                                 </button>
-                                <button id="featured-request-btn" class="btn-secondary" onclick="VV.featured.requestFeatured()" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
-                                    <i class="fas fa-bullhorn"></i> Destacar mi Oferta
+                                <button id="featured-request-btn" class="btn-secondary" onclick="VV.featured.requestFeatured()" style="font-size: 0.85rem; padding: 0.5rem 1rem; white-space: nowrap;">
+                                    <i class="fas fa-bullhorn"></i> <span class="btn-text">Destacar mi Oferta</span>
                                 </button>
                             </div>
                         </div>
@@ -404,21 +408,72 @@
                 <!-- COMPRAR -->
                 <section id="shopping" class="content-section">
                     <div class="section-header">
-                        <h2><i class="fas fa-shopping-bag"></i> Comprar en el Barrio</h2>
+                        <h2><i class="fas fa-shopping-bag"></i> Comprar en tu Barrio</h2>
+                    </div>   
+                    <!-- Disclaimer Legal -->
+                    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 0.75rem 1rem; margin-bottom: 1.5rem; border-radius: 6px;">
+                        <p style="margin: 0; font-size: 0.85rem; color: #92400e;">
+                            <i class="fas fa-info-circle"></i> <strong>Transacciones directas entre vecinos.</strong> 
+                            Vecinos Virtuales NO participa en las compras/ventas. Verifica siempre el producto antes de comprar.
+                        </p>
                     </div>
-                    <div class="filters">
+                    <!-- Búsqueda y Comparación -->
+                    <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: var(--shadow-md); margin-bottom: 1.5rem;">
+                        <!-- Buscar Producto -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700); font-size: 0.95rem;">
+                                <i class="fas fa-search"></i> Buscar Producto
+                            </label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="product-search" placeholder="Ej: Coca Cola, Pan, Leche..." style="flex: 1; padding: 0.75rem; border: 2px solid var(--gray-300); border-radius: 8px; font-size: 1rem;" onkeypress="if(event.key==='Enter') VV.marketplace.searchProducts()">
+                                <button onclick="VV.marketplace.searchProducts()" class="btn-primary" style="padding: 0.75rem 1.5rem; white-space: nowrap;">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Comparar Precios -->
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--gray-700); font-size: 0.95rem;">
+                                <i class="fas fa-balance-scale"></i> Comparar Precios
+                            </label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="compare-search" placeholder="Ej: Coca Cola" style="flex: 1; padding: 0.75rem; border: 2px solid var(--primary-blue); border-radius: 8px; font-size: 1rem;" onkeypress="if(event.key==='Enter') VV.marketplace.quickCompare()">
+                                <button onclick="VV.marketplace.quickCompare()" class="btn-secondary" style="padding: 0.75rem 1.5rem; white-space: nowrap; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple)); color: white;">
+                                    <i class="fas fa-balance-scale"></i> Comparar
+                                </button>
+                            </div>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: var(--gray-500);">
+                                💡 Escribe el nombre del producto para ver todos los vendedores y sus precios
+                            </p>
+                        </div>
+                        
+                        <!-- Productos Populares -->
+                        <div id="popular-products" style="margin-top: 1rem;">
+                            <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; font-weight: 600; color: var(--gray-600);">
+                                🔥 Productos más buscados:
+                            </p>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="popular-products-list">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filtros Tradicionales -->
+                    <div class="filters" style="margin-bottom: 1rem;">
                         <input type="text" id="product-search" placeholder="Buscar productos...">
                         <select id="category-filter">
                             <option value="">Todas las categorías</option>
                         </select>
                     </div>
+                    
                     <div class="products-grid" id="all-products"></div>
                 </section>
 
                 <!-- MEJORAS -->
                 <section id="improvements" class="content-section">
                     <div class="section-header">
-                        <h2><i class="fas fa-tools"></i> Mejoras del Barrio</h2>
+                        <h2><i class="fas fa-tools"></i> Mejoras de <span id="improvements-neighborhood"></span></h2>
                         <button class="btn-primary" onclick="VV.improvements.showForm()">
                             <i class="fas fa-plus"></i> Proponer Mejora
                         </button>
@@ -849,8 +904,7 @@
     <div id="overlay" class="overlay"></div>
 
     <!-- Supabase Client Library -->
- 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -860,6 +914,7 @@
     <script src="js/core.js"></script>
     <script src="js/auth-supabase.js"></script>
     <script src="js/marketplace.js"></script>
+    <script src="js/reservations.js"></script>
     <script src="js/improvements.js"></script>
     <script src="js/cultural.js"></script>
     <script src="js/services.js"></script>
@@ -871,5 +926,68 @@
     <script src="js/admin.js"></script>
     <script src="js/banner.js"></script>
     <script src="js/app.js"></script>
-</body>
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado:', registration.scope);
+                       
+                        // Mostrar botón de instalación
+                        let deferredPrompt;
+                        window.addEventListener('beforeinstallprompt', (e) => {
+                            e.preventDefault();
+                            deferredPrompt = e;
+                            
+                            // Crear botón de instalación si no existe
+                            if (!document.getElementById('install-button')) {
+                                const installBtn = document.createElement('button');
+                                installBtn.id = 'install-button';
+                                installBtn.innerHTML = '<i class="fas fa-download"></i> Instalar App';
+                                installBtn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: var(--primary-blue); color: white; border: none; padding: 12px 20px; border-radius: 25px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer;';
+                                document.body.appendChild(installBtn);
+                                
+                                installBtn.addEventListener('click', async () => {
+                                    if (deferredPrompt) {
+                                        deferredPrompt.prompt();
+                                        const { outcome } = await deferredPrompt.userChoice;
+                                        console.log(`Usuario ${outcome === 'accepted' ? 'aceptó' : 'rechazó'} instalar`);
+                                        deferredPrompt = null;
+                                        installBtn.remove();
+                                    }
+                                });
+                            }
+                        });
+                        
+                        // App instalada
+                        window.addEventListener('appinstalled', () => {
+                            console.log('🎉 App instalada correctamente');
+                            const installBtn = document.getElementById('install-button');
+                            if (installBtn) installBtn.remove();
+                        });
+                    })
+                    .catch(err => console.error('❌ Error registrando Service Worker:', err));
+            });
+        }
+    </script>
+    
+    <!-- Script para mostrar menú en móvil -->
+    <script>
+        // Mostrar botón de menú en móvil
+        function checkMobileMenu() {
+            const menuToggle = document.getElementById('menu-toggle');
+            if (menuToggle && window.innerWidth <= 768) {
+                menuToggle.style.display = 'block';
+            }
+        }
+        
+        // Ejecutar al cargar y al cambiar tamaño
+        window.addEventListener('load', checkMobileMenu);
+        window.addEventListener('resize', checkMobileMenu);
+        
+        // Ejecutar inmediatamente
+        checkMobileMenu();
+    </script>
+  </body>
 </html>

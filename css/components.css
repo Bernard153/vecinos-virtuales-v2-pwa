@@ -34,22 +34,33 @@
 .welcome-banner {
     background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
     border-radius: var(--border-radius);
-    padding: 2rem;
+    padding: 0;
     margin-bottom: 2rem;
     color: white;
     position: relative;
     overflow: hidden;
     transition: var(--transition);
+    min-height: 300px;
+    display: flex;
+    align-items: flex-end;
 }
 
 .welcome-content {
     position: relative;
     z-index: 2;
+    width: 100%;
+    padding: 2rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
 }
 
 .welcome-banner h2 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.user-details {
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
 }
 
 .btn-edit-banner {
@@ -434,6 +445,42 @@
     gap: 0.5rem;
     font-weight: 500;
     animation: slideIn 0.3s ease;
+}
+
+/* Animación de carrusel horizontal */
+@keyframes scrollHorizontal {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.featured-carousel-container:hover .featured-carousel-track {
+    animation-play-state: paused;
+}
+
+.featured-carousel-track > * {
+    min-width: 320px;
+    flex-shrink: 0;
+}
+
+/* Responsividad del carrusel */
+@media (max-width: 768px) {
+    .featured-carousel-track > * {
+        min-width: 280px;
+    }
+    
+    .featured-offer-card {
+        padding: 1rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .featured-carousel-track > * {
+        min-width: 90vw;
+    }
 }
 
 @keyframes slideIn {

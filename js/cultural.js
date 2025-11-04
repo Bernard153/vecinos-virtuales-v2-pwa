@@ -1,9 +1,149 @@
 // ========== MÓDULO CULTURAL ==========
 
 VV.cultural = {
+    // SOLUCIÓN TEMPORAL: Intentar con diferentes valores de tipo
+    async testAllTypes() {
+        console.log('🧪 PROBANDO DIFERENTES VALORES DE TIPO');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        const typesToTest = [
+            'Fotografia', 'Fotografía', 
+            'Arte', 'Cultural', 'Deporte',
+            'photography', 'art', 'sport',
+            'foto', 'imagen', 'post'
+        ];
+        
+        for (const typeValue of typesToTest) {
+            console.log(`\n🔍 Probando tipo: "${typeValue}"`);
+            
+            try {
+                const { data, error } = await supabase
+                    .from('cultural_posts')
+                    .insert({
+                        title: 'TEST',
+                        type: typeValue,
+                        description: 'Test',
+                        author_id: VV.data.user.id,
+                        author_name: 'Test',
+                        author_number: '0000',
+                        neighborhood: VV.data.neighborhood
+                    })
+                    .select()
+                    .single();
+                
+                if (error) {
+                    console.log(`   ❌ "${typeValue}" NO funciona:`, error.message);
+                } else {
+                    console.log(`   ✅ "${typeValue}" FUNCIONA!`);
+                    // Eliminar el test
+                    await supabase.from('cultural_posts').delete().eq('id', data.id);
+                    console.log(`   🎉 VALOR CORRECTO ENCONTRADO: "${typeValue}"`);
+                    break;
+                }
+            } catch (err) {
+                console.log(`   ❌ Error: ${err.message}`);
+            }
+        }
+        
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    },
+    
+    // DIAGNÓSTICO: Probar conexión con Supabase
+    async testSupabaseConnection() {
+        console.log('🔍 DIAGNÓSTICO DE SUPABASE');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+        try {
+            // Test 1: Verificar que supabase esté definido
+            console.log('1️⃣ Verificando cliente Supabase...');
+            if (!window.supabase) {
+                console.error('❌ Supabase no está inicializado');
+                return;
+            }
+            console.log('✅ Cliente Supabase OK');
+            
+            // Test 2: Intentar leer datos (SELECT)
+            console.log('2️⃣ Probando lectura de datos...');
+            const { data: readData, error: readError } = await supabase
+                .from('cultural_posts')
+                .select('*')
+                .limit(1);
+            
+            if (readError) {
+                console.error('❌ Error leyendo datos:', readError);
+            } else {
+                console.log('✅ Lectura OK. Registros encontrados:', readData?.length || 0);
+            }
+            
+            // Test 3: Intentar insertar un registro de prueba
+            console.log('3️⃣ Probando inserción de datos...');
+            const testPost = {
+                title: 'TEST - Borrar',
+                type: 'Fotografia',
+                description: 'Test de conexión',
+                media_type: null,
+                media_url: null,
+                author_id: VV.data.user.id,
+                author_name: 'Test',
+                author_number: '0000',
+                neighborhood: VV.data.neighborhood
+            };
+            
+            console.log('📤 Intentando insertar:', testPost);
+            
+            const { data: insertData, error: insertError } = await supabase
+                .from('cultural_posts')
+                .insert(testPost)
+                .select()
+                .single();
+            
+            if (insertError) {
+                console.error('❌ Error insertando:', insertError);
+                console.error('   Código:', insertError.code);
+                console.error('   Mensaje:', insertError.message);
+                console.error('   Detalles:', insertError.details);
+                console.error('   Hint:', insertError.hint);
+            } else {
+                console.log('✅ Inserción OK:', insertData);
+                
+                // Eliminar el registro de prueba
+                console.log('4️⃣ Limpiando registro de prueba...');
+                await supabase
+                    .from('cultural_posts')
+                    .delete()
+                    .eq('id', insertData.id);
+                console.log('✅ Limpieza OK');
+            }
+            
+            console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            console.log('🏁 DIAGNÓSTICO COMPLETO');
+            
+        } catch (error) {
+            console.error('❌ Error general:', error);
+        }
+    },
+    
+    // Mapeo de tipos a nombres legibles
+    typeLabels: {
+        'Fotografía': '📸 Fotografía',
+        'Evento': '🎉 Evento',
+        '🔄 Trueque': '🔄 Trueque'
+    },
+    
+    // Obtener nombre legible del tipo
+    getTypeLabel(type) {
+        return this.typeLabels[type] || type;
+    },
+    
     // Cargar posts culturales
     load() {
         const container = document.getElementById('cultural-posts');
+        
+        // DEBUG: Ver qué tipos existen en la DB
+        if (VV.data.culturalPosts.length > 0) {
+            const existingTypes = [...new Set(VV.data.culturalPosts.map(p => p.type))];
+            console.log('📊 Tipos existentes en DB:', existingTypes);
+        }
         
         // Verificar si el usuario está en su barrio principal
         const homeNeighborhood = VV.data.user.home_neighborhood || VV.data.user.neighborhood;
@@ -55,7 +195,7 @@ VV.cultural = {
             <div class="cultural-card">
                 <div class="card-header">
                     <h3>${post.title}</h3>
-                    <span class="badge" style="background: rgba(139, 92, 246, 0.1); color: var(--primary-purple);">${post.type}</span>
+                    <span class="badge" style="background: rgba(139, 92, 246, 0.1); color: var(--primary-purple);">${VV.cultural.getTypeLabel(post.type)}</span>
                 </div>
                 <p><strong>Por:</strong> ${authorName}</p>
                 
@@ -135,30 +275,9 @@ VV.cultural = {
                         <label>Tipo *</label>
                         <select id="cultural-type" required>
                             <option value="">Seleccionar</option>
-                            <optgroup label="Cultural">
-                                <option value="Fotografía" ${post?.type === 'Fotografía' ? 'selected' : ''}>Fotografía</option>
-                                <option value="Pintura" ${post?.type === 'Pintura' ? 'selected' : ''}>Pintura</option>
-                                <option value="Música" ${post?.type === 'Música' ? 'selected' : ''}>Música</option>
-                                <option value="Poesía" ${post?.type === 'Poesía' ? 'selected' : ''}>Poesía</option>
-                                <option value="Evento" ${post?.type === 'Evento' ? 'selected' : ''}>Evento</option>
-                                <option value="Video" ${post?.type === 'Video' ? 'selected' : ''}>Video</option>
-                            </optgroup>
-                            <optgroup label="Deportes">
-                                <option value="⚽ Fútbol" ${post?.type === '⚽ Fútbol' ? 'selected' : ''}>⚽ Fútbol</option>
-                                <option value="🏀 Básquet" ${post?.type === '🏀 Básquet' ? 'selected' : ''}>🏀 Básquet</option>
-                                <option value="🎾 Tenis" ${post?.type === '🎾 Tenis' ? 'selected' : ''}>🎾 Tenis</option>
-                                <option value="🏃 Running" ${post?.type === '🏃 Running' ? 'selected' : ''}>🏃 Running</option>
-                                <option value="🚴 Ciclismo" ${post?.type === '🚴 Ciclismo' ? 'selected' : ''}>🚴 Ciclismo</option>
-                                <option value="🏋️ Gimnasio" ${post?.type === '🏋️ Gimnasio' ? 'selected' : ''}>🏋️ Gimnasio</option>
-                                <option value="🧘 Yoga" ${post?.type === '🧘 Yoga' ? 'selected' : ''}>🧘 Yoga</option>
-                                <option value="⚾ Otros Deportes" ${post?.type === '⚾ Otros Deportes' ? 'selected' : ''}>⚾ Otros Deportes</option>
-                            </optgroup>
-                            <optgroup label="Trueque">
-                                <option value="🔄 Trueque" ${post?.type === '🔄 Trueque' ? 'selected' : ''}>🔄 Trueque</option>
-                            </optgroup>
-                            <optgroup label="Otros">
-                                <option value="Otros" ${post?.type === 'Otros' ? 'selected' : ''}>Otros</option>
-                            </optgroup>
+                            <option value="Fotografía" ${post?.type === 'Fotografía' ? 'selected' : ''}>📸 Fotografía</option>
+                            <option value="Evento" ${post?.type === 'Evento' ? 'selected' : ''}>🎉 Evento</option>
+                            <option value="🔄 Trueque" ${post?.type === '🔄 Trueque' ? 'selected' : ''}>🔄 Trueque</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -223,7 +342,7 @@ VV.cultural = {
             type: document.getElementById('cultural-type').value,
             description: document.getElementById('cultural-description').value.trim(),
             mediaType: document.getElementById('cultural-media-type').value,
-            mediaUrl: existing?.mediaUrl || ''
+            mediaUrl: ''
         };
         
         if (!formData.title || !formData.type || !formData.description) {
@@ -236,23 +355,48 @@ VV.cultural = {
         if (fileInput.files && fileInput.files[0]) {
             const file = fileInput.files[0];
             
-            // Convertir a base64 para almacenamiento local
+            console.log('📸 Procesando archivo:', file.name, file.type, file.size);
+            
+            // Convertir a base64
             const reader = new FileReader();
             reader.onload = function(e) {
                 formData.mediaUrl = e.target.result;
+                console.log('✅ Archivo convertido a base64, tamaño:', e.target.result.length);
                 VV.cultural.savePost(existing, formData);
+            };
+            reader.onerror = function(error) {
+                console.error('❌ Error leyendo archivo:', error);
+                alert('Error al procesar el archivo');
             };
             reader.readAsDataURL(file);
         } else {
+            // Si no hay archivo nuevo, mantener el existente
+            if (existing && (existing.media_url || existing.mediaUrl)) {
+                formData.mediaUrl = existing.media_url || existing.mediaUrl;
+                console.log('📎 Manteniendo archivo existente');
+            }
             VV.cultural.savePost(existing, formData);
         }
     },
     
     // Guardar post (helper) - MIGRADO A SUPABASE
     async savePost(existing, formData) {
+        console.log('💾 Guardando post cultural:', {
+            title: formData.title,
+            type: formData.type,
+            mediaType: formData.mediaType,
+            hasMediaUrl: !!formData.mediaUrl,
+            mediaUrlLength: formData.mediaUrl?.length || 0
+        });
+        
+        // TEMPORAL: Verificar qué valores acepta la DB
+        console.warn('⚠️ TIPO ENVIADO:', formData.type);
+        console.warn('⚠️ Si falla, la DB solo acepta ciertos valores específicos');
+        
         try {
             if (existing) {
                 // Actualizar post existente
+                console.log('📝 Actualizando post existente:', existing.id);
                 const { error } = await supabase
                     .from('cultural_posts')
                     .update({
@@ -268,8 +412,10 @@ VV.cultural = {
                 
                 const index = VV.data.culturalPosts.findIndex(p => p.id === existing.id);
                 VV.data.culturalPosts[index] = { ...existing, ...formData };
+                console.log('✅ Post actualizado');
             } else {
                 // Crear nuevo post
+                console.log('🆕 Creando nuevo post');
                 const { data, error } = await supabase
                     .from('cultural_posts')
                     .insert({
@@ -287,6 +433,7 @@ VV.cultural = {
                     .single();
                 
                 if (error) throw error;
+                console.log('✅ Post creado:', data);
                 VV.data.culturalPosts.push(data);
             }
             
@@ -295,7 +442,7 @@ VV.cultural = {
             VV.utils.showSuccess(existing ? 'Publicación actualizada' : 'Publicación compartida');
             
         } catch (error) {
-            console.error('Error guardando publicación:', error);
+            console.error('❌ Error guardando publicación:', error);
             alert('Error al guardar la publicación: ' + error.message);
         }
     },

@@ -1,5 +1,15 @@
 // ========== MÓDULO MARKETPLACE ==========
 
+// Función helper para normalizar nombres de barrios
+const normalizeNeighborhood = (name) => {
+    return name?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() || '';
+};
+
+// Función helper para comparar barrios (ignora tildes y mayúsculas)
+const isSameNeighborhood = (neighborhood1, neighborhood2) => {
+    return normalizeNeighborhood(neighborhood1) === normalizeNeighborhood(neighborhood2);
+};
+
 VV.marketplace = {
     // Cargar mis productos
     load() {
@@ -65,7 +75,7 @@ VV.marketplace = {
         
         // Filtrar solo productos del mismo barrio
         const neighborhoodProducts = VV.data.products.filter(p => 
-            !p.neighborhood || p.neighborhood === VV.data.neighborhood
+            !p.neighborhood || isSameNeighborhood(p.neighborhood, VV.data.neighborhood)
         );
         
         if (neighborhoodProducts.length === 0) {
@@ -87,7 +97,8 @@ VV.marketplace = {
             <div class="product-card">
                 <div class="card-header">
                     <h3>${p.product}</h3>
-                    ${p.featured ? '<span class="badge featured">Destacado</span>' : ''}
+                    ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
+                    <span class="badge" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white;">🔖 Reservable</span>
                     <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
                 </div>
                 <p><strong>Vendedor:</strong> ${p.seller_name}</p>
@@ -123,12 +134,17 @@ VV.marketplace = {
                         <label style="font-size: 0.85rem; color: var(--gray-600);">Cantidad:</label>
                         <input type="number" id="qty-${p.id}" min="0.01" step="0.01" value="1" style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 4px; margin: 0.25rem 0;">
                     </div>
-                    <button class="btn-primary" onclick="VV.marketplace.addToCart('${p.id}')" style="width: 100%; margin-top: 0.5rem;">
-                        <i class="fas fa-plus"></i> Agregar a Agenda
+                    <button class="btn-primary" onclick="VV.reservations.create('${p.id}')" style="width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));">
+                        <i class="fas fa-calendar-check"></i> Reservar
                     </button>
-                    <button class="btn-secondary" onclick="VV.marketplace.compareProduct('${p.product}')" style="width: 100%; margin-top: 0.5rem;">
-                        <i class="fas fa-balance-scale"></i> Comparar Precios
-                    </button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button class="btn-secondary" onclick="VV.marketplace.addToCart('${p.id}')" style="flex: 1; font-size: 0.85rem;">
+                            <i class="fas fa-plus"></i> Agenda
+                        </button>
+                        <button class="btn-secondary" onclick="VV.marketplace.compareProduct('${p.product}')" style="flex: 1; font-size: 0.85rem;">
+                            <i class="fas fa-balance-scale"></i> Comparar
+                        </button>
+                    </div>
                 `}
             </div>
         `;
@@ -136,6 +152,7 @@ VV.marketplace = {
         
         VV.marketplace.setupFilters();
         VV.marketplace.updateCart();
+        VV.marketplace.loadPopularProducts(); // Cargar productos populares
     },
     
     // Setup filtros
@@ -159,7 +176,7 @@ VV.marketplace = {
         
         // Filtrar solo productos del mismo barrio
         let filtered = VV.data.products.filter(p => 
-            !p.neighborhood || p.neighborhood === VV.data.neighborhood
+            !p.neighborhood || isSameNeighborhood(p.neighborhood, VV.data.neighborhood)
         );
         
         if (search) {
@@ -300,6 +317,12 @@ VV.marketplace = {
                             <input type="checkbox" id="product-featured" ${product?.featured ? 'checked' : ''}> 
                             Producto destacado
                         </label>
+                    </div>
+                    <div style="background: #e0f2fe; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <p style="margin: 0; font-size: 0.85rem; color: #075985;">
+                            <i class="fas fa-info-circle"></i> <strong>Todos los productos son reservables por defecto.</strong><br>
+                            Los clientes podrán reservar cualquier producto antes de retirarlo.
+                        </p>
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" onclick="VV.marketplace.closeForm()">Cancelar</button>
@@ -496,14 +519,62 @@ VV.marketplace = {
         VV.marketplace.updateCart();
         VV.utils.showSuccess(`${quantity} ${product.unit} agregado a la agenda`);
     },
+    // Obtener sugerencias de productos existentes
+    getProductSuggestions() {
+        // Obtener nombres únicos de productos en el barrio actual
+        const currentNeighborhood = VV.data.user?.current_neighborhood || VV.data.user?.neighborhood;
+        
+        const uniqueProducts = [...new Set(
+            VV.data.products
+                .filter(p => isSameNeighborhood(p.neighborhood, currentNeighborhood) && p.product)
+                .map(p => p.product.trim())
+        )].sort();
+        
+        return uniqueProducts.map(name => `<option value="${name}">`).join('');
+    },
     
+    // Comparar precios de productos similares
+    compareProduct(productName) {
+        const currentNeighborhood = VV.data.user.current_neighborhood || VV.data.user.neighborhood;
+        
+        console.log('🔍 Comparando producto:', productName);
+        console.log('📍 Barrio actual:', currentNeighborhood);
+        console.log('📦 Total productos:', VV.data.products.length);
+        
+        // Filtrar productos similares (mismo nombre, mismo barrio)
+        let similarProducts = VV.data.products.filter(p => {
+            const matchName = p.product && p.product.toLowerCase().trim() === productName.toLowerCase().trim();
+            const matchNeighborhood = isSameNeighborhood(p.neighborhood, currentNeighborhood);
+            
+            console.log(`  - ${p.product} (${p.neighborhood}) por ${p.seller_name || p.sellerName} (${p.business}): nombre=${matchName}, barrio=${matchNeighborhood}`);
+            
+            return matchName && matchNeighborhood;
+        });
+        
+        console.log('✅ Productos encontrados (antes de filtrar duplicados):', similarProducts.length);
+        
+        // Eliminar duplicados por seller + business (mantener el más reciente)
+        const uniqueProducts = [];
+        const seen = new Set();
+        
+        similarProducts.forEach(p => {
+            const key = `${p.sellerId}-${p.business}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                uniqueProducts.push(p);
+            } else {
+                console.log(`⚠️ Producto duplicado ignorado: ${p.sellerName} (${p.business})`);
+            }
+        });
+        
+        similarProducts = uniqueProducts;
+        console.log('✅ Productos únicos:', similarProducts.length);
     // Comparar precios de productos similares
     compareProduct(productName) {
         const similarProducts = VV.data.products.filter(p => 
             p.product.toLowerCase() === productName.toLowerCase() &&
             p.neighborhood === VV.data.neighborhood
         );
-        
         if (similarProducts.length === 0) {
             alert('No hay productos para comparar');
             return;
@@ -783,6 +854,125 @@ VV.marketplace = {
     closeFeaturedRequest() {
         const overlay = document.getElementById('featured-request-overlay');
         if (overlay) overlay.classList.remove('active');
+    },
+    
+    // ========== NUEVAS FUNCIONES DE BÚSQUEDA Y COMPARACIÓN ==========
+    
+    // Búsqueda de productos
+    searchProducts() {
+        const searchTerm = document.getElementById('product-search').value.trim();
+        if (!searchTerm) {
+            alert('Por favor escribe el nombre de un producto');
+            return;
+        }
+        
+        // Filtrar productos
+        const currentNeighborhood = VV.data.user.current_neighborhood || VV.data.user.neighborhood;
+        const results = VV.data.products.filter(p => 
+            p.product.toLowerCase().includes(searchTerm.toLowerCase()) &&
+            isSameNeighborhood(p.neighborhood, currentNeighborhood)
+        );
+        
+        if (results.length === 0) {
+            alert(`No se encontraron productos con "${searchTerm}" en tu barrio`);
+            return;
+        }
+        
+        // Mostrar resultados
+        const container = document.getElementById('all-products');
+        container.innerHTML = `
+            <div style="grid-column: 1/-1; padding: 1rem; background: var(--gray-100); border-radius: 8px; margin-bottom: 1rem;">
+                <h3 style="margin: 0 0 0.5rem 0;">
+                    <i class="fas fa-search"></i> Resultados para "${searchTerm}"
+                </h3>
+                <p style="margin: 0; color: var(--gray-600);">
+                    Encontrados ${results.length} producto${results.length !== 1 ? 's' : ''}
+                    <button onclick="VV.marketplace.loadShopping()" class="btn-secondary" style="margin-left: 1rem; padding: 0.5rem 1rem; font-size: 0.85rem;">
+                        <i class="fas fa-times"></i> Ver todos
+                    </button>
+                </p>
+            </div>
+        ` + results.map(p => this.renderProductCard(p)).join('');
+        
+        // Scroll a resultados
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
+    
+    // Comparación rápida
+    quickCompare() {
+        const searchTerm = document.getElementById('compare-search').value.trim();
+        if (!searchTerm) {
+            alert('Por favor escribe el nombre de un producto para comparar');
+            return;
+        }
+        
+        // Llamar a la función de comparación existente
+        this.compareProduct(searchTerm);
+    },
+    
+    // Renderizar tarjeta de producto (helper)
+    renderProductCard(p) {
+        return `
+            <div class="product-card">
+                <div class="card-header">
+                    <h3>${p.product}</h3>
+                    ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
+                    <span class="badge" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white;">🔖 Reservable</span>
+                    <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
+                </div>
+                <p><strong>Negocio:</strong> ${p.business}</p>
+                <p><strong>Vendedor:</strong> ${p.seller_name} #${p.seller_number}</p>
+                <p><strong>Precio:</strong> <span style="font-size: 1.5rem; color: var(--success-green); font-weight: bold;">$${p.price}</span> / ${p.unit}</p>
+                <p><strong>Contacto:</strong> ${p.contact}</p>
+                ${p.description ? `<p style="color: var(--gray-600); font-size: 0.9rem;">${p.description}</p>` : ''}
+                <button class="btn-primary" onclick="VV.reservations.create('${p.id}')" style="width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));">
+                    <i class="fas fa-calendar-check"></i> Reservar
+                </button>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <button class="btn-secondary" onclick="VV.marketplace.addToCart('${p.id}')" style="flex: 1; font-size: 0.85rem;">
+                        <i class="fas fa-plus"></i> Agenda
+                    </button>
+                    <button class="btn-secondary" onclick="VV.marketplace.compareProduct('${p.product}')" style="flex: 1; font-size: 0.85rem;">
+                        <i class="fas fa-balance-scale"></i> Comparar
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+    
+    // Cargar productos populares
+    loadPopularProducts() {
+        const currentNeighborhood = VV.data.user.current_neighborhood || VV.data.user.neighborhood;
+        
+        // Contar productos por nombre
+        const productCount = {};
+        VV.data.products
+            .filter(p => isSameNeighborhood(p.neighborhood, currentNeighborhood))
+            .forEach(p => {
+                const name = p.product.toLowerCase();
+                productCount[name] = (productCount[name] || 0) + 1;
+            });
+        
+        // Obtener top 6 más comunes
+        const popular = Object.entries(productCount)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 6)
+            .map(([name]) => name);
+        
+        // Si no hay suficientes, agregar productos comunes por defecto
+        const defaults = ['coca cola', 'pan', 'leche', 'arroz', 'huevos', 'azúcar'];
+        const combined = [...new Set([...popular, ...defaults])].slice(0, 6);
+        
+        // Renderizar botones
+        const container = document.getElementById('popular-products-list');
+        container.innerHTML = combined.map(product => `
+            <button onclick="document.getElementById('compare-search').value='${product}'; VV.marketplace.quickCompare();" 
+                    style="padding: 0.5rem 1rem; background: var(--gray-100); border: 1px solid var(--gray-300); border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;"
+                    onmouseover="this.style.background='var(--primary-blue)'; this.style.color='white'; this.style.borderColor='var(--primary-blue)';"
+                    onmouseout="this.style.background='var(--gray-100)'; this.style.color='inherit'; this.style.borderColor='var(--gray-300)';">
+                ${product.charAt(0).toUpperCase() + product.slice(1)}
+            </button>
+        `).join('');
     }
 };
 

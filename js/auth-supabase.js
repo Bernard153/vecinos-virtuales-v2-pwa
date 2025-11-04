@@ -461,7 +461,10 @@ VV.auth = {
         
         // Mostrar app
         VV.utils.showScreen('main-app');
-        VV.utils.showSection('dashboard');
+        VV.utils.showSection('dashboard', false); // false = no agregar al historial (es la primera vez)
+        
+        // Inicializar navegación con historial
+        VV.utils.initNavigation();
         
         // Setup menú móvil
         VV.auth.setupMobileMenu();
@@ -469,6 +472,11 @@ VV.auth = {
     
     // Actualizar menú según rol
     updateMenuForRole() {
+        console.log('🔍 Actualizando menú para rol...');
+        console.log('Usuario:', VV.data.user);
+        console.log('¿Es Admin?', VV.utils.isAdmin());
+        console.log('¿Es Moderador?', VV.utils.isModerator());
+        
         const adminMenu = document.getElementById('admin-menu-item');
         const usersMenu = document.getElementById('users-menu-item');
         const adminNeighborhoodsMenu = document.getElementById('admin-neighborhoods-menu');
@@ -480,6 +488,7 @@ VV.auth = {
         const emergencyConfigBtn = document.getElementById('emergency-config-btn');
 
         if (VV.utils.isAdmin()) {
+            console.log('✅ Mostrando menús de ADMIN');
             // Admin ve todo
             if (adminMenu) adminMenu.style.display = 'flex';
             if (usersMenu) usersMenu.style.display = 'flex';
@@ -492,6 +501,7 @@ VV.auth = {
             if (emergencyConfigBtn) emergencyConfigBtn.style.display = 'inline-block';
             VV.admin.loadBannerImage();
         } else if (VV.utils.isModerator()) {
+            console.log('✅ Mostrando menús de MODERADOR');
             // Moderador solo ve su panel
             if (adminMenu) adminMenu.style.display = 'none';
             if (usersMenu) usersMenu.style.display = 'none';
@@ -504,6 +514,7 @@ VV.auth = {
             if (emergencyConfigBtn) emergencyConfigBtn.style.display = 'inline-block';
             VV.admin.loadBannerImage();
         } else {
+            console.log('✅ Mostrando menús de USUARIO NORMAL');
             // Usuario normal - Mostrar "Ser Anunciante"
             if (adminMenu) adminMenu.style.display = 'none';
             if (usersMenu) usersMenu.style.display = 'none';
@@ -523,15 +534,34 @@ VV.auth = {
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('overlay');
         
-        if (menuToggle && sidebar && overlay) {
-            menuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
+        if (menuToggle && sidebar) {
+            // Toggle menú al hacer click en hamburguesa
+            menuToggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                sidebar.classList.toggle('open');
+                if (overlay) overlay.classList.toggle('active');
+                console.log('Menu toggled:', sidebar.classList.contains('open'));
             });
             
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
+            // Cerrar menú al hacer click en overlay
+            if (overlay) {
+                overlay.addEventListener('click', () => {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                });
+            }
+            
+            // Cerrar menú al hacer click en un enlace de navegación
+            const menuLinks = sidebar.querySelectorAll('.menu-item');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    // Pequeño delay para que se vea la navegación
+                    setTimeout(() => {
+                        sidebar.classList.remove('open');
+                        if (overlay) overlay.classList.remove('active');
+                    }, 100);
+                });
             });
         }
     }

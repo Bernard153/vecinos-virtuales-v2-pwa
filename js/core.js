@@ -108,7 +108,12 @@ const VV = {
             document.getElementById(screenId).classList.add('active');
         },
         
-        showSection(sectionId) {
+        showSection(sectionId, addToHistory = true) {
+            // Agregar al historial del navegador
+            if (addToHistory && history.pushState) {
+                history.pushState({ section: sectionId }, '', `#${sectionId}`);
+            }
+            
             // Scroll al inicio
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
@@ -173,6 +178,40 @@ const VV = {
                     }
                     break;
             }
+        },
+        
+        // Inicializar navegación con historial
+        initNavigation() {
+            // Manejar botón atrás del navegador
+            window.addEventListener('popstate', (event) => {
+                if (event.state && event.state.section) {
+                    // Navegar a la sección del historial sin agregar nueva entrada
+                    VV.utils.showSection(event.state.section, false);
+                } else {
+                    // Si no hay estado, volver al dashboard y prevenir salida
+                    VV.utils.showSection('dashboard', false);
+                    // Agregar estado para que no salga de la app
+                    if (history.pushState) {
+                        history.pushState({ section: 'dashboard' }, '', '#dashboard');
+                    }
+                }
+            });
+            
+            // Establecer estado inicial
+            if (history.replaceState) {
+                history.replaceState({ section: 'dashboard' }, '', '#dashboard');
+            }
+            
+            // Prevenir salida accidental de la app
+            window.addEventListener('beforeunload', (event) => {
+                // Solo mostrar advertencia si el usuario está intentando cerrar/recargar
+                // No mostrar si está navegando dentro de la app
+                const currentSection = document.querySelector('.content-section.active')?.id;
+                if (currentSection && currentSection !== 'dashboard') {
+                    // No hacer nada, permitir navegación interna
+                    return;
+                }
+            });
         },
         
         showSuccess(message) {
