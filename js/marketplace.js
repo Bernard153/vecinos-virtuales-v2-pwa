@@ -75,7 +75,7 @@ VV.marketplace = {
         
         // Filtrar solo productos del mismo barrio
         const neighborhoodProducts = VV.data.products.filter(p => 
-            !p.neighborhood || isSameNeighborhood(p.neighborhood, VV.data.neighborhood)
+            !p.neighborhood || p.neighborhood === VV.data.neighborhood
         );
         
         if (neighborhoodProducts.length === 0) {
