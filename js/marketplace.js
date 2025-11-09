@@ -558,12 +558,12 @@ VV.marketplace = {
         const seen = new Set();
         
         similarProducts.forEach(p => {
-            const key = `${p.sellerId}-${p.business}`;
+            const key = `${p.seller_id}-${p.business}`;
             if (!seen.has(key)) {
                 seen.add(key);
                 uniqueProducts.push(p);
             } else {
-                console.log(`⚠️ Producto duplicado ignorado: ${p.sellerName} (${p.business})`);
+                console.log(`⚠️ Producto duplicado ignorado: ${p.seller_name} (${p.business})`);
             }
         });
         
