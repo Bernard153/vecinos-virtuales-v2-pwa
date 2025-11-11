@@ -3,23 +3,8 @@
 VV.featured = {
     // Solicitar destacar oferta
     requestFeatured() {
-        // Verificar si el usuario tiene productos
-        const userProducts = VV.data.products.filter(p => p.seller_id === VV.data.user.id);
-        
-        if (userProducts.length === 0) {
-            alert('Primero debes publicar al menos un producto para poder destacarlo.');
-            VV.utils.showSection('marketplace');
-            return;
-        }
-        
-        let overlay = document.getElementById('featured-request-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'featured-request-overlay';
-            overlay.className = 'modal-overlay';
-            document.body.appendChild(overlay);
-        }
-        
+        // ... (todo el código anterior de la función) ...
+
         overlay.innerHTML = `
             <div class="modal-form">
                 <h3><i class="fas fa-star"></i> Solicitar Oferta Destacada</h3>
@@ -29,7 +14,7 @@ VV.featured = {
                 </p>
                 <form id="featured-request-form">
                     <div class="form-group">
-                        <label>Selecciona tu producto *</label>
+                        <label for="featured-product">Selecciona tu producto *</label> <!-- FIX: Añadir for para accesibilidad -->
                         <select id="featured-product" required>
                             <option value="">Seleccionar producto</option>
                             ${userProducts.map(p => `
@@ -38,19 +23,19 @@ VV.featured = {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Título de la oferta *</label>
+                        <label for="featured-title">Título de la oferta *</label> <!-- FIX: Añadir for para accesibilidad -->
                         <input type="text" id="featured-title" required placeholder="Ej: ¡Oferta especial! 20% de descuento">
                     </div>
                     <div class="form-group">
-                        <label>Descripción de la oferta *</label>
+                        <label for="featured-description">Descripción de la oferta *</label> <!-- FIX: Añadir for para accesibilidad -->
                         <textarea id="featured-description" rows="3" required placeholder="Describe tu oferta especial..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Precio especial (opcional)</label>
+                        <label for="featured-price">Precio especial (opcional)</label> <!-- FIX: Añadir for para accesibilidad -->
                         <input type="number" id="featured-price" min="0" step="0.01" placeholder="Deja vacío para usar el precio original">
                     </div>
                     <div class="form-group">
-                        <label>Duración de la oferta *</label>
+                        <label for="featured-duration">Duración de la oferta *</label> <!-- FIX: Añadir for para accesibilidad -->
                         <select id="featured-duration" required>
                             <option value="3">3 días</option>
                             <option value="7" selected>7 días</option>
@@ -65,7 +50,7 @@ VV.featured = {
                     </div>
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" onclick="VV.featured.closeRequestForm()">Cancelar</button>
-                        <button type="button" class="btn-save" onclick="VV.featured.submitRequest()">
+                        <button type="submit" class="btn-save"> <!-- CAMBIO AQUÍ: type="submit" y ELIMINADO onclick -->
                             <i class="fas fa-paper-plane"></i> Enviar Solicitud
                         </button>
                     </div>
