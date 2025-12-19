@@ -1196,217 +1196,183 @@ VV.admin.deleteImprovement = function(improvementId) {
     VV.admin.loadAllImprovements();
     VV.utils.showSuccess('Mejora eliminada');
 };
+// ========== GESTIÓN DE OFERTAS DESTACADAS (SUPABASE) ==========
 
-// ========== GESTIÓN DE OFERTAS DESTACADAS ==========
+/**
+ * 1. CARGAR SOLICITUDES PENDIENTES
+ * El Admin ve lo que los usuarios han solicitado y está esperando aprobación.
+ */
+VV.admin.loadFeaturedRequests = async function () {
+    try {
+        const container = document.getElementById('featured-requests-container');
+        const list = document.getElementById('featured-requests-list');
+        if (!container || !list) return;
 
-VV.admin.loadFeaturedRequests = function() {
-    const requests = JSON.parse(localStorage.getItem('featuredRequests') || '[]');
-    const pending = requests.filter(r => r.status === 'pending');
-    
-    const container = document.getElementById('featured-requests-container');
-    const list = document.getElementById('featured-requests-list');
-    
-    if (pending.length === 0) {
-        container.style.display = 'none';
-        return;
-    }
-    
-    container.style.display = 'block';
-    list.innerHTML = pending.map(req => `
-        <div class="sponsor-request-card" style="border-left: 4px solid var(--warning-orange);">
-            <div class="request-header">
-                <div>
-                    <h4><i class="fas fa-star"></i> ${req.title}</h4>
-                    <p style="color: var(--gray-600); font-size: 0.85rem; margin-top: 0.25rem;">
-                        Solicitado por: ${req.userName} #${req.userNumber} (${req.neighborhood})
-                    </p>
+        // Consultamos a Supabase solicitudes con estado 'pending'
+        const { data: requests, error } = await supabase
+            .from('featured_requests')
+            .select('*')
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!requests || requests.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'block';
+        list.innerHTML = requests.map((req) => `
+            <div class="sponsor-request-card" style="border-left: 4px solid var(--warning-orange); margin-bottom: 1rem; padding: 1rem; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div class="request-header" style="display: flex; justify-content: space-between;">
+                    <div>
+                        <h4 style="margin:0;"><i class="fas fa-star" style="color: var(--warning-orange);"></i> ${req.product_name || req.title || 'Solicitud de Destacado'}</h4>
+                        <p style="color: var(--gray-600); font-size: 0.85rem; margin-top: 0.25rem;">
+                            Por: ${req.user_name || 'Usuario'} | Barrio: ${req.neighborhood || 'N/A'}
+                        </p>
+                    </div>
+                    <span style="background: var(--warning-orange); color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; height: fit-content;">
+                        ${req.duration_days || 7} DÍAS
+                    </span>
                 </div>
-                <span class="request-tier-badge" style="background: var(--warning-orange);">${req.duration} DÍAS</span>
-            </div>
-            <div class="request-info">
-                <p><strong>Producto:</strong> ${req.product.product} - ${req.product.business}</p>
-                <p><strong>Descripción:</strong> ${req.description}</p>
-                <p><strong>Precio original:</strong> $${req.product.price}/${req.product.unit}</p>
-                ${req.specialPrice ? `<p><strong>Precio especial:</strong> <span style="color: var(--success-green); font-weight: 600;">$${req.specialPrice}/${req.product.unit}</span></p>` : ''}
-            </div>
-            <div class="request-actions">
-                <button class="btn-approve" onclick="VV.admin.approveFeaturedRequest('${req.id}')">
-                    <i class="fas fa-check"></i> Aprobar
-                </button>
-                <button class="btn-reject" onclick="VV.admin.rejectFeaturedRequest('${req.id}')">
-                    <i class="fas fa-times"></i> Rechazar
-                </button>
-            </div>
-        </div>
-    `).join('');
-};
-
-VV.admin.approveFeaturedRequest = function(requestId) {
-    const requests = JSON.parse(localStorage.getItem('featuredRequests') || '[]');
-    const request = requests.find(r => r.id === requestId);
-    
-    if (!request) return;
-    
-    // Crear oferta destacada
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + request.duration);
-    
-    const featuredOffer = {
-        id: VV.utils.generateId(),
-        requestId: request.id,
-        productId: request.productId,
-        product: request.product,
-        title: request.title,
-        description: request.description,
-        specialPrice: request.specialPrice,
-        duration: request.duration,
-        userId: request.userId,
-        userName: request.userName,
-        userNumber: request.userNumber,
-        neighborhood: request.neighborhood,
-        status: 'active',
-        goodVotes: 0,
-        badVotes: 0,
-        blocked: false,
-        createdAt: new Date().toISOString(),
-        expiresAt: expiresAt.toISOString()
-    };
-    
-    const allFeatured = JSON.parse(localStorage.getItem('featuredOffers') || '[]');
-    allFeatured.push(featuredOffer);
-    localStorage.setItem('featuredOffers', JSON.stringify(allFeatured));
-    
-    // Actualizar solicitud
-    request.status = 'approved';
-    localStorage.setItem('featuredRequests', JSON.stringify(requests));
-    
-    VV.admin.load();
-    VV.utils.showSuccess('Oferta destacada aprobada');
-};
-
-VV.admin.rejectFeaturedRequest = function(requestId) {
-    if (!confirm('¿Rechazar esta solicitud?')) return;
-    
-    const requests = JSON.parse(localStorage.getItem('featuredRequests') || '[]');
-    const request = requests.find(r => r.id === requestId);
-    
-    if (request) {
-        request.status = 'rejected';
-        localStorage.setItem('featuredRequests', JSON.stringify(requests));
-        VV.admin.load();
-        VV.utils.showSuccess('Solicitud rechazada');
-    }
-};
-
-VV.admin.loadFeaturedOffers = function() {
-    const allFeatured = JSON.parse(localStorage.getItem('featuredOffers') || '[]');
-    const container = document.getElementById('featured-management');
-    
-    if (allFeatured.length === 0) {
-        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay ofertas destacadas</p>';
-        return;
-    }
-    
-    // Agrupar por estado
-    const active = allFeatured.filter(f => f.status === 'active' && !f.blocked && new Date(f.expiresAt) > new Date());
-    const expired = allFeatured.filter(f => new Date(f.expiresAt) <= new Date());
-    const blocked = allFeatured.filter(f => f.blocked);
-    
-    container.innerHTML = `
-        <div style="margin-bottom: 2rem;">
-            <h4 style="color: var(--success-green);"><i class="fas fa-check-circle"></i> Activas (${active.length})</h4>
-            <div style="display: grid; gap: 1rem; margin-top: 1rem;">
-                ${active.length > 0 ? active.map(f => VV.admin.renderFeaturedCard(f)).join('') : '<p style="color: var(--gray-600);">No hay ofertas activas</p>'}
-            </div>
-        </div>
-        
-        <div style="margin-bottom: 2rem;">
-            <h4 style="color: var(--error-red);"><i class="fas fa-ban"></i> Bloqueadas (${blocked.length})</h4>
-            <div style="display: grid; gap: 1rem; margin-top: 1rem;">
-                ${blocked.length > 0 ? blocked.map(f => VV.admin.renderFeaturedCard(f)).join('') : '<p style="color: var(--gray-600);">No hay ofertas bloqueadas</p>'}
-            </div>
-        </div>
-        
-        <div>
-            <h4 style="color: var(--gray-600);"><i class="fas fa-clock"></i> Expiradas (${expired.length})</h4>
-            <div style="display: grid; gap: 1rem; margin-top: 1rem;">
-                ${expired.length > 0 ? expired.map(f => VV.admin.renderFeaturedCard(f)).join('') : '<p style="color: var(--gray-600);">No hay ofertas expiradas</p>'}
-            </div>
-        </div>
-    `;
-};
-
-VV.admin.renderFeaturedCard = function(offer) {
-    const daysLeft = Math.ceil((new Date(offer.expiresAt) - new Date()) / (1000 * 60 * 60 * 24));
-    const isExpired = daysLeft <= 0;
-    
-    return `
-        <div style="background: white; border-radius: 8px; padding: 1rem; border-left: 4px solid ${offer.blocked ? 'var(--error-red)' : isExpired ? 'var(--gray-400)' : 'var(--warning-orange)'};">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-                <div style="flex: 1;">
-                    <h5 style="margin: 0 0 0.25rem 0;">${offer.title}</h5>
-                    <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">
-                        ${offer.userName} #${offer.userNumber} - ${offer.neighborhood}
-                    </p>
+                <div class="request-info" style="margin: 1rem 0; font-size: 0.9rem;">
+                    ${req.product_price ? `<p style="margin: 0.2rem 0;"><strong>Precio:</strong> $${req.product_price}</p>` : ''}
+                    <p style="margin: 0.2rem 0;"><strong>Descripción/Mensaje:</strong> ${req.description || req.message || 'Sin descripción'}</p>
                 </div>
-                ${offer.blocked ? `
-                    <span style="background: var(--error-red); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
-                        BLOQUEADA
-                    </span>
-                ` : isExpired ? `
-                    <span style="background: var(--gray-400); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
-                        EXPIRADA
-                    </span>
-                ` : `
-                    <span style="background: var(--success-green); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
-                        ACTIVA
-                    </span>
-                `}
-            </div>
-            <p style="margin: 0.5rem 0; font-size: 0.9rem;"><strong>Producto:</strong> ${offer.product.product}</p>
-            <div style="display: flex; gap: 1rem; margin: 0.5rem 0; font-size: 0.85rem;">
-                <span><i class="fas fa-thumbs-up" style="color: var(--success-green);"></i> ${offer.goodVotes || 0}</span>
-                <span><i class="fas fa-thumbs-down" style="color: var(--error-red);"></i> ${offer.badVotes || 0}</span>
-                <span><i class="fas fa-clock"></i> ${isExpired ? 'Expirada' : `${daysLeft} día${daysLeft !== 1 ? 's' : ''}`}</span>
-            </div>
-            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                ${!offer.blocked && !isExpired ? `
-                    <button class="btn-delete" onclick="VV.admin.deactivateFeatured('${offer.id}')" style="flex: 1;">
-                        <i class="fas fa-ban"></i> Desactivar
+                <div class="request-actions" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; background: #f0f0f0; padding: 0.3rem 0.6rem; border-radius: 4px;">
+                        <input type="number" id="duration-${req.id}" value="${req.duration_days || 7}" min="1" max="90" style="width: 50px; border: none; background: transparent; font-weight: bold; text-align: center;">
+                        <span style="font-size: 0.8rem; color: #666; margin-left: 4px;">días</span>
+                    </div>
+                    <button class="btn-approve" onclick="VV.admin.approveFeaturedRequest('${req.id}')" style="background: var(--success-green); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-check"></i> Aprobar
                     </button>
-                ` : ''}
-                <button class="btn-delete" onclick="VV.admin.deleteFeatured('${offer.id}')" style="flex: 1;">
-                    <i class="fas fa-trash"></i> Eliminar
-                </button>
+                    <button class="btn-reject" onclick="VV.admin.rejectFeaturedRequest('${req.id}')" style="background: #e74c3c; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-times"></i> Rechazar
+                    </button>
+                </div>
             </div>
-        </div>
-    `;
-};
-
-VV.admin.deactivateFeatured = function(offerId) {
-    if (!confirm('¿Desactivar esta oferta destacada?')) return;
-    
-    const allFeatured = JSON.parse(localStorage.getItem('featuredOffers') || '[]');
-    const offerIndex = allFeatured.findIndex(f => f.id === offerId);
-    
-    if (offerIndex !== -1) {
-        allFeatured[offerIndex].status = 'inactive';
-        allFeatured[offerIndex].blocked = true;
-        localStorage.setItem('featuredOffers', JSON.stringify(allFeatured));
-        VV.admin.loadFeaturedOffers();
-        VV.utils.showSuccess('Oferta desactivada');
+        `).join('');
+    } catch (error) {
+        console.error('Error en loadFeaturedRequests:', error);
     }
 };
 
-VV.admin.deleteFeatured = function(offerId) {
-    if (!confirm('¿Eliminar esta oferta destacada permanentemente?')) return;
-    
-    const allFeatured = JSON.parse(localStorage.getItem('featuredOffers') || '[]');
-    const filtered = allFeatured.filter(f => f.id !== offerId);
-    localStorage.setItem('featuredOffers', JSON.stringify(filtered));
-    VV.admin.loadFeaturedOffers();
-    VV.utils.showSuccess('Oferta eliminada');
+/**
+ * 2. APROBAR SOLICITUD
+ * Cambia el estado a 'approved' y calcula la fecha de expiración real.
+ */
+VV.admin.approveFeaturedRequest = async function (requestId) {
+    const input = document.getElementById(`duration-${requestId}`);
+    const duration = parseInt(input?.value || '7', 10);
+
+    try {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + duration);
+
+        const { error } = await supabase
+            .from('featured_requests')
+            .update({
+                status: 'approved',
+                duration_days: duration,
+                expires_at: expiresAt.toISOString(),
+                reviewed_at: new Date().toISOString()
+            })
+            .eq('id', requestId);
+
+        if (error) throw error;
+
+        alert('Solicitud aprobada correctamente.');
+        VV.admin.loadFeaturedRequests(); // Recargar lista de pendientes
+        VV.admin.loadFeaturedOffers();   // Recargar visor de activos
+    } catch (e) {
+        console.error('Error al aprobar:', e);
+        alert('Error técnico al aprobar la solicitud.');
+    }
 };
+
+/**
+ * 3. VISOR DE DESTACADOS ACTIVOS
+ * Muestra los productos que ya fueron aprobados y no han vencido.
+ */
+VV.admin.loadFeaturedOffers = async function () {
+    const container = document.getElementById('featured-management');
+    if (!container) return;
+
+    try {
+        const nowIso = new Date().toISOString();
+        // Traemos solo los aprobados cuya fecha de vencimiento es mayor a "ahora"
+        const { data: activeOffers, error } = await supabase
+            .from('featured_requests')
+            .select('*')
+            .eq('status', 'approved')
+            .gt('expires_at', nowIso)
+            .order('expires_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (!activeOffers || activeOffers.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay ofertas destacadas activas en este momento.</p>';
+            return;
+        }
+
+        container.innerHTML = `
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: var(--success-green);"><i class="fas fa-check-circle"></i> Destacados Activos (${activeOffers.length})</h4>
+                <div style="display: grid; gap: 1rem; margin-top: 1rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+                    ${activeOffers.map(offer => {
+                        const daysLeft = Math.ceil((new Date(offer.expires_at) - new Date()) / (1000 * 60 * 60 * 24));
+                        return `
+                            <div style="background: white; border-radius: 8px; padding: 1rem; border-left: 4px solid var(--success-green); box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                                <div style="display: flex; justify-content: space-between; align-items: start;">
+                                    <div>
+                                        <h5 style="margin: 0;">${offer.product_name || offer.title}</h5>
+                                        <p style="margin: 0.25rem 0; font-size: 0.8rem; color: #666;">${offer.neighborhood || 'Sin barrio'}</p>
+                                    </div>
+                                    <span style="font-size: 0.7rem; font-weight: bold; color: var(--success-green);">ACTIVA</span>
+                                </div>
+                                <div style="margin: 0.8rem 0; font-size: 0.85rem;">
+                                    <p style="margin: 2px 0;"><strong>Vence:</strong> ${new Date(offer.expires_at).toLocaleDateString()}</p>
+                                    <p style="margin: 2px 0; color: ${daysLeft < 2 ? 'red' : 'inherit'};">
+                                        <i class="fas fa-hourglass-half"></i> Quedan ${daysLeft} día(s)
+                                    </p>
+                                </div>
+                                <button onclick="VV.admin.rejectFeaturedRequest('${offer.id}')" style="width: 100%; padding: 0.4rem; background: #fdf0f0; color: #c0392b; border: 1px solid #f5c6cb; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+                                    <i class="fas fa-ban"></i> Finalizar antes de tiempo
+                                </button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    } catch (e) {
+        console.error('Error en loadFeaturedOffers:', e);
+        container.innerHTML = '<p style="color: red;">Error al conectar con Supabase.</p>';
+    }
+};
+
+/**
+ * 4. RECHAZAR O FINALIZAR
+ * Sirve tanto para rechazar una pendiente como para dar de baja una activa.
+ */
+VV.admin.rejectFeaturedRequest = async function (requestId) {
+    if (!confirm('¿Confirmas esta acción sobre la solicitud?')) return;
+    try {
+        const { error } = await supabase
+            .from('featured_requests')
+            .update({ status: 'rejected', reviewed_at: new Date().toISOString() })
+            .eq('id', requestId);
+
+        if (error) throw error;
+        VV.admin.loadFeaturedRequests();
+        VV.admin.loadFeaturedOffers();
+    } catch (e) {
+        console.error('Error al rechazar:', e);
+    }
+};
+
 
 // ========== GESTIÓN DE AVATARES ==========
 
