@@ -108,24 +108,24 @@ VV.featured = {
     },
 
     async loadFeaturedOffers() {
-        const container = document.getElementById('featured-offers-carousel');
-        if (!container) return;
+    const container = document.getElementById('featured-offers-carousel');
+    if (!container) return;
 
-        try {
-            const now = new Date().toISOString();
-            const { data: offers, error } = await supabase
-                .from('featured_requests')
-                .select('*')
-                .eq('status', 'approved')
-                .eq('neighborhood', VV.data.user.neighborhood || VV.data.neighborhood)
-                .gt('expires_at', now);
+    try {
+        const now = new Date().toISOString();
+        // CAMBIO: Buscamos 'active' que es lo que permite tu base de datos
+        const { data: offers, error } = await supabase
+            .from('featured_requests')
+            .select('*')
+            .eq('status', 'active') 
+            .gt('expires_at', now); // Quitamos el filtro de barrio momentáneamente para probar
 
-            if (error) throw error;
+        if (error) throw error;
 
-            if (!offers || offers.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#999; width:100%;">No hay ofertas destacadas.</p>';
-                return;
-            }
+        if (!offers || offers.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#999; width:100%;">No hay ofertas destacadas.</p>';
+            return;
+        }
 
             container.innerHTML = offers.map(off => `
                 <div class="featured-card" style="border: 2px solid #f39c12; padding: 1rem; border-radius: 12px; min-width: 220px; background: white;">
