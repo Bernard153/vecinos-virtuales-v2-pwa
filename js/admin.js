@@ -1251,25 +1251,30 @@ VV.admin.approveFeaturedRequest = async function (requestId) {
     const days = parseInt(durInput?.value || '7');
 
     try {
-        // Calculamos la fecha de hoy + los días elegidos
         const expirationDate = new Date();
         expirationDate.setDate(expirationDate.getDate() + days);
 
+        console.log('📡 Activando solicitud...');
         const { error } = await supabase
             .from('featured_requests')
             .update({
-                status: 'approved',
+                status: 'active', // <--- CAMBIADO: 'active' es lo que acepta tu DB
                 duration_days: days,
-                expires_at: expirationDate.toISOString(), // Aquí se guarda la fecha real
+                expires_at: expirationDate.toISOString(),
                 reviewed_at: new Date().toISOString()
             })
             .eq('id', requestId);
 
         if (error) throw error;
-        alert('¡Aprobado con éxito!');
-        VV.admin.loadFeaturedRequests();
-        VV.admin.loadFeaturedOffers();
-    } catch (e) { alert('Error al aprobar'); }
+        
+        alert('¡Activado con éxito!');
+        // Recargar ambas listas
+        await VV.admin.loadFeaturedRequests();
+        await VV.admin.loadFeaturedOffers();
+    } catch (e) { 
+        console.error(e);
+        alert('Error al aprobar: Verifique la consola'); 
+    }
 };
 
 /**
@@ -1284,8 +1289,8 @@ VV.admin.loadFeaturedOffers = async function () {
         const { data: activeOffers, error } = await supabase
             .from('featured_requests')
             .select('*')
-            .eq('status', 'approved')
-            .gt('expires_at', now) // Solo muestra si la fecha de vencimiento es mayor a "ahora"
+            .eq('status', 'active') // <--- CAMBIADO: Coincide con el nuevo estado
+            .gt('expires_at', now) 
             .order('expires_at', { ascending: true });
 
         if (error) throw error;
