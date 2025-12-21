@@ -107,37 +107,49 @@ VV.featured = {
         }
     },
 
-    async loadFeaturedOffers() {
-    const container = document.getElementById('featured-offers-carousel');
-    if (!container) return;
+async loadFeaturedOffers() {
+        const container = document.getElementById('featured-offers-carousel');
+        if (!container) return;
 
-    try {
-        const now = new Date().toISOString();
-        // CAMBIO: Buscamos 'active' que es lo que permite tu base de datos
-        const { data: offers, error } = await supabase
-            .from('featured_requests')
-            .select('*')
-            .eq('status', 'active') 
-            .gt('expires_at', now); // Quitamos el filtro de barrio momentáneamente para probar
+        try {
+            const now = new Date().toISOString();
+            
+            // CORRECCIÓN CLAVE:
+            // 1. Usamos 'featured_requests' (la tabla que SI tiene los datos).
+            // 2. Filtramos por 'active' (el único estado que tu DB acepta para aprobados).
+            // 3. Eliminamos el filtro de 'blocked' y 'neighborhood' para asegurar visibilidad.
+            
+            const { data: offers, error } = await supabase
+                .from('featured_requests') 
+                .select('*')
+                .eq('status', 'active') 
+                .gt('expires_at', now)
+                .order('expires_at', { ascending: true });
 
-        if (error) throw error;
+            if (error) throw error;
 
-        if (!offers || offers.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#999; width:100%;">No hay ofertas destacadas.</p>';
-            return;
-        }
+            console.log("🚀 Ofertas cargadas con éxito:", offers);
+
+            if (!offers || offers.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999; width:100%;">No hay ofertas destacadas.</p>';
+                return;
+            }
 
             container.innerHTML = offers.map(off => `
-                <div class="featured-card" style="border: 2px solid #f39c12; padding: 1rem; border-radius: 12px; min-width: 220px; background: white;">
-                    <h4 style="margin:0;">${off.product_name}</h4>
-                    <p style="font-size:0.85rem; color:#555;">${off.message}</p>
-                    <p style="color: #27ae60; font-weight: bold; font-size: 1.2rem;">$${off.product_price}</p>
-                    <small style="color: #999;">Vence: ${new Date(off.expires_at).toLocaleDateString()}</small>
+                <div class="featured-card" style="border: 2px solid #f39c12; padding: 1rem; border-radius: 12px; min-width: 220px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <h4 style="margin:0; color: #2c3e50;">${off.product_name}</h4>
+                    <p style="font-size:0.85rem; color:#555; margin: 8px 0;">${off.message || ''}</p>
+                    <p style="color: #27ae60; font-weight: bold; font-size: 1.2rem; margin: 5px 0;">$${off.product_price}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <small style="color: #999;"><i class="far fa-calendar-alt"></i> ${new Date(off.expires_at).toLocaleDateString()}</small>
+                        <span style="font-size: 0.7rem; background: #fff3e0; color: #f39c12; padding: 2px 6px; border-radius: 4px;">${off.neighborhood || 'Vecino'}</span>
+                    </div>
                 </div>
             `).join('');
 
         } catch (error) {
-            console.error('❌ Error cargando:', error);
+            console.error('❌ Error cargando ofertas destacadas:', error);
+            container.innerHTML = '<p style="text-align:center; color:red;">Error al cargar destacados.</p>';
         }
     }
 };
