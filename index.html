@@ -977,8 +977,7 @@
         function checkMobileMenu() {
             const menuToggle = document.getElementById('menu-toggle');
             if (menuToggle && window.innerWidth <= 768) {
-                menuToggle.style.display = 'block';
-                
+                menuToggle.style.display = 'block'; 
             }
         }
         
@@ -986,10 +985,8 @@
         window.addEventListener('load', checkMobileMenu);
         window.addEventListener('resize', checkMobileMenu);
 
-        
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
   </body>
 </html>
-
