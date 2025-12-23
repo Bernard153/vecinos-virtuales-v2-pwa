@@ -1,4 +1,4 @@
-// ========== MÓDULO OFERTAS DESTACADAS (CORREGIDO PARA TUS COLUMNAS - 2025) ==========
+// ========== MÓDULO OFERTAS DESTACADAS (COMPLETO: STORAGE + TABLAS - 2025) ==========
 
 VV.featured = {
     requestFeatured() {
@@ -9,8 +9,8 @@ VV.featured = {
         overlay.innerHTML = `
             <div class="modal-form">
                 <h3><i class="fas fa-star"></i> Solicitar Oferta Destacada</h3>
-                <p style="color: #666; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    Tu solicitud será revisada por el administrador.
+                <p style="color: #666; margin-bottom: 1rem; font-size: 0.9rem;">
+                    Tu solicitud y la imagen de la oferta serán revisadas.
                 </p>
                 <form id="featured-request-form">
                     <div class="form-group">
@@ -23,9 +23,16 @@ VV.featured = {
                         </select>
                     </div>
                     <div class="form-group" style="margin-top: 10px;">
-                        <label>Mensaje / Descripción de la oferta *</label>
-                        <textarea id="featured-message" rows="3" required placeholder="Ej: ¡Solo por este finde!" style="width: 100%; padding: 0.5rem;"></textarea>
+                        <label>Mensaje de la oferta *</label>
+                        <textarea id="featured-message" rows="2" required placeholder="Ej: ¡Solo por este finde!" style="width: 100%; padding: 0.5rem;"></textarea>
                     </div>
+                    
+                    <!-- NUEVO: CAMPO DE IMAGEN -->
+                    <div class="form-group" style="margin-top: 10px;">
+                        <label><i class="fas fa-camera"></i> Foto de la Oferta *</label>
+                        <input type="file" id="featured-image-file" accept="image/*" required style="width: 100%; padding: 0.5rem;">
+                    </div>
+
                     <div class="form-group" style="display: flex; gap: 1rem; margin-top: 10px;">
                         <div style="flex: 1;">
                             <label>Precio Oferta ($)</label>
@@ -42,7 +49,7 @@ VV.featured = {
                     </div>
                     <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
                         <button type="button" onclick="VV.featured.closeRequestForm()" style="flex: 1; padding: 0.7rem;">Cancelar</button>
-                        <button type="submit" style="flex: 1; padding: 0.7rem; background: #f39c12; color: white; border: none; font-weight: bold;">
+                        <button type="submit" style="flex: 1; padding: 0.7rem; background: #f39c12; color: white; border: none; font-weight: bold; cursor: pointer;">
                             Enviar Solicitud
                         </button>
                     </div>
@@ -67,104 +74,94 @@ VV.featured = {
         const messageInput = document.getElementById('featured-message');
         const priceInput = document.getElementById('featured-price');
         const durSelect = document.getElementById('featured-duration');
+        const fileInput = document.getElementById('featured-image-file');
 
         const product = VV.data.products.find(p => p.id === productSelect.value);
-        const days = parseInt(durSelect.value);
+        const file = fileInput.files[0];
         
-        const expireDate = new Date();
-        expireDate.setDate(expireDate.getDate() + days);
+        if (!file) return alert("Por favor, selecciona una imagen.");
 
         try {
-            console.log('📡 Enviando a Supabase...');
+            // 1. SUBIR IMAGEN AL STORAGE
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `${VV.data.user.id}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('featured-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from('featured-images')
+                .getPublicUrl(filePath);
+
+            // 2. INSERTAR SOLICITUD
+            const days = parseInt(durSelect.value);
+            const expireDate = new Date();
+            expireDate.setDate(expireDate.getDate() + days);
 
             const { error } = await supabase
                 .from('featured_requests')
                 .insert([{
                     product_id: productSelect.value,
                     user_id: VV.data.user.id,
-                    neighborhood: VV.data.user.neighborhood || VV.data.neighborhood,
-                    duration_days: days,
                     message: messageInput.value.trim(),
-                    status: 'pending', // Así lo verá el Admin
+                    status: 'pending',
                     product_name: product ? product.product : 'Producto',
                     product_price: priceInput.value ? parseFloat(priceInput.value) : (product ? product.price : 0),
-                    product_unit: product ? product.unit : '',
-                    product_image: product ? product.image_url : '', // Ajustado a tu columna
-                    user_name: VV.data.user.name || 'Vecino',
-                    user_number: VV.data.user.phone || '',
-                    created_at: new Date().toISOString(),
+                    product_image: publicUrl, // URL del storage
                     expires_at: expireDate.toISOString() 
                 }]);
 
             if (error) throw error;
 
-            alert('✅ Solicitud enviada correctamente.');
+            alert('✅ Solicitud e imagen enviadas con éxito.');
             VV.featured.closeRequestForm();
 
         } catch (error) {
             console.error('❌ Error:', error);
-            alert('No se pudo enviar: ' + error.message);
+            alert('Error: ' + error.message);
         }
     },
 
-async loadFeaturedOffers() {
-    const container = document.getElementById('featured-offers-carousel');
-    if (!container) return;
+    async loadFeaturedOffers() {
+        const container = document.getElementById('featured-offers-carousel');
+        if (!container) return;
 
-    try {
-        const now = new Date().toISOString();
-        
-        // 1. Consultamos la tabla que creamos para el visor (featured_offers)
-        // 2. Traemos los datos relacionados de la tabla 'products'
-        const { data: offers, error } = await supabase
-            .from('featured_offers') 
-            .select(`
-                id,
-                expires_at,
-                product_id,
-                products (
-                    product,
-                    price,
-                    seller_name,
-                    contact,
-                    neighborhood,
-                    image_url
-                )
-            `)
-            .eq('status', 'active') 
-            .gt('expires_at', now);
+        try {
+            const now = new Date().toISOString();
+            const { data: offers, error } = await supabase
+                .from('featured_offers') 
+                .select(`id, expires_at, products (product, price, seller_name, contact, neighborhood, image_url)`)
+                .eq('status', 'active') 
+                .gt('expires_at', now);
 
-        if (error) throw error;
+            if (error) throw error;
 
-        if (!offers || offers.length === 0) {
-            container.innerHTML = '<p style="text-align:center; color:#999; width:100%;">No hay ofertas destacadas.</p>';
-            return;
-        }
+            if (!offers || offers.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999;">No hay ofertas hoy.</p>';
+                return;
+            }
 
-        container.innerHTML = offers.map(off => {
-            const p = off.products; // Atajo para los datos del producto
-            if (!p) return ''; // Evita errores si el producto fue borrado
+            container.innerHTML = offers.map(off => {
+                const p = off.products;
+                if (!p) return '';
+                const dias = Math.ceil((new Date(off.expires_at) - new Date()) / (86400000));
 
-            return `
-                <div class="featured-card" style="border: 2px solid #f39c12; padding: 1rem; border-radius: 12px; min-width: 220px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    ${p.image_url ? `<img src="${p.image_url}" style="width:100%; height:120px; object-fit:cover; border-radius:8px; margin-bottom:8px;">` : ''}
-                    <h4 style="margin:0; color: #2c3e50;">${p.product}</h4>
-                    <p style="font-size:0.85rem; color:#555; margin: 8px 0;">Ofrecido por: ${p.seller_name}</p>
-                    <p style="color: #27ae60; font-weight: bold; font-size: 1.2rem; margin: 5px 0;">$${p.price}</p>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                        <small style="color: #999;"><i class="far fa-clock"></i> ${Math.ceil((new Date(off.expires_at) - new Date()) / (1000 * 60 * 60 * 24))} días rest.</small>
-                        <span style="font-size: 0.7rem; background: #fff3e0; color: #f39c12; padding: 2px 6px; border-radius: 4px;">${p.neighborhood || 'Barrio'}</span>
+                return `
+                    <div class="featured-card" style="border: 2px solid #f39c12; padding: 1rem; border-radius: 12px; min-width: 220px; background: white;">
+                        <img src="${p.image_url || 'via.placeholder.com'}" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
+                        <h4 style="margin:8px 0 0 0;">${p.product}</h4>
+                        <p style="color: #27ae60; font-weight: bold; margin: 4px 0;">$${p.price}</p>
+                        <small style="color: #999;">${dias} días restantes</small>
+                        <a href="wa.me{p.contact}" target="_blank" style="display:block; text-align:center; background:#25d366; color:white; padding:8px; border-radius:6px; margin-top:10px; text-decoration:none;">
+                            <i class="fab fa-whatsapp"></i> Contactar
+                        </a>
                     </div>
-                    <a href="wa.me{p.contact}" style="display:block; text-align:center; background:#25d366; color:white; padding:8px; border-radius:6px; margin-top:10px; text-decoration:none; font-size:0.9rem;">
-                        <i class="fab fa-whatsapp"></i> Contactar
-                    </a>
-                </div>
-            `;
-        }).join('');
-
-    } catch (error) {
-        console.error('❌ Error cargando destacados:', error);
-        container.innerHTML = '<p style="text-align:center; color:red;">Error al cargar destacados.</p>';
+                `;
+            }).join('');
+        } catch (e) { console.error(e); }
     }
-}
 };
