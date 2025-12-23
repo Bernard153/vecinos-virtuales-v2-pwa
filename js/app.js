@@ -22,7 +22,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hasSession) {
             // Usuario ya registrado
             VV.auth.startApp();
-            
+            // Cargamos el visor de destacados al iniciar la app
+            if (window.VV && VV.featured) {
+                console.log('✨ Cargando visor de destacados...');
+                await VV.featured.loadFeaturedOffers();
+            }
             // Inicializar geolocalización
             await VV.geo.init();
             VV.geo.updateLocationUI();
