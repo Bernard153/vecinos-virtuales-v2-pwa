@@ -109,7 +109,7 @@ VV.featured = {
                     <img src="${off.products.image_url || ''}" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
                     <h4 style="margin:8px 0 0 0;">${off.products.product}</h4>
                     <p style="color:#27ae60; font-weight:bold; margin:5px 0;">$${off.products.price}</p>
-                    <a href="wa.me{off.products.contact}" target="_blank" style="display:block; text-align:center; background:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:10px;">WHATSAPP</a>
+                    <a href="https://wa.me/${off.products.contact}" target="_blank" style="display:block; text-align:center; background:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:10px;">WHATSAPP</a>
                 </div>
             `).join('');
         } catch (e) { console.error(e); }
