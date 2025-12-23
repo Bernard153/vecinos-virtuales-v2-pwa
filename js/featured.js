@@ -5,43 +5,51 @@ VV.featured = {
         const overlay = document.getElementById('featured-request-overlay');
         if (!overlay) return;
 
-        overlay.innerHTML = `
-            <div class="modal-form" style="max-width: 450px; background: white; padding: 25px; border-radius: 15px; border: 2px solid #f39c12;">
-                <h3 style="text-align:center;"><i class="fas fa-star" style="color:#f39c12;"></i> SOLICITAR DESTACADO</h3>
-                <form id="featured-request-form">
-                    <div style="margin-bottom:15px;">
-                        <label>¿Qué producto deseas destacar? *</label>
-                        <select id="featured-product" required style="width:100%; padding:10px; border-radius:8px;">
-                            <option value="">-- Seleccionar --</option>
-                            ${userProducts.map(p => `<option value="${p.id}">${p.product}</option>`).join('')}
-                        </select>
-                    </div>
+        // 1. Limpiamos el contenido por completo primero
+        overlay.innerHTML = "";
+        overlay.classList.remove('active');
 
-                    <!-- ESTO ES LO QUE DEBE APARECER: -->
-                    <div style="margin-bottom:15px; background:#fff9f0; padding:15px; border:2px dashed #f39c12; border-radius:10px;">
-                        <label style="font-weight:bold; color:#d35400;"><i class="fas fa-camera"></i> FOTO DE LA OFERTA *</label>
-                        <input type="file" id="featured-image-file" accept="image/*" required style="display:block; margin-top:10px;">
-                    </div>
+        // 2. Pequeña pausa para forzar al navegador a procesar el cambio
+        setTimeout(() => {
+            overlay.innerHTML = `
+                <div class="modal-form" style="max-width: 450px; background: white; padding: 25px; border-radius: 15px; border: 3px solid #f39c12; position: relative; z-index: 10001 !important;">
+                    <h3 style="text-align:center; color:#2c3e50;"><i class="fas fa-star" style="color:#f39c12;"></i> SOLICITAR DESTACADO</h3>
+                    <form id="featured-request-form">
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block; font-weight:bold;">¿Qué producto deseas destacar? *</label>
+                            <select id="featured-product" required style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc;">
+                                <option value="">-- Seleccionar --</option>
+                                ${userProducts.map(p => `<option value="${p.id}">${p.product}</option>`).join('')}
+                            </select>
+                        </div>
 
-                    <div style="margin-bottom:15px;">
-                        <label>Mensaje de la oferta *</label>
-                        <textarea id="featured-message" rows="2" required placeholder="Ej: ¡Oferta imperdible!" style="width:100%; border-radius:8px; padding:10px;"></textarea>
-                    </div>
+                        <!-- DIV DE IMAGEN RESALTADO CON COLOR ROJO PARA PRUEBA -->
+                        <div style="margin-bottom:15px; background:#fff9f0; padding:15px; border:3px dashed #ff0000; border-radius:10px; display: block !important;">
+                            <label style="font-weight:bold; color:#d35400; display: block !important;"><i class="fas fa-camera"></i> FOTO DE LA OFERTA *</label>
+                            <input type="file" id="featured-image-file" accept="image/*" required style="display:block !important; width:100%; margin-top:10px; opacity: 1 !important; visibility: visible !important;">
+                        </div>
 
-                    <div style="display:flex; gap:10px;">
-                        <button type="button" onclick="VV.featured.closeRequestForm()" style="flex:1; padding:12px; border-radius:10px; background:#eee; border:none;">CANCELAR</button>
-                        <button type="submit" id="btn-submit-featured" style="flex:1; padding:12px; border-radius:10px; background:#f39c12; color:white; border:none; font-weight:bold;">ENVIAR</button>
-                    </div>
-                </form>
-            </div>
-        `;
-        overlay.classList.add('active');
-        document.getElementById('featured-request-form').onsubmit = (e) => {
-            e.preventDefault();
-            VV.featured.submitRequest();
-        };
+                        <div style="margin-bottom:15px;">
+                            <label style="display:block; font-weight:bold;">Mensaje de la oferta *</label>
+                            <textarea id="featured-message" rows="2" required placeholder="Ej: ¡Oferta imperdible!" style="width:100%; border-radius:8px; padding:10px; border:1px solid #ccc;"></textarea>
+                        </div>
+
+                        <div style="display:flex; gap:10px;">
+                            <button type="button" onclick="VV.featured.closeRequestForm()" style="flex:1; padding:12px; border-radius:10px; background:#eee; border:none; cursor:pointer;">CANCELAR</button>
+                            <button type="submit" id="btn-submit-featured" style="flex:1; padding:12px; border-radius:10px; background:#f39c12; color:white; border:none; font-weight:bold; cursor:pointer;">ENVIAR SOLICITUD</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            overlay.classList.add('active');
+            
+            // Re-asignar el evento después de crear el HTML
+            document.getElementById('featured-request-form').onsubmit = (e) => {
+                e.preventDefault();
+                VV.featured.submitRequest();
+            };
+        }, 100);
     },
-
     async submitRequest() {
         const btn = document.getElementById('btn-submit-featured');
         const fileInput = document.getElementById('featured-image-file');
