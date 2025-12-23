@@ -978,15 +978,18 @@
             const menuToggle = document.getElementById('menu-toggle');
             if (menuToggle && window.innerWidth <= 768) {
                 menuToggle.style.display = 'block';
+                
             }
         }
         
         // Ejecutar al cargar y al cambiar tamaño
         window.addEventListener('load', checkMobileMenu);
         window.addEventListener('resize', checkMobileMenu);
+
         
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
   </body>
 </html>
+
