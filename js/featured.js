@@ -99,8 +99,8 @@ VV.featured = {
                 .from('featured_offers')
                 .select(`id, expires_at, products!inner(*)`)
                 .eq('status', 'active')
-                .eq('products.neighborhood', miBarrio) // FILTRO ESTRICTO
-                .gt('expires_at', new Date().toISOString());
+                //.eq('products.neighborhood', miBarrio) // FILTRO ESTRICTO
+                //.gt('expires_at', new Date().toISOString());//
 
             if (error) throw error;
 
