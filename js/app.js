@@ -22,11 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (hasSession) {
             // Usuario ya registrado
             VV.auth.startApp();
-            // Cargamos el visor de destacados al iniciar la app
-            if (window.VV && VV.featured) {
-                console.log('✨ Cargando visor de destacados...');
-                await VV.featured.loadFeaturedOffers();
-            }
             // Inicializar geolocalización
             await VV.geo.init();
             VV.geo.updateLocationUI();
@@ -35,6 +30,11 @@ document.addEventListener('DOMContentLoaded', function() {
             VV.utils.showScreen('location-screen');
             VV.auth.requestGeolocation();
         }
+        // Cargamos el visor de destacados al iniciar la app
+            if (window.VV && VV.featured) {
+                console.log('✨ Cargando visor de destacados...');
+                await VV.featured.loadFeaturedOffers();
+            }
     }, 1500);
     
     console.log('✅ Aplicación inicializada correctamente');
