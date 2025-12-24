@@ -91,32 +91,50 @@ VV.featured = {
         }
     },
 
-    async loadFeaturedOffers() {
+async loadFeaturedOffers() {
         const container = document.getElementById('featured-offers-carousel');
         if (!container) return;
+        
         try {
-            const miBarrio = VV.data.user.neighborhood || VV.data.neighborhood;
+            // Protección: si no hay usuario, usamos un string vacío para el barrio
+            const user = VV.data.user || {};
+            const miBarrio = user.neighborhood || VV.data.neighborhood || '';
+            
+            console.log("🔍 Buscando ofertas destacadas...");
+
             const { data: offers, error } = await supabase
                 .from('featured_offers')
-                .select(`id, expires_at, products!inner(*)`)
-                .eq('status', 'active')
-                //.eq('products.neighborhood', miBarrio) // FILTRO ESTRICTO
-                //.gt('expires_at', new Date().toISOString());//
+                .select(`
+                    id, 
+                    expires_at, 
+                    products!inner(*)
+                `)
+                .eq('status', 'active');
+                // .eq('products.neighborhood', miBarrio) // Comentado para pruebas
+                // .gt('expires_at', new Date().toISOString()); // Comentado para pruebas
 
             if (error) throw error;
 
-            container.innerHTML = (offers || []).map(off => `
-                <div class="featured-card" style="border:2px solid orange; padding:12px; border-radius:12px; min-width:220px; background:white;">
-                    <img src="${off.products.image_url || ''}" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
-                    <h4 style="margin:8px 0 0 0;">${off.products.product}</h4>
-                    <p style="color:#27ae60; font-weight:bold; margin:5px 0;">$${off.products.price}</p>
-                    <a href="https://wa.me/${off.products.contact}" target="_blank" style="display:block; text-align:center; background:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:10px;">WHATSAPP</a>
+            if (!offers || offers.length === 0) {
+                container.innerHTML = `<p style="text-align:center; padding:20px; color:#666;">No hay ofertas destacadas en este momento.</p>`;
+                return;
+            }
+
+            container.innerHTML = offers.map(off => `
+                <div class="featured-card" style="border:2px solid orange; padding:12px; border-radius:12px; min-width:220px; background:white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <img src="${off.products.image_url || 'via.placeholder.com'}" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
+                    <h4 style="margin:8px 0 0 0; font-size:1rem;">${off.products.product || 'Producto'}</h4>
+                    <p style="color:#27ae60; font-weight:bold; margin:5px 0;">$${off.products.price || '0'}</p>
+                    <a href="https://wa.me/${off.products.contact}" target="_blank" 
+                       style="display:block; text-align:center; background:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:10px;">
+                       WHATSAPP
+                    </a>
                 </div>
             `).join('');
-        } catch (e) { console.error(e); }
-    },
+            
+            console.log("✅ Visor actualizado con " + offers.length + " ofertas.");
 
-    closeRequestForm() {
-        document.getElementById('featured-request-overlay').classList.remove('active');
-    }
-};
+        } catch (e) { 
+            console.error("❌ Error en loadFeaturedOffers:", e); 
+        }
+    },
