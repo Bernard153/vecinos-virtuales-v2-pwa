@@ -2,7 +2,7 @@
 // Sistema base y datos globales
 
 window.VV = window.VV || {};
-    data: {
+    VV.data = {
         user: null,
         neighborhood: '',
         products: [],
