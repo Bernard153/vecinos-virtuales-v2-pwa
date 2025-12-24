@@ -1,7 +1,7 @@
 // ========== VECINOS VIRTUALES - MÓDULO CORE ==========
 // Sistema base y datos globales
 
-const VV = {
+window.VV = window.VV || {};
     data: {
         user: null,
         neighborhood: '',
