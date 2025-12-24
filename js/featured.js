@@ -1,3 +1,4 @@
+window.VV = window.VV || {};
 / ========== MÓDULO DESTACADOS FINAL (CORREGIDO 2025) ==========
 VV.featured = {
     requestFeatured() {
