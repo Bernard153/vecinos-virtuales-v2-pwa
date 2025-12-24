@@ -11,24 +11,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 2. Mostrar pantalla de carga
-    VV.utils.showScreen('loading-screen');
+    if (window.VV && VV.utils) {
+        VV.utils.showScreen('loading-screen');
+    }
     
     // 3. Lógica de inicio (Async)
     setTimeout(async () => {
+        if (!window.VV || !VV.auth) return;
+
         const hasSession = await VV.auth.checkExistingUser();
         
         if (hasSession) {
             VV.auth.startApp();
-            await VV.geo.init();
-            VV.geo.updateLocationUI();
+            if (VV.geo) {
+                await VV.geo.init();
+                VV.geo.updateLocationUI();
+            }
         } else {
             VV.utils.showScreen('location-screen');
             VV.auth.requestGeolocation();
         }
 
-        // 4. CARGA DEL VISOR (Momento ideal)
-        // Solo lo llamamos aquí para asegurar que VV ya existe y la sesión está clara
-        if (window.VV && VV.featured && typeof VV.featured.loadFeaturedOffers === 'function') {
+        // 4. CARGA DEL VISOR
+        if (VV.featured && typeof VV.featured.loadFeaturedOffers === 'function') {
             console.log('✨ Cargando visor de destacados...');
             await VV.featured.loadFeaturedOffers();
         }
@@ -37,18 +42,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ Aplicación inicializada correctamente');
 });
-    
-    // Setup navegación del menú
-    document.addEventListener('click', (e) => {
-        const menuItem = e.target.closest('.menu-item');
-        if (menuItem) {
-            e.preventDefault();
-            const section = menuItem.dataset.section;
-            if (section) {
-                VV.utils.showSection(section);
-            }
+
+// Setup navegación del menú - CORREGIDO
+document.addEventListener('click', (e) => {
+    const menuItem = e.target.closest('.menu-item');
+    if (menuItem) {
+        e.preventDefault();
+        const section = menuItem.dataset.section;
+        if (section && window.VV && VV.utils) {
+            VV.utils.showSection(section);
         }
-    
+    }
 });
 
 console.log('✅ Módulo APP cargado');
