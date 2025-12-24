@@ -1,30 +1,29 @@
 // ========== VECINOS VIRTUALES - MÓDULO CORE ==========
-window.VV = window.VV || {};
+// Sistema base y datos globales
 
-VV.data = {
-    user: null,
-    neighborhood: '',
-    products: [],
-    improvements: [],
-    culturalPosts: [],
-    services: [],
-    sponsors: [],
-    cart: [],
-    users: [],
-    moderatorLogs: [],
-
-    async loadFromSupabase() {
-        try {
-            const { data: products } = await supabase
-                .from('products')
-                .select('*')
-                .order('created_at', { ascending: false });
-            VV.data.products = products || [];
-        } catch (error) {
-            console.error("Error cargando datos:", error);
-        }
-    } // Aquí faltaba cerrar la función
-};
+const VV = {
+    data: {
+        user: null,
+        neighborhood: '',
+        products: [],
+        improvements: [],
+        culturalPosts: [],
+        services: [],
+        sponsors: [],
+        cart: [],
+        users: [],
+        moderatorLogs: [], // Registro de actividad de moderadores
+        
+        // Cargar datos desde Supabase
+        async loadFromSupabase() {
+            try {
+                // Cargar productos
+                const { data: products } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                VV.data.products = products || [];
+                
                 // Cargar servicios
                 const { data: services } = await supabase
                     .from('services')
