@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 VV.utils.showSection(section);
             }
         }
-    });
+    
 });
 
 console.log('✅ Módulo APP cargado');
