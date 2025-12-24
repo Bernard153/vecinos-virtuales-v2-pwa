@@ -3,41 +3,40 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Vecinos Virtuales V2 - Iniciando...');
     
-    // Verificar aceptación de términos y condiciones
+    // 1. Verificar términos
     const termsAccepted = JSON.parse(localStorage.getItem('termsAccepted') || 'null');
-    
     if (!termsAccepted || !termsAccepted.accepted) {
-        // Redirigir a página de términos
-        console.log('⚠️ Términos no aceptados. Redirigiendo...');
         window.location.href = 'terminos.html';
         return;
     }
     
-    // Mostrar pantalla de carga
+    // 2. Mostrar pantalla de carga
     VV.utils.showScreen('loading-screen');
     
-    // Verificar usuario existente (async con Supabase)
+    // 3. Lógica de inicio (Async)
     setTimeout(async () => {
         const hasSession = await VV.auth.checkExistingUser();
+        
         if (hasSession) {
-            // Usuario ya registrado
             VV.auth.startApp();
-            // Inicializar geolocalización
             await VV.geo.init();
             VV.geo.updateLocationUI();
         } else {
-            // Nuevo usuario
             VV.utils.showScreen('location-screen');
             VV.auth.requestGeolocation();
         }
-        // Cargamos el visor de destacados al iniciar la app
-            if (window.VV && VV.featured) {
-                console.log('✨ Cargando visor de destacados...');
-                await VV.featured.loadFeaturedOffers();
-            }
+
+        // 4. CARGA DEL VISOR (Momento ideal)
+        // Solo lo llamamos aquí para asegurar que VV ya existe y la sesión está clara
+        if (window.VV && VV.featured && typeof VV.featured.loadFeaturedOffers === 'function') {
+            console.log('✨ Cargando visor de destacados...');
+            await VV.featured.loadFeaturedOffers();
+        }
+
     }, 1500);
     
     console.log('✅ Aplicación inicializada correctamente');
+});
     
     // Setup navegación del menú
     document.addEventListener('click', (e) => {
