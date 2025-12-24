@@ -1,4 +1,4 @@
-/ ========== MÓDULO DESTACADOS FINAL (CORREGIDO 2025) ==========
+// ========== MÓDULO DESTACADOS FINAL (CORREGIDO 2025) ==========
 VV.featured = {
     requestFeatured() {
         const userProducts = VV.data.products || [];
@@ -6,17 +6,25 @@ VV.featured = {
         if (!overlay) return;
 
         overlay.innerHTML = ""; // Limpieza total
-        
+
+        // Helper para construir las opciones del select
+        const productOptions = userProducts.map(p => {
+            // Escapar valores simples para evitar inserción accidental de HTML
+            const name = String(p.product || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const id = String(p.id || '');
+            return `<option value="${id}">${name}</option>`;
+        }).join('');
+
         // Renderizamos con el borde rojo para confirmar visualmente
         overlay.innerHTML = `
             <div class="modal-form" style="max-width: 450px; background: white; padding: 25px; border-radius: 15px; border: 4px solid #ff0000; position: relative; z-index: 10001;">
                 <h3 style="text-align:center;"><i class="fas fa-star" style="color:#f39c12;"></i> SOLICITAR DESTACADO</h3>
-                <form id="featured-request-form-new">
+                <form id="featured-request-form-new" novalidate>
                     <div style="margin-bottom:15px;">
                         <label style="display:block; font-weight:bold;">Producto a destacar *</label>
                         <select id="f-prod" required style="width:100%; padding:10px; border-radius:8px;">
                             <option value="">-- Seleccionar --</option>
-                            ${userProducts.map(p => `<option value="${p.id}">${p.product}</option>`).join('')}
+                            ${productOptions}
                         </select>
                     </div>
 
@@ -24,6 +32,7 @@ VV.featured = {
                     <div style="margin-bottom:15px; background:#fff9f0; padding:15px; border:3px dashed #ff0000; border-radius:10px;">
                         <label style="font-weight:bold; color:#d35400;"><i class="fas fa-camera"></i> FOTO DE LA OFERTA *</label>
                         <input type="file" id="f-image" accept="image/*" required style="display:block; width:100%; margin-top:10px;">
+                        <small style="color:#666;">Formatos aceptados: JPG, PNG, WEBP. Máx 5MB.</small>
                     </div>
 
                     <div style="margin-bottom:15px;">
@@ -32,7 +41,7 @@ VV.featured = {
                     </div>
 
                     <div style="display:flex; gap:10px;">
-                        <button type="button" onclick="VV.featured.closeRequestForm()" style="flex:1; padding:12px; border-radius:10px; border:none; cursor:pointer;">CANCELAR</button>
+                        <button type="button" id="f-cancel" style="flex:1; padding:12px; border-radius:10px; border:none; cursor:pointer; background:#e0e0e0;">CANCELAR</button>
                         <button type="submit" id="f-btn" style="flex:1; padding:12px; border-radius:10px; background:#f39c12; color:white; border:none; font-weight:bold; cursor:pointer;">ENVIAR SOLICITUD</button>
                     </div>
                 </form>
@@ -40,51 +49,84 @@ VV.featured = {
         `;
         overlay.classList.add('active');
 
-        document.getElementById('featured-request-form-new').onsubmit = (e) => {
+        const form = document.getElementById('featured-request-form-new');
+        const cancelBtn = document.getElementById('f-cancel');
+
+        form.onsubmit = (e) => {
             e.preventDefault();
             VV.featured.submitRequest();
         };
+
+        cancelBtn.addEventListener('click', () => VV.featured.closeRequestForm());
     },
 
     async submitRequest() {
         const btn = document.getElementById('f-btn');
         const fileInput = document.getElementById('f-image');
-        const file = fileInput.files[0]; // <--- EL [0] ES FUNDAMENTAL
+        const prodSelect = document.getElementById('f-prod');
+        const msgInput = document.getElementById('f-msg');
 
+        if (!btn || !fileInput || !prodSelect || !msgInput) {
+            return alert("Formulario incompleto (elementos faltantes).");
+        }
+
+        const file = fileInput.files && fileInput.files[0]; // <--- EL [0] ES FUNDAMENTAL
+
+        // Validaciones
+        if (!prodSelect.value) return alert("Por favor, selecciona un producto.");
         if (!file) return alert("Por favor, selecciona una imagen.");
+        if (!msgInput.value || String(msgInput.value).trim().length < 3) return alert("Por favor, escribe un mensaje válido (mín 3 caracteres).");
+
+        const maxBytes = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxBytes) return alert("La imagen es demasiado grande. Máximo 5MB.");
+        if (!file.type.startsWith('image/')) return alert("El archivo seleccionado no es una imagen.");
+
+        // Conservar la extensión original
+        const origName = file.name || '';
+        const extMatch = origName.match(/\.([a-zA-Z0-9]+)$/);
+        const ext = extMatch ? extMatch[1].toLowerCase() : (file.type.split('/')[1] || 'jpg');
+        const safeExt = ext.replace(/[^a-z0-9]/gi, '');
+        const fileName = `${Date.now()}-${VV.data.user?.id || 'anon'}.${safeExt}`;
 
         try {
             btn.disabled = true;
+            const prevText = btn.innerText;
             btn.innerText = "SUBIENDO IMAGEN...";
 
             // 1. SUBIR AL STORAGE
-            const fileName = `${Date.now()}-${VV.data.user.id}.jpg`;
-            const { error: upErr } = await supabase.storage
+            const path = `${VV.data.user?.id || 'unknown'}/${fileName}`;
+            // upsert: false por defecto; dejamos único por timestamp para evitar sobrescritura accidental
+            const { data: uploadData, error: upErr } = await supabase.storage
                 .from('featured-images')
-                .upload(`${VV.data.user.id}/${fileName}`, file);
+                .upload(path, file);
 
             if (upErr) throw upErr;
 
-            const { data: { publicUrl } } = supabase.storage
-                .from('featured-images')
-                .getPublicUrl(`${VV.data.user.id}/${fileName}`);
+            // 2. OBTENER PUBLIC URL (manejar defensivamente)
+            const getPublic = supabase.storage.from('featured-images').getPublicUrl(path);
+            const publicUrl = (getPublic && getPublic.data && (getPublic.data.publicUrl || getPublic.data.public_url)) || null;
+            if (!publicUrl) throw new Error('No se pudo obtener la URL pública de la imagen.');
 
-            // 2. INSERTAR EN TABLA DE SOLICITUDES
-            const { error } = await supabase.from('featured_requests').insert([{
-                product_id: document.getElementById('f-prod').value,
-                user_id: VV.data.user.id,
-                message: document.getElementById('f-msg').value,
+            // 3. INSERTAR EN TABLA DE SOLICITUDES
+            const insertPayload = {
+                product_id: prodSelect.value,
+                user_id: VV.data.user?.id || null,
+                message: String(msgInput.value).trim(),
                 product_image: publicUrl,
                 status: 'pending',
-                neighborhood: VV.data.user.neighborhood || VV.data.neighborhood,
-                expires_at: new Date(Date.now() + 604800000).toISOString()
-            }]);
+                neighborhood: VV.data.user?.neighborhood || VV.data?.neighborhood || null,
+                expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // +7 días
+            };
+
+            const { data: insertData, error } = await supabase.from('featured_requests').insert([insertPayload]);
 
             if (error) throw error;
             alert("✅ Solicitud enviada con éxito.");
             this.closeRequestForm();
         } catch (e) {
-            alert("Error: " + e.message);
+            // e puede ser un string o un Error
+            const msg = e?.message || e || 'Error desconocido';
+            alert("Error: " + msg);
             btn.disabled = false;
             btn.innerText = "ENVIAR SOLICITUD";
         }
@@ -94,28 +136,49 @@ VV.featured = {
         const container = document.getElementById('featured-offers-carousel');
         if (!container) return;
         try {
-            const miBarrio = VV.data.user.neighborhood || VV.data.neighborhood;
+            const miBarrio = VV.data.user?.neighborhood || VV.data?.neighborhood;
+            // Traer ofertas activas y no expiradas, incluyendo datos del producto relacionado.
+            // Ajusta la relación según tu esquema; aquí intento solicitar products como relación.
+            const now = new Date().toISOString();
             const { data: offers, error } = await supabase
                 .from('featured_offers')
-                .select(`id, expires_at, products!inner(*)`)
+                .select(`id, expires_at, status, products(*)`)
                 .eq('status', 'active')
-                //.eq('products.neighborhood', miBarrio) // FILTRO ESTRICTO
-                //.gt('expires_at', new Date().toISOString());//
+                .gt('expires_at', now);
 
             if (error) throw error;
 
-            container.innerHTML = (offers || []).map(off => `
-                <div class="featured-card" style="border:2px solid orange; padding:12px; border-radius:12px; min-width:220px; background:white;">
-                    <img src="${off.products.image_url || ''}" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
-                    <h4 style="margin:8px 0 0 0;">${off.products.product}</h4>
-                    <p style="color:#27ae60; font-weight:bold; margin:5px 0;">$${off.products.price}</p>
-                    <a href="https://wa.me/${off.products.contact}" target="_blank" style="display:block; text-align:center; background:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:10px;">WHATSAPP</a>
-                </div>
-            `).join('');
-        } catch (e) { console.error(e); }
+            // Helper para escapar texto
+            const esc = (s) => String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            container.innerHTML = (offers || []).map(off => {
+                // En algunas configuraciones off.products puede ser array o objeto
+                const prod = Array.isArray(off.products) ? off.products[0] : off.products || {};
+                const img = esc(prod.image_url || '');
+                const title = esc(prod.product || 'Producto');
+                const price = esc(prod.price || '');
+                const contact = esc(prod.contact || '');
+                const priceText = price !== '' ? `$${price}` : '';
+                const waLink = contact ? `https://wa.me/${contact}` : '#';
+
+                return `
+                    <div class="featured-card" style="border:2px solid orange; padding:12px; border-radius:12px; min-width:220px; background:white;">
+                        <img src="${img}" alt="${title}" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
+                        <h4 style="margin:8px 0 0 0;">${title}</h4>
+                        <p style="color:#27ae60; font-weight:bold; margin:5px 0;">${priceText}</p>
+                        <a href="${waLink}" target="_blank" rel="noopener" style="display:block; text-align:center; background:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none;">
+                            Contactar por WhatsApp
+                        </a>
+                    </div>
+                `;
+            }).join('');
+        } catch (e) {
+            console.error('loadFeaturedOffers error:', e);
+        }
     },
 
     closeRequestForm() {
-        document.getElementById('featured-request-overlay').classList.remove('active');
+        const overlay = document.getElementById('featured-request-overlay');
+        if (overlay) overlay.classList.remove('active');
     }
 };
