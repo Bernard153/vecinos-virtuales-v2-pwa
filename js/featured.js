@@ -1,4 +1,4 @@
-// ========== MÓDULO DESTACADOS FINAL (CORREGIDO 2025) ==========
+// ========== MÓDULO DESTACADOS FINAL (CORREGIDO 2025, REVISADO 2026-01-02) ==========
 VV.featured = {
     requestFeatured() {
         const userProducts = VV.data.products || [];
@@ -7,11 +7,10 @@ VV.featured = {
 
         overlay.innerHTML = ""; // Limpieza total
 
-        // Helper para construir las opciones del select
+        // Helper para construir las opciones del select (escapando comillas también)
         const productOptions = userProducts.map(p => {
-            // Escapar valores simples para evitar inserción accidental de HTML
             const name = String(p.product || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            const id = String(p.id || '');
+            const id = String(p.id || '').replace(/"/g, '&quot;');
             return `<option value="${id}">${name}</option>`;
         }).join('');
 
@@ -52,12 +51,16 @@ VV.featured = {
         const form = document.getElementById('featured-request-form-new');
         const cancelBtn = document.getElementById('f-cancel');
 
-        form.onsubmit = (e) => {
-            e.preventDefault();
-            VV.featured.submitRequest();
-        };
+        if (form) {
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                VV.featured.submitRequest();
+            };
+        }
 
-        cancelBtn.addEventListener('click', () => VV.featured.closeRequestForm());
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => VV.featured.closeRequestForm());
+        }
     },
 
     async submitRequest() {
@@ -79,14 +82,14 @@ VV.featured = {
 
         const maxBytes = 5 * 1024 * 1024; // 5MB
         if (file.size > maxBytes) return alert("La imagen es demasiado grande. Máximo 5MB.");
-        if (!file.type.startsWith('image/')) return alert("El archivo seleccionado no es una imagen.");
+        if (!file.type || !file.type.startsWith('image/')) return alert("El archivo seleccionado no es una imagen.");
 
-        // Conservar la extensión original
+        // Conservar la extensión original de forma segura
         const origName = file.name || '';
         const extMatch = origName.match(/\.([a-zA-Z0-9]+)$/);
         const ext = extMatch ? extMatch[1].toLowerCase() : (file.type.split('/')[1] || 'jpg');
-        const safeExt = ext.replace(/[^a-z0-9]/gi, '');
-        const fileName = `${Date.now()}-${VV.data.user?.id || 'anon'}.${safeExt}`;
+        const safeExt = String(ext).replace(/[^a-z0-9]/gi, '');
+        const fileName = `${Date.now()}-${String(VV.data.user?.id || 'anon')}.${safeExt}`;
 
         try {
             btn.disabled = true;
@@ -95,16 +98,16 @@ VV.featured = {
 
             // 1. SUBIR AL STORAGE
             const path = `${VV.data.user?.id || 'unknown'}/${fileName}`;
-            // upsert: false por defecto; dejamos único por timestamp para evitar sobrescritura accidental
+            // Hacemos explícito upsert: false para evitar sobrescritura accidental
             const { data: uploadData, error: upErr } = await supabase.storage
                 .from('featured-images')
-                .upload(path, file);
+                .upload(path, file, { upsert: false });
 
             if (upErr) throw upErr;
 
-            // 2. OBTENER PUBLIC URL (manejar defensivamente)
-            const getPublic = supabase.storage.from('featured-images').getPublicUrl(path);
-            const publicUrl = (getPublic && getPublic.data && (getPublic.data.publicUrl || getPublic.data.public_url)) || null;
+            // 2. OBTENER PUBLIC URL (manejar defensivamente para distintas versiones del SDK)
+            const getPublic = await supabase.storage.from('featured-images').getPublicUrl(path);
+            const publicUrl = (getPublic && getPublic.data && (getPublic.data.publicUrl || getPublic.data.public_url || getPublic.data.publicURL)) || null;
             if (!publicUrl) throw new Error('No se pudo obtener la URL pública de la imagen.');
 
             // 3. INSERTAR EN TABLA DE SOLICITUDES
@@ -121,14 +124,19 @@ VV.featured = {
             const { data: insertData, error } = await supabase.from('featured_requests').insert([insertPayload]);
 
             if (error) throw error;
+
             alert("✅ Solicitud enviada con éxito.");
+            // restaurar estado del botón y cerrar
+            btn.disabled = false;
+            btn.innerText = prevText || "ENVIAR SOLICITUD";
             this.closeRequestForm();
         } catch (e) {
-            // e puede ser un string o un Error
             const msg = e?.message || e || 'Error desconocido';
             alert("Error: " + msg);
-            btn.disabled = false;
-            btn.innerText = "ENVIAR SOLICITUD";
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "ENVIAR SOLICITUD";
+            }
         }
     },
 
@@ -137,8 +145,6 @@ VV.featured = {
         if (!container) return;
         try {
             const miBarrio = VV.data.user?.neighborhood || VV.data?.neighborhood;
-            // Traer ofertas activas y no expiradas, incluyendo datos del producto relacionado.
-            // Ajusta la relación según tu esquema; aquí intento solicitar products como relación.
             const now = new Date().toISOString();
             const { data: offers, error } = await supabase
                 .from('featured_offers')
@@ -152,7 +158,6 @@ VV.featured = {
             const esc = (s) => String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
             container.innerHTML = (offers || []).map(off => {
-                // En algunas configuraciones off.products puede ser array o objeto
                 const prod = Array.isArray(off.products) ? off.products[0] : off.products || {};
                 const img = esc(prod.image_url || '');
                 const title = esc(prod.product || 'Producto');
