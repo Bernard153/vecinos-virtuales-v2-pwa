@@ -1,189 +1,655 @@
-// ========== MÓDULO DESTACADOS FINAL (CORREGIDO 2025, REVISADO 2026-01-02) ==========
+// ========== MÓDULO OFERTAS DESTACADAS ==========
+
 VV.featured = {
+    // Solicitar destacar oferta
     requestFeatured() {
-        const userProducts = VV.data.products || [];
-        const overlay = document.getElementById('featured-request-overlay');
-        if (!overlay) return;
-
-        overlay.innerHTML = ""; // Limpieza total
-
-        // Helper para construir las opciones del select (escapando comillas también)
-        const productOptions = userProducts.map(p => {
-            const name = String(p.product || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            const id = String(p.id || '').replace(/"/g, '&quot;');
-            return `<option value="${id}">${name}</option>`;
-        }).join('');
-
-        // Renderizamos con el borde rojo para confirmar visualmente
+        // Verificar si el usuario tiene productos
+        const userProducts = VV.data.products.filter(p => p.seller_id === VV.data.user.id);
+        
+        if (userProducts.length === 0) {
+            alert('Primero debes publicar al menos un producto para poder destacarlo.');
+            VV.utils.showSection('marketplace');
+            return;
+        }
+        
+        let overlay = document.getElementById('featured-request-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'featured-request-overlay';
+            overlay.className = 'modal-overlay';
+            document.body.appendChild(overlay);
+        }
+        
         overlay.innerHTML = `
-            <div class="modal-form" style="max-width: 450px; background: white; padding: 25px; border-radius: 15px; border: 4px solid #ff0000; position: relative; z-index: 10001;">
-                <h3 style="text-align:center;"><i class="fas fa-star" style="color:#f39c12;"></i> SOLICITAR DESTACADO</h3>
-                <form id="featured-request-form-new" novalidate>
-                    <div style="margin-bottom:15px;">
-                        <label style="display:block; font-weight:bold;">Producto a destacar *</label>
-                        <select id="f-prod" required style="width:100%; padding:10px; border-radius:8px;">
-                            <option value="">-- Seleccionar --</option>
-                            ${productOptions}
+            <div class="modal-form">
+                <h3><i class="fas fa-star"></i> Solicitar Oferta Destacada</h3>
+                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                    Las ofertas destacadas aparecen en el dashboard principal y son votadas por la comunidad.
+                    <strong style="color: var(--error-red);">Importante:</strong> Si recibes 10 valoraciones negativas, tu cuenta será bloqueada.
+                </p>
+                <form id="featured-request-form">
+                    <div class="form-group">
+                        <label>Selecciona tu producto *</label>
+                        <select id="featured-product" required>
+                            <option value="">Seleccionar producto</option>
+                            ${userProducts.map(p => `
+                                <option value="${p.id}">${p.product} - $${p.price}/${p.unit}</option>
+                            `).join('')}
                         </select>
                     </div>
-
-                    <!-- ESTE ES EL CAMPO DE IMAGEN -->
-                    <div style="margin-bottom:15px; background:#fff9f0; padding:15px; border:3px dashed #ff0000; border-radius:10px;">
-                        <label style="font-weight:bold; color:#d35400;"><i class="fas fa-camera"></i> FOTO DE LA OFERTA *</label>
-                        <input type="file" id="f-image" accept="image/*" required style="display:block; width:100%; margin-top:10px;">
-                        <small style="color:#666;">Formatos aceptados: JPG, PNG, WEBP. Máx 5MB.</small>
+                    <div class="form-group">
+                        <label>Título de la oferta *</label>
+                        <input type="text" id="featured-title" required placeholder="Ej: ¡Oferta especial! 20% de descuento">
                     </div>
-
-                    <div style="margin-bottom:15px;">
-                        <label style="display:block; font-weight:bold;">Mensaje de la oferta *</label>
-                        <textarea id="f-msg" rows="2" required placeholder="Ej: ¡Oferta imperdible!" style="width:100%; padding:10px; border-radius:8px;"></textarea>
+                    <div class="form-group">
+                        <label>Descripción de la oferta *</label>
+                        <textarea id="featured-description" rows="3" required placeholder="Describe tu oferta especial..."></textarea>
                     </div>
-
-                    <div style="display:flex; gap:10px;">
-                        <button type="button" id="f-cancel" style="flex:1; padding:12px; border-radius:10px; border:none; cursor:pointer; background:#e0e0e0;">CANCELAR</button>
-                        <button type="submit" id="f-btn" style="flex:1; padding:12px; border-radius:10px; background:#f39c12; color:white; border:none; font-weight:bold; cursor:pointer;">ENVIAR SOLICITUD</button>
+                    <div class="form-group">
+                        <label>Precio especial (opcional)</label>
+                        <input type="number" id="featured-price" min="0" step="0.01" placeholder="Deja vacío para usar el precio original">
+                    </div>
+                    <div class="form-group">
+                        <label>Duración de la oferta *</label>
+                        <select id="featured-duration" required>
+                            <option value="3">3 días</option>
+                            <option value="7" selected>7 días</option>
+                            <option value="15">15 días</option>
+                            <option value="30">30 días</option>
+                        </select>
+                    </div>
+                    <div style="background: var(--gray-50); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <p style="margin: 0; font-size: 0.9rem; color: var(--gray-700);">
+                            <i class="fas fa-info-circle"></i> Tu solicitud será revisada por el administrador antes de ser publicada.
+                        </p>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="VV.featured.closeRequestForm()">Cancelar</button>
+                        <button type="button" class="btn-save" onclick="VV.featured.submitRequest()">
+                            <i class="fas fa-paper-plane"></i> Enviar Solicitud
+                        </button>
                     </div>
                 </form>
             </div>
         `;
+        
         overlay.classList.add('active');
-
-        const form = document.getElementById('featured-request-form-new');
-        const cancelBtn = document.getElementById('f-cancel');
-
+        
+        const form = document.getElementById('featured-request-form');
+        console.log('📝 Formulario encontrado:', form);
+        
         if (form) {
             form.onsubmit = (e) => {
+                console.log('📤 Form submit event triggered');
                 e.preventDefault();
                 VV.featured.submitRequest();
             };
+        } else {
+            console.error('❌ No se encontró el formulario featured-request-form');
         }
-
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => VV.featured.closeRequestForm());
-        }
+        
+        overlay.onclick = (e) => {
+            if (e.target === overlay) VV.featured.closeRequestForm();
+        };
     },
-
-    async submitRequest() {
-        const btn = document.getElementById('f-btn');
-        const fileInput = document.getElementById('f-image');
-        const prodSelect = document.getElementById('f-prod');
-        const msgInput = document.getElementById('f-msg');
-
-        if (!btn || !fileInput || !prodSelect || !msgInput) {
-            return alert("Formulario incompleto (elementos faltantes).");
-        }
-
-        const file = fileInput.files && fileInput.files[0]; // <--- EL [0] ES FUNDAMENTAL
-
-        // Validaciones
-        if (!prodSelect.value) return alert("Por favor, selecciona un producto.");
-        if (!file) return alert("Por favor, selecciona una imagen.");
-        if (!msgInput.value || String(msgInput.value).trim().length < 3) return alert("Por favor, escribe un mensaje válido (mín 3 caracteres).");
-
-        const maxBytes = 5 * 1024 * 1024; // 5MB
-        if (file.size > maxBytes) return alert("La imagen es demasiado grande. Máximo 5MB.");
-        if (!file.type || !file.type.startsWith('image/')) return alert("El archivo seleccionado no es una imagen.");
-
-        // Conservar la extensión original de forma segura
-        const origName = file.name || '';
-        const extMatch = origName.match(/\.([a-zA-Z0-9]+)$/);
-        const ext = extMatch ? extMatch[1].toLowerCase() : (file.type.split('/')[1] || 'jpg');
-        const safeExt = String(ext).replace(/[^a-z0-9]/gi, '');
-        const fileName = `${Date.now()}-${String(VV.data.user?.id || 'anon')}.${safeExt}`;
-
-        try {
-            btn.disabled = true;
-            const prevText = btn.innerText;
-            btn.innerText = "SUBIENDO IMAGEN...";
-
-            // 1. SUBIR AL STORAGE
-            const path = `${VV.data.user?.id || 'unknown'}/${fileName}`;
-            // Hacemos explícito upsert: false para evitar sobrescritura accidental
-            const { data: uploadData, error: upErr } = await supabase.storage
-                .from('featured-images')
-                .upload(path, file, { upsert: false });
-
-            if (upErr) throw upErr;
-
-            // 2. OBTENER PUBLIC URL (manejar defensivamente para distintas versiones del SDK)
-            const getPublic = await supabase.storage.from('featured-images').getPublicUrl(path);
-            const publicUrl = (getPublic && getPublic.data && (getPublic.data.publicUrl || getPublic.data.public_url || getPublic.data.publicURL)) || null;
-            if (!publicUrl) throw new Error('No se pudo obtener la URL pública de la imagen.');
-
-            // 3. INSERTAR EN TABLA DE SOLICITUDES
-            const insertPayload = {
-                product_id: prodSelect.value,
-                user_id: VV.data.user?.id || null,
-                message: String(msgInput.value).trim(),
-                product_image: publicUrl,
-                status: 'pending',
-                neighborhood: VV.data.user?.neighborhood || VV.data?.neighborhood || null,
-                expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // +7 días
-            };
-
-            const { data: insertData, error } = await supabase.from('featured_requests').insert([insertPayload]);
-
-            if (error) throw error;
-
-            alert("✅ Solicitud enviada con éxito.");
-            // restaurar estado del botón y cerrar
-            btn.disabled = false;
-            btn.innerText = prevText || "ENVIAR SOLICITUD";
-            this.closeRequestForm();
-        } catch (e) {
-            const msg = e?.message || e || 'Error desconocido';
-            alert("Error: " + msg);
-            if (btn) {
-                btn.disabled = false;
-                btn.innerText = "ENVIAR SOLICITUD";
-            }
-        }
-    },
-
-    async loadFeaturedOffers() {
-        const container = document.getElementById('featured-offers-carousel');
-        if (!container) return;
-        try {
-            const miBarrio = VV.data.user?.neighborhood || VV.data?.neighborhood;
-            const now = new Date().toISOString();
-            const { data: offers, error } = await supabase
-                .from('featured_offers')
-                .select(`id, expires_at, status, products(*)`)
-                .eq('status', 'active')
-                .gt('expires_at', now);
-
-            if (error) throw error;
-
-            // Helper para escapar texto
-            const esc = (s) => String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-            container.innerHTML = (offers || []).map(off => {
-                const prod = Array.isArray(off.products) ? off.products[0] : off.products || {};
-                const img = esc(prod.image_url || '');
-                const title = esc(prod.product || 'Producto');
-                const price = esc(prod.price || '');
-                const contact = esc(prod.contact || '');
-                const priceText = price !== '' ? `$${price}` : '';
-                const waLink = contact ? `https://wa.me/${contact}` : '#';
-
-                return `
-                    <div class="featured-card" style="border:2px solid orange; padding:12px; border-radius:12px; min-width:220px; background:white;">
-                        <img src="${img}" alt="${title}" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">
-                        <h4 style="margin:8px 0 0 0;">${title}</h4>
-                        <p style="color:#27ae60; font-weight:bold; margin:5px 0;">${priceText}</p>
-                        <a href="${waLink}" target="_blank" rel="noopener" style="display:block; text-align:center; background:#25d366; color:white; padding:8px; border-radius:8px; text-decoration:none;">
-                            Contactar por WhatsApp
-                        </a>
-                    </div>
-                `;
-            }).join('');
-        } catch (e) {
-            console.error('loadFeaturedOffers error:', e);
-        }
-    },
-
+    
+    // Cerrar formulario de solicitud
     closeRequestForm() {
         const overlay = document.getElementById('featured-request-overlay');
         if (overlay) overlay.classList.remove('active');
+    },
+    
+    // Enviar solicitud - MIGRADO A SUPABASE
+    async submitRequest() {
+        console.log('🚀 submitRequest llamado');
+        
+        const productSelect = document.getElementById('featured-product');
+        const productId = productSelect ? productSelect.value : null;
+        
+        console.log('📦 Product ID:', productId);
+        
+        if (!productId) {
+            alert('Selecciona un producto');
+            return;
+        }
+        
+        // Buscar el producto
+        const product = VV.data.products.find(p => p.id === productId);
+        if (!product) {
+            alert('Producto no encontrado');
+            return;
+        }
+        
+        const description = document.getElementById('featured-description').value.trim();
+        const specialPrice = document.getElementById('featured-price').value;
+        const duration = parseInt(document.getElementById('featured-duration').value);
+        
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + duration);
+        
+        const price = specialPrice ? parseFloat(specialPrice) : product.price;
+        const title = `${product.product} - $${price}/${product.unit}`;
+        
+        console.log('💾 Guardando en Supabase...');
+        
+        try {
+            const { error } = await supabase
+                .from('featured_offers')
+                .insert({
+                    product_id: productId,
+                    title: title,
+                    description: description,
+                    special_price: specialPrice ? parseFloat(specialPrice) : null,
+                    duration: duration,
+                    status: 'pending',
+                    neighborhood: VV.data.neighborhood,
+                    user_id: VV.data.user.id,
+                    user_name: VV.data.user.name,
+                    user_number: VV.data.user.uniqueNumber,
+                    expires_at: expiresAt.toISOString()
+                });
+            
+            if (error) {
+                console.error('❌ Error de Supabase:', error);
+                throw error;
+            }
+            
+            console.log('✅ Solicitud guardada exitosamente');
+            
+            VV.featured.closeRequestForm();
+            VV.utils.showSuccess('Solicitud enviada. El administrador la revisará pronto.');
+            
+        } catch (error) {
+            console.error('❌ Error enviando solicitud:', error);
+            alert('Error al enviar la solicitud: ' + error.message);
+        }
+    },
+    
+    // Cargar ofertas destacadas en el dashboard - MIGRADO A SUPABASE
+    async loadFeaturedOffers() {
+        const container = document.getElementById('featured-offers-carousel');
+        const isAdmin = VV.utils.isAdmin();
+        
+        // Actualizar título y botón según el rol
+        const titleElement = document.getElementById('featured-title');
+        const requestBtn = document.getElementById('featured-request-btn');
+        
+        if (titleElement) {
+            titleElement.textContent = isAdmin ? 'Ofertas Destacadas de Todos los Barrios' : 'Ofertas Destacadas del Barrio';
+        }
+        
+        if (requestBtn) {
+            requestBtn.style.display = isAdmin ? 'none' : 'inline-block';
+        }
+        
+        // Mostrar botón de anuncio solo para admin
+        const announcementBtn = document.getElementById('admin-announcement-btn');
+        if (announcementBtn) {
+            announcementBtn.style.display = isAdmin ? 'inline-block' : 'none';
+        }
+        
+        try {
+            // Cargar anuncios activos desde Supabase
+            const { data: announcements, error: announcementsError } = await supabase
+                .from('announcements')
+                .select('*')
+                .gt('expires_at', new Date().toISOString())
+                .order('important', { ascending: false })
+                .order('created_at', { ascending: false });
+            
+            if (announcementsError) throw announcementsError;
+            
+            // Función para normalizar barrios (sin tildes, minúsculas)
+            const normalizeNeighborhood = (name) => {
+                return name?.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() || '';
+            };
+            
+            const currentNeighborhoodNormalized = normalizeNeighborhood(VV.data.neighborhood);
+            
+            // Filtrar anuncios por barrio
+            const activeAnnouncements = (announcements || []).filter(a => 
+                a.neighborhood === 'all' || 
+                normalizeNeighborhood(a.neighborhood) === currentNeighborhoodNormalized ||
+                isAdmin
+            );
+            
+            // Cargar ofertas destacadas activas desde Supabase
+            let offersQuery = supabase
+                .from('featured_offers')
+                .select('*')
+                .eq('status', 'active')
+                .eq('blocked', false)
+                .gt('expires_at', new Date().toISOString());
+            
+            const { data: offers, error: offersError } = await offersQuery;
+            
+            if (offersError) throw offersError;
+            
+            // Filtrar ofertas por barrio
+            const neighborhoodFeatured = (offers || []).filter(f => 
+                isAdmin || normalizeNeighborhood(f.neighborhood) === currentNeighborhoodNormalized
+            );
+            
+            if (neighborhoodFeatured.length === 0 && activeAnnouncements.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; background: var(--gray-50); border-radius: 12px; color: var(--gray-600);">
+                        <i class="fas fa-star" style="font-size: 2rem; opacity: 0.5; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0;">No hay ofertas destacadas en este momento</p>
+                    </div>
+                `;
+                return;
+            }
+        
+        // Renderizar anuncios y ofertas
+        let html = '';
+        
+        // Primero los anuncios oficiales
+        if (activeAnnouncements.length > 0) {
+            html += `
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    ${activeAnnouncements.map(a => VV.featured.renderAnnouncement(a)).join('')}
+                </div>
+            `;
+        }
+        
+        // Luego las ofertas
+        if (isAdmin) {
+            const byNeighborhood = {};
+            neighborhoodFeatured.forEach(offer => {
+                if (!byNeighborhood[offer.neighborhood]) {
+                    byNeighborhood[offer.neighborhood] = [];
+                }
+                byNeighborhood[offer.neighborhood].push(offer);
+            });
+            
+            html += Object.keys(byNeighborhood).map(neighborhood => `
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="color: var(--primary-blue); margin-bottom: 1rem;">
+                        <i class="fas fa-map-marker-alt"></i> ${neighborhood}
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                        ${byNeighborhood[neighborhood].map(offer => VV.featured.renderOfferCard(offer)).join('')}
+                    </div>
+                </div>
+            `).join('');
+        } else if (neighborhoodFeatured.length > 0) {
+            html += `
+                <div class="featured-carousel-container" style="position: relative; overflow: hidden; padding: 1rem 0;">
+                    <div class="featured-carousel-track" style="display: flex; gap: 1.5rem; animation: scrollHorizontal ${neighborhoodFeatured.length * 5}s linear infinite;">
+                        ${neighborhoodFeatured.map(offer => VV.featured.renderOfferCard(offer)).join('')}
+                        ${neighborhoodFeatured.map(offer => VV.featured.renderOfferCard(offer)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+        
+        } catch (error) {
+            console.error('Error cargando ofertas destacadas:', error);
+            container.innerHTML = `
+                <div style="text-align: center; padding: 2rem; background: var(--gray-50); border-radius: 12px; color: var(--gray-600);">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 2rem; opacity: 0.5; margin-bottom: 0.5rem;"></i>
+                    <p style="margin: 0;">Error al cargar ofertas destacadas</p>
+                </div>
+            `;
+        }
+    },
+    
+    // Renderizar tarjeta de oferta - ACTUALIZADO PARA SUPABASE
+    renderOfferCard(offer) {
+        const title = offer.title;
+        const description = offer.description || '';
+        const userName = offer.user_name;
+        const userNumber = offer.user_number;
+        
+        // Calcular días restantes
+        const daysLeft = Math.ceil((new Date(offer.expires_at) - new Date()) / (1000 * 60 * 60 * 24));
+        
+        return `
+            <div class="featured-offer-card" style="background: linear-gradient(135deg, #fff5e6 0%, #ffffff 100%); border: 2px solid var(--warning-orange); border-radius: 12px; padding: 1.5rem; position: relative; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);">
+                <div style="position: absolute; top: -10px; right: 10px; background: var(--warning-orange); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                    <i class="fas fa-star"></i> DESTACADO
+                </div>
+                
+                <h3 style="margin: 0 0 0.5rem 0; color: var(--primary-purple); font-size: 1.1rem;">
+                    ${title}
+                </h3>
+                
+                <div style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                    <p style="margin: 0 0 0.5rem 0;"><strong>Ofrecido por:</strong> ${userName} #${userNumber}</p>
+                    ${description ? `<p style="margin: 0 0 0.5rem 0; color: var(--gray-700);">${description}</p>` : ''}
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 0.85rem; color: var(--gray-600);">
+                    <span><i class="fas fa-map-marker-alt"></i> ${offer.neighborhood}</span>
+                    <span><i class="fas fa-clock"></i> ${daysLeft} día${daysLeft !== 1 ? 's' : ''} restante${daysLeft !== 1 ? 's' : ''}</span>
+                </div>
+                
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button class="btn-secondary" onclick="VV.featured.contactSeller('${userName}')" style="flex: 1;">
+                        <i class="fas fa-user"></i> Contactar
+                    </button>
+                </div>
+                
+                <div style="border-top: 1px solid var(--gray-300); padding-top: 1rem;">
+                    <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--gray-600); text-align: center;">
+                        ¿Cumplió con la oferta?
+                    </p>
+                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                        <button 
+                            class="vote-btn" 
+                            onclick="VV.featured.vote('${offer.id}', 'up')"
+                            style="flex: 1; padding: 0.5rem; border: 2px solid var(--success-green); background: white; color: var(--success-green); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                            <i class="fas fa-thumbs-up"></i> Bueno
+                        </button>
+                        <button 
+                            class="vote-btn" 
+                            onclick="VV.featured.vote('${offer.id}', 'down')"
+                            style="flex: 1; padding: 0.5rem; border: 2px solid var(--error-red); background: white; color: var(--error-red); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">
+                            <i class="fas fa-thumbs-down"></i> Malo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+    
+    // Votar en una oferta - MIGRADO A SUPABASE
+    async vote(offerId, voteType) {
+        try {
+            // Verificar si ya votó
+            const { data: existingVote, error: checkError } = await supabase
+                .from('featured_votes')
+                .select('*')
+                .eq('offer_id', offerId)
+                .eq('user_id', VV.data.user.id)
+                .maybeSingle();
+            
+            if (existingVote) {
+                alert('Ya has votado en esta oferta');
+                return;
+            }
+            
+            // Registrar voto
+            const { error: voteError } = await supabase
+                .from('featured_votes')
+                .insert({
+                    offer_id: offerId,
+                    user_id: VV.data.user.id,
+                    vote_type: voteType
+                });
+            
+            if (voteError) throw voteError;
+            
+            // Si es voto negativo, verificar si alcanzó 10
+            if (voteType === 'down') {
+                const { count, error: countError } = await supabase
+                    .from('featured_votes')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('offer_id', offerId)
+                    .eq('vote_type', 'down');
+                
+                if (countError) throw countError;
+                
+                if (count >= 10) {
+                    // Bloquear oferta
+                    const { error: blockError } = await supabase
+                        .from('featured_offers')
+                        .update({ blocked: true, status: 'blocked' })
+                        .eq('id', offerId);
+                    
+                    if (blockError) throw blockError;
+                    
+                    alert('La oferta ha sido bloqueada por recibir 10 valoraciones negativas.');
+                }
+            }
+            
+            VV.featured.loadFeaturedOffers();
+            VV.utils.showSuccess(voteType === 'up' ? '¡Gracias por tu valoración positiva!' : 'Valoración negativa registrada');
+            
+        } catch (error) {
+            console.error('Error votando:', error);
+            alert('Error al registrar tu voto');
+        }
+    },
+    
+    // Bloquear usuario
+    blockUser(userId) {
+        const users = VV.auth.getAllUsers();
+        const userIndex = users.findIndex(u => u.id === userId);
+        
+        if (userIndex !== -1) {
+            const user = users[userIndex];
+            user.blocked = true;
+            user.blockedAt = new Date().toISOString();
+            user.blockReason = 'Recibió 10 valoraciones negativas en ofertas destacadas';
+            
+            // Actualizar en localStorage
+            const userKey = `vecinosVirtuales_user_${user.id}`;
+            localStorage.setItem(userKey, JSON.stringify(user));
+            
+            // Si es el usuario actual, cerrar sesión
+            if (user.id === VV.data.user.id) {
+                alert('Tu cuenta ha sido bloqueada por recibir 10 valoraciones negativas. Contacta al administrador.');
+                localStorage.removeItem('vecinosVirtualesUser');
+                location.reload();
+            }
+        }
+    },
+    
+    // Contactar vendedor
+    contactSeller(sellerName) {
+        alert(`Contacta a ${sellerName} a través del chat de la aplicación o pregunta al administrador por sus datos de contacto.`);
+    },
+    
+    // ========== ANUNCIOS DEL ADMINISTRADOR ==========
+    
+    // Crear anuncio oficial
+    async createAnnouncement() {
+        if (!VV.utils.isAdmin()) {
+            alert('Solo el administrador puede crear anuncios');
+            return;
+        }
+        
+        // Obtener barrios
+        const neighborhoods = await VV.auth.getExistingNeighborhoods();
+        
+        let overlay = document.getElementById('announcement-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'announcement-overlay';
+            overlay.className = 'modal-overlay';
+            document.body.appendChild(overlay);
+        }
+        
+        overlay.innerHTML = `
+            <div class="modal-form">
+                <h3><i class="fas fa-megaphone"></i> Publicar Anuncio Oficial</h3>
+                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                    Los anuncios oficiales aparecen destacados en el visor de todos los barrios.
+                </p>
+                <form id="announcement-form">
+                    <div class="form-group">
+                        <label>Tipo de anuncio *</label>
+                        <select id="announcement-type" required>
+                            <option value="info">📢 Información General</option>
+                            <option value="warning">⚠️ Advertencia</option>
+                            <option value="success">✅ Buenas Noticias</option>
+                            <option value="event">🎉 Evento</option>
+                            <option value="update">🔔 Actualización</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Título del anuncio *</label>
+                        <input type="text" id="announcement-title" required placeholder="Ej: Nueva funcionalidad disponible">
+                    </div>
+                    <div class="form-group">
+                        <label>Mensaje *</label>
+                        <textarea id="announcement-message" rows="4" required placeholder="Describe el anuncio..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Dirigido a:</label>
+                        <select id="announcement-target">
+                            <option value="all">Todos los barrios</option>
+                            ${neighborhoods.filter(n => n !== 'Administrador').map(n => 
+                                `<option value="${n}">${n}</option>`
+                            ).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Duración *</label>
+                        <select id="announcement-duration" required>
+                            <option value="1">1 día</option>
+                            <option value="3">3 días</option>
+                            <option value="7" selected>7 días</option>
+                            <option value="15">15 días</option>
+                            <option value="30">30 días</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="announcement-important">
+                            Marcar como importante (aparece primero)
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="VV.featured.closeAnnouncementForm()">Cancelar</button>
+                        <button type="submit" class="btn-save">
+                            <i class="fas fa-paper-plane"></i> Publicar Anuncio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        overlay.classList.add('active');
+        
+        document.getElementById('announcement-form').onsubmit = (e) => {
+            e.preventDefault();
+            VV.featured.saveAnnouncement();
+        };
+        
+        overlay.onclick = (e) => {
+            if (e.target === overlay) VV.featured.closeAnnouncementForm();
+        };
+    },
+    
+    // Cerrar formulario de anuncio
+    closeAnnouncementForm() {
+        const overlay = document.getElementById('announcement-overlay');
+        if (overlay) overlay.classList.remove('active');
+    },
+    
+    // Guardar anuncio - MIGRADO A SUPABASE
+    async saveAnnouncement() {
+        const type = document.getElementById('announcement-type').value;
+        const title = document.getElementById('announcement-title').value.trim();
+        const message = document.getElementById('announcement-message').value.trim();
+        const target = document.getElementById('announcement-target').value;
+        const duration = parseInt(document.getElementById('announcement-duration').value);
+        const important = document.getElementById('announcement-important').checked;
+        
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + duration);
+        
+        try {
+            const { error } = await supabase
+                .from('announcements')
+                .insert({
+                    title: title,
+                    message: message,
+                    type: type,
+                    important: important,
+                    neighborhood: target,
+                    author_id: VV.data.user.id,
+                    author_name: VV.data.user.name,
+                    expires_at: expiresAt.toISOString()
+                });
+            
+            if (error) throw error;
+            
+            VV.featured.closeAnnouncementForm();
+            VV.featured.loadFeaturedOffers();
+            VV.utils.showSuccess('Anuncio publicado exitosamente');
+            
+        } catch (error) {
+            console.error('Error publicando anuncio:', error);
+            alert('Error al publicar el anuncio: ' + error.message);
+        }
+    },
+    
+    // Renderizar anuncio oficial
+    renderAnnouncement(announcement) {
+        const typeConfig = {
+            'info': { color: 'var(--primary-blue)', icon: 'fa-info-circle', bg: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)' },
+            'warning': { color: 'var(--warning-orange)', icon: 'fa-exclamation-triangle', bg: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' },
+            'success': { color: 'var(--success-green)', icon: 'fa-check-circle', bg: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)' },
+            'event': { color: 'var(--primary-purple)', icon: 'fa-calendar-star', bg: 'linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%)' },
+            'update': { color: '#0ea5e9', icon: 'fa-bell', bg: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)' }
+        };
+        
+        const config = typeConfig[announcement.type] || typeConfig['info'];
+        const daysLeft = Math.ceil((new Date(announcement.expires_at) - new Date()) / (1000 * 60 * 60 * 24));
+        
+        return `
+            <div class="announcement-card" style="background: ${config.bg}; border: 3px solid ${config.color}; border-radius: 12px; padding: 1.5rem; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                ${announcement.important ? `
+                    <div style="position: absolute; top: -10px; left: 10px; background: var(--error-red); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; animation: pulse 2s infinite;">
+                        <i class="fas fa-exclamation"></i> IMPORTANTE
+                    </div>
+                ` : ''}
+                
+                <div style="position: absolute; top: -10px; right: 10px; background: ${config.color}; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                    <i class="fas fa-crown"></i> OFICIAL
+                </div>
+                
+                <div style="margin-top: ${announcement.important ? '1rem' : '0'};">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                        <div style="width: 50px; height: 50px; background: ${config.color}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
+                            <i class="fas ${config.icon}"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3 style="margin: 0; color: ${config.color}; font-size: 1.2rem;">
+                                ${announcement.title}
+                            </h3>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--gray-600);">
+                                <i class="fas fa-user-shield"></i> Administrador
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <p style="margin: 0; color: var(--gray-800); white-space: pre-wrap; line-height: 1.6;">
+                            ${announcement.message}
+                        </p>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--gray-600);">
+                        <span>
+                            <i class="fas fa-clock"></i> ${daysLeft} día${daysLeft !== 1 ? 's' : ''} restante${daysLeft !== 1 ? 's' : ''}
+                        </span>
+                        ${announcement.neighborhood !== 'all' ? `
+                            <span>
+                                <i class="fas fa-map-marker-alt"></i> ${announcement.neighborhood}
+                            </span>
+                        ` : `
+                            <span>
+                                <i class="fas fa-globe"></i> Todos los barrios
+                            </span>
+                        `}
+                    </div>
+                </div>
+            </div>
+            
+            <style>
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.7; }
+                }
+            </style>
+        `;
     }
 };
+
+console.log('✅ Módulo FEATURED cargado');
