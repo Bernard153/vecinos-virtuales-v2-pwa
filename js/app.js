@@ -31,26 +31,29 @@ document.addEventListener('DOMContentLoaded', function() {
             VV.auth.requestGeolocation();
         }
         // Cargamos el visor de destacados al iniciar la app
-            if (window.VV && VV.featured) {
-                console.log('✨ Cargando visor de destacados...');
-                await VV.featured.loadFeaturedOffers();
+if (window.VV && VV.featured) {
+    console.log('✨ Cargando visor de destacados...');
+    await VV.featured.loadFeaturedOffers();
+    
+    // --- LÓGICA PARA PAUSAR EL CARRUSEL ---
+    // Usamos el documento para capturar el clic incluso si el carrusel es dinámico
+    document.addEventListener('mousedown', (e) => {
+        const track = e.target.closest('.featured-carousel-track');
+        if (track) {
+            track.style.animationPlayState = 'paused';
+            console.log('⏸️ Carrusel pausado');
+        }
+    });
 
-                // --- NUEVO CÓDIGO PARA DETENER ANIMACIÓN CSS ---
-    const track = document.querySelector('.featured-carousel-track');
-    if (track) {
-        // Pausa al hacer clic (mantener presionado) o pasar el mouse
-        const pausar = () => track.style.animationPlayState = 'paused';
-        const reanudar = () => track.style.animationPlayState = 'running';
-
-        track.addEventListener('mousedown', pausar);
-        track.addEventListener('mouseenter', pausar); // Se detiene al pasar el mouse
-        
-        track.addEventListener('mouseup', reanudar);
-        track.addEventListener('mouseleave', reanudar);
-        track.addEventListener('touchend', reanudar); // Para móviles
-    }
-    // -----------------------------------------------
-            }
+    document.addEventListener('mouseup', () => {
+        const track = document.querySelector('.featured-carousel-track');
+        if (track) {
+            track.style.animationPlayState = 'running';
+            console.log('▶️ Carrusel reanudado');
+        }
+    });
+    // ---------------------------------------
+}
     }, 1500);
     
     console.log('✅ Aplicación inicializada correctamente');
