@@ -34,6 +34,23 @@ document.addEventListener('DOMContentLoaded', function() {
             if (window.VV && VV.featured) {
                 console.log('✨ Cargando visor de destacados...');
                 await VV.featured.loadFeaturedOffers();
+
+                // --- BLOQUE PARA DETENER EL CARRUSEL ---
+                // Importante: Reemplaza '.featured-container' por la clase real de tu carrusel
+                const featuredContainer = document.querySelector('.featured-container'); 
+                
+                if (featuredContainer) {
+                    featuredContainer.addEventListener('mousedown', () => {
+                        // Probamos las funciones de pausa más comunes en objetos de este tipo
+                        if (typeof VV.featured.stop === 'function') {
+                            VV.featured.stop();
+                        } else if (typeof VV.featured.pause === 'function') {
+                            VV.featured.pause();
+                        }
+                        console.log('⏸️ Carrusel pausado por el usuario');
+                    });
+                }
+                // ----------------------------------------
             }
     }, 1500);
     
