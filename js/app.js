@@ -35,22 +35,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('✨ Cargando visor de destacados...');
                 await VV.featured.loadFeaturedOffers();
 
-                // --- BLOQUE PARA DETENER EL CARRUSEL ---
-                // Importante: Reemplaza '.featured-container' por la clase real de tu carrusel
-                const featuredContainer = document.querySelector('.featured-container'); 
-                
-                if (featuredContainer) {
-                    featuredContainer.addEventListener('mousedown', () => {
-                        // Probamos las funciones de pausa más comunes en objetos de este tipo
-                        if (typeof VV.featured.stop === 'function') {
-                            VV.featured.stop();
-                        } else if (typeof VV.featured.pause === 'function') {
-                            VV.featured.pause();
-                        }
-                        console.log('⏸️ Carrusel pausado por el usuario');
-                    });
-                }
-                // ----------------------------------------
+                // --- NUEVO CÓDIGO PARA DETENER ANIMACIÓN CSS ---
+    const track = document.querySelector('.featured-carousel-track');
+    if (track) {
+        // Pausa al hacer clic (mantener presionado) o pasar el mouse
+        const pausar = () => track.style.animationPlayState = 'paused';
+        const reanudar = () => track.style.animationPlayState = 'running';
+
+        track.addEventListener('mousedown', pausar);
+        track.addEventListener('mouseenter', pausar); // Se detiene al pasar el mouse
+        
+        track.addEventListener('mouseup', reanudar);
+        track.addEventListener('mouseleave', reanudar);
+        track.addEventListener('touchend', reanudar); // Para móviles
+    }
+    // -----------------------------------------------
             }
     }, 1500);
     
