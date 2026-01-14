@@ -489,7 +489,7 @@ body {
 /* ========== DASHBOARD ========== */
 .welcome-banner {
     background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
-    color: white;
+    color: orange;
     padding: 2rem;
     border-radius: var(--border-radius);
     margin-bottom: 2rem;
