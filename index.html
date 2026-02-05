@@ -5,272 +5,243 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vecinos Virtuales - Conecta con tu Barrio</title>
     
-    <!-- Font Awesome -->
+    <!-- Iconos y Fuentes -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Leaflet CSS (Mapas) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
-    <!-- Estilos -->
+    <!-- Estilos Consolidados -->
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
-    <!-- PANTALLA DE CARGA -->
+
+    <!-- 1. PANTALLA DE CARGA -->
     <div id="loading-screen" class="screen active">
         <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-home"></i>
-            </div>
+            <div class="logo-large"><i class="fas fa-home"></i></div>
             <h1>Vecinos Virtuales</h1>
             <p class="subtitle">By O'skar</p>
             <div class="loading-spinner"></div>
         </div>
     </div>
 
-    <!-- PANTALLA DE UBICACIÓN (SELECCIÓN DE BARRIO) -->
+    <!-- 2. PANTALLA DE UBICACIÓN (SELECCIÓN DE BARRIO) -->
     <div id="location-screen" class="screen">
         <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-map-marker-alt"></i>
-            </div>
+            <div class="logo-large"><i class="fas fa-map-marker-alt"></i></div>
             <h1>Vecinos Virtuales</h1>
             <p class="subtitle">Selecciona tu comunidad</p>
-            <div id="location-content">
-                <!-- Se llena con VV.auth.requestGeolocation() -->
-            </div>
+            <div id="location-content"></div>
         </div>
     </div>
 
-    <!-- PANTALLA DE LOGIN (SOLO CELULAR) -->
+    <!-- 3. PANTALLA DE LOGIN (CELULAR) -->
     <div id="login-screen" class="screen">
         <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-sign-in-alt"></i>
-            </div>
+            <div class="logo-large"><i class="fas fa-sign-in-alt"></i></div>
             <h1>Ingresar</h1>
             <p class="subtitle">Barrio: <strong id="login-selected-neighborhood"></strong></p>
-            
             <form id="login-form" class="auth-form">
                 <div class="form-group">
                     <label>Tu Celular (WhatsApp)</label>
                     <input type="tel" id="login-phone" required placeholder="Ej: 3814442222">
                 </div>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> Entrar al Barrio
-                </button>
-                <div id="login-error" class="error-message" style="display: none;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span id="login-error-text"></span>
-                </div>
+                <button type="submit" class="btn-primary">Entrar al Barrio</button>
             </form>
-            
-            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen')">
-                <i class="fas fa-arrow-left"></i> Cambiar de Barrio
-            </button>
+            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen')">Volver</button>
         </div>
     </div>
 
-    <!-- PANTALLA DE REGISTRO (SIMPLIFICADA) -->
+    <!-- 4. PANTALLA DE REGISTRO -->
     <div id="registration-screen" class="screen">
         <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-user-plus"></i>
-            </div>
-            <h1>¡Bienvenido!</h1>
+            <div class="logo-large"><i class="fas fa-user-plus"></i></div>
+            <h1>Registro</h1>
             <p class="subtitle">Únete a <strong id="selected-neighborhood"></strong></p>
-            
             <form id="registration-form" class="auth-form">
                 <div class="form-group">
-                    <label>Tu Nombre Completo</label>
-                    <input type="text" id="user-name" required placeholder="Nombre y Apellido">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="user-name" required placeholder="Tu nombre">
                 </div>
                 <div class="form-group">
-                    <label>Tu Celular (WhatsApp)</label>
-                    <input type="tel" id="user-phone" required readonly style="background: #f3f4f6; cursor: not-allowed;">
+                    <label>Celular</label>
+                    <input type="tel" id="user-phone" readonly style="background:#eee">
                 </div>
-                <p style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 1rem;">
-                    * Usaremos tu celular como identidad única en el barrio.
-                </p>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-check"></i> Unirme al Barrio
-                </button>
+                <button type="submit" class="btn-primary">Registrarme</button>
             </form>
         </div>
     </div>
 
-    <!-- APLICACIÓN PRINCIPAL -->
+    <!-- 5. APLICACIÓN PRINCIPAL -->
     <div id="main-app" class="screen">
-        <!-- Header -->
         <header class="app-header">
-            <button class="menu-toggle" id="menu-toggle">
-                <i class="fas fa-bars"></i>
-            </button>
+            <button class="menu-toggle" id="menu-toggle"><i class="fas fa-bars"></i></button>
             <div class="header-info">
-                <span class="header-neighborhood">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span id="header-neighborhood"></span>
-                </span>
-                <span class="header-user">
-                    #<span id="header-user-number"></span>
-                </span>
+                <span id="header-neighborhood"></span> | #<span id="header-user-number"></span>
             </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <button class="user-avatar-btn" onclick="VV.avatars.showProfile()" title="Mi Perfil">
-                    <span class="user-avatar">😊</span>
-                </button>
-                <button class="cart-toggle" onclick="toggleCart()">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-badge" id="cart-badge">0</span>
-                </button>
-                <button class="logout-btn" onclick="VV.auth.logout()" title="Cerrar Sesión">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="user-avatar-btn" onclick="VV.avatars.showProfile()"><span class="user-avatar">😊</span></button>
+                <button class="cart-toggle" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span id="cart-badge" class="cart-badge">0</span></button>
+                <button onclick="VV.auth.logout()" class="logout-btn"><i class="fas fa-power-off"></i></button>
             </div>
         </header>
 
         <div class="app-container">
-            <!-- Sidebar (Navegación) -->
+            <!-- Navegación Lateral -->
             <nav class="sidebar" id="sidebar">
-                <div class="sidebar-header">
-                    <i class="fas fa-home"></i>
-                    <span>Vecinos Virtuales</span>
-                </div>
-                
                 <div class="menu">
-                    <a href="#" class="menu-item active" data-section="dashboard">
-                        <i class="fas fa-th-large"></i> <span>Dashboard</span>
-                    </a>
-                    <a href="#" class="menu-item" data-section="shopping">
-                        <i class="fas fa-shopping-bag"></i> <span>Comprar</span>
-                    </a>
-                    <a href="#" class="menu-item" data-section="marketplace">
-                        <i class="fas fa-store"></i> <span>Mis Ventas</span>
-                    </a>
-                    <a href="#" class="menu-item" data-section="improvements">
-                        <i class="fas fa-tools"></i> <span>Mejoras</span>
-                    </a>
-                    <a href="#" class="menu-item" data-section="cultural">
-                        <i class="fas fa-palette"></i> <span>Cultura y Trueque</span>
-                    </a>
+                    <a href="#" class="menu-item active" data-section="dashboard"><i class="fas fa-th-large"></i><span>Inicio</span></a>
+                    <a href="#" class="menu-item" data-section="shopping"><i class="fas fa-shopping-bag"></i><span>Comprar</span></a>
+                    <a href="#" class="menu-item" data-section="marketplace"><i class="fas fa-store"></i><span>Mis Ventas</span></a>
+                    <a href="#" class="menu-item" onclick="VV.reservations.showManagePanel(); return false;"><i class="fas fa-calendar-check"></i><span>Reservas</span></a>
+                    <a href="#" class="menu-item" data-section="improvements"><i class="fas fa-tools"></i><span>Mejoras</span></a>
+                    <a href="#" class="menu-item" data-section="cultural"><i class="fas fa-palette"></i><span>Cultura</span></a>
+                    <a href="#" class="menu-item" data-section="services"><i class="fas fa-users"></i><span>Servicios</span></a>
+                    <a href="#" class="menu-item" onclick="VV.raffle.showActiveRaffles(); return false;"><i class="fas fa-dice"></i><span>Sorteos</span></a>
                     
-                    <!-- Sección Admin (Protegida) -->
-                    <div class="admin-only" style="display: none; border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px;">
-                        <p style="padding-left: 15px; font-size: 0.7rem; color: #999; font-weight: bold;">ADMINISTRACIÓN</p>
-                        <a href="#" class="menu-item" data-section="admin">
-                            <i class="fas fa-cog"></i> <span>Panel Control</span>
-                        </a>
-                        <a href="#" class="menu-item" data-section="users-management">
-                            <i class="fas fa-users-cog"></i> <span>Usuarios</span>
-                        </a>
+                    <!-- Solo Admin -->
+                    <div class="admin-only" style="display:none; border-top:1px solid #ddd; padding-top:10px;">
+                        <a href="#" class="menu-item" data-section="admin"><i class="fas fa-cog"></i><span>Panel Control</span></a>
+                        <a href="#" class="menu-item" data-section="users-management"><i class="fas fa-users-cog"></i><span>Usuarios</span></a>
+                        <a href="#" class="menu-item" data-section="admin-neighborhoods"><i class="fas fa-map-marked-alt"></i><span>Barrios Global</span></a>
                     </div>
                 </div>
             </nav>
 
-            <!-- Contenido Principal -->
             <main class="main-content">
-                <!-- DASHBOARD -->
+                <!-- SECCIÓN: DASHBOARD -->
                 <section id="dashboard" class="content-section active">
-                    <div class="welcome-banner" id="welcome-banner">
-                        <div class="welcome-content">
-                            <h2>¡Hola, <span id="welcome-name"></span>!</h2>
-                            <p id="welcome-neighborhood"></p>
-                        </div>
+                    <div class="welcome-banner">
+                        <h2>¡Hola, <span id="welcome-name"></span>!</h2>
+                        <p id="welcome-neighborhood"></p>
                     </div>
 
-                    <!-- DOBLE CARRUSEL DE DESTACADOS (NUEVO) -->
-                    <div id="featured-section" style="margin: 1.5rem 0;">
-                        <!-- Se llena con VV.featured.renderDoubleCarousel() -->
-                    </div>
+                    <!-- Doble Carrusel de Destacados -->
+                    <div id="featured-section"></div>
 
-                    <!-- MÓDULOS RÁPIDOS -->
+                    <!-- Módulos Rápidos -->
                     <div class="main-modules-grid">
-                        <button class="module-card" onclick="VV.utils.showSection('shopping')">
-                            <div class="module-icon green"><i class="fas fa-shopping-cart"></i></div>
-                            <h3>Comprar</h3>
-                        </button>
-                        <button class="module-card" onclick="VV.utils.showSection('marketplace')">
-                            <div class="module-icon blue"><i class="fas fa-store"></i></div>
-                            <h3>Vender</h3>
-                        </button>
-                        <button class="module-card" onclick="VV.utils.showSection('map-section'); VV.map.init();">
-                            <div class="module-icon cyan"><i class="fas fa-map-marked-alt"></i></div>
-                            <h3>Mapa</h3>
-                        </button>
+                        <div class="module-card" onclick="VV.utils.showSection('shopping')"><i class="fas fa-shopping-cart"></i><h3>Comprar</h3></div>
+                        <div class="module-card" onclick="VV.utils.showSection('marketplace')"><i class="fas fa-store"></i><h3>Vender</h3></div>
+                        <div class="module-card" onclick="VV.utils.showSection('map-section'); VV.map.init();"><i class="fas fa-map-marked-alt"></i><h3>Mapa</h3></div>
                     </div>
+                    
+                    <!-- Estado Geo -->
+                    <div id="geo-status" style="margin-top: 20px;"></div>
                 </section>
 
-                <!-- SHOPPING (COMPRAR) -->
+                <!-- SECCIÓN: COMPRAR -->
                 <section id="shopping" class="content-section">
-                    <div class="section-header">
-                        <h2>Comprar en <span id="shop-neighborhood"></span></h2>
-                    </div>
-                    <!-- Buscador -->
-                    <div class="search-bar">
-                        <input type="text" id="product-search" placeholder="¿Qué buscas hoy?" onkeyup="VV.marketplace.filterProducts()">
-                    </div>
+                    <div class="section-header"><h2>🛒 Compras en el Barrio</h2></div>
+                    <div class="search-bar"><input type="text" id="product-search" placeholder="¿Qué buscas hoy?" onkeyup="VV.marketplace.filterProducts()"></div>
                     <div class="products-grid" id="all-products"></div>
                 </section>
 
-                <!-- MARKETPLACE (MIS PRODUCTOS) -->
+                <!-- SECCIÓN: MIS VENTAS -->
                 <section id="marketplace" class="content-section">
                     <div class="section-header">
                         <h2>Mis Productos</h2>
-                        <button class="btn-primary" onclick="VV.marketplace.showForm()">
-                            <i class="fas fa-plus"></i> Publicar
-                        </button>
+                        <button class="btn-primary" onclick="VV.marketplace.showForm()">+ Publicar</button>
                     </div>
                     <div class="products-grid" id="my-products"></div>
                 </section>
 
-                <!-- PANEL ADMIN -->
-                <section id="admin" class="content-section">
+                <!-- SECCIÓN: MEJORAS -->
+                <section id="improvements" class="content-section">
                     <div class="section-header">
-                        <h2>Panel Administrativo</h2>
+                        <h2>Mejoras</h2>
+                        <button class="btn-primary" onclick="VV.improvements.showForm()">+ Proponer</button>
                     </div>
-                    <div id="featured-requests-container">
-                        <h3>Solicitudes de Destacados</h3>
+                    <div class="improvements-grid" id="improvements-list"></div>
+                </section>
+
+                <!-- SECCIÓN: CULTURA -->
+                <section id="cultural" class="content-section">
+                    <div class="section-header">
+                        <h2>Cultura y Deportes</h2>
+                        <button class="btn-primary" onclick="VV.cultural.showForm()">+ Publicar</button>
+                    </div>
+                    <div class="cultural-grid" id="cultural-posts"></div>
+                </section>
+
+                <!-- SECCIÓN: SERVICIOS -->
+                <section id="services" class="content-section">
+                    <div class="section-header">
+                        <h2>Servicios Profesionales</h2>
+                        <button class="btn-primary" onclick="VV.services.showForm()">+ Ofrecer</button>
+                    </div>
+                    <div class="services-grid" id="services-list"></div>
+                </section>
+
+                <!-- SECCIÓN: MAPA -->
+                <section id="map-section" class="content-section">
+                    <div id="map-container" style="height: 500px; border-radius: 12px;"></div>
+                </section>
+
+                <!-- SECCIÓN: PANEL ADMIN (CON TABS) -->
+                <section id="admin" class="content-section">
+                    <div class="section-header"><h2>⚙️ Panel de Control</h2></div>
+                    
+                    <div id="featured-requests-container" style="margin-bottom: 30px;">
+                        <h3>Solicitudes de Destacados Pendientes</h3>
                         <div id="featured-requests-list"></div>
                     </div>
+
+                    <div class="admin-tabs">
+                        <button class="tab-btn active" onclick="VV.admin.showTab('sponsors')">Anunciantes</button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('featured')">Destacados</button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('avatars')">Avatares</button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('raffles')">Sorteos</button>
+                    </div>
+                    
+                    <div id="admin-sponsors" class="admin-tab-content active"><div id="sponsors-management"></div></div>
+                    <div id="admin-featured" class="admin-tab-content"><div id="featured-management"></div></div>
+                    <div id="admin-avatars" class="admin-tab-content"><div id="avatars-management"></div></div>
+                    <div id="admin-raffles" class="admin-tab-content"><div id="raffles-management"></div></div>
                 </section>
+
+                <!-- SECCIÓN: GESTIÓN USUARIOS -->
+                <section id="users-management" class="content-section">
+                    <h2>Gestión de Vecinos</h2>
+                    <div id="users-management-list" class="users-grid"></div>
+                </section>
+
             </main>
         </div>
     </div>
 
-    <!-- BANNERS DE ANUNCIANTES (SPONSORS) MEJORADOS -->
-    <div id="banner-container" class="footer-sponsors-scroller">
-        <!-- Se llena con VV.banner.init() -->
-    </div>
+    <!-- Banners de Sponsors (Dinamismo Móvil) -->
+    <div id="banner-container" class="footer-sponsors-scroller"></div>
 
-    <!-- OVERLAYS Y MODALES -->
+    <!-- Modales y Overlays -->
     <div id="overlay" class="overlay"></div>
     <aside class="shopping-cart" id="shopping-cart">
-        <div class="cart-header">
-            <h3>Mi Agenda</h3>
-            <button onclick="toggleCart()"><i class="fas fa-times"></i></button>
-        </div>
+        <div class="cart-header"><h3>Agenda de Compras</h3><button onclick="toggleCart()">X</button></div>
         <div id="cart-items"></div>
-        <div class="cart-footer">
-            <div class="total">Total: $<span id="cart-total">0.00</span></div>
-        </div>
+        <div class="cart-footer"><div class="total">Total: $<span id="cart-total">0.00</span></div></div>
     </aside>
 
-    <!-- SCRIPTS -->
+    <!-- Librerías Externas -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
-    <!-- Tus módulos JS -->
+    <!-- Módulos de la App -->
     <script src="js/supabase-config.js"></script>
     <script src="js/core.js"></script>
-    <script src="js/auth.js"></script> <!-- Este es el nuevo que hicimos -->
+    <script src="js/auth.js"></script>
     <script src="js/marketplace.js"></script>
     <script src="js/featured.js"></script>
     <script src="js/geo.js"></script>
     <script src="js/map.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/banner.js"></script>
+    <script src="js/reservations.js"></script>
+    <script src="js/improvements.js"></script>
+    <script src="js/cultural.js"></script>
+    <script src="js/services.js"></script>
+    <script src="js/avatars.js"></script>
+    <script src="js/raffle.js"></script>
     <script src="js/app.js"></script>
-
 </body>
 </html>
