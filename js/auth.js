@@ -298,6 +298,48 @@ VV.auth = {
             location.reload();
         }
     }
+    // --- FUNCIONES DE UBICACIÓN MANUAL (RESTAURADAS) ---
+
+    manualLocation() {
+        const content = document.getElementById('location-content');
+        if (!content) return;
+
+        content.innerHTML = `
+            <div class="auth-form" style="margin-top: 20px;">
+                <p class="description">Ingresa tu ubicación para buscar barrios cercanos</p>
+                <div class="form-group">
+                    <label>Ciudad</label>
+                    <input type="text" id="manual-city" placeholder="Ej: Buenos Aires" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+                </div>
+                <div class="form-group">
+                    <label>Barrio (opcional)</label>
+                    <input type="text" id="manual-neighborhood" placeholder="Ej: Palermo" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #ddd;">
+                </div>
+                <button class="btn-primary" onclick="VV.auth.processManualLocation()" style="width:100%;">
+                    <i class="fas fa-search"></i> Buscar Barrios
+                </button>
+                <button class="btn-secondary" onclick="VV.auth.requestGeolocation()" style="width:100%; margin-top:10px;">
+                    <i class="fas fa-location-arrow"></i> Usar GPS
+                </button>
+            </div>
+        `;
+    },
+
+    processManualLocation() {
+        const city = document.getElementById('manual-city').value.trim();
+        const neighborhood = document.getElementById('manual-neighborhood').value.trim();
+        
+        if (!city) {
+            alert('Por favor ingresa al menos una ciudad');
+            return;
+        }
+        
+        // Generamos los barrios basados en lo que escribió el usuario
+        VV.auth.neighborhoods = VV.auth.generateNeighborhoods(city, '', neighborhood);
+        
+        // Mostramos la lista de selección
+        VV.auth.showNeighborhoodSelection(city, 'Manual');
+    },
 };
 
 console.log('✅ Módulo AUTH Sincronizado con Supabase');
