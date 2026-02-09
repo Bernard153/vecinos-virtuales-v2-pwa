@@ -244,7 +244,53 @@
                             </button>
                         </div>
                     </div>
+<!-- FORMULARIO PARA CREAR AVISOS -->
+<div id="aviso-form-container" style="display: none;">
+    <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto;">
+        <h2 style="margin-top: 0;">📢 Publicar Aviso</h2>
+        
+        <form id="avisoForm">
+            <div class="form-group">
+                <label for="aviso-titulo">Título del Aviso *</label>
+                <input type="text" id="aviso-titulo" required placeholder="Ej: Se vende bicicleta">
+            </div>
 
+            <div class="form-group">
+                <label for="aviso-categoria">Categoría *</label>
+                <select id="aviso-categoria" required>
+                    <option value="">Selecciona una categoría</option>
+                    <option value="venta">Venta</option>
+                    <option value="evento">Evento</option>
+                    <option value="aviso">Aviso</option>
+                    <option value="oferta">Oferta</option>
+                    <option value="solicitud">Solicitud</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="aviso-descripcion">Descripción *</label>
+                <textarea id="aviso-descripcion" required placeholder="Describe tu aviso..." style="min-height: 120px;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="aviso-imagen">Imagen *</label>
+                <input type="file" id="aviso-imagen" accept="image/*" required>
+                <small style="color: #666;">Máximo 5MB</small>
+            </div>
+
+            <div id="aviso-mensaje" style="padding: 1rem; margin: 1rem 0; border-radius: 8px; display: none;"></div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn-primary" style="flex: 1;">
+                    <i class="fas fa-send"></i> Publicar Aviso
+                </button>
+                <button type="button" class="btn-secondary" onclick="cerrarFormAviso()" style="flex: 1;">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
                     <!-- Visor de Ofertas Destacadas -->
                     <div id="featured-offers-section" style="margin: 2rem 0;">
                         <div class="featured-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
