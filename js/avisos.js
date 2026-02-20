@@ -247,4 +247,90 @@ document.addEventListener('DOMContentLoaded', function() {
             VV.avisos.uploadAviso(e);
         });
     }
+// ========================================
+// MÓDULO: DESTACADOS (Ofertas con Imagen)
+// ========================================
+VV.featured = {
+    // 1. Configuración de URLs
+    getPublicUrl: function(fileName) {
+        const supabaseUrl = 'https://<TU-PROJECT-ID>.supabase.co'; // SUSTITUYE POR TU ID
+        return `${supabaseUrl}/storage/v1/object/public/product-images/${encodeURIComponent(fileName)}`;
+    },
+
+    // 2. Cargar y Renderizar en el Carrusel
+    loadFeatured: async function() {
+        const contenedor = document.getElementById('featured-cards-wrapper');
+        if (!contenedor) return;
+
+        try {
+            // Consulta a la tabla 'destacados'
+            const { data, error } = await supabase
+                .from('destacados')
+                .select('id, titulo, filename, descripcion')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                contenedor.innerHTML = '<p style="padding:20px; color:#666;">No hay ofertas destacadas aún.</p>';
+                return;
+            }
+
+            contenedor.innerHTML = ''; // Limpiar cargando
+
+            data.forEach(item => {
+                const imgUrl = this.getPublicUrl(item.filename);
+                
+                contenedor.innerHTML += `
+                    <div class="vv-card-destacada">
+                        <div class="vv-card-image">
+                            <img src="${imgUrl}" alt="${item.titulo}" 
+                                 onerror="this.src='https://via.placeholder.com'">
+                            <div class="vv-badge-destacado"><i class="fas fa-star"></i></div>
+                        </div>
+                        <div class="vv-card-body">
+                            <h4 class="vv-card-title">${item.titulo}</h4>
+                            <p style="font-size:0.85rem; color:#666; margin-bottom:1rem;">${item.descripcion || ''}</p>
+                            <button class="vv-btn-action" onclick="VV.featured.viewDetail('${item.id}')">
+                                Ver Oferta
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        } catch (err) {
+            console.error('Error en destacados:', err);
+            contenedor.innerHTML = '<p>Error al conectar con Supabase.</p>';
+        }
+    },
+
+    // 3. Funciones de botones (Placeholder para que no den error)
+    createAnnouncement: function() {
+        alert("Función para administradores: Crear Anuncio");
+    },
+
+    requestFeatured: function() {
+        alert("Aquí abriríamos el formulario para que el vecino envíe su oferta a revisión.");
+    },
+
+    viewDetail: function(id) {
+        alert("Abriendo detalles de la oferta ID: " + id);
+        // Aquí podrías disparar un Modal con más info
+    }
+};
+
+// ========================================
+// INICIALIZACIÓN GLOBAL
+// ========================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar Avisos (tu código anterior)
+    const form = document.getElementById('avisoForm');
+    if (form) {
+        form.addEventListener('submit', (e) => VV.avisos.uploadAviso(e));
+    }
+
+    // Inicializar Destacados (el nuevo módulo)
+    if (VV.featured && VV.featured.loadFeatured) {
+        VV.featured.loadFeatured();
+    }
 });
