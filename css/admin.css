@@ -380,4 +380,120 @@
     .sponsor-stats {
         grid-template-columns: 1fr;
     }
+    /* ========== NUEVOS ESTILOS: OFERTAS DESTACADAS (Integración 2026) ========== */
+
+/* Contenedor del carrusel en el dashboard */
+#featured-offers-carousel {
+    padding: 1rem 0;
+    min-height: 150px;
+}
+
+.vv-cards-grid {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 1rem 0.5rem;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ocultar barra de scroll para mantener limpieza visual */
+.vv-cards-grid::-webkit-scrollbar {
+    display: none;
+}
+
+/* Tarjeta de Oferta con Simpatía Visual */
+.vv-card-destacada {
+    min-width: 280px;
+    max-width: 280px;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 2px solid var(--gray-200);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.vv-card-destacada:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-blue);
+}
+
+.vv-card-image-container {
+    height: 160px;
+    width: 100%;
+    background: var(--gray-100);
+    position: relative;
+    overflow: hidden;
+}
+
+.vv-card-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.vv-card-destacada:hover .vv-card-image-container img {
+    transform: scale(1.1);
+}
+
+.vv-card-body {
+    padding: 1.25rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.vv-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
+
+/* Zona de Carga de Imagen en el Formulario */
+.vv-upload-zone {
+    border: 2px dashed var(--primary-blue);
+    background: var(--gray-50);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--primary-blue);
+}
+
+.vv-upload-zone:hover {
+    background: #eff6ff;
+    border-color: var(--primary-purple);
+}
+
+.vv-upload-zone i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Estilos para el Modal de Solicitud (Overlay) */
+.modal-overlay.active {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    z-index: 1100;
+}
+
+/* Ajuste responsive para las tarjetas en móvil */
+@media (max-width: 768px) {
+    .vv-card-destacada {
+        min-width: 240px;
+    }
+    .vv-card-image-container {
+        height: 130px;
+    }
 }
