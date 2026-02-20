@@ -1,5 +1,6 @@
 // ========== MÓDULO OFERTAS DESTACADAS (Versión Completa 2026) ==========
 
+if (!window.VV) window.VV = {};
 VV.featured = {
     // 1. Solicitar destacar oferta (Mantiene lógica de usuario y agrega Imagen)
     async requestFeatured() {
