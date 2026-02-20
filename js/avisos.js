@@ -2,7 +2,7 @@
 // MÓDULO: AVISOS (Anuncios del Barrio)
 // ========================================
 
-const VV = window.VV || {};
+if (!window.VV) window.VV = {};
 VV.avisos = {
     
     // Mostrar formulario de aviso
@@ -181,3 +181,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 }); // Cierre correcto del DOMContentLoaded
+
