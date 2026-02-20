@@ -1,4 +1,4 @@
-// ========== MÓDULO OFERTAS DESTACADAS (Versión Completa 2026) ==========
+// ========== MÓDULO OFERTAS DESTACADAS (Versión con URL de Imagen) ==========
 
 if (!window.VV) window.VV = {};
 VV.featured = {
@@ -49,9 +49,17 @@ VV.featured = {
                         <div class="vv-upload-zone" style="border: 2px dashed #3498db; padding: 15px; border-radius: 12px; text-align: center; cursor: pointer;" onclick="document.getElementById('featured-image-file').click()">
                             <i class="fas fa-camera" style="font-size: 1.5rem; color: #3498db;"></i>
                             <p id="vv-file-name" style="margin: 5px 0 0; font-size: 0.85rem;">Toca para subir la foto del producto</p>
-                            <input type="file" id="featured-image-file" accept="image/*" style="display:none" 
+                            <input type="file" id="featured-image-file" accept="image/*" style="display:none;" 
                                    onchange="document.getElementById('vv-file-name').innerText = this.files[0].name">
                         </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Opcional: URL de imagen externa</label>
+                        <input type="url" id="featured-url-input" placeholder="https://ejemplo.com/imagen.jpg">
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            Deja vacío para usar la foto que subes. Máx. 5MB para fotos locales.
+                        </small>
                     </div>
 
                     <div class="form-group">
@@ -77,29 +85,56 @@ VV.featured = {
         document.getElementById('featured-request-form').onsubmit = (e) => this.submitRequest(e);
         overlay.onclick = (e) => { if (e.target === overlay) this.closeRequestForm(); };
     },
-
+    
     closeRequestForm() {
         const overlay = document.getElementById('featured-request-overlay');
         if (overlay) overlay.classList.remove('active');
     },
-
+    
     async submitRequest(e) {
         e.preventDefault();
         const btn = e.target.querySelector('.btn-save');
         const fileInput = document.getElementById('featured-image-file');
         const file = fileInput.files[0];
+        const urlInput = document.getElementById('featured-url-input');
+        const url = urlInput.value.trim();
 
-        if (!file) { alert('La foto es obligatoria.'); return; }
+        // Validar: Opción archivo O opción URL (pero no ambas)
+        if (file && url) {
+            alert('Selecciona solo UNA opción: Foto o URL, no ambas.');
+            return;
+        }
+
+        if (!file && !url) {
+            alert('Debes subir una foto o ingresar una URL de imagen.');
+            return;
+        }
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
 
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${VV.data.user.id}/${Date.now()}.${fileExt}`;
+            let filename = null;
 
-            const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file);
-            if (uploadError) throw uploadError;
+            // USAR URL SI EXISTE, SINO USAR ARCHIVO
+            if (url) {
+                // Validar URL
+                try {
+                    new URL(url);
+                } catch (err) {
+                    throw new Error('URL inválida. Verifica el formato.');
+                }
+                filename = url; // Guardar la URL directamente
+            } else {
+                // Procesar archivo (existente)
+                if (!file) throw new Error('No se seleccionó ningún archivo.');
+                
+                const fileExt = file.name.split('.').pop();
+                filename = `${VV.data.user.id}/${Date.now()}.${fileExt}`;
+                
+                const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file);
+                if (uploadError) throw uploadError;
+            }
 
             const duration = parseInt(document.getElementById('featured-duration').value);
             const expiresAt = new Date();
@@ -109,7 +144,7 @@ VV.featured = {
                 product_id: document.getElementById('featured-product').value,
                 title: document.getElementById('featured-title-input').value,
                 description: document.getElementById('featured-description').value,
-                filename: fileName,
+                filename: filename,  // Guarda URL O nombre de archivo
                 duration: duration,
                 status: 'pending',
                 neighborhood: VV.data.neighborhood,
@@ -132,7 +167,7 @@ VV.featured = {
             btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Solicitud';
         }
     },
-
+    
     async loadFeaturedOffers() {
         const container = document.getElementById('featured-offers-carousel');
         if (!container) return;
@@ -150,17 +185,24 @@ VV.featured = {
             container.innerHTML = `
                 <div class="vv-cards-grid">
                     ${data.map(item => {
-                        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(`${item.filename}?v=${Date.now()}`);
+                        // Detectar si filename es URL o nombre de archivo
+                        const isUrl = item.filename.startsWith('http');
+                        const imageUrl = isUrl ? item.filename : 
+                            supabase.storage.from('product-images').getPublicUrl(`${item.filename}?v=${Date.now()}`).data.publicUrl;
+                        
                         return `
                             <div class="vv-card-destacada">
                                 <div class="vv-card-image-container">
-                                    <img src="${publicUrl}" onerror="this.src='https://via.placeholder.com'">
+                                    <img src="${imageUrl}" 
+                                         onerror="this.src='https://via.placeholder.com/300x200'" 
+                                         alt="${item.title}">
                                 </div>
                                 <div class="vv-card-body">
                                     <h4 class="vv-card-title">${item.title}</h4>
                                     <button class="btn-primary" onclick="alert('Pronto: Detalle de ${item.id}')">Ver Detalle</button>
                                 </div>
-                            </div>`;
+                            </div>
+                        `;
                     }).join('')}
                 </div>`;
         } catch (error) {
