@@ -169,7 +169,12 @@ VV.featured = {
     }
 };
 
-// DISPARADOR DE CARGA
-document.addEventListener('DOMContentLoaded', () => {
-    if (VV.featured) VV.featured.loadFeaturedOffers();
+// Al final de js/featured.js
+window.addEventListener('load', () => {
+    console.log("🕒 Esperando estabilidad del DOM...");
+    setTimeout(() => {
+        if (VV.featured && VV.featured.loadFeaturedOffers) {
+            VV.featured.loadFeaturedOffers();
+        }
+    }, 500); // 500ms de cortesía para que el HTML aparezca
 });
