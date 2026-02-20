@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
 VV.featured = {
     // 1. Configuración de URLs
     getPublicUrl: function(fileName) {
-        const supabaseUrl = 'https://<TU-PROJECT-ID>.supabase.co'; // SUSTITUYE POR TU ID
+        const supabaseUrl = 'https://selkbxqazwxxvinnulpb.supabase.co'; // SUSTITUYE POR TU ID
         return `${supabaseUrl}/storage/v1/object/public/product-images/${encodeURIComponent(fileName)}`;
     },
 
@@ -334,3 +334,4 @@ document.addEventListener('DOMContentLoaded', function() {
         VV.featured.loadFeatured();
     }
 });
+
