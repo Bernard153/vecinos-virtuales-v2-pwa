@@ -150,7 +150,7 @@ VV.featured = {
             container.innerHTML = `
                 <div class="vv-cards-grid">
                     ${data.map(item => {
-                        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(item.filename);
+                        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(`${item.filename}?v=${Date.now()}`);
                         return `
                             <div class="vv-card-destacada">
                                 <div class="vv-card-image-container">
