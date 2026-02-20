@@ -291,27 +291,13 @@
         </form>
     </div>
 </div>
-                    <!-- Visor de Ofertas Destacadas -->
-                    <div id="featured-offers-section" style="margin: 2rem 0;">
-                        <div class="featured-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-star" style="color: var(--warning-orange);"></i>
-                                <span id="featured-title">Ofertas Destacadas</span>
-                            </h3>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button id="admin-announcement-btn" class="btn-primary" onclick="VV.featured.createAnnouncement()" style="font-size: 0.85rem; padding: 0.5rem 1rem; display: none; white-space: nowrap;">
-                                    <i class="fas fa-megaphone"></i> <span class="btn-text">Publicar Anuncio</span>
-                                </button>
-                                <button id="featured-request-btn" class="btn-secondary" onclick="VV.featured.requestFeatured()" style="font-size: 0.85rem; padding: 0.5rem 1rem; white-space: nowrap;">
-                                    <i class="fas fa-bullhorn"></i> <span class="btn-text">Destacar mi Oferta</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="featured-offers-carousel" style="position: relative; overflow: hidden;">
-                            <!-- Carrusel de ofertas destacadas -->
-                        </div>
-                    </div>
-
+                    <!-- Carrusel de ofertas destacadas actualizado -->
+<div id="featured-offers-carousel" class="vv-carousel-container">
+    <div id="featured-cards-wrapper" class="vv-cards-grid">
+        <!-- El JS inyectará aquí las tarjetas con imagen -->
+        <div class="vv-loading-state">Cargando ofertas destacadas...</div>
+    </div>
+</div>
                     <!-- Estado de Geolocalización -->
                     <div id="geo-status" style="margin: 1.5rem 0;">
                         <!-- Se llenará dinámicamente -->
