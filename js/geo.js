@@ -130,33 +130,115 @@ VV.geo = {
         });
     },
     
-    // Detectar en qué barrio está el usuario
+    // Detectar en qué barrio está el usuario usando API
     async detectNeighborhood() {
         try {
             const location = await VV.geo.getCurrentLocation();
             
-            // Buscar en qué barrio está
+            console.log('🔍 Detectando barrio para:', location);
+            
+            // MÉTODO 1: Usar API de Nominatim (OpenStreetMap) - MÁS PRECISO
+            try {
+                const neighborhood = await VV.geo.detectNeighborhoodFromAPI(location);
+                if (neighborhood) {
+                    console.log('✅ Barrio detectado por API:', neighborhood);
+                    return {
+                        neighborhood: neighborhood,
+                        location: location,
+                        method: 'api'
+                    };
+                }
+            } catch (apiError) {
+                console.warn('⚠️ API falló, usando método local:', apiError);
+            }
+            
+            // MÉTODO 2: Buscar en barrios locales (fallback)
             for (const [name, data] of Object.entries(VV.geo.neighborhoods)) {
                 if (VV.geo.isPointInPolygon(location.lat, location.lng, data.bounds)) {
+                    console.log('✅ Barrio detectado localmente:', name);
                     return {
                         neighborhood: name,
-                        location: location
+                        location: location,
+                        method: 'local'
                     };
                 }
             }
             
-            // Si no está en ningún barrio registrado, buscar el más cercano
+            // MÉTODO 3: Buscar el más cercano
             const nearest = VV.geo.findNearestNeighborhood(location);
+            console.log('⚠️ Usando barrio más cercano:', nearest);
             return {
                 neighborhood: nearest,
                 location: location,
-                isNearby: true
+                isNearby: true,
+                method: 'nearest'
             };
             
         } catch (error) {
-            console.error('Error detectando barrio:', error);
+            console.error('❌ Error detectando barrio:', error);
             throw error;
         }
+    },
+    
+    // Detectar barrio usando API de Nominatim (OpenStreetMap)
+    async detectNeighborhoodFromAPI(location) {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.lat}&lon=${location.lng}&zoom=16&addressdetails=1`;
+        
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'VecinosVirtuales/1.0'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('API request failed');
+            }
+            
+            const data = await response.json();
+            console.log('📍 Respuesta API:', data);
+            
+            // Extraer barrio de la respuesta
+            const address = data.address;
+            
+            // Prioridad de búsqueda:
+            // 1. suburb (barrio)
+            // 2. neighbourhood (vecindario)
+            // 3. quarter (cuartel)
+            // 4. city_district (distrito)
+            const neighborhood = address.suburb || 
+                               address.neighbourhood || 
+                               address.quarter ||
+                               address.city_district ||
+                               address.village ||
+                               address.town;
+            
+            if (neighborhood) {
+                // Limpiar y formatear nombre
+                return VV.geo.formatNeighborhoodName(neighborhood);
+            }
+            
+            return null;
+            
+        } catch (error) {
+            console.error('❌ Error en API de geolocalización:', error);
+            throw error;
+        }
+    },
+    
+    // Formatear nombre de barrio (normalizado sin tildes)
+    formatNeighborhoodName(name) {
+        // Normalizar: quitar tildes, capitalizar
+        const normalized = name
+            .normalize('NFD') // Descomponer caracteres con tildes
+            .replace(/[\u0300-\u036f]/g, '') // Eliminar marcas diacríticas (tildes)
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ')
+            .trim();
+        
+        console.log(`📝 Normalizando barrio: "${name}" → "${normalized}"`);
+        return normalized;
     },
     
     // Verificar si un punto está dentro de un polígono (Ray Casting Algorithm)
@@ -218,23 +300,118 @@ VV.geo = {
         }
     },
     
-    // Activar geolocalización
+    // Activar geolocalización con modal de confirmación
     async activateGeo() {
         try {
+            // Mostrar modal de carga
+            VV.geo.showDetectionModal();
+            
             const result = await VV.geo.detectNeighborhood();
             
+            // Mostrar resultado y permitir confirmar o buscar manualmente
+            VV.geo.showConfirmationModal(result);
+            
+        } catch (error) {
+            console.error('Error activando geolocalización:', error);
+            VV.geo.closeDetectionModal();
+            alert('Error: ' + error.message + '\n\n¿Deseas buscar tu barrio manualmente?');
+            VV.geo.showManualSearch();
+        }
+    },
+    
+    // Mostrar modal de detección
+    showDetectionModal() {
+        let overlay = document.getElementById('geo-detection-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'geo-detection-overlay';
+            overlay.className = 'modal-overlay';
+            document.body.appendChild(overlay);
+        }
+        
+        overlay.innerHTML = `
+            <div class="modal-form" style="max-width: 400px; text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">📍</div>
+                <h3>Detectando tu ubicación...</h3>
+                <p style="color: var(--gray-600); margin: 1rem 0;">
+                    Estamos buscando tu barrio usando GPS
+                </p>
+                <div class="loading-spinner" style="margin: 2rem auto;">
+                    <div style="border: 4px solid var(--gray-200); border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                </div>
+            </div>
+        `;
+        
+        overlay.classList.add('active');
+    },
+    
+    // Mostrar modal de confirmación
+    showConfirmationModal(result) {
+        const overlay = document.getElementById('geo-detection-overlay');
+        if (!overlay) return;
+        
+        const methodText = result.method === 'api' ? 'GPS preciso' : 
+                          result.method === 'local' ? 'Base de datos local' :
+                          'Barrio más cercano';
+        
+        overlay.innerHTML = `
+            <div class="modal-form" style="max-width: 500px;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 4rem; margin-bottom: 0.5rem;">
+                        ${result.isNearby ? '📍' : '✅'}
+                    </div>
+                    <h3>${result.isNearby ? '¿Es este tu barrio?' : 'Barrio detectado'}</h3>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem;">
+                        ${result.neighborhood}
+                    </div>
+                    <div style="font-size: 0.9rem; opacity: 0.9;">
+                        Detectado por: ${methodText}
+                    </div>
+                    ${result.isNearby ? '<div style="font-size: 0.85rem; opacity: 0.8; margin-top: 0.5rem;">⚠️ No estás exactamente en este barrio, pero es el más cercano</div>' : ''}
+                </div>
+                
+                <div style="background: var(--gray-100); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--gray-700);">
+                        <strong>📍 Coordenadas:</strong><br>
+                        Lat: ${result.location.lat.toFixed(6)}<br>
+                        Lng: ${result.location.lng.toFixed(6)}<br>
+                        Precisión: ${Math.round(result.location.accuracy)}m
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 0.75rem; flex-direction: column;">
+                    <button class="btn-primary" onclick="VV.geo.confirmNeighborhood('${result.neighborhood}', ${JSON.stringify(result.location).replace(/"/g, '&quot;')})" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                        <i class="fas fa-check-circle"></i> Sí, activar en ${result.neighborhood}
+                    </button>
+                    <button class="btn-secondary" onclick="VV.geo.showManualSearch()" style="width: 100%;">
+                        <i class="fas fa-search"></i> Buscar otro barrio
+                    </button>
+                    <button class="btn-cancel" onclick="VV.geo.closeDetectionModal()" style="width: 100%;">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+    
+    // Confirmar barrio y activar
+    async confirmNeighborhood(neighborhood, location) {
+        try {
             // Actualizar usuario
             VV.data.user.isGeoActive = true;
-            VV.data.user.currentNeighborhood = result.neighborhood;
-            VV.data.user.currentLocation = result.location;
+            VV.data.user.currentNeighborhood = neighborhood;
+            VV.data.user.currentLocation = location;
             
             // Guardar en Supabase
             await supabase
                 .from('users')
                 .update({
                     is_geo_active: true,
-                    current_neighborhood: result.neighborhood,
-                    current_location: result.location,
+                    current_neighborhood: neighborhood,
+                    current_location: location,
                     location_updated_at: new Date().toISOString()
                 })
                 .eq('id', VV.data.user.id);
@@ -242,17 +419,225 @@ VV.geo = {
             // Iniciar tracking
             VV.geo.startTracking();
             
-            VV.utils.showSuccess(`📍 Geolocalización activada en ${result.neighborhood}`);
+            VV.geo.closeDetectionModal();
+            VV.utils.showSuccess(`📍 Geolocalización activada en ${neighborhood}`);
             
             // Actualizar UI
             VV.geo.updateLocationUI();
             
-            return result;
+            // Recargar productos del nuevo barrio
+            if (typeof VV.marketplace !== 'undefined') {
+                VV.marketplace.loadShopping();
+            }
             
         } catch (error) {
-            console.error('Error activando geolocalización:', error);
-            alert('Error: ' + error.message);
-            return null;
+            console.error('Error confirmando barrio:', error);
+            alert('Error al activar geolocalización');
+        }
+    },
+    
+    // Cerrar modal
+    closeDetectionModal() {
+        const overlay = document.getElementById('geo-detection-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+        }
+    },
+    
+    // Mostrar búsqueda manual
+    showManualSearch() {
+        const overlay = document.getElementById('geo-detection-overlay');
+        if (!overlay) return;
+        
+        overlay.innerHTML = `
+            <div class="modal-form" style="max-width: 500px;">
+                <h3><i class="fas fa-search"></i> Buscar tu barrio</h3>
+                
+                <div class="form-group">
+                    <label>Escribe el nombre de tu barrio</label>
+                    <input type="text" id="manual-neighborhood-search" placeholder="Ej: Palermo, Villa Crespo..." style="width: 100%; padding: 0.75rem; font-size: 1rem;">
+                    <p style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;">
+                        💡 Escribe al menos 3 letras para buscar
+                    </p>
+                </div>
+                
+                <div id="neighborhood-results" style="max-height: 300px; overflow-y: auto; margin: 1rem 0;"></div>
+                
+                <div style="background: #e0f2fe; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #075985;">
+                        <strong>¿No encuentras tu barrio?</strong><br>
+                        Puedes crear uno nuevo y serás el primer vecino virtual de tu zona.
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn-secondary" onclick="VV.geo.showCreateNeighborhood()" style="flex: 1;">
+                        <i class="fas fa-plus"></i> Crear barrio nuevo
+                    </button>
+                    <button class="btn-cancel" onclick="VV.geo.closeDetectionModal()" style="flex: 1;">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Agregar evento de búsqueda
+        const searchInput = document.getElementById('manual-neighborhood-search');
+        searchInput.focus();
+        searchInput.oninput = () => VV.geo.searchNeighborhoods(searchInput.value);
+    },
+    
+    // Buscar barrios
+    async searchNeighborhoods(query) {
+        const resultsDiv = document.getElementById('neighborhood-results');
+        
+        if (query.length < 3) {
+            resultsDiv.innerHTML = '';
+            return;
+        }
+        
+        resultsDiv.innerHTML = '<p style="text-align: center; color: var(--gray-600);">Buscando...</p>';
+        
+        try {
+            // Buscar en Nominatim
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=10`;
+            
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'VecinosVirtuales/1.0'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.length === 0) {
+                resultsDiv.innerHTML = '<p style="text-align: center; color: var(--gray-600);">No se encontraron resultados</p>';
+                return;
+            }
+            
+            // Filtrar solo barrios/ciudades
+            const neighborhoods = data.filter(item => 
+                item.address && (item.address.suburb || item.address.neighbourhood || item.address.city_district || item.address.city)
+            );
+            
+            resultsDiv.innerHTML = neighborhoods.map(item => {
+                const name = item.address.suburb || item.address.neighbourhood || item.address.city_district || item.address.city;
+                const city = item.address.city || item.address.town || '';
+                const state = item.address.state || '';
+                
+                return `
+                    <div class="neighborhood-result" onclick="VV.geo.selectManualNeighborhood('${name}', ${item.lat}, ${item.lon})" style="padding: 1rem; border: 1px solid var(--gray-300); border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer; transition: all 0.2s;">
+                        <div style="font-weight: bold; font-size: 1.1rem;">${name}</div>
+                        <div style="font-size: 0.85rem; color: var(--gray-600);">${city}${state ? ', ' + state : ''}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Agregar hover effect
+            document.querySelectorAll('.neighborhood-result').forEach(el => {
+                el.onmouseenter = () => el.style.background = 'var(--gray-100)';
+                el.onmouseleave = () => el.style.background = 'white';
+            });
+            
+        } catch (error) {
+            console.error('Error buscando barrios:', error);
+            resultsDiv.innerHTML = '<p style="text-align: center; color: var(--error-red);">Error en la búsqueda</p>';
+        }
+    },
+    
+    // Seleccionar barrio manualmente
+    async selectManualNeighborhood(name, lat, lng) {
+        const location = {
+            lat: parseFloat(lat),
+            lng: parseFloat(lng),
+            accuracy: 0,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Normalizar nombre antes de confirmar
+        const normalizedName = VV.geo.formatNeighborhoodName(name);
+        await VV.geo.confirmNeighborhood(normalizedName, location);
+    },
+    
+    // Mostrar formulario para crear barrio nuevo
+    showCreateNeighborhood() {
+        const overlay = document.getElementById('geo-detection-overlay');
+        if (!overlay) return;
+        
+        overlay.innerHTML = `
+            <div class="modal-form" style="max-width: 500px;">
+                <h3><i class="fas fa-plus-circle"></i> Crear barrio nuevo</h3>
+                
+                <form id="create-neighborhood-form" onsubmit="event.preventDefault(); VV.geo.submitNewNeighborhood();">
+                    <div class="form-group">
+                        <label>Nombre del barrio *</label>
+                        <input type="text" id="new-neighborhood-name" required placeholder="Ej: Villa del Parque">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Ciudad *</label>
+                        <input type="text" id="new-neighborhood-city" required placeholder="Ej: Buenos Aires">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Provincia/Estado</label>
+                        <input type="text" id="new-neighborhood-state" placeholder="Ej: Buenos Aires">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>País *</label>
+                        <input type="text" id="new-neighborhood-country" required placeholder="Ej: Argentina">
+                    </div>
+                    
+                    <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <p style="margin: 0; font-size: 0.9rem; color: #92400e;">
+                            <strong>📌 Importante:</strong><br>
+                            Serás el primer vecino virtual de este barrio. Otros usuarios podrán unirse después.
+                        </p>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="VV.geo.showManualSearch()">Volver</button>
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-check"></i> Crear y activar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+    },
+    
+    // Enviar nuevo barrio
+    async submitNewNeighborhood() {
+        const name = document.getElementById('new-neighborhood-name').value.trim();
+        const city = document.getElementById('new-neighborhood-city').value.trim();
+        const state = document.getElementById('new-neighborhood-state').value.trim();
+        const country = document.getElementById('new-neighborhood-country').value.trim();
+        
+        if (!name || !city || !country) {
+            alert('Por favor completa todos los campos obligatorios');
+            return;
+        }
+        
+        try {
+            // Obtener ubicación actual
+            const location = await VV.geo.getCurrentLocation();
+            
+            // Normalizar nombres (sin tildes, capitalizado)
+            const normalizedName = VV.geo.formatNeighborhoodName(name);
+            const normalizedCity = VV.geo.formatNeighborhoodName(city);
+            
+            // Crear nombre completo del barrio
+            const fullName = `${normalizedName}, ${normalizedCity}`;
+            
+            // Confirmar y activar
+            await VV.geo.confirmNeighborhood(fullName, location);
+            
+            VV.utils.showSuccess(`🎉 ¡Felicitaciones! Eres el primer vecino virtual de ${normalizedName}`);
+            
+        } catch (error) {
+            console.error('Error creando barrio:', error);
+            alert('Error al crear el barrio. Intenta nuevamente.');
         }
     },
     

@@ -8,6 +8,12 @@ VV.improvements = {
         const container = document.getElementById('improvements-list');
         const statsContainer = document.getElementById('improvements-stats');
         
+        // Actualizar nombre del barrio en el título
+        const neighborhoodTitle = document.getElementById('improvements-neighborhood');
+        if (neighborhoodTitle) {
+            neighborhoodTitle.textContent = VV.data.neighborhood;
+        }
+        
         // Verificar si el usuario está en su barrio principal
         const homeNeighborhood = VV.data.user.home_neighborhood || VV.data.user.neighborhood;
         const currentNeighborhood = VV.data.user.current_neighborhood || VV.data.user.neighborhood;

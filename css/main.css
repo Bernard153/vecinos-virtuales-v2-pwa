@@ -95,6 +95,8 @@ body {
 
 .screen.active {
     display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .screen-container {
@@ -145,8 +147,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* ========== FORMULARIOS DE AUTENTICACIÓN ========== */
@@ -260,6 +267,12 @@ body {
     font-size: 1.5rem;
     color: var(--gray-700);
     cursor: pointer;
+    padding: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.menu-toggle:active {
+    transform: scale(0.95);
 }
 
 .header-info {
@@ -544,11 +557,25 @@ body {
     color: white;
 }
 
-.stat-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.stat-icon.green { background: linear-gradient(135deg, #10b981, #059669); }
-.stat-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-.stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.stat-icon.red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.stat-icon.blue {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.stat-icon.green {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.stat-icon.purple {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+}
+
+.stat-icon.orange {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.stat-icon.red {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
 
 .stat-info h3 {
     color: var(--gray-600);
@@ -734,11 +761,14 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 85;
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .overlay.active {
-    display: block;
+    opacity: 1;
+    visibility: visible;
 }
 
 /* ========== BOTÓN VER ANUNCIANTES ========== */
@@ -753,7 +783,7 @@ body {
     border-radius: 50px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     transition: all 0.3s;
     display: none;
@@ -761,7 +791,7 @@ body {
 
 .banner-toggle-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
 
 .banner-toggle-btn i {
@@ -780,68 +810,105 @@ body {
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
     .menu-toggle {
-        display: block;
+        display: block !important;
+        z-index: 101;
     }
-    
+
     .sidebar {
+        position: fixed;
         left: -280px;
-        transition: var(--transition);
+        top: 70px;
+        width: 280px;
+        height: calc(100vh - 70px);
+        transition: left 0.3s ease;
+        z-index: 95;
+        background: white;
     }
-    
+
     .sidebar.open {
         left: 0;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
     }
-    
+
     .main-content {
         margin-left: 0;
         padding: 1rem;
+        padding-bottom: 180px;
     }
-    
+
     .app-header {
         padding: 0 1rem;
     }
-    
+
+    .header-info {
+        gap: 0.5rem;
+    }
+
+    .header-neighborhood {
+        font-size: 0.85rem;
+    }
+
+    /* Destacados responsive */
+    .featured-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .featured-header h3 {
+        font-size: 1.1rem !important;
+    }
+
+    #featured-title {
+        font-size: 0.95rem;
+    }
+
+    #featured-request-btn,
+    #admin-announcement-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
     .shopping-cart {
         width: 100%;
         right: -100%;
     }
-    
+
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .main-modules-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .module-card {
         padding: 1.5rem 1rem;
     }
-    
+
     .module-icon {
         width: 60px;
         height: 60px;
         font-size: 2rem;
     }
-    
+
     .screen-container {
         padding: 1rem;
     }
-    
+
     .logo-large {
         width: 80px;
         height: 80px;
         font-size: 2.5rem;
     }
-    
+
     .screen-container h1 {
         font-size: 2rem;
     }
-    
+
     .logout-btn {
         width: 40px;
         height: 40px;
@@ -853,17 +920,17 @@ body {
     .stats-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .cart-item-controls {
         flex-direction: column;
         gap: 0.5rem;
     }
-    
+
     .modal-form {
         max-width: 95%;
         padding: 1.5rem;
     }
-    
+
     .form-row {
         flex-direction: column;
     }

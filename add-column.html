@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Columna Reservable</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .info {
+            background: #e0f2fe;
+            color: #075985;
+            border: 1px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Agregar Columna "reservable"</h1>
+        
+        <div class="info">
+            <strong>⚠️ Importante:</strong><br>
+            Este script agregará la columna <code>reservable</code> a la tabla <code>products</code> en Supabase.<br><br>
+            Solo necesitas ejecutarlo UNA VEZ.
+        </div>
+        
+        <button onclick="addColumn()">Agregar Columna Reservable</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://selkbxqazwxxvinnulpb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlbGtieHFhend4eHZpbm51bHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDA5MTUsImV4cCI6MjA3NTQ3NjkxNX0.h5YA8tvXPhktoX8dWRalyPCUSndbZtkBHrOviiB1UiE';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        async function addColumn() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'info';
+            resultDiv.innerHTML = '⏳ Verificando columna...';
+            
+            try {
+                // Primero verificar si la columna ya existe
+                const { data: testData, error: testError } = await supabase
+                    .from('products')
+                    .select('reservable')
+                    .limit(1);
+                
+                if (!testError) {
+                    // La columna ya existe
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = '✅ La columna "reservable" ya existe en la tabla products.<br><br>No es necesario hacer nada más.';
+                    return;
+                }
+                
+                // Si llegamos aquí, la columna no existe
+                // Intentamos agregarla usando RPC (si tienes una función)
+                // O mostramos instrucciones
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `
+                    ❌ La columna "reservable" no existe.<br><br>
+                    <strong>Por favor, agrégala manualmente:</strong><br><br>
+                    <strong>Opción 1 - Table Editor:</strong><br>
+                    1. Ve a Supabase → Table Editor<br>
+                    2. Selecciona la tabla "products"<br>
+                    3. Click "+ Add Column"<br>
+                    4. Name: reservable<br>
+                    5. Type: bool<br>
+                    6. Default: false<br>
+                    7. Save<br><br>
+                    
+                    <strong>Opción 2 - SQL Editor:</strong><br>
+                    <code style="background: #f3f4f6; padding: 10px; display: block; margin-top: 10px; border-radius: 4px;">
+                    ALTER TABLE products ADD COLUMN reservable BOOLEAN DEFAULT false;
+                    </code>
+                `;
+                
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
