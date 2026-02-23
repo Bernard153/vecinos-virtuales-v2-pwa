@@ -346,8 +346,8 @@ VV.featured = {
             `).join('');
             } else if (neighborhoodFeatured.length > 0) {
                 html += `
-                <div class="featured-carousel-container" style="position: relative; overflow: hidden; padding: 1rem 0;">
-                    <div class="featured-carousel-track" style="display: flex; gap: 1.5rem; animation: scrollHorizontal ${neighborhoodFeatured.length * 5}s linear infinite;">
+                <div class="featured-carousel-container" style="position: relative; overflow-x: auto; overflow-y: hidden; padding: 1rem 0; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                    <div class="featured-carousel-track" style="display: flex; gap: 1.5rem; animation: scrollHorizontal ${neighborhoodFeatured.length * 5}s linear infinite;" onmouseover="this.style.animationPlayState='paused'" onmouseout="this.style.animationPlayState='running'" ontouchstart="this.style.animationPlayState='paused'" ontouchend="this.style.animationPlayState='running'">
                         ${neighborhoodFeatured.map(offer => VV.featured.renderOfferCard(offer)).join('')}
                         ${neighborhoodFeatured.map(offer => VV.featured.renderOfferCard(offer)).join('')}
                     </div>
@@ -407,8 +407,8 @@ VV.featured = {
                 </div>
                 
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                    <button class="btn-secondary" onclick="VV.featured.contactSeller('${userName}')" style="flex: 1;">
-                        <i class="fas fa-user"></i> Contactar
+                    <button class="btn-secondary" onclick="VV.featured.contactSeller('${offer.user_id}', '${userName}')" style="flex: 1;">
+                        <i class="fab fa-whatsapp"></i> Contactar al WhatsApp
                     </button>
                 </div>
                 
@@ -518,9 +518,40 @@ VV.featured = {
         }
     },
 
-    // Contactar vendedor
-    contactSeller(sellerName) {
-        alert(`Contacta a ${sellerName} a través del chat de la aplicación o pregunta al administrador por sus datos de contacto.`);
+    // Contactar vendedor via WhatsApp
+    async contactSeller(userId, sellerName) {
+        try {
+            // Mostrar estado de carga temporal
+            VV.utils.showSuccess('Obteniendo contacto...');
+
+            // Buscar el teléfono del usuario en Supabase
+            const { data: userData, error } = await supabase
+                .from('users')
+                .select('phone')
+                .eq('id', userId)
+                .single();
+
+            if (error) throw error;
+
+            if (userData && userData.phone) {
+                // Limpiar el teléfono de caracteres no numéricos
+                let phone = userData.phone.replace(/\\D/g, '');
+                // Si el número no tiene código de país, asumir Argentina (54) temporalmente.
+                if (phone.length === 10) {
+                    phone = '549' + phone;
+                } else if (!phone.startsWith('54')) {
+                    phone = '549' + phone; // Aproximación segura para Argentina
+                }
+
+                const message = encodeURIComponent(`¡Hola ${sellerName}! Vi tu oferta destacada en Vecinos Virtuales y me interesa.`);
+                window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+            } else {
+                alert(`No se pudo encontrar el teléfono de ${sellerName}. Intenta contactarlo mediante la sección Compras.`);
+            }
+        } catch (error) {
+            console.error('Error obteniendo contacto:', error);
+            alert(`Ocurrió un error al intentar contactar a ${sellerName}.`);
+        }
     },
 
     // ========== ANUNCIOS DEL ADMINISTRADOR ==========
