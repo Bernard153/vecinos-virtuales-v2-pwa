@@ -407,7 +407,7 @@ VV.featured = {
                 </div>
                 
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                    <button class="btn-secondary" onclick="VV.featured.contactSeller('${offer.user_id}', '${userName}')" style="flex: 1;">
+                    <button class="btn-secondary" onclick="VV.featured.contactSeller('${offer.product_id}', '${userName}')" style="flex: 1;">
                         <i class="fab fa-whatsapp"></i> Contactar al WhatsApp
                     </button>
                 </div>
@@ -519,23 +519,23 @@ VV.featured = {
     },
 
     // Contactar vendedor via WhatsApp
-    async contactSeller(userId, sellerName) {
+    async contactSeller(productId, sellerName) {
         try {
             // Mostrar estado de carga temporal
             VV.utils.showSuccess('Obteniendo contacto...');
 
-            // Buscar el teléfono del usuario en Supabase
-            const { data: userData, error } = await supabase
-                .from('users')
-                .select('phone')
-                .eq('id', userId)
+            // Buscar el teléfono en el producto de Supabase
+            const { data: productData, error } = await supabase
+                .from('products')
+                .select('contact')
+                .eq('id', productId)
                 .single();
 
             if (error) throw error;
 
-            if (userData && userData.phone) {
+            if (productData && productData.contact) {
                 // Limpiar el teléfono de caracteres no numéricos
-                let phone = userData.phone.replace(/\\D/g, '');
+                let phone = productData.contact.replace(/\D/g, '');
                 // Si el número no tiene código de país, asumir Argentina (54) temporalmente.
                 if (phone.length === 10) {
                     phone = '549' + phone;
