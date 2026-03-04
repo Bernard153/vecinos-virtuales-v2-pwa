@@ -914,6 +914,17 @@
   
       <p id="resultado-oferta" style="font-style: italic; color: #555; margin-top: 15px;"></p>
     </div>
+    <!-- ESTO VA EN EL BODY, DEBAJO DEL PRODUCTO PRINCIPAL -->
+    <div id="seccion-tienda-vecino" style="margin-left: 25vw; margin-top: 40px; padding: 20px; clear: both;">
+      <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+      <h3 style="font-family: sans-serif; color: #34495e;">🏠 Más productos de este vendedor</h3>
+  
+    <!-- Aquí es donde el JavaScript 'dibujará' los cuadritos -->
+      <div id="galeria-productos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+        <p style="color: #999;">Cargando catálogo del vecino...</p>
+      </div>
+    </div>
+
         <div id="seccion-comercial">
         <h2 style="color: #2c3e50; text-align: center;">🚀 Impulsa tus Ventas</h2>
         <p style="font-size: 0.9em; color: #666; text-align: center;">La IA creará una oferta profesional para tus vecinos.</p>
@@ -1163,6 +1174,47 @@
     btn.disabled = false;
   }
 }
+<!-- ESTO VA AL FINAL DEL ARCHIVO, ANTES DE </body> -->
+<script>
+async function mostrarGaleriaVendedor(uuidVendedor) {
+  const galeria = document.getElementById('galeria-productos');
+  
+  try {
+    // 1. Pedimos a Supabase los productos de ese UUID
+    const { data: productos, error } = await supabase
+      .from('productos')
+      .select('nombre, precio, url_imagen, categoria')
+      .eq('id_vendedor', uuidVendedor) // Asegúrate que la columna se llame así
+      .limit(6);
+
+    if (error) throw error;
+
+    // 2. Si no hay más productos, avisamos
+    if (!productos || productos.length === 0) {
+      galeria.innerHTML = "<p>Este vecino no tiene más productos publicados.</p>";
+      return;
+    }
+
+    // 3. Limpiamos el 'Cargando...' y pintamos las miniaturas
+    galeria.innerHTML = productos.map(p => `
+      <div style="border: 1px solid #ddd; padding: 10px; border-radius: 8px; text-align: center; background: white; shadow: 2px 2px 5px #eee;">
+        <img src="${p.url_imagen || 'https://via.placeholder.com'}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 5px;">
+        <h4 style="margin: 5px 0; font-size: 14px; color: #333;">${p.nombre}</h4>
+        <span style="background: #e1f5fe; color: #01579b; font-size: 10px; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">${p.categoria || 'General'}</span>
+        <p style="font-weight: bold; color: #27ae60; margin-top: 5px;">$${p.precio}</p>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    console.error("Error Galería:", err);
+    galeria.innerHTML = "<p>No pudimos cargar la galería del vecino.</p>";
+  }
+}
+
+// PARA PROBARLO: 
+// Debes llamar a la función pasando el UUID que tengas a mano.
+// Ejemplo: mostrarGaleriaVendedor('el-uuid-que-venga-de-tu-base');
+</script>
 
 </body>
 </html>
