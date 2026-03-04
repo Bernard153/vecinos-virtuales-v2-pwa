@@ -94,26 +94,48 @@ VV.marketplace = {
             const canModerate = VV.utils.canModerate();
 
             return `
-            <div class="product-card">
-                <div class="card-header">
-                    <h3>${p.product}</h3>
-                    ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
-                    <span class="badge" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white;">🔖 Reservable</span>
-                    <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
-                </div>
-                <p><strong>Vendedor:</strong> ${p.seller_name}</p>
-                <p><strong>Negocio:</strong> ${p.business}</p>
-                <p><strong>Categoría:</strong> ${p.category}</p>
-                <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
-                <div class="card-footer">
-                    <div class="price">
-                        <span class="price-amount">$${p.price}</span>
-                        <span class="price-unit">/ ${p.unit}</span>
-                    </div>
-                    <div class="contact">
-                        <i class="fas fa-phone"></i> ${p.contact}
-                    </div>
-                </div>
+    <div class="product-card">
+        <div class="card-header">
+            <h3>${p.product}</h3>
+            ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
+            <!-- DISTINTIVO DE IA: Estimula la confianza del comprador -->
+            <span class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-size: 0.7rem;">
+                <i class="fas fa-robot"></i> IA Verificado
+            </span>
+        </div>
+    
+        <p><strong>Vendedor:</strong> ${p.seller_name} 
+            <!-- BOTÓN GALERÍA: Conecta con otros productos del mismo UUID -->
+            <button onclick="mostrarGaleriaVendedor('${p.seller_id}')" 
+                    style="background: none; border: none; color: var(--primary-purple); cursor: pointer; font-size: 0.8rem; text-decoration: underline; margin-left: 5px;">
+                <i class="fas fa-store"></i> Ver más
+            </button>
+        </p>
+    
+        <p><strong>Negocio:</strong> ${p.business}</p>
+        <p><strong>Categoría:</strong> <span class="badge-category">${p.category}</span></p>
+    
+        <!-- DESCRIPCIÓN POTENCIADA: Aquí la IA puede ayudar al vecino a vender -->
+        <p style="color: var(--gray-600); margin: 0.5rem 0; font-style: italic;">
+            "${p.description || 'Sin descripción'}"
+        </p>
+
+        <div class="card-footer">
+            <div class="price">
+                <span class="price-amount">$${p.price}</span>
+                <span class="price-unit">/ ${p.unit}</span>
+            </div>
+            <div class="contact">
+                <i class="fas fa-phone"></i> ${p.contact}
+            </div>
+        </div>
+    
+    <!-- ÁREA DE OFERTA IA: Generada por api-comercio-vecinos -->
+    <div id="ai-promo-${p.id}" style="margin-top: 10px; font-size: 0.85rem; color: #059669; font-weight: 500;">
+        ✨ Cargando sugerencia de la IA...
+    </div>
+`;
+
                 <!-- PRECIOS COLABORATIVOS -->
                 <div id="collab-prices-${p.id}" class="collab-prices-container" style="display: none; padding: 0.75rem; background: var(--gray-50); border: 1px dashed var(--gray-300); border-radius: 8px; margin-top: 0.5rem;">
                 </div>
