@@ -1340,6 +1340,10 @@ VV.admin.loadAllProducts = async function () {
                     <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px; font-size: 0.85rem;">
                         <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${product.neighborhood}</strong></p>
                         <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${seller ? seller.name : 'Usuario desconocido'}</p>
+                        <button onclick="mostrarGaleriaVendedor('${product.sellerId}')" 
+                                style="margin-left: 10px; background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.8rem; text-decoration: underline;">
+                            Ver tienda
+                        </button>
                     </div>
                     <div class="product-footer">
                         <span class="product-price">$${product.price}</span>
