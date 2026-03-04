@@ -1060,5 +1060,39 @@
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
+    async function generarOfertaIA() {
+  const btn = event.target;
+  const display = document.getElementById('resultado-oferta');
+  
+  // Datos desde tu HTML o Supabase
+  const datos = {
+    nombre: document.getElementById('nombre-prod').value,
+    precio: document.getElementById('precio-prod').value,
+    stock: document.getElementById('stock-prod').value
+  };
+
+  display.innerText = "Pensando oferta irresistible... 🧠";
+  btn.disabled = true;
+
+  try {
+    const respuesta = await fetch('https://api-comercio-vecinos.cibernico01.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datos)
+    });
+
+    const data = await respuesta.json();
+    
+    // Mostramos el texto que generó Llama 3.3
+    display.innerText = "OFERTA IA: " + data.response;
+    
+  } catch (error) {
+    display.innerText = "Error al conectar con la IA. Revisa la consola.";
+    console.error(error);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 </body>
 </html>
