@@ -560,6 +560,55 @@
                                 top: 0 !important;
                             }
                         }
+                        <style>
+                            #seccion-comercial {
+                            margin-left: 260px; /* Esto empuja el contenido a la derecha del menú lateral */
+                            margin-top: 50px;
+                            margin-right: auto; /* Centra el bloque en el espacio disponible */
+                            max-width: 500px; 
+                            padding: 30px;
+                            background: #ffffff;
+                            border: 1px solid #ddd;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                            font-family: sans-serif;
+                          }
+
+                            .campo-comercial {
+                            display: block;
+                            width: 100%;
+                            padding: 12px;
+                            margin-bottom: 15px;
+                            border: 1px solid #ccc;
+                            border-radius: 6px;
+                            box-sizing: border-box; /* Importante para que el padding no agrande el input */
+                          }
+
+                          #btn-ia {
+                            width: 100%;
+                            padding: 15px;
+                            background-color: #007bff;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            transition: background 0.3s;
+                          }
+
+                          #btn-ia:hover { background-color: #0056b3; }
+
+                          /* Donde aparecerá la respuesta de la IA */
+                          #resultado-oferta { 
+                            margin-top: 20px;
+                            padding: 15px;
+                            background: #f0f7ff;
+                            border-left: 4px solid #007bff;
+                            color: #333;
+                            min-height: 50px;
+                            word-wrap: break-word; /* Evita que el texto se salga del cuadro */
+                          }
+
                     </style>
                 </section>
 
@@ -855,6 +904,18 @@
       <button onclick="generarOfertaIA()">✨ Generar Oferta con IA</button>
   
       <p id="resultado-oferta" style="font-style: italic; color: #555; margin-top: 15px;"></p>
+    </div>
+        <div id="seccion-comercial">
+        <h2 style="color: #2c3e50; text-align: center;">🚀 Impulsa tus Ventas</h2>
+        <p style="font-size: 0.9em; color: #666; text-align: center;">La IA creará una oferta profesional para tus vecinos.</p>
+  
+        <input type="text" id="nombre-prod" class="campo-comercial" placeholder="¿Qué vendes? (ej: Tortas fritas)">
+        <input type="number" id="precio-prod" class="campo-comercial" placeholder="Precio regular ($)">
+        <input type="number" id="stock-prod" class="campo-comercial" placeholder="¿Cuántos tienes para liquidar?">
+  
+        <button id="btn-ia" onclick="generarOfertaIA()">✨ GENERAR OFERTA CON IA</button>
+  
+        <div id="resultado-oferta">La oferta generada aparecerá aquí...</div>
     </div>
     <!-- SECCIÓN MAPA INTERACTIVO -->
     <section id="map-section" class="content-section">
