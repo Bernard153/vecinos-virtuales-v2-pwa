@@ -77,7 +77,48 @@ VV.marketplace = {
         const neighborhoodProducts = VV.data.products.filter(p =>
             !p.neighborhood || isSameNeighborhood(p.neighborhood, VV.data.neighborhood)
         );
-
+        <!-- PRECIOS COLABORATIVOS -->
+                <div id="collab-prices-${p.id}" class="collab-prices-container" style="display: none; padding: 0.75rem; background: var(--gray-50); border: 1px dashed var(--gray-300); border-radius: 8px; margin-top: 0.5rem;">
+                </div>
+                <div style="text-align: right; margin-top: 0.25rem; margin-bottom: 0.5rem;">
+                    <button class="btn-text" onclick="VV.marketplace.showCollabPriceForm('${p.id}', '${p.product.replace(/'/g, "\\'")}')" style="background: none; border: none; color: var(--primary-purple); font-size: 0.8rem; cursor: pointer; text-decoration: underline;">
+                        <i class="fas fa-search-dollar"></i> ¿Lo viste más barato?
+                    </button>
+                </div>
+                ${isOwner ? `
+                    <div class="card-actions" style="margin-top: 1rem;">
+                        <button class="btn-edit" onclick="VV.marketplace.showForm('${p.id}')">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn-delete" onclick="VV.marketplace.deleteProduct('${p.id}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                ` : canModerate ? `
+                    <div style="margin-top: 1rem;">
+                        <button class="btn-delete" onclick="VV.marketplace.deleteProduct('${p.id}')" style="width: 100%;">
+                            <i class="fas fa-trash"></i> Eliminar (Moderador)
+                        </button>
+                    </div>
+                ` : `
+                    <div class="quantity-input" style="margin-top: 1rem;">
+                        <label style="font-size: 0.85rem; color: var(--gray-600);">Cantidad:</label>
+                        <input type="number" id="qty-${p.id}" min="0.01" step="0.01" value="1" style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 4px; margin: 0.25rem 0;">
+                    </div>
+                    <button class="btn-primary" onclick="VV.reservations.create('${p.id}')" style="width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));">
+                        <i class="fas fa-calendar-check"></i> Reservar
+                    </button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button class="btn-secondary" onclick="VV.marketplace.addToCart('${p.id}')" style="flex: 1; font-size: 0.85rem;">
+                            <i class="fas fa-plus"></i> Agenda
+                        </button>
+                        <button class="btn-secondary" onclick="VV.marketplace.compareProduct('${p.product}')" style="flex: 1; font-size: 0.85rem;">
+                            <i class="fas fa-balance-scale"></i> Comparar
+                        </button>
+                    </div>
+                `}
+            </div>
+        `;
         if (neighborhoodProducts.length === 0) {
             container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--gray-600);"><h3>No hay productos en tu barrio</h3></div>`;
             return;
@@ -157,50 +198,8 @@ async function mostrarGaleriaVendedor(idVendedor) {
     console.log("Abriendo tienda de:", idVendedor);
     // Aquí puedes disparar un modal o scroll a la galería
 }
-
-                <!-- PRECIOS COLABORATIVOS -->
-                <div id="collab-prices-${p.id}" class="collab-prices-container" style="display: none; padding: 0.75rem; background: var(--gray-50); border: 1px dashed var(--gray-300); border-radius: 8px; margin-top: 0.5rem;">
-                </div>
-                <div style="text-align: right; margin-top: 0.25rem; margin-bottom: 0.5rem;">
-                    <button class="btn-text" onclick="VV.marketplace.showCollabPriceForm('${p.id}', '${p.product.replace(/'/g, "\\'")}')" style="background: none; border: none; color: var(--primary-purple); font-size: 0.8rem; cursor: pointer; text-decoration: underline;">
-                        <i class="fas fa-search-dollar"></i> ¿Lo viste más barato?
-                    </button>
-                </div>
-                ${isOwner ? `
-                    <div class="card-actions" style="margin-top: 1rem;">
-                        <button class="btn-edit" onclick="VV.marketplace.showForm('${p.id}')">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                        <button class="btn-delete" onclick="VV.marketplace.deleteProduct('${p.id}')">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
-                    </div>
-                ` : canModerate ? `
-                    <div style="margin-top: 1rem;">
-                        <button class="btn-delete" onclick="VV.marketplace.deleteProduct('${p.id}')" style="width: 100%;">
-                            <i class="fas fa-trash"></i> Eliminar (Moderador)
-                        </button>
-                    </div>
-                ` : `
-                    <div class="quantity-input" style="margin-top: 1rem;">
-                        <label style="font-size: 0.85rem; color: var(--gray-600);">Cantidad:</label>
-                        <input type="number" id="qty-${p.id}" min="0.01" step="0.01" value="1" style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 4px; margin: 0.25rem 0;">
-                    </div>
-                    <button class="btn-primary" onclick="VV.reservations.create('${p.id}')" style="width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));">
-                        <i class="fas fa-calendar-check"></i> Reservar
-                    </button>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                        <button class="btn-secondary" onclick="VV.marketplace.addToCart('${p.id}')" style="flex: 1; font-size: 0.85rem;">
-                            <i class="fas fa-plus"></i> Agenda
-                        </button>
-                        <button class="btn-secondary" onclick="VV.marketplace.compareProduct('${p.product}')" style="flex: 1; font-size: 0.85rem;">
-                            <i class="fas fa-balance-scale"></i> Comparar
-                        </button>
-                    </div>
-                `}
-            </div>
-        `;
-        }).join('');
+                
+}).join('');
 
         VV.marketplace.setupFilters();
         VV.marketplace.updateCart();
