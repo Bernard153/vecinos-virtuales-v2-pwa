@@ -11,6 +11,7 @@ const isSameNeighborhood = (neighborhood1, neighborhood2) => {
 };
 
 VV.marketplace = {
+        // ... (Mantén las funciones helper de normalización arriba)
     // Cargar mis productos
     load() {
         const container = document.getElementById('my-products');
@@ -67,86 +68,69 @@ VV.marketplace = {
                 </div>
             </div>
         `).join('');
-    },
-     async function activarSugerenciaIA(id, nombre, precio) {
+    }, // <-- Aquí cerramos load() correctamente
+
+    // Cargar todos los productos (comprar)
+    loadShopping() {
+        const container = document.getElementById('all-products');
+
+        const neighborhoodProducts = VV.data.products.filter(p =>
+            !p.neighborhood || isSameNeighborhood(p.neighborhood, VV.data.neighborhood)
+        );
+
+        if (neighborhoodProducts.length === 0) {
+            container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--gray-600);"><h3>No hay productos en tu barrio</h3></div>`;
+            return;
+        }
+
+        container.innerHTML = neighborhoodProducts.map(p => {
+            const isOwner = p.seller_id === VV.data.user.id;
+            return `
+            <div class="product-card">
+                <div class="card-header">
+                    <h3>${p.product}</h3>
+                    ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
+                    <span class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-size: 0.7rem;"><i class="fas fa-robot"></i> IA Verificado</span>
+                </div>
+                <p><strong>Vendedor:</strong> ${p.seller_name} 
+                    <button onclick="mostrarGaleriaVendedor('${p.seller_id}')" style="background: none; border: none; color: var(--primary-purple); cursor: pointer; font-size: 0.8rem; text-decoration: underline; margin-left: 5px;">
+                        <i class="fas fa-store"></i> Ver más
+                    </button>
+                </p>
+                <p><strong>Negocio:</strong> ${p.business}</p>
+                <p><strong>Categoría:</strong> ${p.category}</p>
+                <p style="color: var(--gray-600); margin: 0.5rem 0; font-style: italic;">"${p.description || ''}"</p>
+                <div class="card-footer">
+                    <div class="price"><span class="price-amount">$${p.price}</span><span class="price-unit">/ ${p.unit}</span></div>
+                    <div class="contact"><i class="fas fa-phone"></i> ${p.contact}</div>
+                </div>
+                <div id="ai-promo-${p.id}" style="margin-top: 10px; font-size: 0.85rem; color: #059669; font-weight: 500;">✨ Cargando sugerencia de la IA...</div>
+            </div>`;
+        }).join('');
+
+        // DISPARAR IA después de cargar
+        neighborhoodProducts.forEach(p => {
+            activarSugerenciaIA(p.id, p.product, p.price);
+        });
+    }
+// ... cerrar el objeto VV.marketplace si hay más funciones abajo
+}; 
+
+// ========== FUNCIONES GLOBALES (AFUERA DEL OBJETO) ==========
+async function activarSugerenciaIA(id, nombre, precio) {
     try {
         const res = await fetch('https://api-comercio-vecinos.cibernico01.workers.dev', {
             method: 'POST',
             body: JSON.stringify({ nombre, precio })
         });
         const data = await res.json();
-        document.getElementById(`ai-promo-${id}`).innerText = "💡 Tip: " + data.oferta;
+        const el = document.getElementById(`ai-promo-${id}`);
+        if (el) el.innerText = "💡 Tip: " + (data.oferta || data.response);
     } catch (e) {
-        document.getElementById(`ai-promo-${id}`).style.display = 'none';
+        const el = document.getElementById(`ai-promo-${id}`);
+        if (el) el.style.display = 'none';
     }
-    }
-   
-    // Cargar todos los productos (comprar)
-    loadShopping() {
-        const container = document.getElementById('all-products');
-
-        // Filtrar solo productos del mismo barrio
-        const neighborhoodProducts = VV.data.products.filter(p =>
-            !p.neighborhood || isSameNeighborhood(p.neighborhood, VV.data.neighborhood)
-        );
-
-        if (neighborhoodProducts.length === 0) {
-            container.innerHTML = `
-                <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--gray-600);">
-                    <i class="fas fa-shopping-bag" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                    <h3>No hay productos en tu barrio</h3>
-                    <p>Sé el primero en publicar productos en ${VV.data.neighborhood}</p>
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = neighborhoodProducts.map(p => {
-            const isOwner = p.seller_id === VV.data.user.id;
-            const canModerate = VV.utils.canModerate();
-
-            return `
-    <div class="product-card">
-        <div class="card-header">
-            <h3>${p.product}</h3>
-            ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
-            <!-- DISTINTIVO DE IA: Estimula la confianza del comprador -->
-            <span class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-size: 0.7rem;">
-                <i class="fas fa-robot"></i> IA Verificado
-            </span>
-        </div>
-    
-        <p><strong>Vendedor:</strong> ${p.seller_name} 
-            <!-- BOTÓN GALERÍA: Conecta con otros productos del mismo UUID -->
-            <button onclick="mostrarGaleriaVendedor('${p.seller_id}')" 
-                    style="background: none; border: none; color: var(--primary-purple); cursor: pointer; font-size: 0.8rem; text-decoration: underline; margin-left: 5px;">
-                <i class="fas fa-store"></i> Ver más
-            </button>
-        </p>
-    
-        <p><strong>Negocio:</strong> ${p.business}</p>
-        <p><strong>Categoría:</strong> <span class="badge-category">${p.category}</span></p>
-    
-        <!-- DESCRIPCIÓN POTENCIADA: Aquí la IA puede ayudar al vecino a vender -->
-        <p style="color: var(--gray-600); margin: 0.5rem 0; font-style: italic;">
-            "${p.description || 'Sin descripción'}"
-        </p>
-
-        <div class="card-footer">
-            <div class="price">
-                <span class="price-amount">$${p.price}</span>
-                <span class="price-unit">/ ${p.unit}</span>
-            </div>
-            <div class="contact">
-                <i class="fas fa-phone"></i> ${p.contact}
-            </div>
-        </div>
-    
-    <!-- ÁREA DE OFERTA IA: Generada por api-comercio-vecinos -->
-    <div id="ai-promo-${p.id}" style="margin-top: 10px; font-size: 0.85rem; color: #059669; font-weight: 500;">
-        ✨ Cargando sugerencia de la IA...
-    </div>
-`;
+}
 
                 <!-- PRECIOS COLABORATIVOS -->
                 <div id="collab-prices-${p.id}" class="collab-prices-container" style="display: none; padding: 0.75rem; background: var(--gray-50); border: 1px dashed var(--gray-300); border-radius: 8px; margin-top: 0.5rem;">
