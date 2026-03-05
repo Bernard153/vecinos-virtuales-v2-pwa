@@ -396,7 +396,7 @@ VV.featured = {
                     ${title}
                 </h3>
                 
-                // REEMPLAZA TU BLOQUE POR ESTE:
+                
                 <div style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
                     <p style="margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <strong>Ofrecido por:</strong> ${userName} #${userNumber}
@@ -817,31 +817,40 @@ async function verTiendaVecino(sellerId, nombre) {
     const titulo = document.getElementById('titulo-galeria');
 
     if (!seccion || !lista) return;
+    // REEMPLAZA LA FUNCIÓN AL FINAL DE FEATURED.JS POR ESTA VERSIÓN:
+async function verTiendaVecino(sellerId, nombre) {
+    const seccion = document.getElementById('galeria-vendedor-seccion');
+    const lista = document.getElementById('lista-productos-vendedor');
+    const titulo = document.getElementById('titulo-galeria');
 
-    // 1. Buscamos los productos del vendedor en la data que ya tiene la App
-    const productos = VV.data.products.filter(p => p.seller_id === sellerId);
+    if (!seccion || !lista) return;
 
-    // 2. Actualizamos el título
+    // BUSCAMOS POR EL CAMPO CORRECTO (Probamos con seller_id o id_vendedor)
+    const productos = VV.data.products.filter(p => 
+        (p.seller_id === sellerId || p.sellerId === sellerId)
+    );
+
     titulo.innerHTML = `<i class="fas fa-store" style="color: #3b82f6;"></i> Tienda de ${nombre}`;
     
-    // 3. Dibujamos las tarjetas con imagen y precio
     if (productos.length === 0) {
-        lista.innerHTML = `<p style="grid-column: 1/-1; padding: 1rem; color: #64748b;">Este vecino no tiene más productos publicados.</p>`;
+        lista.innerHTML = `<div style="grid-column: 1/-1; padding: 1.5rem; text-align: center; color: #64748b;">
+            <p>Este vecino no tiene otros productos publicados en este momento.</p>
+        </div>`;
     } else {
         lista.innerHTML = productos.map(p => `
             <div style="background: white; padding: 10px; border-radius: 10px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                <div style="width: 100%; height: 90px; background: #f8fafc; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
-                    ${p.image ? `<img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-box" style="font-size: 2rem; color: #cbd5e1; line-height: 90px;"></i>`}
+                <div style="width: 100%; height: 90px; background: #f8fafc; border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
+                    ${p.image ? `<img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-box" style="font-size: 1.5rem; color: #cbd5e1;"></i>`}
                 </div>
-                <h4 style="margin: 0; font-size: 0.85rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.product}</h4>
+                <h4 style="margin: 0; font-size: 0.85rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.product || p.name}</h4>
                 <p style="margin: 4px 0 0 0; color: #059669; font-weight: bold; font-size: 0.95rem;">$${p.price}</p>
             </div>
         `).join('');
     }
 
-    // 4. Mostramos la sección y hacemos scroll suave hacia ella
     seccion.style.display = 'block';
     seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+    
 console.log('✅ Módulo FEATURED cargado');
