@@ -164,7 +164,7 @@
     <div id="main-app" class="screen">
         <!-- Header -->
         <header class="app-header">
-            <button class="menu-toggle" id="menu-toggle">
+            <button class="menu-toggle" id="menu-toggle" style="display: none;">
                 <i class="fas fa-bars"></i>
             </button>
             <div class="header-info">
@@ -210,15 +210,6 @@
                         <i class="fas fa-store"></i>
                         <span>Mis Productos</span>
                     </a>
-                <!-- Debajo del producto principal -->
-                <div id="tienda-vecino" style="margin-left: 25vw; padding: 20px; border-top: 2px solid #eee;">
-                  <h3 id="titulo-comercio" style="color: #2c3e50;">🏪 Más de este vecino</h3>
-  
-                <!-- Contenedor de la Galería -->
-                <div id="galeria-productos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;">
-                <!-- Aquí la IA y Supabase inyectarán los productos -->
-                </div>
-                    
                     <a href="#" class="menu-item" data-section="shopping">
                         <i class="fas fa-shopping-bag"></i>
                         <span>Comprar</span>
@@ -569,55 +560,6 @@
                                 top: 0 !important;
                             }
                         }
-                        <style>
-                            #seccion-comercial {
-                            margin-left: 25vw; /* Esto empuja el contenido a la derecha del menú lateral */
-                            margin-top: 50px;
-                            margin-right: auto; /* Centra el bloque en el espacio disponible */
-                            max-width: 500px; 
-                            padding: 30px;
-                            background: #ffffff;
-                            border: 1px solid #ddd;
-                            border-radius: 12px;
-                            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-                            font-family: sans-serif;
-                          }
-
-                            .campo-comercial {
-                            display: block;
-                            width: 100%;
-                            padding: 12px;
-                            margin-bottom: 15px;
-                            border: 1px solid #ccc;
-                            border-radius: 6px;
-                            box-sizing: border-box; /* Importante para que el padding no agrande el input */
-                          }
-
-                          #btn-ia {
-                            width: 100%;
-                            padding: 15px;
-                            background-color: #007bff;
-                            color: white;
-                            border: none;
-                            border-radius: 6px;
-                            font-weight: bold;
-                            cursor: pointer;
-                            transition: background 0.3s;
-                          }
-
-                          #btn-ia:hover { background-color: #0056b3; }
-
-                          /* Donde aparecerá la respuesta de la IA */
-                          #resultado-oferta { 
-                            margin-top: 25px;
-                            padding: 20px;
-                            background: #f0f7ff;
-                            border-left: 4px solid #007bff;
-                            color: #333;
-                            min-height: 50px;
-                            word-wrap: break-word; /* Evita que el texto se salga del cuadro */
-                          }
-
                     </style>
                 </section>
 
@@ -657,13 +599,6 @@
                             <option value="Jardinería">Jardinería</option>
                             <option value="Tecnología">Tecnología</option>
                             <option value="Educación">Educación</option>
-                        </select> 
-                        <select id="admin-product-category-filter" onchange="VV.admin.loadAllProducts()" ...>
-                            <option value="">Todas las categorías</option>
-                            <option value="Comida">Comida 🍎</option>
-                            <option value="Hogar">Hogar 🏠</option>
-                            <option value="Servicios">Servicios 🛠️</option>
-                            <option value="Ropa">Ropa 👕</option>
                             <option value="Otros">Otros</option>
                         </select>
                     </div>
@@ -911,39 +846,7 @@
             </main>
         </div>
     </div>
-    <!-- Formulario simple para probar -->
-    <div id="seccion-comercial">
-      <input type="text" id="nombre-prod" placeholder="Nombre del producto">
-      <input type="number" id="precio-prod" placeholder="Precio">
-      <input type="number" id="stock-prod" placeholder="Stock">
-  
-      <button onclick="generarOfertaIA()">✨ Generar Oferta con IA</button>
-  
-      <p id="resultado-oferta" style="font-style: italic; color: #555; margin-top: 15px;"></p>
-    </div>
-    <!-- ESTO VA EN EL BODY, DEBAJO DEL PRODUCTO PRINCIPAL -->
-    <div id="seccion-tienda-vecino" style="margin-left: 25vw; margin-top: 40px; padding: 20px; clear: both;">
-      <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
-      <h3 style="font-family: sans-serif; color: #34495e;">🏠 Más productos de este vendedor</h3>
-  
-    <!-- Aquí es donde el JavaScript 'dibujará' los cuadritos -->
-      <div id="galeria-productos" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
-        <p style="color: #999;">Cargando catálogo del vecino...</p>
-      </div>
-    </div>
 
-        <div id="seccion-comercial">
-        <h2 style="color: #2c3e50; text-align: center;">🚀 Impulsa tus Ventas</h2>
-        <p style="font-size: 0.9em; color: #666; text-align: center;">La IA creará una oferta profesional para tus vecinos.</p>
-  
-        <input type="text" id="nombre-prod" class="campo-comercial" placeholder="¿Qué vendes? (ej: Tortas fritas)">
-        <input type="number" id="precio-prod" class="campo-comercial" placeholder="Precio regular ($)">
-        <input type="number" id="stock-prod" class="campo-comercial" placeholder="¿Cuántos tienes para liquidar?">
-  
-        <button id="btn-ia" onclick="generarOfertaIA()">✨ GENERAR OFERTA CON IA</button>
-  
-        <div id="resultado-oferta">La oferta generada aparecerá aquí...</div>
-    </div>
     <!-- SECCIÓN MAPA INTERACTIVO -->
     <section id="map-section" class="content-section">
         <div class="section-header">
@@ -1148,80 +1051,5 @@
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
-    async function generarOfertaIA() {
-  const btn = event.target;
-  const display = document.getElementById('resultado-oferta');
-  
-  // Datos desde tu HTML o Supabase
-  const datos = {
-    nombre: document.getElementById('nombre-prod').value,
-    precio: document.getElementById('precio-prod').value,
-    stock: document.getElementById('stock-prod').value
-  };
-
-  display.innerText = "Pensando oferta irresistible... 🧠";
-  btn.disabled = true;
-
-  try {
-    const respuesta = await fetch('https://api-comercio-vecinos.cibernico01.workers.dev', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datos)
-    });
-
-    const data = await respuesta.json();
-    
-    // Mostramos el texto que generó Llama 3.3
-    display.innerText = "OFERTA IA: " + data.response;
-    
-  } catch (error) {
-    display.innerText = "Error al conectar con la IA. Revisa la consola.";
-    console.error(error);
-  } finally {
-    btn.disabled = false;
-  }
-}
-<!-- ESTO VA AL FINAL DEL ARCHIVO, ANTES DE </body> -->
-<script>
-async function mostrarGaleriaVendedor(uuidVendedor) {
-  const galeria = document.getElementById('galeria-productos');
-  
-  try {
-    // 1. Pedimos a Supabase los productos de ese UUID
-    const { data: productos, error } = await supabase
-      .from('productos')
-      .select('nombre, precio, url_imagen, categoria')
-      .eq('id_vendedor', uuidVendedor) // Asegúrate que la columna se llame así
-      .limit(6);
-
-    if (error) throw error;
-
-    // 2. Si no hay más productos, avisamos
-    if (!productos || productos.length === 0) {
-      galeria.innerHTML = "<p>Este vecino no tiene más productos publicados.</p>";
-      return;
-    }
-
-    // 3. Limpiamos el 'Cargando...' y pintamos las miniaturas
-    galeria.innerHTML = productos.map(p => `
-      <div style="border: 1px solid #ddd; padding: 10px; border-radius: 8px; text-align: center; background: white; shadow: 2px 2px 5px #eee;">
-        <img src="${p.url_imagen || 'https://via.placeholder.com'}" style="width: 100%; height: 100px; object-fit: cover; border-radius: 5px;">
-        <h4 style="margin: 5px 0; font-size: 14px; color: #333;">${p.nombre}</h4>
-        <span style="background: #e1f5fe; color: #01579b; font-size: 10px; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;">${p.categoria || 'General'}</span>
-        <p style="font-weight: bold; color: #27ae60; margin-top: 5px;">$${p.precio}</p>
-      </div>
-    `).join('');
-
-  } catch (err) {
-    console.error("Error Galería:", err);
-    galeria.innerHTML = "<p>No pudimos cargar la galería del vecino.</p>";
-  }
-}
-
-// PARA PROBARLO: 
-// Debes llamar a la función pasando el UUID que tengas a mano.
-// Ejemplo: mostrarGaleriaVendedor('el-uuid-que-venga-de-tu-base');
-</script>
-
 </body>
 </html>
