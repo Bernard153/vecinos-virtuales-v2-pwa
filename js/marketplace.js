@@ -68,7 +68,19 @@ VV.marketplace = {
             </div>
         `).join('');
     },
-
+     async function activarSugerenciaIA(id, nombre, precio) {
+    try {
+        const res = await fetch('https://api-comercio-vecinos.cibernico01.workers.dev', {
+            method: 'POST',
+            body: JSON.stringify({ nombre, precio })
+        });
+        const data = await res.json();
+        document.getElementById(`ai-promo-${id}`).innerText = "💡 Tip: " + data.oferta;
+    } catch (e) {
+        document.getElementById(`ai-promo-${id}`).style.display = 'none';
+    }
+    }
+   
     // Cargar todos los productos (comprar)
     loadShopping() {
         const container = document.getElementById('all-products');
@@ -1099,6 +1111,13 @@ VV.marketplace = {
                 </p>
             </div >
                 ` + results.map(p => this.renderProductCard(p)).join('');
+                // Dentro del .map de loadShopping, antes del cierre de la comilla invertida `
+                // Añade este pequeño script de disparo:
+            <script>
+                setTimeout(() => {
+                    activarSugerenciaIA('${p.id}', '${p.product.replace(/'/g, "\\'")}', '${p.price}');
+                }, 100);
+            </script>
 
         // Scroll a resultados
         container.scrollIntoView({ behavior: 'smooth', block: 'start' });
