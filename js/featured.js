@@ -396,11 +396,20 @@ VV.featured = {
                     ${title}
                 </h3>
                 
+                // REEMPLAZA TU BLOQUE POR ESTE:
                 <div style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
-                    <p style="margin: 0 0 0.5rem 0;"><strong>Ofrecido por:</strong> ${userName} #${userNumber}</p>
+                    <p style="margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <strong>Ofrecido por:</strong> ${userName} #${userNumber}
+        
+                        <!-- BOTÓN QUE ACTIVA LA GALERÍA -->
+                        <button onclick="verTiendaVecino('${offer.seller_id}', '${userName.replace(/'/g, "\\'")}')" 
+                                style="background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <i class="fas fa-store"></i> Ver todo de ${userName}
+                        </button>
+                    </p>
                     ${description ? `<p style="margin: 0 0 0.5rem 0; color: var(--gray-700);">${description}</p>` : ''}
                 </div>
-                
+
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 0.85rem; color: var(--gray-600);">
                     <span><i class="fas fa-map-marker-alt"></i> ${offer.neighborhood}</span>
                     <span><i class="fas fa-clock"></i> ${daysLeft} día${daysLeft !== 1 ? 's' : ''} restante${daysLeft !== 1 ? 's' : ''}</span>
@@ -801,5 +810,38 @@ VV.featured = {
         `;
     }
 };
+// FUNCIÓN GLOBAL PARA MOSTRAR LA TIENDA DEL VECINO
+async function verTiendaVecino(sellerId, nombre) {
+    const seccion = document.getElementById('galeria-vendedor-seccion');
+    const lista = document.getElementById('lista-productos-vendedor');
+    const titulo = document.getElementById('titulo-galeria');
+
+    if (!seccion || !lista) return;
+
+    // 1. Buscamos los productos del vendedor en la data que ya tiene la App
+    const productos = VV.data.products.filter(p => p.seller_id === sellerId);
+
+    // 2. Actualizamos el título
+    titulo.innerHTML = `<i class="fas fa-store" style="color: #3b82f6;"></i> Tienda de ${nombre}`;
+    
+    // 3. Dibujamos las tarjetas con imagen y precio
+    if (productos.length === 0) {
+        lista.innerHTML = `<p style="grid-column: 1/-1; padding: 1rem; color: #64748b;">Este vecino no tiene más productos publicados.</p>`;
+    } else {
+        lista.innerHTML = productos.map(p => `
+            <div style="background: white; padding: 10px; border-radius: 10px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <div style="width: 100%; height: 90px; background: #f8fafc; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
+                    ${p.image ? `<img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-box" style="font-size: 2rem; color: #cbd5e1; line-height: 90px;"></i>`}
+                </div>
+                <h4 style="margin: 0; font-size: 0.85rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.product}</h4>
+                <p style="margin: 4px 0 0 0; color: #059669; font-weight: bold; font-size: 0.95rem;">$${p.price}</p>
+            </div>
+        `).join('');
+    }
+
+    // 4. Mostramos la sección y hacemos scroll suave hacia ella
+    seccion.style.display = 'block';
+    seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 console.log('✅ Módulo FEATURED cargado');
