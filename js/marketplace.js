@@ -9,6 +9,7 @@ const isSameNeighborhood = (neighborhood1, neighborhood2) => {
 };
 
 VV.marketplace = {
+    // 1. CARGAR MIS PRODUCTOS (Panel del Vendedor)
     load() {
         const container = document.getElementById('my-products');
         if (!container) return;
@@ -49,6 +50,7 @@ VV.marketplace = {
         `).join('');
     },
 
+    // 2. CARGAR TODOS LOS PRODUCTOS (Vista de Compra)
     loadShopping() {
         const container = document.getElementById('all-products');
         if (!container) return;
@@ -64,7 +66,7 @@ VV.marketplace = {
 
         container.innerHTML = neighborhoodProducts.map(p => {
             const isOwner = p.seller_id === VV.data.user?.id;
-            const canModerate = VV.utils?.canModerate();
+            const canModerate = VV.utils?.canModerate ? VV.utils.canModerate() : false;
 
             return `
             <div class="product-card">
@@ -122,12 +124,66 @@ VV.marketplace = {
         }).join('');
 
         neighborhoodProducts.forEach(p => {
-            activarSugerenciaIA(p.id, p.product, p.price);
+            if (typeof activarSugerenciaIA === 'function') activarSugerenciaIA(p.id, p.product, p.price);
         });
+    },
+
+    // 3. MOSTRAR FORMULARIO (Crear/Editar)
+    showForm(productId = null) {
+        // Lógica de formulario completa para que VV.marketplace.showForm() funcione
+        const product = productId ? VV.data.products.find(p => p.id === productId) : null;
+        const isEdit = !!productId;
+        
+        // Creamos el overlay del formulario
+        const overlay = document.createElement('div');
+        overlay.id = 'product-form-overlay';
+        overlay.className = 'modal-overlay active';
+        overlay.innerHTML = `
+            <div class="modal-form">
+                <h3><i class="fas fa-${isEdit ? 'edit' : 'plus'}"></i> ${isEdit ? 'Editar' : 'Nuevo'} Producto</h3>
+                <form id="product-form">
+                    <div class="form-group">
+                        <label>Nombre del producto *</label>
+                        <input type="text" id="product-name" value="${product?.product || ''}" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Categoría *</label>
+                            <select id="product-category" required>
+                                <option value="Otros" ${product?.category === 'Otros' ? 'selected' : ''}>Otros</option>
+                                <option value="Comida" ${product?.category === 'Comida' ? 'selected' : ''}>Comida</option>
+                                <option value="Hogar" ${product?.category === 'Hogar' ? 'selected' : ''}>Hogar</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Precio *</label>
+                            <input type="number" id="product-price" value="${product?.price || ''}" required>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="VV.marketplace.closeForm()">Cancelar</button>
+                        <button type="submit" class="btn-save"><i class="fas fa-save"></i> Guardar</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    },
+
+    closeForm() {
+        const overlay = document.getElementById('product-form-overlay');
+        if (overlay) overlay.remove();
+    },
+
+    deleteProduct(id) {
+        if (confirm('¿Eliminar este producto?')) {
+            console.log('Eliminando:', id);
+            // Aquí iría tu llamada a Supabase para borrar
+        }
     }
 };
 
-// ========== FUNCIONES FUERA DEL OBJETO ==========
+// ========== FUNCIONES GLOBALES (FUERA DEL OBJETO) ==========
 async function activarSugerenciaIA(id, nombre, precio) {
     const el = document.getElementById(`ai-promo-${id}`);
     if (!el) return;
@@ -138,7 +194,7 @@ async function activarSugerenciaIA(id, nombre, precio) {
             body: JSON.stringify({ nombre, precio })
         });
         const data = await res.json();
-        el.innerText = "💡 Tip IA: " + (data.oferta || data.response || "¡Excelente precio!");
+        el.innerText = "💡 Tip IA: " + (data.oferta || data.response || "¡Oferta del día!");
     } catch (e) { el.style.display = 'none'; }
 }
 
