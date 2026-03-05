@@ -393,7 +393,14 @@ async function mostrarGaleriaVendedor(idVendedor) {
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
-                        <textarea id="product-description" rows="3">${product?.description || ''}</textarea>
+                        <div style="display: flex; gap: 5px;">
+                            <textarea id="product-description" rows="3" style="flex: 1;">${product?.description || ''}</textarea>
+                            <button type="button" onclick="mejorarDescripcionConIA()" 
+                                style="background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 4px; padding: 5px; cursor: pointer;" 
+                                title="Mejorar con IA">
+                                ✨
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>
@@ -1215,5 +1222,44 @@ async function mostrarGaleriaVendedor(idVendedor) {
 window.toggleCart = function () {
     document.getElementById('shopping-cart').classList.toggle('active');
 };
+// ... (Aquí termina el objeto VV.marketplace)
+}; 
+
+// ========== FUNCIONES DE APOYO (FUERA DEL OBJETO) ==========
+
+async function mejorarDescripcionConIA() {
+    const nombre = document.getElementById('product-name').value;
+    const descElement = document.getElementById('product-description');
+    
+    if(!nombre) return alert("Escribe primero el nombre del producto");
+    
+    descElement.placeholder = "IA redactando...";
+    try {
+        const res = await fetch('https://api-comercio-vecinos.cibernico01.workers.dev', {
+            method: 'POST',
+            body: JSON.stringify({ nombre: nombre, precio: "0" })
+        });
+        const data = await res.json();
+        descElement.value = data.oferta || data.response;
+    } catch (e) {
+        descElement.placeholder = "Error al conectar con la IA";
+    }
+}
+
+async function activarSugerenciaIA(id, nombre, precio) {
+    try {
+        const res = await fetch('https://api-comercio-vecinos.cibernico01.workers.dev', {
+            method: 'POST',
+            body: JSON.stringify({ nombre, precio })
+        });
+        const data = await res.json();
+        const el = document.getElementById(`ai-promo-${id}`);
+        if (el) el.innerText = "💡 Tip: " + (data.oferta || data.response);
+    } catch (e) {
+        const el = document.getElementById(`ai-promo-${id}`);
+        if (el) el.style.display = 'none';
+    }
+}
+
 
 console.log('✅ Módulo MARKETPLACE cargado');
