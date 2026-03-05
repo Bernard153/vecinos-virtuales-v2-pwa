@@ -607,6 +607,9 @@ VV.auth = {
         const moderatorMenu = document.getElementById('moderator-menu-item');
         const sponsorRequestMenu = document.getElementById('sponsor-request-menu-item');
         const editBannerBtn = document.getElementById('edit-banner-btn');
+        const adminProductsMenu = document.getElementById('admin-products-menu');
+        const marketplaceMenu = document.getElementById('menu-item-marketplace'); // Asegúrate que el ID sea el de tu Marketplace
+        const myProductsMenu = document.getElementById('menu-item-my-products');
         
         if (VV.utils.isAdmin()) {
             // Admin ve todo
@@ -618,6 +621,15 @@ VV.auth = {
             if (moderatorMenu) moderatorMenu.style.display = 'none';
             if (sponsorRequestMenu) sponsorRequestMenu.style.display = 'none';
             if (editBannerBtn) editBannerBtn.style.display = 'inline-block';
+            if (adminProductsMenu) adminProductsMenu.style.display = 'flex';
+            if (marketplaceMenu) marketplaceMenu.style.display = 'flex';
+            if (myProductsMenu) myProductsMenu.style.display = 'flex';
+            if (VV.utils.isAdmin()) {
+                console.log("🔓 Modo Admin Activado");
+                if (adminMenu) adminMenu.style.display = 'flex';
+                if (usersMenu) usersMenu.style.display = 'flex';
+                if (adminNeighborhoodsMenu) adminNeighborhoodsMenu.style.display = 'flex';
+                if (adminImprovementsMenu) adminImprovementsMenu.style.display = 'flex';
             VV.admin.loadBannerImage();
         } else if (VV.utils.isModerator()) {
             // Moderador solo ve su panel
@@ -640,6 +652,12 @@ VV.auth = {
             if (moderatorMenu) moderatorMenu.style.display = 'none';
             if (sponsorRequestMenu) sponsorRequestMenu.style.display = 'flex';
             if (editBannerBtn) editBannerBtn.style.display = 'none';
+                console.log("🏠 Modo Vecino Activo");
+            // Aquí ocultamos solo lo que es estrictamente para el Dueño de la App
+            if (adminMenu) adminMenu.style.display = 'none';
+            if (usersMenu) usersMenu.style.display = 'none';
+            if (adminNeighborhoodsMenu) adminNeighborhoodsMenu.style.display = 'none';
+            if (adminImprovementsMenu) adminImprovementsMenu.style.display = 'none';
             VV.admin.loadBannerImage();
         }
     },
