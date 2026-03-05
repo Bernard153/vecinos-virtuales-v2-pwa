@@ -107,15 +107,36 @@ VV.marketplace = {
                 <div id="ai-promo-${p.id}" style="margin-top: 10px; font-size: 0.85rem; color: #059669; font-weight: 500;">✨ Cargando sugerencia de la IA...</div>
             </div>`;
         }).join('');
+        // ... (donde termina el join de las cards)
+        // Disparo seguro de la IA
+        if (typeof activarSugerenciaIA === 'function') {
+            neighborhoodProducts.forEach(p => {
+                activarSugerenciaIA(p.id, p.product, p.price);
+            });
+        }
+    }, // Aquí termina loadShopping
+}; // Aquí se CIERRA el objeto VV.marketplace con punto y coma
 
-        // DISPARAR IA después de cargar
-        neighborhoodProducts.forEach(p => {
-            activarSugerenciaIA(p.id, p.product, p.price);
+// --- FUNCIONES EXTERNAS (FUERA DE TODO OBJETO) ---
+async function activarSugerenciaIA(id, nombre, precio) {
+    try {
+        const res = await fetch('https://api-comercio-vecinos.cibernico01.workers.dev', {
+            method: 'POST',
+            body: JSON.stringify({ nombre, precio })
         });
+        const data = await res.json();
+        const el = document.getElementById(`ai-promo-${id}`);
+        if (el) el.innerText = "💡 Tip: " + (data.oferta || data.response || "¡Gran oportunidad!");
+    } catch (e) {
+        console.log("IA en espera...");
     }
-// ... cerrar el objeto VV.marketplace si hay más funciones abajo
-}; 
+}
 
+async function mostrarGaleriaVendedor(idVendedor) {
+    // Si no tienes la lógica de la galería lista, al menos deja la función vacía
+    // para que el botón no de error al hacer clic.
+    console.log("Cargando galería de:", idVendedor);
+}
 // ========== FUNCIONES GLOBALES (AFUERA DEL OBJETO) ==========
 async function activarSugerenciaIA(id, nombre, precio) {
     try {
