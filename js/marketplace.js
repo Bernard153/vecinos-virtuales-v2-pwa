@@ -28,6 +28,16 @@ VV.marketplace = {
                 </div>
             `;
             return;
+            handleImageSelect(input) {
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.getElementById('product-image-preview');
+                        preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+                    reader.readAsDataURL(input.files[0]);
+                }
+            },
         }
 
         container.innerHTML = myProducts.map(p => `
@@ -351,6 +361,22 @@ VV.marketplace = {
                         <label>Descripción</label>
                         <textarea id="product-description" rows="3">${product?.description || ''}</textarea>
                     </div>
+                    <div class="form-group">
+                    <label>Foto del producto</label>
+                    <div id="product-image-preview" style="width: 100%; height: 180px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; margin-top: 0.5rem; position: relative;">
+                        ${product?.image_path ? 
+            `                <img src="https://selkbxqazwxxvinnulpb.supabase.co{product.image_path}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+            `                <div style="text-align: center; color: #94a3b8;">
+                                <i class="fas fa-camera" style="font-size: 2.5rem; margin-bottom: 0.5rem;"></i>
+                                <p style="margin: 0; font-size: 0.9rem;">Sin imagen de catálogo</p>
+                            </div>`
+        }
+    </div>
+    <input type="file" id="product-image-input" accept="image/*" style="display: none;" onchange="VV.marketplace.handleImageSelect(this)">
+    <button type="button" onclick="document.getElementById('product-image-input').click()" class="btn-secondary" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem;">
+        <i class="fas fa-upload"></i> ${product?.image_path ? 'Cambiar Foto' : 'Subir Foto'}
+    </button>
+</div>
                     <div class="form-group">
                         <label>
                             <input type="checkbox" id="product-featured" ${product?.featured ? 'checked' : ''}> 
