@@ -817,33 +817,37 @@ async function verTiendaVecino(sellerId, nombre) {
 
     if (!seccion || !lista) return;
 
-    // FILTRO ESTRICTO: Convertimos ambos a String para evitar errores de comparación
-    const productos = VV.data.products.filter(p => 
-        String(p.seller_id) === String(sellerId)
-    );
+    // Convertimos a String y limpiamos para asegurar la comparación
+    const idBusqueda = String(sellerId).trim();
+
+    // FILTRO DINÁMICO: Busca en cualquier propiedad que pueda ser el ID del vendedor
+    const productos = VV.data.products.filter(p => {
+        const pId = String(p.seller_id || p.sellerId || p.user_id || "").trim();
+        return pId === idBusqueda && pId !== "";
+    });
+
+    // DEBUG para que veas en la consola (F12) qué está llegando
+    console.log("Buscando para:", nombre, "ID enviado:", idBusqueda);
+    console.log("Primer producto de la base:", VV.data.products[0]);
 
     titulo.innerHTML = `<i class="fas fa-store" style="color: #3b82f6;"></i> Catálogo de ${nombre}`;
     
     if (productos.length === 0) {
-        lista.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">No se encontraron otros productos de este vecino.</p>`;
+        lista.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">
+            <p>No se encontraron otros productos vinculados a este ID (${idBusqueda}).</p>
+        </div>`;
     } else {
         lista.innerHTML = productos.map(p => {
-            // Probamos diferentes nombres de columna para la imagen
-            const imagenURL = p.image || p.image_url || p.imageUrl || null;
+            // Intentamos todas las rutas posibles de la imagen
+            const img = p.image || p.image_url || p.imageUrl || p.foto || null;
             
             return `
             <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                 <div style="width: 100%; height: 100px; background: #f1f5f9; border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
-                    ${imagenURL ? `<img src="${imagenURL}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com'">` : `<i class="fas fa-box" style="font-size: 1.8rem; color: #cbd5e1;"></i>`}
+                    ${img ? `<img src="${img}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.innerHTML='<i class=\'fas fa-image\' style=\'color:#cbd5e1\'></i>'">` : `<i class="fas fa-box" style="font-size: 1.8rem; color: #cbd5e1;"></i>`}
                 </div>
-                <h4 style="margin: 0; font-size: 0.9rem; color: #1e293b;">${p.product || p.name}</h4>
+                <h4 style="margin: 0; font-size: 0.85rem; color: #1e293b;">${p.product || p.nombre || "Producto"}</h4>
                 <p style="margin: 6px 0 0 0; color: #10b981; font-weight: 700;">$${p.price}</p>
-                
-                <!-- Botón de detalle corregido para el Marketplace -->
-                <button onclick="VV.utils.showSection('marketplace'); setTimeout(() => { VV.marketplace.loadShopping(); }, 100);" 
-                        style="margin-top: 10px; width: 100%; background: #eff6ff; color: #2563eb; border: none; padding: 6px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500;">
-                    Ir al Marketplace
-                </button>
             </div>`;
         }).join('');
     }
