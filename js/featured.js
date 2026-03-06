@@ -402,9 +402,9 @@ VV.featured = {
                         <strong>Ofrecido por:</strong> ${userName} #${userNumber}
         
                         <!-- BOTÓN QUE ACTIVA LA GALERÍA -->
-                        <button onclick="verTiendaVecino('${offer.seller_id}', '${userName.replace(/'/g, "\\'")}')" 
-                                style="background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                            <i class="fas fa-store"></i> Ver todo de ${userName}
+                        <button onclick="verTiendaVecino('${offer.seller_id || offer.sellerId || offer.user_id || offer.userId}', '${userName.replace(/'/g, "\\'")}')" 
+                                style="background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; cursor: pointer;">
+                            <i class="fas fa-store"></i> Ver todo
                         </button>
                     </p>
                     ${description ? `<p style="margin: 0 0 0.5rem 0; color: var(--gray-700);">${description}</p>` : ''}
@@ -815,43 +815,37 @@ async function verTiendaVecino(sellerId, nombre) {
     const lista = document.getElementById('lista-productos-vendedor');
     const titulo = document.getElementById('titulo-galeria');
 
-    if (!seccion || !lista) return;
-
-    // Convertimos a String y limpiamos para asegurar la comparación
-    const idBusqueda = String(sellerId).trim();
-
-    // FILTRO DINÁMICO: Busca en cualquier propiedad que pueda ser el ID del vendedor
-    const productos = VV.data.products.filter(p => {
-        const pId = String(p.seller_id || p.sellerId || p.user_id || "").trim();
-        return pId === idBusqueda && pId !== "";
-    });
-
-    // DEBUG para que veas en la consola (F12) qué está llegando
-    console.log("Buscando para:", nombre, "ID enviado:", idBusqueda);
-    console.log("Primer producto de la base:", VV.data.products[0]);
-
-    titulo.innerHTML = `<i class="fas fa-store" style="color: #3b82f6;"></i> Catálogo de ${nombre}`;
-    
-    if (productos.length === 0) {
-        lista.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">
-            <p>No se encontraron otros productos vinculados a este ID (${idBusqueda}).</p>
-        </div>`;
-    } else {
-        lista.innerHTML = productos.map(p => {
-            // Intentamos todas las rutas posibles de la imagen
-            const img = p.image || p.image_url || p.imageUrl || p.foto || null;
-            
-            return `
-            <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                <div style="width: 100%; height: 100px; background: #f1f5f9; border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
-                    ${img ? `<img src="${img}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.innerHTML='<i class=\'fas fa-image\' style=\'color:#cbd5e1\'></i>'">` : `<i class="fas fa-box" style="font-size: 1.8rem; color: #cbd5e1;"></i>`}
-                </div>
-                <h4 style="margin: 0; font-size: 0.85rem; color: #1e293b;">${p.product || p.nombre || "Producto"}</h4>
-                <p style="margin: 6px 0 0 0; color: #10b981; font-weight: 700;">$${p.price}</p>
-            </div>`;
-        }).join('');
+    // Si el ID llega mal, avisamos para no romper la App
+    if (!sellerId || sellerId === 'undefined') {
+        console.error("Error: El ID del vendedor no llegó correctamente.");
+        alert("Lo sentimos, no pudimos identificar al vendedor de esta oferta.");
+        return;
     }
 
+    const idBusqueda = String(sellerId).trim();
+    
+    // FILTRO DINÁMICO: Buscamos en toda la base de productos
+    const productos = VV.data.products.filter(p => {
+        const pId = String(p.seller_id || p.sellerId || p.user_id || "").trim();
+        return pId === idBusqueda;
+    });
+
+    titulo.innerHTML = `<i class="fas fa-store" style="color: #3b82f6;"></i> Catálogo de ${nombre}`;
     seccion.style.display = 'block';
+
+    if (productos.length === 0) {
+        lista.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">No hay otros productos públicos de este vecino.</p>`;
+    } else {
+        lista.innerHTML = productos.map(p => `
+            <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                <div style="width: 100%; height: 90px; background: #f8fafc; border-radius: 8px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
+                    ${p.image ? `<img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-box" style="font-size: 1.5rem; color: #cbd5e1;"></i>`}
+                </div>
+                <h4 style="margin: 0; font-size: 0.85rem; color: #1e293b;">${p.product || p.name}</h4>
+                <p style="margin: 4px 0 0 0; color: #10b981; font-weight: bold; font-size: 0.95rem;">$${p.price}</p>
+            </div>
+        `).join('');
+    }
+
     seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
