@@ -815,36 +815,43 @@ async function verTiendaVecino(sellerId, nombre) {
     const lista = document.getElementById('lista-productos-vendedor');
     const titulo = document.getElementById('titulo-galeria');
 
-    // Si el ID llega mal, avisamos para no romper la App
-    if (!sellerId || sellerId === 'undefined') {
-        console.error("Error: El ID del vendedor no llegó correctamente.");
-        alert("Lo sentimos, no pudimos identificar al vendedor de esta oferta.");
-        return;
-    }
+    if (!sellerId || sellerId === 'undefined') return;
 
     const idBusqueda = String(sellerId).trim();
-    
-    // FILTRO DINÁMICO: Buscamos en toda la base de productos
-    const productos = VV.data.products.filter(p => {
-        const pId = String(p.seller_id || p.sellerId || p.user_id || "").trim();
-        return pId === idBusqueda;
-    });
+    // Filtramos productos del mismo vendedor
+    const productos = VV.data.products.filter(p => 
+        String(p.seller_id || p.sellerId || p.user_id).trim() === idBusqueda
+    );
 
     titulo.innerHTML = `<i class="fas fa-store" style="color: #3b82f6;"></i> Catálogo de ${nombre}`;
     seccion.style.display = 'block';
 
     if (productos.length === 0) {
-        lista.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">No hay otros productos públicos de este vecino.</p>`;
+        lista.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">No hay otros productos públicos.</p>`;
     } else {
-        lista.innerHTML = productos.map(p => `
-            <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                <div style="width: 100%; height: 90px; background: #f8fafc; border-radius: 8px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
-                    ${p.image ? `<img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-box" style="font-size: 1.5rem; color: #cbd5e1;"></i>`}
+        lista.innerHTML = productos.map(p => {
+            // DETECTAR LA IMAGEN CORRECTA
+            const imgUrl = p.image || p.image_url || p.imageUrl || p.foto;
+            
+            return `
+            <div class="product-card-mini" style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer;" 
+                 onclick="VV.marketplace.showProductDetail('${p.id}')">
+                
+                <div style="width: 100%; height: 110px; background: #f8fafc; border-radius: 8px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
+                    ${imgUrl ? 
+                        `<img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com'">` : 
+                        `<i class="fas fa-camera" style="font-size: 1.5rem; color: #cbd5e1;"></i>`
+                    }
                 </div>
-                <h4 style="margin: 0; font-size: 0.85rem; color: #1e293b;">${p.product || p.name}</h4>
-                <p style="margin: 4px 0 0 0; color: #10b981; font-weight: bold; font-size: 0.95rem;">$${p.price}</p>
-            </div>
-        `).join('');
+                
+                <h4 style="margin: 0; font-size: 0.85rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.product || p.name}</h4>
+                <p style="margin: 4px 0 0 0; color: #059669; font-weight: bold; font-size: 0.95rem;">$${p.price}</p>
+                
+                <button style="margin-top: 8px; width: 100%; background: #3b82f6; color: white; border: none; padding: 5px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;">
+                    <i class="fas fa-search-plus"></i> Ver Detalle
+                </button>
+            </div>`;
+        }).join('');
     }
 
     seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
