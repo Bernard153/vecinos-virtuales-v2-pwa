@@ -810,7 +810,6 @@ VV.featured = {
         `;
     }
 };
-// FUNCIÓN GLOBAL PARA MOSTRAR LA TIENDA DEL VECINO
 async function verTiendaVecino(sellerId, nombre) {
     const seccion = document.getElementById('galeria-vendedor-seccion');
     const lista = document.getElementById('lista-productos-vendedor');
@@ -818,32 +817,33 @@ async function verTiendaVecino(sellerId, nombre) {
 
     if (!seccion || !lista) return;
 
-    // 1. Buscamos los productos del vendedor en la data que ya tiene la App
-    const productos = VV.data.products.filter(p => p.seller_id === sellerId);
+    // Buscamos productos (limpiamos el ID por si viene con espacios o es número)
+    const idBusqueda = String(sellerId).trim();
+    const productos = VV.data.products.filter(p => 
+        String(p.seller_id).trim() === idBusqueda || 
+        String(p.sellerId).trim() === idBusqueda
+    );
 
-    // 2. Actualizamos el título
     titulo.innerHTML = `<i class="fas fa-store" style="color: #3b82f6;"></i> Tienda de ${nombre}`;
     
-    // 3. Dibujamos las tarjetas con imagen y precio
     if (productos.length === 0) {
-        lista.innerHTML = `<p style="grid-column: 1/-1; padding: 1rem; color: #64748b;">Este vecino no tiene más productos publicados.</p>`;
+        lista.innerHTML = `<div style="grid-column: 1/-1; padding: 2rem; text-align: center; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+            <i class="fas fa-ghost" style="font-size: 2rem; margin-bottom: 10px;"></i>
+            <p>Este vecino no tiene otros productos cargados actualmente.</p>
+        </div>`;
     } else {
         lista.innerHTML = productos.map(p => `
-            <div style="background: white; padding: 10px; border-radius: 10px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                <div style="width: 100%; height: 90px; background: #f8fafc; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
-                    ${p.image ? `<img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-box" style="font-size: 2rem; color: #cbd5e1; line-height: 90px;"></i>`}
+            <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                <div style="width: 100%; height: 100px; background: #f1f5f9; border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
+                    ${p.image ? `<img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-box" style="font-size: 1.8rem; color: #cbd5e1;"></i>`}
                 </div>
-                <h4 style="margin: 0; font-size: 0.85rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.product}</h4>
-                <p style="margin: 4px 0 0 0; color: #059669; font-weight: bold; font-size: 0.95rem;">$${p.price}</p>
+                <h4 style="margin: 0; font-size: 0.9rem; color: #1e293b; font-weight: 600;">${p.product || p.name}</h4>
+                <p style="margin: 6px 0 0 0; color: #10b981; font-weight: 700; font-size: 1rem;">$${p.price}</p>
+                <button onclick="VV.marketplace.quickView('${p.id}')" style="margin-top: 10px; width: 100%; background: #eff6ff; color: #2563eb; border: none; padding: 6px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500;">Ver detalle</button>
             </div>
         `).join('');
     }
 
-    // 4. Mostramos la sección y hacemos scroll suave hacia ella
     seccion.style.display = 'block';
     seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-
-
-    
-console.log('✅ Módulo FEATURED cargado');
