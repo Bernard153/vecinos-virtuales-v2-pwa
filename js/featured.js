@@ -848,7 +848,7 @@ async function verTiendaVecino(sellerId, nombre) {
                 <p style="margin: 4px 0 0 0; color: #059669; font-weight: bold; font-size: 0.95rem;">$${p.price}</p>
                 
                 <button style="margin-top: 8px; width: 100%; background: #3b82f6; color: white; border: none; padding: 5px; border-radius: 6px; font-size: 0.7rem; cursor: pointer;">
-                    <i class="fas fa-search-plus"></i> Ver Detalle
+                    <i class="fas fa-search-plus"></i> Ver Detalle  // Sync fix
                 </button>
             </div>`;
         }).join('');
