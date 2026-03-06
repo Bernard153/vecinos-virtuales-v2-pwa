@@ -1150,12 +1150,12 @@ VV.marketplace = {
         // Renderizar botones
         const container = document.getElementById('popular-products-list');
         container.innerHTML = combined.map(product => `
-                < button onclick = "document.getElementById('compare-search').value='${product}'; VV.marketplace.quickCompare();"
+                <button onclick = "document.getElementById('compare-search').value='${product}'; VV.marketplace.quickCompare();"
             style = "padding: 0.5rem 1rem; background: var(--gray-100); border: 1px solid var(--gray-300); border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;"
             onmouseover = "this.style.background='var(--primary-blue)'; this.style.color='white'; this.style.borderColor='var(--primary-blue)';"
             onmouseout = "this.style.background='var(--gray-100)'; this.style.color='inherit'; this.style.borderColor='var(--gray-300)';" >
                 ${product.charAt(0).toUpperCase() + product.slice(1)}
-            </button >
+            </button>
                 `).join('');
     }
 };
