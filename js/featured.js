@@ -817,31 +817,35 @@ async function verTiendaVecino(sellerId, nombre) {
 
     if (!seccion || !lista) return;
 
-    // Buscamos productos (limpiamos el ID por si viene con espacios o es número)
-    const idBusqueda = String(sellerId).trim();
+    // FILTRO ESTRICTO: Convertimos ambos a String para evitar errores de comparación
     const productos = VV.data.products.filter(p => 
-        String(p.seller_id).trim() === idBusqueda || 
-        String(p.sellerId).trim() === idBusqueda
+        String(p.seller_id) === String(sellerId)
     );
 
-    titulo.innerHTML = `<i class="fas fa-store" style="color: #3b82f6;"></i> Tienda de ${nombre}`;
+    titulo.innerHTML = `<i class="fas fa-store" style="color: #3b82f6;"></i> Catálogo de ${nombre}`;
     
     if (productos.length === 0) {
-        lista.innerHTML = `<div style="grid-column: 1/-1; padding: 2rem; text-align: center; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
-            <i class="fas fa-ghost" style="font-size: 2rem; margin-bottom: 10px;"></i>
-            <p>Este vecino no tiene otros productos cargados actualmente.</p>
-        </div>`;
+        lista.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">No se encontraron otros productos de este vecino.</p>`;
     } else {
-        lista.innerHTML = productos.map(p => `
-            <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+        lista.innerHTML = productos.map(p => {
+            // Probamos diferentes nombres de columna para la imagen
+            const imagenURL = p.image || p.image_url || p.imageUrl || null;
+            
+            return `
+            <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                 <div style="width: 100%; height: 100px; background: #f1f5f9; border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: flex; align-items: center; justify-content: center;">
-                    ${p.image ? `<img src="${p.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<i class="fas fa-box" style="font-size: 1.8rem; color: #cbd5e1;"></i>`}
+                    ${imagenURL ? `<img src="${imagenURL}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com'">` : `<i class="fas fa-box" style="font-size: 1.8rem; color: #cbd5e1;"></i>`}
                 </div>
-                <h4 style="margin: 0; font-size: 0.9rem; color: #1e293b; font-weight: 600;">${p.product || p.name}</h4>
-                <p style="margin: 6px 0 0 0; color: #10b981; font-weight: 700; font-size: 1rem;">$${p.price}</p>
-                <button onclick="VV.marketplace.quickView('${p.id}')" style="margin-top: 10px; width: 100%; background: #eff6ff; color: #2563eb; border: none; padding: 6px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500;">Ver detalle</button>
-            </div>
-        `).join('');
+                <h4 style="margin: 0; font-size: 0.9rem; color: #1e293b;">${p.product || p.name}</h4>
+                <p style="margin: 6px 0 0 0; color: #10b981; font-weight: 700;">$${p.price}</p>
+                
+                <!-- Botón de detalle corregido para el Marketplace -->
+                <button onclick="VV.utils.showSection('marketplace'); setTimeout(() => { VV.marketplace.loadShopping(); }, 100);" 
+                        style="margin-top: 10px; width: 100%; background: #eff6ff; color: #2563eb; border: none; padding: 6px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-weight: 500;">
+                    Ir al Marketplace
+                </button>
+            </div>`;
+        }).join('');
     }
 
     seccion.style.display = 'block';
