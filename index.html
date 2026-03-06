@@ -317,20 +317,31 @@
                             <!-- Carrusel de ofertas destacadas -->
                         </div>
                     </div>
-                    <!-- GALERÍA DINÁMICA DEL VENDEDOR (Se activa al tocar "Ver todo" en una oferta) -->
-                    <div id="galeria-vendedor-seccion" style="display:none; margin: 1rem 0; padding: 1.25rem; background: #ffffff; border-radius: 12px; border: 2px solid #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h3 id="titulo-galeria" style="margin:0; font-size: 1.1rem; color: #1e293b; display: flex; align-items: center; gap: 0.5rem;">
+                    <!-- REEMPLAZA TU BLOQUE ANTERIOR POR ESTE (CONTENEDOR DE LA GALERÍA MEJORADO) -->
+                    <div id="galeria-vendedor-seccion" style="display:none; margin: 1.5rem 0; padding: 1.5rem; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); position: relative;">
+    
+                        <!-- Botón Cerrar (X) mejorado -->
+                        <button onclick="document.getElementById('galeria-vendedor-seccion').style.display='none'" 
+                                style="position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f1f5f9; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                                onmouseover="this.style.background='#fee2e2'; this.style.color='#ef4444';"
+                                onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';">
+                            <i class="fas fa-times"></i>
+                        </button>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <h3 id="titulo-galeria" style="margin:0; font-size: 1.2rem; color: #1e293b; display: flex; align-items: center; gap: 0.75rem;">
                                 <i class="fas fa-store" style="color: #3b82f6;"></i>
                                 <span>Catálogo del Vecino</span>
                             </h3>
-                            <button onclick="document.getElementById('galeria-vendedor-seccion').style.display='none'" style="background:#f1f5f9; border:none; color:#64748b; padding: 5px 10px; border-radius: 6px; cursor:pointer; font-weight: bold;">✕ Cerrar</button>
+                            <p style="margin: 4px 0 0 40px; font-size: 0.85rem; color: #64748b;">Explora todos los productos de este comercio</p>
                         </div>
-                        <!-- Aquí la función inyectará los productos con sus fotos -->
-                        <div id="lista-productos-vendedor" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem;">
-                            <p style="color: #94a3b8; font-size: 0.9rem;">Cargando productos...</p>
+
+                        <!-- Rejilla de productos donde la función inyectará el contenido -->
+                        <div id="lista-productos-vendedor" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.25rem;">
+                            <!-- Se llena automáticamente por la función verTiendaVecino -->
                         </div>
                     </div>
+
 
                     <!-- Estado de Geolocalización -->
                     <div id="geo-status" style="margin: 1.5rem 0;">
