@@ -270,14 +270,13 @@ VV.marketplace = {
         }, 100);
     },
 
-    // Mostrar formulario
+    // Mostrar formulario ORIGINAL con Visor de Imagen Integrado
     showForm(productId = null) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         const product = productId ? VV.data.products.find(p => p.id === productId) : null;
         const isEdit = product !== null;
 
-        // Verificar si el usuario ya tiene un nombre de negocio registrado
         const userBusinessName = VV.data.user.business_name || '';
         const hasBusinessName = userBusinessName !== '';
 
@@ -361,22 +360,22 @@ VV.marketplace = {
                         <label>Descripción</label>
                         <textarea id="product-description" rows="3">${product?.description || ''}</textarea>
                     </div>
+
+                    <!-- AQUÍ INSERTAMOS EL VISOR SIN QUITAR NADA -->
                     <div class="form-group">
-                    <label>Foto del producto</label>
-                    <div id="product-image-preview" style="width: 100%; height: 180px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; margin-top: 0.5rem; position: relative;">
-                        ${product?.image_path ? 
-            `                <img src="https://selkbxqazwxxvinnulpb.supabase.co{product.image_path}" style="width: 100%; height: 100%; object-fit: cover;">` : 
-            `                <div style="text-align: center; color: #94a3b8;">
-                                <i class="fas fa-camera" style="font-size: 2.5rem; margin-bottom: 0.5rem;"></i>
-                                <p style="margin: 0; font-size: 0.9rem;">Sin imagen de catálogo</p>
-                            </div>`
-        }
-    </div>
-    <input type="file" id="product-image-input" accept="image/*" style="display: none;" onchange="VV.marketplace.handleImageSelect(this)">
-    <button type="button" onclick="document.getElementById('product-image-input').click()" class="btn-secondary" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem;">
-        <i class="fas fa-upload"></i> ${product?.image_path ? 'Cambiar Foto' : 'Subir Foto'}
-    </button>
-</div>
+                        <label>Foto del catálogo</label>
+                        <div id="product-image-preview" style="width: 100%; height: 160px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 0.5rem;">
+                            ${product?.image_path ? 
+                                `<img src="https://selkbxqazwxxvinnulpb.supabase.co{product.image_path}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+                                `<div style="text-align:center; color:#94a3b8;"><i class="fas fa-camera" style="font-size: 2rem;"></i><p style="margin:0; font-size:0.8rem;">Sin foto</p></div>`
+                            }
+                        </div>
+                        <input type="file" id="product-image-input" accept="image/*" style="display: none;" onchange="VV.marketplace.handleImageSelect(this)">
+                        <button type="button" onclick="document.getElementById('product-image-input').click()" class="btn-secondary" style="margin-top: 0.5rem; width: 100%; font-size: 0.85rem;">
+                            <i class="fas fa-upload"></i> Subir / Cambiar Foto
+                        </button>
+                    </div>
+
                     <div class="form-group">
                         <label>
                             <input type="checkbox" id="product-featured" ${product?.featured ? 'checked' : ''}> 
