@@ -270,7 +270,7 @@ VV.marketplace = {
         }, 100);
     },
 
-    // Mostrar formulario ORIGINAL con Visor de Imagen Integrado
+            // Mostrar formulario ORIGINAL con Visor de Imagen Integrado
     showForm(productId = null) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -303,9 +303,6 @@ VV.marketplace = {
                         <datalist id="product-suggestions">
                             ${VV.marketplace.getProductSuggestions()}
                         </datalist>
-                        <p style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;">
-                            <i class="fas fa-lightbulb"></i> Escribe y verás sugerencias de productos existentes
-                        </p>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -322,9 +319,9 @@ VV.marketplace = {
                         <div class="form-group">
                             <label>Nombre del negocio *</label>
                             ${hasBusinessName ?
-                `<input type="text" id="product-business" value="${userBusinessName}" readonly style="background: var(--gray-100); cursor: not-allowed;" title="El nombre del negocio no se puede cambiar">` :
-                `<input type="text" id="product-business" value="${product?.business || ''}" required placeholder="Ej: Verdulería Don José">`
-            }
+                                `<input type="text" id="product-business" value="${userBusinessName}" readonly style="background: var(--gray-100); cursor: not-allowed;">` :
+                                `<input type="text" id="product-business" value="${product?.business || ''}" required placeholder="Ej: Negocio">`
+                            }
                         </div>
                     </div>
                     <div class="form-row">
@@ -335,33 +332,16 @@ VV.marketplace = {
                         <div class="form-group">
                             <label>Unidad *</label>
                             <select id="product-unit" required>
-                                <option value="">Seleccionar</option>
                                 <option value="kg" ${product?.unit === 'kg' ? 'selected' : ''}>Kilogramo</option>
                                 <option value="unidad" ${product?.unit === 'unidad' ? 'selected' : ''}>Unidad</option>
-                                <option value="litro" ${product?.unit === 'litro' ? 'selected' : ''}>Litro</option>
-                                <option value="docena" ${product?.unit === 'docena' ? 'selected' : ''}>Docena</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Calidad *</label>
-                        <select id="product-quality" required>
-                            <option value="">Seleccionar</option>
-                            <option value="Excelente" ${product?.quality === 'Excelente' ? 'selected' : ''}>Excelente</option>
-                            <option value="Muy Buena" ${product?.quality === 'Muy Buena' ? 'selected' : ''}>Muy Buena</option>
-                            <option value="Buena" ${product?.quality === 'Buena' ? 'selected' : ''}>Buena</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Teléfono *</label>
-                        <input type="tel" id="product-contact" value="${product?.contact || VV.data.user?.phone || ''}" required>
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
                         <textarea id="product-description" rows="3">${product?.description || ''}</textarea>
                     </div>
 
-                    <!-- AQUÍ INSERTAMOS EL VISOR SIN QUITAR NADA -->
                     <div class="form-group">
                         <label>Foto del catálogo</label>
                         <div id="product-image-preview" style="width: 100%; height: 160px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 0.5rem;">
@@ -376,18 +356,6 @@ VV.marketplace = {
                         </button>
                     </div>
 
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="product-featured" ${product?.featured ? 'checked' : ''}> 
-                            Producto destacado
-                        </label>
-                    </div>
-                    <div style="background: #e0f2fe; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                        <p style="margin: 0; font-size: 0.85rem; color: #075985;">
-                            <i class="fas fa-info-circle"></i> <strong>Todos los productos son reservables por defecto.</strong><br>
-                            Los clientes podrán reservar cualquier producto antes de retirarlo.
-                        </p>
-                    </div>
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" onclick="VV.marketplace.closeForm()">Cancelar</button>
                         <button type="submit" class="btn-save">
@@ -409,6 +377,7 @@ VV.marketplace = {
             if (e.target === overlay) VV.marketplace.closeForm();
         };
     },
+
 
     // Cerrar formulario
     closeForm() {
