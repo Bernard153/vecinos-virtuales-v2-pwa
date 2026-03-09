@@ -967,5 +967,30 @@ body {
     padding: 0 !important;
     height: 100% !important;
 }
+/* AJUSTE FINAL DE ALINEACIÓN DEL PIE */
+#banner-container {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; /* Forzamos 2 columnas iguales */
+    grid-template-rows: 1fr !important;            /* Una sola fila */
+    height: 140px !important;                       /* Altura controlada */
+    gap: 15px !important;
+    padding: 10px 20px !important;
+    align-items: stretch !important;                /* Estira los slides al alto del contenedor */
+}
+
+#banner-container .banner-slide {
+    display: block !important;
+    height: 100% !important;
+    margin: 0 !important;
+    background: #000 !important; /* Fondo negro por si la foto no cubre todo */
+}
+
+#banner-container .banner-slide img {
+    /* Esto centra la imagen y la hace cubrir todo el recuadro */
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important; 
+    object-position: center !important; 
+}
 
 }
