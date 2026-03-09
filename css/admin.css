@@ -289,10 +289,10 @@
     border: 2px solid rgba(255, 255, 255, 0.3);
 }
 .banner-img-full {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Clave: la imagen llena todo el cuadro */
-    display: 10px;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important; 
+    display: block !important; /* Corregido: antes decía 10px */
 }
 .banner-slide img {
     width: 100%;
