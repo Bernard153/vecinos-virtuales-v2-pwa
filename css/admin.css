@@ -282,20 +282,44 @@
     padding: 1rem 2rem;
     align-items: center;
 }
-
 .banner-slide {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-    padding: 1rem;
+    /* Quitamos el padding para que la imagen llegue a los bordes */
+    padding: 0; 
     cursor: pointer;
     display: flex;
+    flex-direction: column; /* Apilamos contenido */
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    transition: var(--transition);
+    overflow: hidden; /* Importante para que la imagen respete los bordes redondeados */
+    
+    /* Mantenemos estilo visual */
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
-    text-align: center;
+    transition: var(--transition);
+    
+    /* Control de altura para no desenfocar el contenido */
+    min-height: 140px; 
+    max-height: 180px; 
+}
+
+.banner-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* La imagen llena el banner sin deformarse */
+    display: block;
+}
+
+/* El texto ahora será un overlay sutil */
+.banner-text-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Fondo oscuro suave para legibilidad */
+    color: white;
+    padding: 8px;
+    font-size: 0.9rem;
 }
 
 .banner-slide:hover {
