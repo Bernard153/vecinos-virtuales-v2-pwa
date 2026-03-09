@@ -271,14 +271,14 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 160px; /* Un poco más alto para que luzca */
+    height: 140px; /* Un poco más alto para que luzca */
     background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(124, 58, 237, 0.95));
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* CAMBIO: Solo 2 banners */
     gap: 1.5rem;
     padding: 1rem 2rem;
     align-items: center;
-    z-index: 10; /* Bajamos el z-index para que no tape modales de login */
+    z-index: 500; /* Bajamos el z-index para que no tape modales de login */
 }
 .banner-slide {
     position: relative;
@@ -292,7 +292,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover; /* Clave: la imagen llena todo el cuadro */
-    display: block;
+    display: 10px;
 }
 .banner-slide img {
     width: 100%;
@@ -304,10 +304,13 @@
 .banner-info-overlay {
     position: absolute;
     bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
     width: 100%;
-    padding: 15px;
     background: linear-gradient(transparent, rgba(0,0,0,0.8));
     color: white;
+    pointer-events: none;
 }
 .banner-slide:hover {
     transform: translateY(-3px);
@@ -388,5 +391,8 @@
     
     .sponsor-stats {
         grid-template-columns: 1fr;
+    }
+    .modal-overlay {
+    z-index: 9999 !important; /* El login siempre gana */
     }
 }
