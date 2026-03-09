@@ -81,12 +81,12 @@ VV.banner = {
     rotateBanners() {
         const container = document.getElementById('banner-container');
         const shuffled = [...VV.banner.currentBanners].sort(() => Math.random() - 0.5);
-        const bannersToShow = shuffled.slice(0, 3);
+        const bannersToShow = shuffled.slice(0, 2);
         
         console.log('🎲 Mostrando banners:', bannersToShow.map(b => b.business_name || b.name));
         
         // Rellenar con placeholders si hay menos de 3
-        while (bannersToShow.length < 3) {
+        while (bannersToShow.length < 2) {
             bannersToShow.push({
                 logo: '🏪',
                 name: 'Espacio Disponible',
@@ -97,17 +97,23 @@ VV.banner = {
         }
         
         container.innerHTML = bannersToShow.map(banner => `
-            <div class="banner-slide ${banner.tier}" onclick="VV.banner.click('${banner.id}')">
-                ${banner.image_url ? 
-                    `<div class="banner-image" style="background-image: url('${banner.image_url}'); background-size: cover; background-position: center;"></div>` :
-                    `<div class="banner-logo">${banner.logo}</div>`
-                }
-                <div>
+        <div class="banner-slide ${banner.tier}" onclick="VV.banner.click('${banner.id}')">
+            
+            <!-- IMAGEN TOTAL: Usamos etiqueta <img> para que object-fit haga su magia -->
+            ${(banner.image_url || banner.imageUrl) ? 
+                `<img src="${banner.image_url || banner.imageUrl}" class="banner-img-full" alt="banner">` :
+                `<div class="banner-logo-placeholder">${banner.logo}</div>`
+            }
+            
+            <!-- TEXTO SUPERPUESTO (Solo si hay texto) -->
+            ${(banner.business_name || banner.name) ? `
+                <div class="banner-info-overlay">
                     <div class="banner-title">${banner.business_name || banner.name}</div>
-                    <div class="banner-description">${banner.description}</div>
+                    <div class="banner-description">${banner.description || ''}</div>
                 </div>
-            </div>
-        `).join('');
+            ` : ''}
+        </div>
+    `).join('');
     },
     
     // Agregar botón para ver todos
