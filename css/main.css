@@ -936,61 +936,70 @@ body {
     }
     /* AGREGA ESTO AL FINAL DE TODO EN MAIN.CSS */
 
-/* 1. Imagen del pie como fondo total */
-#banner-container .banner-slide img {
-    position: absolute !important;
-    top: 0 !important;
+/* --- BLOQUE ÚNICO CONSOLIDADO PARA EL BANNER DEL PIE --- */
+
+/* 1. Contenedor: Fuerza 2 columnas y altura fija para no tapar el login */
+#banner-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; 
+    grid-template-rows: 140px !important;      
+    height: 140px !important;
+    gap: 15px !important;
+    padding: 10px 20px !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+    position: fixed !important;
+    bottom: 0 !important;
     left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    z-index: 1 !important;
+    right: 0 !important;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(124, 58, 237, 0.95)) !important;
+    z-index: 500 !important;
 }
 
-/* 2. El texto flotando sobre esa imagen */
+/* 2. El Slide: Actúa como el marco del cuadro */
+#banner-container .banner-slide {
+    position: relative !important; 
+    height: 120px !important;      
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    display: block !important;
+    background: #000 !important;
+    border-radius: 12px !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 3. La Imagen: Ocupa el 100% del slide sin salirse */
+#banner-container .banner-slide img, 
+#banner-container .banner-img-full {
+    position: absolute !important; 
+    top: 0 !important;             
+    left: 0 !important;            
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;  
+    object-position: center !important; 
+    display: block !important;
+    margin: 0 !important;
+}
+
+/* 4. El Texto: Superpuesto con degradado */
 #banner-container .banner-info-overlay {
     position: absolute !important;
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    z-index: 2 !important;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8)) !important;
-    width: 100% !important;
     padding: 10px !important;
-    pointer-events: none;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8)) !important;
+    color: white !important;
+    z-index: 10 !important;
+    pointer-events: none !important;
 }
 
-/* 3. Contenedor del slide limpio */
-#banner-container .banner-slide {
-    position: relative !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-    height: 100% !important;
+/* 5. Ocultar excedentes (por si el JS intenta meter un 3er banner) */
+#banner-container .banner-slide:nth-child(n+3) {
+    display: none !important;
 }
-/* AJUSTE FINAL DE ALINEACIÓN DEL PIE */
-#banner-container {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important; /* Forzamos 2 columnas iguales */
-    grid-template-rows: 1fr !important;            /* Una sola fila */
-    height: 140px !important;                       /* Altura controlada */
-    gap: 15px !important;
-    padding: 10px 20px !important;
-    align-items: stretch !important;                /* Estira los slides al alto del contenedor */
-}
-
-#banner-container .banner-slide {
-    display: block !important;
-    height: 100% !important;
-    margin: 0 !important;
-    background: #000 !important; /* Fondo negro por si la foto no cubre todo */
-}
-
-#banner-container .banner-slide img {
-    /* Esto centra la imagen y la hace cubrir todo el recuadro */
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important; 
-    object-position: center !important; 
-}
-
+    
 }
