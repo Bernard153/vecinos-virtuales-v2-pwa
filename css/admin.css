@@ -273,10 +273,10 @@
     right: 0;
     height: 140px; /* Un poco más alto para que luzca */
     background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(124, 58, 237, 0.95));
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* CAMBIO: Solo 2 banners */
-    gap: 1.5rem;
-    padding: 1rem 2rem;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr)!important; /* CAMBIO: Solo 2 banners */
+    gap: 15px !important;
+    padding: 10px 20px !important;
     align-items: center;
     z-index: 500; /* Bajamos el z-index para que no tape modales de login */
 }
@@ -395,4 +395,23 @@
     .modal-overlay {
     z-index: 9999 !important; /* El login siempre gana */
     }
+    .banner-slide {
+    padding: 0 !important; /* ¡Fundamental! Quita el aire interno */
+    display: block !important; /* Cambiamos flex por block para que la imagen mande */
+    position: relative;
+    overflow: hidden;
+    height: 100% !important;
+    background: #000; /* Fondo negro por si la imagen es traslúcida */
+    }
+    .banner-slide img, 
+    .banner-slide .banner-logo {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    object-fit: cover !important; /* Esto hace que la imagen llene el cuadro sin deformarse */
+    border-radius: 10px !important;
+    }
+
 }
