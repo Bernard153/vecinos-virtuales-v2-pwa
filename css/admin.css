@@ -265,63 +265,52 @@
     cursor: pointer;
     transition: var(--transition);
 }
-
 /* Banner al pie - 3 cuadros fijos */
 .banner-container {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 100px;
+    height: 140px; /* Aumentamos un poco el protagonismo */
     background: linear-gradient(135deg, rgba(37, 99, 235, 0.98), rgba(124, 58, 237, 0.98));
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
     z-index: 999;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
-    padding: 1rem 2rem;
+    padding: 0.8rem 2rem;
     align-items: center;
 }
 .banner-slide {
-    /* Quitamos el padding para que la imagen llegue a los bordes */
-    padding: 0; 
+    position: relative; /* Para permitir texto superpuesto */
+    height: 100%;       /* Ocupa todo el alto del contenedor */
+    padding: 0;         /* Sin espacios internos para que la imagen llegue al borde */
     cursor: pointer;
-    display: flex;
-    flex-direction: column; /* Apilamos contenido */
-    align-items: center;
-    justify-content: center;
-    overflow: hidden; /* Importante para que la imagen respete los bordes redondeados */
-    
-    /* Mantenemos estilo visual */
-    background: rgba(255, 255, 255, 0.15);
+    overflow: hidden; 
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
     transition: var(--transition);
-    
-    /* Control de altura para no desenfocar el contenido */
-    min-height: 140px; 
-    max-height: 180px; 
 }
 
 .banner-slide img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* La imagen llena el banner sin deformarse */
+    object-fit: cover;  /* Ajuste perfecto sin deformar */
     display: block;
 }
-
 /* El texto ahora será un overlay sutil */
-.banner-text-overlay {
+.banner-info-overlay {
     position: absolute;
     bottom: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.5); /* Fondo oscuro suave para legibilidad */
+    left: 0;
+    right: 0;
+    padding: 0.75rem;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7)); /* Degradado oscuro sutil */
     color: white;
-    padding: 8px;
-    font-size: 0.9rem;
+    text-align: center;
 }
-
 .banner-slide:hover {
     transform: translateY(-3px);
     background: rgba(255, 255, 255, 0.25);
@@ -332,17 +321,17 @@
 .banner-logo {
     font-size: 2rem;
 }
-
 .banner-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: white;
-    margin-bottom: 0.25rem;
+    margin: 0;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Mejora legibilidad */
 }
 
 .banner-description {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.9);
+    margin-top: 2px;
 }
 
 .banner-tier-badge {
@@ -360,15 +349,14 @@
 @media (max-width: 768px) {
     .banner-container {
         grid-template-columns: 1fr;
-        height: 60px;
-        padding: 0.5rem;
-        gap: 0;
+        height: 90px; /* Un poco más alto que los 60px originales */
+        padding: 0.5rem 1rem;
     }
     
     .banner-slide {
-        padding: 0.5rem;
-        font-size: 0.75rem;
+        display: flex;
     }
+}
     
     .banner-slide:nth-child(2),
     .banner-slide:nth-child(3) {
