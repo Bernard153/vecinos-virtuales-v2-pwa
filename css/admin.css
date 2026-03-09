@@ -271,28 +271,33 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 140px; /* Un poco más alto para que luzca */
+    height: 140px;
     background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(124, 58, 237, 0.95));
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr)!important; /* CAMBIO: Solo 2 banners */
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 15px !important;
     padding: 10px 20px !important;
     align-items: center;
-    z-index: 500; /* Bajamos el z-index para que no tape modales de login */
+    z-index: 500;
 }
-#banner-container.banner-slide {
+#banner-container .banner-slide {
     position: relative;
-    height: 100%;
-    padding: 0 !important; /* Forzamos que no haya aire interno */
+    height: 100% !important;
+    padding: 0 !important;
     border-radius: 12px;
     overflow: hidden;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    display: block !important;
+    background: #000;
 }
-#banner-container.banner-img-full {
+#banner-container .banner-img-full,
+#banner-container .banner-slide img {
     width: 100% !important;
     height: 100% !important;
-    object-fit: cover !important; 
-    display: block !important; /* Corregido: antes decía 10px */
+    object-fit: cover !important;
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 #banner-container.banner-slide img {
     width: 100%;
@@ -301,15 +306,15 @@
     display: block;
 }
 /* El texto ahora será un overlay sutil */
-#banner-container.banner-info-overlay {
+#banner-container .banner-info-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 10px;
-    width: 100%;
+    padding: 15px 10px;
     background: linear-gradient(transparent, rgba(0,0,0,0.8));
     color: white;
+    z-index: 2;
     pointer-events: none;
 }
 #banner-container.banner-slide:hover {
@@ -348,13 +353,11 @@
 /* Responsive admin */
 @media (max-width: 768px) {
     #banner-container.banner-container {
-        grid-template-columns: 1fr;
-        height: 90px; /* Un poco más alto que los 60px originales */
-        padding: 0.5rem 1rem;
+        grid-template-columns: 1fr !important;
+        height: 100px;
     }
-    
-    #banner-container.banner-slide {
-        display: flex;
+    #banner-container .banner-slide:nth-child(2) {
+        display: none !important;
     }
 }
     
