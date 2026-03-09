@@ -350,29 +350,17 @@ VV.banner = {
         
         // Mostrar máximo 3 banners en el dashboard
         const displayBanners = banners.slice(0, 3);
+         container.innerHTML = displayBanners.slice(0, 2).map(sponsor => `
+            <div class="banner-slide" onclick="VV.banner.trackClick('${sponsor.id}')">
+                <!-- Quitamos los estilos de 60px y dejamos que el CSS mande -->
+                <img src="${sponsor.logo || sponsor.image_url}" alt="${sponsor.businessName}">
         
-            container.innerHTML = displayBanners.slice(0, 2).map(sponsor => `
-    <div class="banner-slide" onclick="VV.banner.trackClick('${sponsor.id}')">
-        
-        <!-- IMAGEN TOTAL: Sin bordes ni padding -->
-        <img src="${sponsor.logo || sponsor.image_url}" 
-             alt="${sponsor.businessName}" 
-             class="banner-img-full">
-
-        <!-- TEXTO SUPERPUESTO: Solo si el vecino completó los campos -->
-        ${(sponsor.businessName || sponsor.description) ? `
-            <div class="banner-info-overlay">
-                <h4 class="banner-title">${sponsor.businessName}</h4>
-                ${sponsor.description ? `<p class="banner-description">${sponsor.description}</p>` : ''}
+                <!-- El texto flota sobre la imagen -->
+                <div class="banner-info-overlay">
+                    <h4 class="banner-title">${sponsor.businessName}</h4>
+                </div>
             </div>
-        ` : ''}
-
-        <!-- BADGE DE TIER: Arriba a la derecha para no molestar -->
-        <span class="banner-tier-badge">
-            ${sponsor.tier.toUpperCase()}
-        </span>
-    </div>
-`).join('');
+`        ).join('');
 
     },
     
