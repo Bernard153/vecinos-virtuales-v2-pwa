@@ -271,27 +271,22 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 140px; /* Aumentamos un poco el protagonismo */
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.98), rgba(124, 58, 237, 0.98));
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-    z-index: 999;
+    height: 160px; /* Un poco más alto para que luzca */
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(124, 58, 237, 0.95));
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    padding: 0.8rem 2rem;
+    grid-template-columns: repeat(2, 1fr); /* CAMBIO: Solo 2 banners */
+    gap: 1.5rem;
+    padding: 1rem 2rem;
     align-items: center;
+    z-index: 10; /* Bajamos el z-index para que no tape modales de login */
 }
 .banner-slide {
-    position: relative; /* Para permitir texto superpuesto */
-    height: 100%;       /* Ocupa todo el alto del contenedor */
-    padding: 0;         /* Sin espacios internos para que la imagen llegue al borde */
-    cursor: pointer;
-    overflow: hidden; 
-    background: rgba(255, 255, 255, 0.1);
+    position: relative;
+    height: 100%;
+    padding: 0 !important; /* Forzamos que no haya aire interno */
     border-radius: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    transition: var(--transition);
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 .banner-img-full {
     width: 100%;
@@ -299,23 +294,20 @@
     object-fit: cover; /* Clave: la imagen llena todo el cuadro */
     display: block;
 }
-
 .banner-slide img {
     width: 100%;
     height: 100%;
-    object-fit: cover;  /* Ajuste perfecto sin deformar */
+    object-fit: cover; /* La imagen llena TODO el espacio */
     display: block;
 }
 /* El texto ahora será un overlay sutil */
 .banner-info-overlay {
     position: absolute;
     bottom: 0;
-    left: 0;
-    right: 0;
+    width: 100%;
     padding: 15px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8)); /* Degradado para leer el texto */
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
     color: white;
-    text-align: center;
 }
 .banner-slide:hover {
     transform: translateY(-3px);
