@@ -934,4 +934,58 @@ body {
     .form-row {
         flex-direction: column;
     }
+    /* ANULACIÓN TOTAL DE ESTILOS ANTERIORES */
+.banner-container {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* FUERZA 2 COLUMNAS SIEMPRE */
+    grid-template-rows: 140px !important;       /* UNA SOLA FILA DE 140PX */
+    gap: 15px !important;
+    padding: 10px 20px !important;
+    height: auto !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+}
+
+.banner-slide {
+    display: block !important; /* QUITA EL FLEX QUE ACHICA LA IMAGEN */
+    height: 140px !important;
+    padding: 0 !important;      /* QUITA EL AIRE INTERNO */
+    margin: 0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    position: relative !important;
+}
+
+/* LA IMAGEN REINA: OCUPA TODO EL CUADRO */
+.banner-slide img, 
+.banner-img-full,
+.banner-image {
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 100% !important;
+    min-height: 100% !important;
+    object-fit: cover !important; /* ESTO HACE QUE SE VEA GRANDE */
+    display: block !important;
+    margin: 0 !important;
+    position: absolute !important; /* PARA QUE SE PEGUE A LOS BORDES */
+    top: 0 !important;
+    left: 0 !important;
+}
+
+/* OCULTAR EL TERCER BANNER QUE SE VA ABAJO */
+.banner-slide:nth-child(n+3) {
+    display: none !important;
+}
+
+/* CAPA DE TEXTO SOBRE LA IMAGEN */
+.banner-info-overlay {
+    position: absolute !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8)) !important;
+    padding: 10px !important;
+    z-index: 10 !important;
+}
+
 }
