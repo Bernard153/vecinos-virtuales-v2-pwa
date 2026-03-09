@@ -266,7 +266,7 @@
     transition: var(--transition);
 }
 /* Banner al pie - 3 cuadros fijos */
-.banner-container {
+#banner-container.banner-container {
     position: fixed;
     bottom: 0;
     left: 0;
@@ -280,7 +280,7 @@
     align-items: center;
     z-index: 500; /* Bajamos el z-index para que no tape modales de login */
 }
-.banner-slide {
+#banner-container.banner-slide {
     position: relative;
     height: 100%;
     padding: 0 !important; /* Forzamos que no haya aire interno */
@@ -288,20 +288,20 @@
     overflow: hidden;
     border: 2px solid rgba(255, 255, 255, 0.3);
 }
-.banner-img-full {
+#banner-container.banner-img-full {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important; 
     display: block !important; /* Corregido: antes decía 10px */
 }
-.banner-slide img {
+#banner-container.banner-slide img {
     width: 100%;
     height: 100%;
     object-fit: cover; /* La imagen llena TODO el espacio */
     display: block;
 }
 /* El texto ahora será un overlay sutil */
-.banner-info-overlay {
+#banner-container.banner-info-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -312,23 +312,23 @@
     color: white;
     pointer-events: none;
 }
-.banner-slide:hover {
+#banner-container.banner-slide:hover {
     transform: translateY(-3px);
     background: rgba(255, 255, 255, 0.25);
     border-color: rgba(255, 255, 255, 0.4);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.banner-logo {
+#banner-container.banner-logo {
     font-size: 2rem;
 }
-.banner-title {
+#banner-container.banner-title {
    margin: 0;
     font-size: 1rem;
     font-weight: bold;
 }
 
-.banner-description {
+#banner-container.banner-description {
     margin: 4px 0 0 0;
     font-size: 0.8rem;
     opacity: 0.9;
@@ -347,31 +347,31 @@
 
 /* Responsive admin */
 @media (max-width: 768px) {
-    .banner-container {
+    #banner-container.banner-container {
         grid-template-columns: 1fr;
         height: 90px; /* Un poco más alto que los 60px originales */
         padding: 0.5rem 1rem;
     }
     
-    .banner-slide {
+    #banner-container.banner-slide {
         display: flex;
     }
 }
     
-    .banner-slide:nth-child(2),
-    .banner-slide:nth-child(3) {
+    #banner-container.banner-slide:nth-child(2),
+    #banner-container.banner-slide:nth-child(3) {
         display: none;
     }
     
-    .banner-logo {
+    #banner-container.banner-logo {
         font-size: 1.5rem;
     }
     
-    .banner-title {
+    #banner-container.banner-title {
         font-size: 0.85rem;
     }
     
-    .banner-description {
+    #banner-container.banner-description {
         font-size: 0.7rem;
         display: none;
     }
@@ -395,7 +395,7 @@
     .modal-overlay {
     z-index: 9999 !important; /* El login siempre gana */
     }
-    .banner-slide {
+    #banner-container.banner-slide {
     padding: 0 !important; /* ¡Fundamental! Quita el aire interno */
     display: block !important; /* Cambiamos flex por block para que la imagen mande */
     position: relative;
@@ -403,8 +403,8 @@
     height: 100% !important;
     background: #000; /* Fondo negro por si la imagen es traslúcida */
     }
-    .banner-slide img, 
-    .banner-slide .banner-logo {
+    #banner-container.banner-slide img, 
+    #banner-container.banner-slide .banner-logo {
     width: 100% !important;
     height: 100% !important;
     max-width: none !important;
