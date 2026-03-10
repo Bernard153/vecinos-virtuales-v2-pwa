@@ -1001,5 +1001,45 @@ body {
 #banner-container .banner-slide:nth-child(n+3) {
     display: none !important;
 }
-    
+ /* --- SOLO PARA EL BANNER DEL PIE: IMAGEN TOTAL --- */
+
+/* 1. Quitamos el espacio (padding) para que la imagen toque los bordes */
+#banner-container .banner-slide {
+    padding: 0 !important; 
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    height: 120px !important; /* Ajusta la altura a tu gusto */
+}
+
+/* 2. Hacemos que la imagen (o el logo) ocupe el 100% */
+#banner-container .banner-image, 
+#banner-container .banner-slide img,
+#banner-container .banner-logo {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    object-fit: cover !important; /* Llena el cuadro sin deformar */
+    border-radius: 10px !important;
+}
+
+/* 3. OCULTAMOS el texto generado por la app (títulos y descripciones) */
+/* Así solo se ve la imagen editada que subió el vecino */
+#banner-container .banner-slide div:not(.banner-image),
+#banner-container .banner-title,
+#banner-container .banner-description {
+    display: none !important;
+}
+
+/* 4. Aseguramos que el contenedor tenga 3 columnas iguales */
+#banner-container {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 10px !important;
+    padding: 10px !important;
+}
+   
 }
