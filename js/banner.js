@@ -81,12 +81,12 @@ VV.banner = {
     rotateBanners() {
         const container = document.getElementById('banner-container');
         const shuffled = [...VV.banner.currentBanners].sort(() => Math.random() - 0.5);
-        const bannersToShow = shuffled.slice(0, 2);
+        const bannersToShow = shuffled.slice(0, 3);
         
         console.log('🎲 Mostrando banners:', bannersToShow.map(b => b.business_name || b.name));
         
         // Rellenar con placeholders si hay menos de 3
-        while (bannersToShow.length < 2) {
+        while (bannersToShow.length < 3) {
             bannersToShow.push({
                 logo: '🏪',
                 name: 'Espacio Disponible',
@@ -97,23 +97,17 @@ VV.banner = {
         }
         
         container.innerHTML = bannersToShow.map(banner => `
-        <div class="banner-slide ${banner.tier}" onclick="VV.banner.click('${banner.id}')">
-            
-            <!-- IMAGEN TOTAL: Usamos etiqueta <img> para que object-fit haga su magia -->
-            ${(banner.image_url || banner.imageUrl) ? 
-                `<img src="${banner.image_url || banner.imageUrl}" class="banner-img-full" alt="banner">` :
-                `<div class="banner-logo-placeholder">${banner.logo}</div>`
-            }
-            
-            <!-- TEXTO SUPERPUESTO (Solo si hay texto) -->
-            ${(banner.business_name || banner.name) ? `
-                <div class="banner-info-overlay">
+            <div class="banner-slide ${banner.tier}" onclick="VV.banner.click('${banner.id}')">
+                ${banner.image_url ? 
+                    `<div class="banner-image" style="background-image: url('${banner.image_url}'); background-size: cover; background-position: center;"></div>` :
+                    `<div class="banner-logo">${banner.logo}</div>`
+                }
+                <div>
                     <div class="banner-title">${banner.business_name || banner.name}</div>
-                    <div class="banner-description">${banner.description || ''}</div>
+                    <div class="banner-description">${banner.description}</div>
                 </div>
-            ` : ''}
-        </div>
-    `).join('');
+            </div>
+        `).join('');
     },
     
     // Agregar botón para ver todos
@@ -356,18 +350,44 @@ VV.banner = {
         
         // Mostrar máximo 3 banners en el dashboard
         const displayBanners = banners.slice(0, 3);
-         container.innerHTML = displayBanners.slice(0, 2).map(sponsor => `
-            <div class="banner-slide" onclick="VV.banner.trackClick('${sponsor.id}')">
-                <!-- Quitamos los estilos de 60px y dejamos que el CSS mande -->
-                <img src="${sponsor.logo || sponsor.image_url}" alt="${sponsor.businessName}">
         
-                <!-- El texto flota sobre la imagen -->
-                <div class="banner-info-overlay">
-                    <h4 class="banner-title">${sponsor.businessName}</h4>
+        container.innerHTML = displayBanners.map(sponsor => `
+            <div class="sponsor-card" onclick="VV.banner.trackClick('${sponsor.id}')" style="
+                background: white;
+                border-radius: 12px;
+                padding: 1.5rem;
+                cursor: pointer;
+                transition: all 0.3s;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                border-left: 4px solid var(--warning-orange);
+            " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    ${sponsor.logo ? `
+                        <img src="${sponsor.logo}" alt="${sponsor.businessName}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--warning-orange);">
+                    ` : `
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; font-weight: 700;">
+                            ${sponsor.businessName.charAt(0)}
+                        </div>
+                    `}
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 0.25rem 0; color: var(--gray-800);">${sponsor.businessName}</h4>
+                        <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">
+                            ${sponsor.category || 'Negocio Local'}
+                        </p>
+                    </div>
+                    <span style="background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">
+                        ${sponsor.tier.toUpperCase()}
+                    </span>
+                </div>
+                <p style="margin: 0 0 1rem 0; color: var(--gray-700); font-size: 0.9rem;">
+                    ${sponsor.description || 'Conoce más sobre nuestros productos y servicios'}
+                </p>
+                <div style="display: flex; gap: 0.5rem; align-items: center; color: var(--primary-blue); font-size: 0.85rem;">
+                    <i class="fas fa-phone"></i>
+                    <span>${sponsor.contact}</span>
                 </div>
             </div>
-`        ).join('');
-
+        `).join('');
     },
     
     // Mostrar todos los anunciantes en modal
