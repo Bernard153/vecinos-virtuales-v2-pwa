@@ -475,7 +475,7 @@
     background: #f9f9f9;
     padding: 15px;
     border-radius: 8px;
-}
+    }
 
 .admin-card-solicitud {
     display: flex;
@@ -486,6 +486,26 @@
     border: 1px solid #ddd;
     border-radius: 5px;
     }
+    /* UBICACIÓN: Final de tu archivo CSS */
+.btn-share-ws {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding: 6px 12px;
+    background-color: #25D366;
+    color: white !important;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 0.75em;
+    font-weight: bold;
+    transition: background 0.3s;
+    }
+
+.btn-share-ws:hover {
+    background-color: #128C7E;
+    }
+
 
 .admin-card-solicitud .info { flex: 1; }
 .btn-aprobar { background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
