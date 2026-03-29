@@ -1002,6 +1002,26 @@
                 <!-- Aquí JS inyectará las imágenes de Supabase -->
             </div>
         </div>
+        <button id="btn-mostrar-form" class="btn-solicitar-plus">+</button>
+        <!-- UBICACIÓN: Dentro de folleto-container -->
+        <div id="seccion-solicitud" class="folleto-form-container">
+            <h3>📢 Participa en el Folleto</h3>
+            <p>Completa los datos para que el administrador publique tu anuncio.</p>
+    
+            <form id="form-solicitud-vecino">
+                <input type="text" id="sol-titulo" placeholder="Título (ej: Panadería 'El Sol')" required>
+                <textarea id="sol-desc" placeholder="Descripción breve de tu servicio o aviso" required></textarea>
+                <input type="text" id="sol-nombre" placeholder="Tu nombre" required>
+        
+                <label for="sol-imagen">Sube tu imagen/foto:</label>
+                <input type="file" id="sol-imagen" accept="image/*" required>
+        
+                <div class="form-buttons">
+                    <button type="submit" id="btn-enviar-solicitud">Enviar al Administrador</button>
+                    <button type="button" id="btn-cancelar-sol" class="btn-secundario">Cancelar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Supabase Client Library -->
@@ -1014,6 +1034,7 @@
     <script src="js/supabase-config.js"></script>
     <script src="js/core.js"></script>
     <script src="js/auth-supabase.js"></script>
+    <script src="js/folleto.js"></script> <!-- NUEVO ARCHIVO AQUÍ -->
     <script src="js/marketplace.js"></script>
     <script src="js/reservations.js"></script>
     <script src="js/improvements.js"></script>
