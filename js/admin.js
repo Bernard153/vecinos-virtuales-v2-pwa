@@ -2081,6 +2081,75 @@ VV.admin.previewImage = function (input) {
 
         reader.readAsDataURL(input.files[0]);
     }
+    /**
+ * MODULO: ADMINISTRACIÓN DE FOLLETO
+ * Ubicación: Final de admin.js
+ */
+
+// 1. Cargar solicitudes al abrir el panel de admin
+async function cargarSolicitudesPendientes() {
+    const lista = document.getElementById('lista-solicitudes-pendientes');
+    if(!lista) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('folleto_imagenes')
+            .select('*')
+            .eq('aprobado', false)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        lista.innerHTML = data.length === 0 ? '<p>No hay solicitudes nuevas.</p>' : '';
+
+        data.forEach(sol => {
+            const card = document.createElement('div');
+            card.className = 'admin-card-solicitud';
+            card.innerHTML = `
+                <img src="${sol.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
+                <div class="info">
+                    <strong>${sol.titulo}</strong>
+                    <p>${sol.nombre_vecino}: ${sol.descripcion}</p>
+                </div>
+                <div class="acciones">
+                    <button onclick="gestionarSolicitud('${sol.id}', true)" class="btn-aprobar">Aprobar</button>
+                    <button onclick="gestionarSolicitud('${sol.id}', false)" class="btn-rechazar">Eliminar</button>
+                </div>
+            `;
+            lista.appendChild(card);
+        });
+    } catch (err) {
+        console.error("Error admin folleto:", err.message);
+    }
+}
+
+// 2. Función para Aprobar o Eliminar
+async function gestionarSolicitud(id, aprobar) {
+    try {
+        if (aprobar) {
+            // Cambiamos el estado a aprobado: true
+            const { error } = await supabase
+                .from('folleto_imagenes')
+                .update({ aprobado: true })
+                .eq('id', id);
+            if (error) throw error;
+            alert("✅ Publicado en el folleto");
+        } else {
+            // Si rechaza, borramos el registro
+            const { error } = await supabase
+                .from('folleto_imagenes')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+            alert("🗑️ Solicitud eliminada");
+        }
+        // Recargar la lista para limpiar la vista
+        cargarSolicitudesPendientes();
+    } catch (err) {
+        alert("Error al procesar: " + err.message);
+    }
+}
+
 };
 
 console.log('✅ Módulo ADMIN cargado');
