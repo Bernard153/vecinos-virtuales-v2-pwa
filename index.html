@@ -988,6 +988,21 @@
 
     <!-- Overlay para móvil -->
     <div id="overlay" class="overlay"></div>
+    <!-- UBICACIÓN: Al final del body, antes de los scripts -->
+    <!-- Este es el contenedor del folleto que empieza oculto -->
+    <div id="folleto-container" class="folleto-overlay hidden">
+        <div class="folleto-header">
+            <h2 style="font-family: sans-serif; color: #333;">Folleto Comunitario</h2>
+            <!-- El botón de minimizar para regresar a la APP -->
+            <button id="btn-minimizar" class="btn-close-style">Minimizar [−]</button>
+        </div>
+    
+        <div class="folleto-content">
+            <div class="masonry-grid" id="grid-folleto">
+                <!-- Aquí JS inyectará las imágenes de Supabase -->
+            </div>
+        </div>
+    </div>
 
     <!-- Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
