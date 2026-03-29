@@ -56,14 +56,26 @@ async function cargarContenidoFolleto() {
         }
 
         // Renderizamos cada ítem
+        // UBICACIÓN: Dentro de data.forEach en cargarContenidoFolleto()
         data.forEach(item => {
             const card = document.createElement('div');
             card.className = 'folleto-item';
+    
+            // Preparamos el texto para WhatsApp
+            const mensajeWS = encodeURIComponent(`¡Mira este anuncio en nuestra App Vecinal!\n*${item.titulo}*\n${item.descripcion}`);
+            const linkWS = `https://wa.me{mensajeWS}`;
+
             card.innerHTML = `
-                <img src="${item.url_imagen}" alt="Imagen de ${item.nombre_vecino || 'Vecino'}" loading="lazy">
+                <img src="${item.url_imagen}" alt="${item.titulo}" loading="lazy">
                 <div class="folleto-text">
-                    <strong style="display:block; margin-bottom:5px; font-size: 1.1em;">${item.titulo || ''}</strong>
-                    <span style="color: #555; font-size: 0.9em;">${item.descripcion || ''}</span>
+                    <strong style="display:block; margin-bottom:5px;">${item.titulo}</strong>
+                    <p style="font-size:0.85em; color:#444;">${item.descripcion}</p>
+            
+                    <!-- Botón de compartir -->
+                    <a href="${linkWS}" target="_blank" class="btn-share-ws">
+                        <span>Compartir en WhatsApp</span>
+                        <img src="https://upload.wikimedia.org" style="width:16px; display:inline; margin:0;">
+                    </a>
                 </div>
             `;
             gridFolleto.appendChild(card);
