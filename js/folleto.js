@@ -38,10 +38,12 @@ async function cargarContenidoFolleto() {
     try {
         // Consultamos la tabla 'folleto_imagenes' (ajusta el nombre si es distinto)
         // Nota: Asumo que usas el cliente global 'supabase' definido en auth-supabase.js
-        const { data, error } = await supabase
-            .from('folleto_imagenes')
-            .select('*')
-            .order('created_at', { ascending: false });
+        // UBICACIÓN: Dentro de cargarContenidoFolleto() en folleto.js
+    const { data, error } = await supabase
+        .from('folleto_imagenes')
+        .select('*')
+        .eq('aprobado', true) // <--- ESTO ASEGURA QUE SOLO SE VEA LO PUBLICADO
+        .order('created_at', { ascending: false });
 
         if (error) throw error;
 
