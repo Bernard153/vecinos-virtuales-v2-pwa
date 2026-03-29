@@ -438,7 +438,7 @@
     margin: 15px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
+    }
 
 .folleto-form-container.active { display: block; }
 
@@ -467,6 +467,29 @@
     cursor: pointer;
     z-index: 10001;
     }
+/* UBICACIÓN: Final de tu CSS */
+.admin-grid-pendientes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.admin-card-solicitud {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: white;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    }
+
+.admin-card-solicitud .info { flex: 1; }
+.btn-aprobar { background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
+.btn-rechazar { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px; }
 
 
 }
