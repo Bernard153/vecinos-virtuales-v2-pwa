@@ -77,6 +77,66 @@ async function cargarContenidoFolleto() {
 if (btnMinimizar) {
     btnMinimizar.addEventListener('click', minimizarFolleto);
 }
+// UBICACIÓN: Final de js/folleto.js
+
+const seccionForm = document.getElementById('seccion-solicitud');
+const formSolicitud = document.getElementById('form-solicitud-vecino');
+
+// Mostrar/Ocultar Formulario
+document.getElementById('btn-mostrar-form').addEventListener('click', () => seccionForm.classList.toggle('active'));
+document.getElementById('btn-cancelar-sol').addEventListener('click', () => seccionForm.classList.remove('active'));
+
+formSolicitud.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btn-enviar-solicitud');
+    btn.disabled = true;
+    btn.innerText = "Enviando...";
+
+    const file = document.getElementById('sol-imagen').files[0];
+    const titulo = document.getElementById('sol-titulo').value;
+    const desc = document.getElementById('sol-desc').value;
+    const nombre = document.getElementById('sol-nombre').value;
+
+    try {
+        // 1. Subir imagen a Supabase Storage (Bucket llamado 'folleto')
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `solicitudes/${fileName}`;
+
+        let { error: uploadError } = await supabase.storage
+            .from('folleto')
+            .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // 2. Obtener URL pública
+        const { data: urlData } = supabase.storage.from('folleto').getPublicUrl(filePath);
+
+        // 3. Guardar en la tabla 'folleto_imagenes' con aprobado = false
+        const { error: insertError } = await supabase
+            .from('folleto_imagenes')
+            .insert([{
+                titulo: titulo,
+                descripcion: desc,
+                nombre_vecino: nombre,
+                url_imagen: urlData.publicUrl,
+                aprobado: false // Espera revisión del admin
+            }]);
+
+        if (insertError) throw insertError;
+
+        alert("¡Solicitud enviada! El administrador la revisará pronto.");
+        formSolicitud.reset();
+        seccionForm.classList.remove('active');
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Hubo un error al enviar: " + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Enviar al Administrador";
+    }
+});
 
 // Exportar funciones si usas módulos, o dejarlas globales para llamar desde HTML
 window.abrirFolletoVisual = abrirFolletoVisual;
