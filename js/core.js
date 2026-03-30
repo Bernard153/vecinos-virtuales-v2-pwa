@@ -13,6 +13,7 @@ const VV = {
         cart: [],
         users: [],
         moderatorLogs: [], // Registro de actividad de moderadores
+        folleto: [],
         
         // Cargar datos desde Supabase
         async loadFromSupabase() {
@@ -37,6 +38,15 @@ const VV = {
                     .select('*')
                     .order('created_at', { ascending: false });
                 VV.data.culturalPosts = culturalPosts || [];
+                // ... debajo de VV.data.culturalPosts = culturalPosts || [];
+
+                // Cargar datos del Folleto Visual (Solo aprobados)
+                const { data: folletoData } = await supabase
+                    .from('folleto_imagenes')
+                    .select('*')
+                    .eq('aprobado', true)
+                    .order('created_at', { ascending: false });
+                VV.data.folleto = folletoData || [];
                 
                 // Cargar mejoras
                 const { data: improvements } = await supabase
@@ -150,6 +160,10 @@ const VV = {
                 case 'admin':
                     if (VV.utils.isAdmin()) {
                         VV.admin.load();
+                        // Carga las solicitudes del folleto para el admin
+                        if (typeof cargarSolicitudesPendientes === 'function') {
+                            cargarSolicitudesPendientes();
+                        }
                     }
                     break;
                 case 'users-management':
@@ -177,10 +191,25 @@ const VV = {
                         VV.moderator.load();
                     }
                     break;
+                // UBICACIÓN: Dentro del switch(sectionId) en VV.utils.showSection
+                case 'folleto':
+                    // Esta sección llama a la función global de folleto.js
+                    if (typeof abrirFolletoVisual === 'function') {
+                        abrirFolletoVisual();
+                    }
+                    break;
+
             }
         },
         
-        // Inicializar navegación con historial
+        // Inicializar navegacide la app
+                    if (history.pushState) {
+                        history.pushState({ section: 'dashboard' }, '', '#dashboard');
+                    }
+                }
+            });
+            revenir salida
+                    VV.utils.showSection('dashboard', false);ón con historial
         initNavigation() {
             // Manejar botón atrás del navegador
             window.addEventListener('popstate', (event) => {
@@ -188,15 +217,8 @@ const VV = {
                     // Navegar a la sección del historial sin agregar nueva entrada
                     VV.utils.showSection(event.state.section, false);
                 } else {
-                    // Si no hay estado, volver al dashboard y prevenir salida
-                    VV.utils.showSection('dashboard', false);
-                    // Agregar estado para que no salga de la app
-                    if (history.pushState) {
-                        history.pushState({ section: 'dashboard' }, '', '#dashboard');
-                    }
-                }
-            });
-            
+                    // Si no hay estado, volver al dashboard y p
+                    // Agregar estado para que no salga 
             // Establecer estado inicial
             if (history.replaceState) {
                 history.replaceState({ section: 'dashboard' }, '', '#dashboard');
@@ -240,6 +262,19 @@ const VV = {
         // Registrar acción de moderador
         logModeratorAction(action, details) {
             if (!VV.utils.isModerator() && !VV.utils.isAdmin()) return;
+            // UBICACIÓN: Al final de VV.utils en core.js
+        activarFolleto() {
+            const folletoCont = document.getElementById('folleto-container');
+            const btnPlus = document.getElementById('btn-mostrar-form');
+    
+            // Solo se activan si el usuario está logueado
+            if (VV.data.user) {
+                if (folletoCont) folletoCont.style.display = 'block';
+                if (btnPlus) btnPlus.style.display = 'flex';
+                console.log('📖 Módulo de Folleto activado para el usuario');
+            }
+        },
+
             
             const log = {
                 id: VV.utils.generateId(),
