@@ -505,6 +505,106 @@
 .btn-share-ws:hover {
     background-color: #128C7E;
     }
+/* ============================================================
+   MODULO: FOLLETO VISUAL CONTINUO
+   ============================================================ */
+
+/* Contenedor Pantalla Completa */
+.folleto-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #f8f9fa;
+    z-index: 99999; /* Por encima de todo */
+    overflow-y: auto;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(100%); /* Escondido abajo por defecto */
+}
+
+.folleto-overlay.active {
+    transform: translateY(0); /* Sube al activar */
+}
+
+/* Diseño Masonry (Hoja Continua) */
+.masonry-grid {
+    column-count: 3;
+    column-gap: 15px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.folleto-item {
+    break-inside: avoid;
+    margin-bottom: 15px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.folleto-item img {
+    width: 100%;
+    display: block;
+    height: auto;
+}
+
+.folleto-text {
+    padding: 12px;
+    border-top: 1px solid #eee;
+}
+
+/* Sección de Moderación (Solo dentro de Admin) */
+#admin-folleto {
+    background: #ffffff;
+    border: 1px solid #e1e4e8;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.admin-grid-pendientes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.admin-card-solicitud {
+    display: flex;
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    align-items: center;
+}
+
+/* Botón Flotante "+" */
+.btn-solicitar-plus {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #007bff;
+    color: white;
+    font-size: 24px;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,123,255,0.4);
+    cursor: pointer;
+    z-index: 100000;
+    display: none; /* Se activa vía JS */
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsividad */
+@media (max-width: 900px) { .masonry-grid { column-count: 2; } }
+@media (max-width: 600px) { .masonry-grid { column-count: 1; } }
 
 
 .admin-card-solicitud .info { flex: 1; }
