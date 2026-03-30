@@ -1,6 +1,4 @@
 // ========== VECINOS VIRTUALES - MÓDULO CORE ==========
-// Sistema base y datos globales
-
 const VV = {
     data: {
         user: null,
@@ -13,71 +11,42 @@ const VV = {
         cart: [],
         users: [],
         moderatorLogs: [],
-        folleto: [],
+        folleto: [], // Nueva tabla de folleto
         
-        // Cargar datos desde Supabase
         async loadFromSupabase() {
             try {
-                // Cargar productos
-                const { data: products } = await supabase
-                    .from('products')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                const { data: products } = await supabase.from('products').select('*').order('created_at', { ascending: false });
                 VV.data.products = products || [];
                 
-                // Cargar servicios
-                const { data: services } = await supabase
-                    .from('services')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                const { data: services } = await supabase.from('services').select('*').order('created_at', { ascending: false });
                 VV.data.services = services || [];
                 
-                // Cargar publicaciones culturales
-                const { data: culturalPosts } = await supabase
-                    .from('cultural_posts')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                const { data: culturalPosts } = await supabase.from('cultural_posts').select('*').order('created_at', { ascending: false });
                 VV.data.culturalPosts = culturalPosts || [];
 
-                // Cargar datos del Folleto Visual (Solo aprobados)
-                const { data: folletoData } = await supabase
-                    .from('folleto_imagenes')
-                    .select('*')
-                    .eq('aprobado', true)
-                    .order('created_at', { ascending: false });
+                // Carga de Folleto (Solo Aprobados)
+                const { data: folletoData } = await supabase.from('folleto_imagenes').select('*').eq('aprobado', true).order('created_at', { ascending: false });
                 VV.data.folleto = folletoData || [];
                 
-                // Cargar mejoras
-                const { data: improvements } = await supabase
-                    .from('improvements')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                const { data: improvements } = await supabase.from('improvements').select('*').order('created_at', { ascending: false });
                 VV.data.improvements = improvements || [];
                 
-                // Cargar anunciantes
-                const { data: sponsors } = await supabase
-                    .from('sponsors')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+                const { data: sponsors } = await supabase.from('sponsors').select('*').order('created_at', { ascending: false });
                 VV.data.sponsors = sponsors || [];
                 
-                console.log('✅ Datos cargados desde Supabase');
+                console.log('✅ Datos de Folleto y Core cargados');
             } catch (error) {
-                console.error('Error cargando datos:', error);
+                console.error('Error en loadFromSupabase:', error);
             }
         }
     },
     
-    // Datos de ejemplo
     sampleData: {
         sponsors: [
-            { id: '1', name: 'Supermercado Central', description: 'Tu supermercado de confianza', logo: '🏪', tier: 'premium', active: true },
-            { id: '2', name: 'Farmacia San José', description: 'Salud y bienestar', logo: '💊', tier: 'gold', active: true },
-            { id: '3', name: 'Panadería Artesanal', description: 'Pan fresco todos los días', logo: '🥖', tier: 'silver', active: true }
+            { id: '1', name: 'Supermercado Central', description: 'Tu súper', logo: '🏪', tier: 'premium', active: true }
         ]
     },
     
-    // Utilidades
     utils: {
         showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -133,16 +102,11 @@ const VV = {
         activarFolleto() {
             const folletoCont = document.getElementById('folleto-container');
             const btnPlus = document.getElementById('btn-mostrar-form');
-            if (VV.data.user) {
-                if (folletoCont) folletoCont.style.display = 'block';
-                if (btnPlus) btnPlus.style.display = 'flex';
-            }
+            if (folletoCont) folletoCont.style.display = 'block';
+            if (btnPlus) btnPlus.style.display = 'flex';
         },
 
-        generateId() {
-            return Date.now().toString() + Math.random().toString(36).substr(2, 9);
-        },
-
+        generateId() { return Date.now().toString() + Math.random().toString(36).substr(2, 9); },
         isAdmin() { return VV.data.user && VV.data.user.role === 'admin'; },
         isModerator() { return VV.data.user && VV.data.user.role === 'moderator'; },
         
@@ -160,8 +124,6 @@ const VV = {
             localStorage.setItem('moderatorLogs', JSON.stringify(logs.slice(0, 500)));
         },
 
-        showSuccess(message) {
-            console.log("Success:", message);
-        }
+        showSuccess(message) { console.log("Success:", message); }
     } 
 };
