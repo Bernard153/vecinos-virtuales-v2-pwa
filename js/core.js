@@ -189,20 +189,37 @@ const VV = {
         isAdmin() { return VV.data.user && VV.data.user.role === 'admin'; },
         isModerator() { return VV.data.user && VV.data.user.role === 'moderator'; },
         
+                // Registrar acción de moderador
         logModeratorAction(action, details) {
             if (!VV.data.user) return;
-            const log = {
+            
+            const actionLog = {
                 id: VV.utils.generateId(),
                 moderatorId: VV.data.user.id,
                 action: action,
                 details: details,
                 timestamp: new Date().toISOString()
             };
+            
             const logs = JSON.parse(localStorage.getItem('moderatorLogs') || '[]');
-            logs.unshift(log);
+            logs.unshift(actionLog);
             localStorage.setItem('moderatorLogs', JSON.stringify(logs.slice(0, 500)));
+        },
+
+        activarFolleto() {
+            const folletoCont = document.getElementById('folleto-container');
+            const btnPlus = document.getElementById('btn-mostrar-form');
+            if (VV.data.user) {
+                if (folletoCont) folletoCont.style.display = 'block';
+                if (btnPlus) btnPlus.style.display = 'flex';
+            }
+        },
+
+        generateId() {
+            return Date.now().toString() + Math.random().toString(36).substr(2, 9);
         }
-    }, // CIERRE DE UTILS
+    }, // AQUÍ CIERRA UTILS CORRECTAMENTE
+
 
 
         // Módulo de Folleto (AQUÍ VA LA FUNCIÓN NUEVA BIEN UBICADA)
