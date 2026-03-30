@@ -112,179 +112,98 @@ const VV = {
     },
     
     // Utilidades
+
     utils: {
         showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
+            const el = document.getElementById(screenId);
+            if (el) el.classList.add('active');
         },
         
         showSection(sectionId, addToHistory = true) {
-            // Agregar al historial del navegador
             if (addToHistory && history.pushState) {
                 history.pushState({ section: sectionId }, '', `#${sectionId}`);
             }
-            
-            // Scroll al inicio
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
-            // Actualizar menú
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.classList.remove('active');
-            });
+            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
             const menuItem = document.querySelector(`[data-section="${sectionId}"]`);
             if (menuItem) menuItem.classList.add('active');
             
-            // Mostrar sección
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            const sectionEl = document.getElementById(sectionId);
+            if (sectionEl) sectionEl.classList.add('active');
             
-            // Cargar contenido según sección
             switch(sectionId) {
-                case 'marketplace':
-                    VV.marketplace.load();
-                    break;
-                case 'shopping':
-                    VV.marketplace.loadShopping();
-                    break;
-                case 'improvements':
-                    VV.improvements.load();
-                    break;
-                case 'cultural':
-                    VV.cultural.load();
-                    break;
-                case 'services':
-                    VV.services.load();
+                case 'marketplace': VV.marketplace.load(); break;
+                case 'shopping': VV.marketplace.loadShopping(); break;
+                case 'improvements': VV.improvements.load(); break;
+                case 'cultural': VV.cultural.load(); break;
+                case 'services': VV.services.load(); break;
+                case 'folleto': 
+                    if (typeof abrirFolletoVisual === 'function') abrirFolletoVisual(); 
                     break;
                 case 'admin':
                     if (VV.utils.isAdmin()) {
                         VV.admin.load();
-                        // Carga las solicitudes del folleto para el admin
-                        if (typeof cargarSolicitudesPendientes === 'function') {
-                            cargarSolicitudesPendientes();
-                        }
+                        if (typeof cargarSolicitudesPendientes === 'function') cargarSolicitudesPendientes();
                     }
                     break;
-                case 'users-management':
-                    if (VV.utils.isAdmin()) {
-                        VV.admin.loadUsers();
-                    }
-                    break;
-                case 'admin-neighborhoods':
-                    if (VV.utils.isAdmin()) {
-                        VV.admin.loadAllNeighborhoods();
-                    }
-                    break;
-                case 'admin-products':
-                    if (VV.utils.isAdmin()) {
-                        VV.admin.loadAllProducts();
-                    }
-                    break;
-                case 'admin-improvements':
-                    if (VV.utils.isAdmin()) {
-                        VV.admin.loadAllImprovements();
-                    }
-                    break;
-                case 'moderator':
-                    if (VV.utils.isModerator()) {
-                        VV.moderator.load();
-                    }
-                    break;
-                // UBICACIÓN: Dentro del switch(sectionId) en VV.utils.showSection
-                case 'folleto':
-                    // Esta sección llama a la función global de folleto.js
-                    if (typeof abrirFolletoVisual === 'function') {
-                        abrirFolletoVisual();
-                    }
-                    break;
-
             }
         },
         
-        // Inicializar navegacide la app
-                    if (history.pushState) {
-                        history.pushState({ section: 'dashboard' }, '', '#dashboard');
-                    }
-                }
-            });
-            revenir salida
-                    VV.utils.showSection('dashboard', false);ón con historial
         initNavigation() {
-            // Manejar botón atrás del navegador
             window.addEventListener('popstate', (event) => {
                 if (event.state && event.state.section) {
-                    // Navegar a la sección del historial sin agregar nueva entrada
                     VV.utils.showSection(event.state.section, false);
                 } else {
-                    // Si no hay estado, volver al dashboard y p
-                    // Agregar estado para que no salga 
-            // Establecer estado inicial
+                    VV.utils.showSection('dashboard', false);
+                }
+            });
             if (history.replaceState) {
                 history.replaceState({ section: 'dashboard' }, '', '#dashboard');
             }
-            
-            // Prevenir salida accidental de la app
-            window.addEventListener('beforeunload', (event) => {
-                // Solo mostrar advertencia si el usuario está intentando cerrar/recargar
-                // No mostrar si está navegando dentro de la app
-                const currentSection = document.querySelector('.content-section.active')?.id;
-                if (currentSection && currentSection !== 'dashboard') {
-                    // No hacer nada, permitir navegación interna
-                    return;
-                }
-            });
+        },
+
+        activarFolleto() {
+            const folletoCont = document.getElementById('folleto-container');
+            const btnPlus = document.getElementById('btn-mostrar-form');
+            if (VV.data.user) {
+                if (folletoCont) folletoCont.style.display = 'block';
+                if (btnPlus) btnPlus.style.display = 'flex';
+            }
         },
         
         showSuccess(message) {
             const div = document.createElement('div');
+            div.className = 'toast-success';
             div.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
             document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
         },
         
         generateId() {
             return Date.now().toString() + Math.random().toString(36).substr(2, 9);
         },
-        // Verificar si es admin
-        isAdmin() {
-            return VV.data.user && VV.data.user.role === 'admin';
-        },
+
+        isAdmin() { return VV.data.user && VV.data.user.role === 'admin'; },
+        isModerator() { return VV.data.user && VV.data.user.role === 'moderator'; },
         
-        isModerator() {
-            return VV.data.user && VV.data.user.role === 'moderator';
-        },
-        
-        // Verificar si tiene permisos de moderación (admin o moderador)
-        canModerate() {
-            return VV.utils.isAdmin() || VV.utils.isModerator();
-        },
-        
-        // Registrar acción de moderador
-                // Registrar acción de moderador
         logModeratorAction(action, details) {
-            if (!VV.utils.isModerator() && !VV.utils.isAdmin()) return;
-            
+            if (!VV.data.user) return;
             const log = {
                 id: VV.utils.generateId(),
                 moderatorId: VV.data.user.id,
-                moderatorName: VV.data.user.name,
-                neighborhood: VV.data.neighborhood,
                 action: action,
                 details: details,
                 timestamp: new Date().toISOString()
             };
-            
-            // Cargar logs existentes
             const logs = JSON.parse(localStorage.getItem('moderatorLogs') || '[]');
-            logs.unshift(log); // Agregar al inicio
-            
-            // Mantener solo los últimos 500 logs
-            if (logs.length > 500) {
-                logs.splice(500);
-            }
-            
-            localStorage.setItem('moderatorLogs', JSON.stringify(logs));
-        },
+            logs.unshift(log);
+            localStorage.setItem('moderatorLogs', JSON.stringify(logs.slice(0, 500)));
+        }
+    }, // CIERRE DE UTILS
+
 
         // Módulo de Folleto (AQUÍ VA LA FUNCIÓN NUEVA BIEN UBICADA)
         activarFolleto() {
