@@ -260,21 +260,43 @@ const VV = {
         },
         
         // Registrar acción de moderador
+                // Registrar acción de moderador
         logModeratorAction(action, details) {
             if (!VV.utils.isModerator() && !VV.utils.isAdmin()) return;
-            // UBICACIÓN: Al final de VV.utils en core.js
+            
+            const log = {
+                id: VV.utils.generateId(),
+                moderatorId: VV.data.user.id,
+                moderatorName: VV.data.user.name,
+                neighborhood: VV.data.neighborhood,
+                action: action,
+                details: details,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Cargar logs existentes
+            const logs = JSON.parse(localStorage.getItem('moderatorLogs') || '[]');
+            logs.unshift(log); // Agregar al inicio
+            
+            // Mantener solo los últimos 500 logs
+            if (logs.length > 500) {
+                logs.splice(500);
+            }
+            
+            localStorage.setItem('moderatorLogs', JSON.stringify(logs));
+        },
+
+        // Módulo de Folleto (AQUÍ VA LA FUNCIÓN NUEVA BIEN UBICADA)
         activarFolleto() {
             const folletoCont = document.getElementById('folleto-container');
             const btnPlus = document.getElementById('btn-mostrar-form');
     
-            // Solo se activan si el usuario está logueado
             if (VV.data.user) {
                 if (folletoCont) folletoCont.style.display = 'block';
                 if (btnPlus) btnPlus.style.display = 'flex';
                 console.log('📖 Módulo de Folleto activado para el usuario');
             }
         },
-
             
             const log = {
                 id: VV.utils.generateId(),
