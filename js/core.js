@@ -113,7 +113,7 @@ const VV = {
     
     // Utilidades
 
-    utils: {
+        utils: {
         showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             const el = document.getElementById(screenId);
@@ -125,11 +125,9 @@ const VV = {
                 history.pushState({ section: sectionId }, '', `#${sectionId}`);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
             document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
             const menuItem = document.querySelector(`[data-section="${sectionId}"]`);
             if (menuItem) menuItem.classList.add('active');
-            
             document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
             const sectionEl = document.getElementById(sectionId);
             if (sectionEl) sectionEl.classList.add('active');
@@ -173,15 +171,7 @@ const VV = {
                 if (btnPlus) btnPlus.style.display = 'flex';
             }
         },
-        
-        showSuccess(message) {
-            const div = document.createElement('div');
-            div.className = 'toast-success';
-            div.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 3000);
-        },
-        
+
         generateId() {
             return Date.now().toString() + Math.random().toString(36).substr(2, 9);
         },
@@ -189,39 +179,25 @@ const VV = {
         isAdmin() { return VV.data.user && VV.data.user.role === 'admin'; },
         isModerator() { return VV.data.user && VV.data.user.role === 'moderator'; },
         
-                // Registrar acción de moderador
         logModeratorAction(action, details) {
             if (!VV.data.user) return;
-            
-            const actionLog = {
+            const logData = {
                 id: VV.utils.generateId(),
                 moderatorId: VV.data.user.id,
                 action: action,
                 details: details,
                 timestamp: new Date().toISOString()
             };
-            
             const logs = JSON.parse(localStorage.getItem('moderatorLogs') || '[]');
-            logs.unshift(actionLog);
+            logs.unshift(logData);
             localStorage.setItem('moderatorLogs', JSON.stringify(logs.slice(0, 500)));
         },
 
-        activarFolleto() {
-            const folletoCont = document.getElementById('folleto-container');
-            const btnPlus = document.getElementById('btn-mostrar-form');
-            if (VV.data.user) {
-                if (folletoCont) folletoCont.style.display = 'block';
-                if (btnPlus) btnPlus.style.display = 'flex';
-            }
-        },
-
-        generateId() {
-            return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+        showSuccess(message) {
+            console.log("Success:", message);
         }
-    }, // AQUÍ CIERRA UTILS CORRECTAMENTE
-
-
-
+    } // Asegúrate de que esta llave cierre bien el objeto utils
+}; // Esta llave cierra el objeto VV principal
         // Módulo de Folleto (AQUÍ VA LA FUNCIÓN NUEVA BIEN UBICADA)
         activarFolleto() {
             const folletoCont = document.getElementById('folleto-container');
