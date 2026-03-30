@@ -196,8 +196,8 @@ const VV = {
         showSuccess(message) {
             console.log("Success:", message);
         }
-    } // Asegúrate de que esta llave cierre bien el objeto utils
-}; // Esta llave cierra el objeto VV principal
+    } // Cierre de utils
+}; // CIERRE DEFINITIVO DE VV
         // Módulo de Folleto (AQUÍ VA LA FUNCIÓN NUEVA BIEN UBICADA)
         activarFolleto() {
             const folletoCont = document.getElementById('folleto-container');
