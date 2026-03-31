@@ -54,37 +54,59 @@ const VV = {
             if (el) el.classList.add('active');
         },
         
-        showSection(sectionId, addToHistory = true) {
+                showSection(sectionId, addToHistory = true) {
+            // 1. Restaurar scroll y limpiar bloqueos
+            document.body.style.overflow = 'auto'; 
+            const folletoCont = document.getElementById('folleto-container');
+            if (folletoCont) folletoCont.classList.remove('active');
+
             if (addToHistory && history.pushState) {
                 history.pushState({ section: sectionId }, '', `#${sectionId}`);
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
+            // 2. Actualizar Menú
             document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
             const menuItem = document.querySelector(`[data-section="${sectionId}"]`);
             if (menuItem) menuItem.classList.add('active');
             
-            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
-            const sectionEl = document.getElementById(sectionId);
-            if (sectionEl) sectionEl.classList.add('active');
+            // 3. Mostrar Sección y OCULTAR las demás
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none'; // Asegura que no interfieran
+            });
             
-            switch(sectionId) {
-                case 'marketplace': VV.marketplace.load(); break;
-                case 'shopping': VV.marketplace.loadShopping(); break;
-                case 'improvements': VV.improvements.load(); break;
-                case 'cultural': VV.cultural.load(); break;
-                case 'services': VV.services.load(); break;
-                case 'folleto': 
-                    if (typeof abrirFolletoVisual === 'function') abrirFolletoVisual(); 
-                    break;
-                case 'admin':
-                    if (VV.utils.isAdmin()) {
-                        VV.admin.load();
-                        if (typeof cargarSolicitudesPendientes === 'function') cargarSolicitudesPendientes();
-                    }
-                    break;
+            const sectionEl = document.getElementById(sectionId);
+            if (sectionEl) {
+                sectionEl.classList.add('active');
+                sectionEl.style.display = 'block';
+            }
+            
+            // 4. Cargar contenido específico (Aseguramos que no falle)
+            try {
+                switch(sectionId) {
+                    case 'marketplace': VV.marketplace?.load(); break;
+                    case 'services': VV.services?.load(); break;
+                    case 'admin':
+                        if (VV.utils.isAdmin()) {
+                            VV.admin.load();
+                            // Ejecuta moderación solo si la función existe
+                            if (typeof window.cargarSolicitudesPendientes === 'function') {
+                                window.cargarSolicitudesPendientes();
+                            }
+                        }
+                        break;
+                    case 'folleto':
+                        if (typeof window.abrirFolletoVisual === 'function') {
+                            window.abrirFolletoVisual();
+                        }
+                        break;
+                }
+            } catch (e) {
+                console.error("Error cargando módulo:", sectionId, e);
             }
         },
+
         
         initNavigation() {
             window.addEventListener('popstate', (event) => {
