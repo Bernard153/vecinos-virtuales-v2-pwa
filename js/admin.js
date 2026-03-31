@@ -595,6 +595,9 @@ VV.admin = {
         if (tabName === 'featured') VV.admin.loadFeaturedOffers();
         if (tabName === 'avatars') VV.admin.loadAvatarsManagement();
         if (tabName === 'raffles') VV.admin.loadRafflesManagement();
+        if (tabName === 'folleto' && typeof window.cargarSolicitudesPendientes === 'function') {
+        window.cargarSolicitudesPendientes();
+        }
     },
 
     // Cargar estadísticas
