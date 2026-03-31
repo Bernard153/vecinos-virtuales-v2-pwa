@@ -150,9 +150,79 @@ formSolicitud.addEventListener('submit', async (e) => {
         btn.disabled = false;
         btn.innerText = "Enviar al Administrador";
     }
+    /**
+ * MODULO: ADMINISTRACIÓN (MODERACIÓN)
+ * Carga las fotos con aprobado = false en el panel de admin
+ */
+async function cargarSolicitudesPendientes() {
+    const contenedor = document.getElementById('lista-solicitudes-pendientes');
+    if (!contenedor) return;
+
+    contenedor.innerHTML = '<p style="text-align: center; color: #64748b; grid-column: 1/-1; padding: 20px;">Cargando solicitudes...</p>';
+
+    try {
+        const { data, error } = await supabase
+            .from('folleto_imagenes')
+            .select('*')
+            .eq('aprobado', false)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            contenedor.innerHTML = '<p style="text-align: center; color: #94a3b8; grid-column: 1/-1; padding: 20px;">No hay solicitudes pendientes.</p>';
+            return;
+        }
+
+        contenedor.innerHTML = data.map(img => `
+            <div class="admin-card-solicitud" style="background: white; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <img src="${img.url_imagen}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+                <h4 style="margin: 0 0 5px 0; font-size: 0.95rem;">${img.titulo || 'Sin título'}</h4>
+                <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">De: ${img.nombre_vecino || 'Vecino'}</p>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="gestionarSolicitud('${img.id}', true)" style="flex: 1; background: #10b981; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: 600;">Aprobar</button>
+                    <button onclick="gestionarSolicitud('${img.id}', false)" style="flex: 1; background: #ef4444; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: 600;">Rechazar</button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error("Error en moderación:", error);
+        contenedor.innerHTML = '<p style="color: red; text-align: center; padding: 20px;">Error al conectar con Supabase.</p>';
+    }
+}
+
+/**
+ * Aprueba o rechaza una imagen
+ */
+async function gestionarSolicitud(id, aprobar) {
+    try {
+        if (aprobar) {
+            const { error } = await supabase
+                .from('folleto_imagenes')
+                .update({ aprobado: true })
+                .eq('id', id);
+            if (error) throw error;
+            alert("Imagen aprobada y publicada en el folleto.");
+        } else {
+            const { error } = await supabase
+                .from('folleto_imagenes')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+            alert("Solicitud rechazada y eliminada.");
+        }
+        // Recargar la lista automáticamente
+        cargarSolicitudesPendientes();
+    } catch (error) {
+        alert("Error al procesar: " + error.message);
+    }
+}
+
 });
 
 // Exportar funciones si usas módulos, o dejarlas globales para llamar desde HTML
 window.abrirFolletoVisual = abrirFolletoVisual;
 window.cargarSolicitudesPendientes = cargarSolicitudesPendientes;
+window.gestionarSolicitud = gestionarSolicitud;
 
