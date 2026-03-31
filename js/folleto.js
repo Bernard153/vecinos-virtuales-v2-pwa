@@ -154,3 +154,5 @@ formSolicitud.addEventListener('submit', async (e) => {
 
 // Exportar funciones si usas módulos, o dejarlas globales para llamar desde HTML
 window.abrirFolletoVisual = abrirFolletoVisual;
+window.cargarSolicitudesPendientes = cargarSolicitudesPendientes;
+
