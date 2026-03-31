@@ -651,12 +651,6 @@
                             <i class="fas fa-plus"></i> Nuevo Anunciante
                         </button>
                         <!-- UBICACIÓN: Dentro de tu panel de administración en index.html -->
-                        <section id="admin-folleto" class="admin-section">
-                            <h3>📋 Moderación de Folleto</h3>
-                            <div id="lista-solicitudes-pendientes" class="admin-grid-pendientes">
-                                <!-- Aquí se cargarán las fotos por aprobar -->
-                            </div>
-                        </section>
                     </div>
 
                     <!-- Solicitudes Pendientes de Anunciantes -->
@@ -690,6 +684,11 @@
                         <button class="tab-btn" onclick="VV.admin.showTab('stats')">
                             <i class="fas fa-chart-bar"></i> Estadísticas
                         </button>
+                        <!-- UBICACIÓN: Dentro de <div class="admin-tabs"> -->
+                        <button class="tab-btn" onclick="VV.admin.showTab('folleto')">
+                            <i class="fas fa-images"></i> Folleto
+                        </button>
+
                     </div>
 
                     <div id="admin-sponsors" class="admin-tab-content active">
@@ -745,6 +744,19 @@
                             </div>
                         </div>
                     </div>
+                    <!-- UBICACIÓN: Justo antes del cierre de </section> de admin -->
+                    <div id="admin-folleto" class="admin-tab-content">
+                        <div style="padding: 20px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <h3 style="margin-bottom: 20px; color: #1e293b;">📋 Moderación de Folleto Vecinal</h3>
+                            <p style="color: #64748b; margin-bottom: 15px;">Imágenes pendientes de aprobación:</p>
+        
+                            <div id="lista-solicitudes-pendientes" class="admin-grid-pendientes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
+                                <!-- Se llena vía JS -->
+                                <p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">Buscando solicitudes...</p>
+                            </div>
+                        </div>
+                    </div>
+
                 </section>
 
                 <!-- MODERADOR -->
