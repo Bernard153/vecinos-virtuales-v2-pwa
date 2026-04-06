@@ -610,6 +610,21 @@
 .admin-card-solicitud .info { flex: 1; }
 .btn-aprobar { background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; }
 .btn-rechazar { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px; }
+/* --- PARCHE TEMPORAL PARA VISIBILIDAD EN PC (BORRAR SI FALLA) --- */
+@media (min-width: 769px) {
+    .folleto-overlay.active {
+        transform: translateY(0) !important;
+        display: block !important;
+        background: rgba(255, 255, 255, 0.98) !important; /* Un poco de transparencia para PC */
+    }
+    
+    .masonry-grid {
+        column-count: 3; /* Asegura las 3 columnas en monitores */
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+}
+/* --- FIN DEL PARCHE --- */
 
 
 }
