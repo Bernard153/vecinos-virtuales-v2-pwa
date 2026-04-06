@@ -16,13 +16,17 @@ const formSolicitud = document.getElementById('form-solicitud-vecino');
 async function abrirFolletoVisual() {
     if (!folletoEl) return console.error("No se encontró el contenedor del folleto.");
     folletoEl.classList.add('active');
+    folletoEl.style.display = 'block'; // Asegura visibilidad
     document.body.style.overflow = 'hidden'; 
     gridFolleto.innerHTML = '<p style="color:#666; padding:20px;">Cargando folleto...</p>';
     await cargarContenidoFolleto();
 }
 
 function minimizarFolleto() {
-    if (folletoEl) folletoEl.classList.remove('active');
+    if (folletoEl) {
+        folletoEl.classList.remove('active');
+        folletoEl.style.display = 'none';
+    }
     document.body.style.overflow = 'auto';
 }
 
@@ -45,15 +49,16 @@ async function cargarContenidoFolleto() {
         data.forEach(item => {
             const card = document.createElement('div');
             card.className = 'folleto-item';
-            const mensajeWS = encodeURIComponent(`¡Mira este anuncio!\n*${item.titulo}*\n${item.descripcion}`);
+            // Corrección en el enlace de WhatsApp:
+            const mensajeWS = encodeURIComponent(`¡Hola! Vi tu anuncio en Vecinos Virtuales: *${item.titulo}*`);
             
             card.innerHTML = `
                 <img src="${item.url_imagen}" alt="${item.titulo}" loading="lazy">
-                <div class="folleto-text">
+                <div class="folleto-text" style="padding:10px;">
                     <strong style="display:block; margin-bottom:5px;">${item.titulo}</strong>
                     <p style="font-size:0.85em; color:#444;">${item.descripcion}</p>
                     <a href="https://wa.me{mensajeWS}" target="_blank" class="btn-share-ws" style="display:block; margin-top:10px; color:#25d366; text-decoration:none; font-weight:bold; font-size:0.8rem;">
-                        <i class="fab fa-whatsapp"></i> Compartir
+                        <i class="fab fa-whatsapp"></i> Consultar
                     </a>
                 </div>
             `;
@@ -67,12 +72,15 @@ async function cargarContenidoFolleto() {
 /**
  * LOGICA DE USUARIO: ENVÍO DE SOLICITUD
  */
-if (document.getElementById('btn-mostrar-form')) {
-    document.getElementById('btn-mostrar-form').addEventListener('click', () => seccionForm.classList.toggle('active'));
-}
-if (document.getElementById('btn-cancelar-sol')) {
-    document.getElementById('btn-cancelar-sol').addEventListener('click', () => seccionForm.classList.remove('active'));
-}
+// Reforzado para PC y Móvil
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'btn-mostrar-form') {
+        if (seccionForm) seccionForm.classList.toggle('active');
+    }
+    if (e.target && e.target.id === 'btn-cancelar-sol') {
+        if (seccionForm) seccionForm.classList.remove('active');
+    }
+});
 
 if (formSolicitud) {
     formSolicitud.addEventListener('submit', async (e) => {
@@ -108,7 +116,7 @@ if (formSolicitud) {
 
             alert("¡Solicitud enviada con éxito!");
             formSolicitud.reset();
-            seccionForm.classList.remove('active');
+            if (seccionForm) seccionForm.classList.remove('active');
         } catch (error) {
             alert("Error: " + error.message);
         } finally {
@@ -145,6 +153,7 @@ async function cargarSolicitudesPendientes() {
             <div class="admin-card-solicitud" style="background: white; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px;">
                 <img src="${img.url_imagen}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px;">
                 <h4 style="margin: 10px 0 5px 0;">${img.titulo}</h4>
+                <p style="font-size:0.8rem; color:#666;">Por: ${img.nombre_vecino}</p>
                 <div style="display: flex; gap: 8px; margin-top: 10px;">
                     <button onclick="gestionarSolicitud('${img.id}', true)" style="flex: 1; background: #10b981; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer;">Aprobar</button>
                     <button onclick="gestionarSolicitud('${img.id}', false)" style="flex: 1; background: #ef4444; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer;">Rechazar</button>
