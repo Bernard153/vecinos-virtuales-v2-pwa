@@ -1,4 +1,16 @@
 /**
+ * INICIALIZACIÓN DE SEGURIDAD (Añadir esto arriba de todo)
+ */
+window.VV = window.VV || {};
+window.VV.utils = window.VV.utils || {
+    // Si la función falta, la definimos aquí para que no se rompa la app
+    canModerate: function() {
+        const user = JSON.parse(localStorage.getItem('vv_user_session'));
+        return user && (user.role === 'admin' || user.role === 'moderator');
+    }
+};
+
+/**
  * MODULO: FOLLETO VISUAL CONTINUO
  * Descripción: Maneja la visualización de imágenes y moderación.
  */
