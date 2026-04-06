@@ -649,6 +649,43 @@
 #seccion-solicitud h3 { color: #1e293b; margin-bottom: 10px; }
 #seccion-solicitud p { color: #64748b; font-size: 0.9rem; margin-bottom: 15px; }
 
+/* --- ACTIVACIÓN DEL FORMULARIO Y BOTÓN --- */
+#btn-mostrar-form {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    width: 60px !important;
+    height: 60px !important;
+    border-radius: 50% !important;
+    background: #2563eb !important;
+    color: white !important;
+    font-size: 30px !important;
+    z-index: 10005 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+#seccion-solicitud {
+    display: none; /* Oculto por defecto */
+    position: fixed !important;
+    bottom: 90px !important;
+    right: 20px !important;
+    width: 90% !important;
+    max-width: 350px !important;
+    background: white !important;
+    padding: 20px !important;
+    border-radius: 12px !important;
+    z-index: 10006 !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    border: 1px solid #ddd;
+}
+
+#seccion-solicitud.active {
+    display: block !important;
+}
 
 
 }
