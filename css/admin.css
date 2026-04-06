@@ -625,6 +625,25 @@
     }
 }
 /* --- FIN DEL PARCHE --- */
+/* --- CORRECCIÓN DE VISIBILIDAD EN PC --- */
+@media (min-width: 1024px) {
+    .folleto-overlay.active {
+        /* Aseguramos que se posicione al inicio de la pantalla */
+        top: 0 !important;
+        left: 0 !important;
+        transform: translateY(0) !important;
+        
+        /* Forzamos que ocupe todo el espacio sin importar el zoom */
+        width: 100vw !important;
+        height: 100vh !important;
+        display: flex !important;
+        flex-direction: column;
+        
+        /* Evita que se oculte por comportamientos del navegador */
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
 
 
 }
