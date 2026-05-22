@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Billetera - Vecinos Virtuales</title>
+    <!-- Cargamos Tailwind CSS para un diseño hermoso y rápido -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- CABECERA DE LA APP -->
+    <header class="bg-green-600 text-white p-4 shadow-md sticky top-0 z-50 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl">🪙</span>
+            <h1 class="text-xl font-bold">Mi Billetera Virtual</h1>
+        </div>
+        <a href="index.html" class="text-sm bg-green-700 px-3 py-1 rounded-full hover:bg-green-800 transition">Volver</a>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL (Optimizado para celulares) -->
+    <main class="p-4 max-w-md mx-auto w-full flex-grow space-y-6">
+
+        <!-- TARJETA DE SALDO Y RANGO -->
+        <section class="bg-white rounded-2xl p-6 shadow-md border-t-4 border-gray-400 text-center space-y-3" id="tarjeta-perfil">
+            <div class="relative w-20 h-20 mx-auto">
+                <!-- Avatar del vecino (Gris por defecto para invitado) -->
+                <div class="w-full h-full bg-gray-300 rounded-full flex items-center justify-center text-3xl border-4 border-gray-400 shadow-inner">👤</div>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-gray-800" id="nombre-usuario">Vecino Invitado</h2>
+                <!-- El rango dinámico que creamos en Supabase -->
+                <span class="inline-block bg-gray-200 text-gray-700 text-xs px-3 py-1 rounded-full font-semibold mt-1" id="rango-etiqueta">
+                    🎧 Oyente del Barrio
+                </span>
+            </div>
+            <div class="pt-4 border-t border-gray-100">
+                <p class="text-sm text-gray-500 uppercase tracking-wider font-semibold">Mi Saldo Actual</p>
+                <p class="text-4xl font-extrabold text-green-600 mt-1 flex items-center justify-center gap-2">
+                    <span>🪙</span> <span id="saldo-texto">0</span>
+                </p>
+                <p class="text-xs text-gray-400 mt-1" id="xp-texto">Tienes 0 puntos de experiencia (XP)</p>
+            </div>
+        </section>
+
+        <!-- SECCIÓN DE COMPRA DE MONEDAS -->
+        <section class="space-y-3">
+            <h3 class="text-gray-700 font-bold text-sm uppercase tracking-wider px-1">Recargar VecinoCoins</h3>
+            <p class="text-xs text-gray-500 px-1">Usa tus monedas para enviar rosas, aplausos o diamantes y apoyar a tu comunidad.</p>
+            
+            <div class="grid grid-cols-1 gap-3">
+                <!-- Paquete 1 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:border-green-500 transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">📦</span>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Paquete Bronce</h4>
+                            <p class="text-sm text-green-600 font-semibold">🪙 50 Monedas</p>
+                        </div>
+                    </div>
+                    <button class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow hover:bg-green-700">Comprar</button>
+                </div>
+
+                <!-- Paquete 2 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:border-green-500 transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">💰</span>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Paquete Plata</h4>
+                            <p class="text-sm text-green-600 font-semibold">🪙 120 Monedas <span class="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded ml-1">+20 GRATIS</span></p>
+                        </div>
+                    </div>
+                    <button class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow hover:bg-green-700">Comprar</button>
+                </div>
+
+                <!-- Paquete 3 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:border-green-500 transition cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <span class="text-3xl">👑</span>
+                        <div>
+                            <h4 class="font-bold text-gray-800">Paquete Oro VIP</h4>
+                            <p class="text-sm text-green-600 font-semibold">🪙 300 Monedas <span class="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded ml-1">+50 GRATIS</span></p>
+                        </div>
+                    </div>
+                    <button class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow hover:bg-green-700">Comprar</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MENÚ INFERIOR DE NAVEGACIÓN -->
+    <footer class="bg-white border-t border-gray-200 p-2 grid grid-cols-4 text-center text-xs text-gray-500 sticky bottom-0 z-50">
+        <button class="flex flex-col items-center gap-1 py-1 text-gray-400"><span>🏠</span>Inicio</button>
+        <button class="flex flex-col items-center gap-1 py-1 text-gray-400"><span>🛒</span>Comprar</button>
+        <button class="flex flex-col items-center gap-1 py-1 text-gray-400"><span>🎤</span>Cultura</button>
+        <button class="flex flex-col items-center gap-1 py-1 text-green-600 font-bold"><span>🪙</span>Billetera</button>
+    </footer>
+
+</body>
+</html>
