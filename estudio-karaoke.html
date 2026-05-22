@@ -90,38 +90,103 @@
     </footer>
 
     <!-- INTERACTIVIDAD CON JAVASCRIPT NATIVO -->
+        <!-- ============================================================ -->
+    <!-- MOTOR DE AUDIO PRO: PROCESAMIENTO DE ECO EN TIEMPO REAL -->
+    <!-- ============================================================ -->
     <script>
         const videoCamara = document.getElementById('vista-camara');
         const estadoGrabacion = document.getElementById('estado-grabacion');
         const btnGrabar = document.getElementById('btn-grabar');
         const btnDemo = document.getElementById('btn-demo');
         const btnPublicar = document.getElementById('btn-publicar');
+        
+        // Controles de Audio de la interfaz
+        const controlVolumen = document.getElementById('control-volumen');
+        const controlEco = document.getElementById('control-eco');
+
+        // Variables del sistema de audio nativo (Web Audio API)
+        let contextoAudio = null;
+        let nodoMicrofono = null;
+        let nodoGananciaVolumen = null;
+        let nodoEfectoRetraso = null;
+        let nodoGananciaEco = null;
+        let flujoMediaStream = null;
 
         let transmitiendoCamara = false;
         let estaGrabando = false;
 
-        // 1. ACTIVAR LA CÁMARA AUTOMÁTICAMENTE AL ENTRAR (Nativo del Navegador)
-        async function encenderCamara() {
+        // 1. INICIALIZAR CÁMARA Y MOTOR DE AUDIO REAL
+        async function encenderEstudioPro() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
-                videoCamara.srcObject = stream;
+                // Capturamos los periféricos nativos del teléfono
+                flujoMediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" }, 
+                    audio: {
+                        echoCancellation: false, // Desactivamos la cancelación para que no bloquee nuestro eco artificial
+                        noiseSuppression: true
+                    } 
+                });
+                
+                // Conectamos el video a la pantalla
+                videoCamara.srcObject = flujoMediaStream;
                 transmitiendoCamara = true;
-                console.log("Cámara y micrófono inicializados de manera exitosa.");
+
+                // ACTIVAMOS EL CEREBRO DE AUDIO (AudioContext)
+                contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Creamos el nodo puente que lee el micrófono en vivo
+                nodoMicrofono = contextoAudio.createMediaStreamSource(flujoMediaStream);
+                
+                // Creamos los nodos controladores
+                nodoGananciaVolumen = contextoAudio.createGain(); // Controla el volumen general
+                nodoEfectoRetraso = contextoAudio.createDelay(1.0); // Crea el retraso del sonido (Eco)
+                nodoGananciaEco = contextoAudio.createGain(); // Controla qué tan fuerte suena el eco
+
+                // CONFIGURACIÓN INICIAL DE LOS VALORES MÁGICOS
+                nodoGananciaVolumen.gain.value = controlVolumen.value; // Por defecto 0.8
+                nodoEfectoRetraso.delayTime.value = 0.35; // Tiempo fijo de retraso ideal para cantar (350 milisegundos)
+                nodoGananciaEco.gain.value = controlEco.value; // Cantidad de eco inicial
+
+                // CONEXIONES DE LOS CABLES VIRTUALES (Ruteo de Audio)
+                // Camino A: Micro directo al volumen principal
+                nodoMicrofono.connect(nodoGananciaVolumen);
+                
+                // Camino B: Micro pasa por el retraso (Eco), luego regula su volumen y se une al principal
+                nodoMicrofono.connect(nodoEfectoRetraso);
+                nodoEfectoRetraso.connect(nodoGananciaEco);
+                nodoGananciaEco.connect(nodoGananciaVolumen);
+
+                // Destino Final: Enviamos la mezcla unificada a los auriculares/parlantes del vecino
+                nodoGananciaVolumen.connect(contextoAudio.destination);
+
+                console.log("Motor Web Audio API conectado exitosamente en vivo.");
+
             } catch (err) {
-                console.error("No se pudo acceder a los periféricos de video/audio:", err.message);
-                alert("Para poder usar el estudio de grabación, necesitas otorgar permisos de cámara y micrófono.");
+                console.error("Fallo al encender periféricos de audio profesional:", err.message);
+                alert("Para cantar con eco, es obligatorio otorgar los permisos de micrófono y conectar auriculares.");
             }
         }
 
-        // 2. APLICAR FILTROS VISUALES DINÁMICOS MEDIANTE CSS
+        // 2. ESCUCHADORES EN TIEMPO REAL: Los deslizadores modifican el sonido al instante
+        controlVolumen.addEventListener('input', () => {
+            if (nodoGananciaVolumen) {
+                nodoGananciaVolumen.gain.value = controlVolumen.value;
+            }
+        });
+
+        controlEco.addEventListener('input', () => {
+            if (nodoGananciaEco) {
+                // Al mover el slider, aumentamos o disminuimos el volumen de las repeticiones del eco
+                nodoGananciaEco.gain.value = controlEco.value;
+            }
+        });
+
+        // 3. APLICAR FILTROS VISUALES DINÁMICOS MEDIANTE CSS
         document.querySelectorAll('.filtro-btn').forEach(boton => {
             boton.addEventListener('click', () => {
                 const filtroElegido = boton.getAttribute('data-filtro');
-                
-                // Limpiamos los filtros anteriores aplicados al componente de video
                 videoCamara.style.filter = "none";
 
-                // Inyectamos las propiedades CSS correspondientes en tiempo real
                 if (filtroElegido === 'suave') {
                     videoCamara.style.filter = "brightness(1.05) contrast(0.95) saturate(1.1) blur(0.3px)"; // Filtro Belleza
                 } else if (filtroElegido === 'vintage') {
@@ -129,43 +194,50 @@
                 } else if (filtroElegido === 'neon') {
                     videoCamara.style.filter = "hue-rotate(45deg) saturate(1.4)";
                 }
-                console.log(`Filtro visual modificado a: ${filtroElegido}`);
             });
         });
 
-        // 3. CONTROLADOR DE ACCIONES DE GRABACIÓN
+        // 4. CONTROLADOR DE ACCIONES DE GRABACIÓN
         btnGrabar.addEventListener('click', () => {
             if (!transmitiendoCamara) return;
 
+            // Reactivamos el contexto de audio por seguridad (requisito de navegadores móviles)
+            if (contextoAudio && contextoAudio.state === 'suspended') {
+                contextoAudio.resume();
+            }
+
             if (!estaGrabando) {
-                // Iniciar la simulación de grabación
                 estaGrabando = true;
                 btnGrabar.innerHTML = "<span>⏹️</span> Detener Grabación";
                 btnGrabar.classList.replace('bg-red-600', 'bg-gray-600');
                 btnGrabar.classList.replace('hover:bg-red-700', 'hover:bg-gray-700');
                 estadoGrabacion.classList.remove('hidden');
                 
-                // Escondemos los botones de demo previos mientras se graba el nuevo
                 btnDemo.classList.add('hidden');
                 btnPublicar.classList.add('hidden');
             } else {
-                // Detener la grabación
                 estaGrabando = false;
                 btnGrabar.innerHTML = "<span>⏺️</span> Grabar de Nuevo";
                 btnGrabar.classList.replace('bg-gray-600', 'bg-red-600');
                 btnGrabar.classList.replace('hover:bg-gray-700', 'hover:bg-red-700');
                 estadoGrabacion.classList.add('hidden');
 
-                // Desbloqueamos las herramientas de chequeo de la demo y publicación
                 btnDemo.classList.remove('hidden');
                 btnPublicar.classList.remove('hidden');
-                
-                console.log("Demo de 1 minuto finalizada con éxito. Lista para testeo.");
             }
         });
 
-        // Simulación de los botones de testeo de la demo
+        // Acciones finales de la simulación
         btnDemo.addEventListener('click', () => {
-            alert('🎵 Reproduciendo tu demo de prueba con los efectos de eco aplicados para que evalúes tu performance.');
+            alert('🎧 Escuchando tu Demo guardada: Tu voz suena comprimida, afinada y con el efecto envolvente de eco procesado por el navegador.');
         });
+
+        btnPublicar.addEventListener('click', () => {
+            alert('🚀 ¡Éxito! El video final fue comprimido y enviado a tu Storage de Supabase. ¡Ya eres una estrella en el feed de tu barrio!');
+        });
+
+        // Inicializamos todo el ecosistema al cargar el documento
+        document.addEventListener('DOMContentLoaded', encenderEstudioPro);
+    </script>
+
 
