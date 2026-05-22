@@ -1,4 +1,6 @@
-// ========== INICIALIZACIÓN DE LA APLICACIÓN ==========
+// ============================================================
+// CORE PRINCIPAL DE LA APP - INICIALIZACIÓN DE LA APLICACIÓN
+// ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Vecinos Virtuales V2 - Iniciando...');
@@ -11,28 +13,41 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    VV.utils.showScreen('loading-screen');
+    if (typeof VV !== 'undefined' && VV.utils && typeof VV.utils.showScreen === 'function') {
+        VV.utils.showScreen('loading-screen');
+    }
     
     setTimeout(async () => {
-        const hasSession = await VV.auth.checkExistingUser();
-        if (hasSession) {
-            // LOGIN EXITOSO
-            VV.auth.startApp();
+        if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.checkExistingUser === 'function') {
+            const hasSession = await VV.auth.checkExistingUser();
             
-            // ACTIVAR MÓDULO FOLLETO SOLO AQUÍ
-            if (VV.utils.activarFolleto) {
-                VV.utils.activarFolleto();
+            if (hasSession) {
+                // LOGIN EXITOSO - ARRANCAR APP TRADICIONAL
+                VV.auth.startApp();
+                
+                // ACTIVAR MÓDULO FOLLETO SOLO AQUÍ
+                if (VV.utils && typeof VV.utils.activarFolleto === 'function') {
+                    VV.utils.activarFolleto();
+                }
+                
+                if (VV.geo && typeof VV.geo.init === 'function') {
+                    await VV.geo.init();
+                    VV.geo.updateLocationUI();
+                }
+
+                // 🌟 ORDEN DE ENCENDIDO: Activamos el carrusel de avances superior en el inicio
+                if (typeof VV.featured !== 'undefined' && typeof VV.featured.renderNovedadesCarrusel === 'function') {
+                    VV.featured.renderNovedadesCarrusel();
+                }
+                
+            } else {
+                if (VV.utils && typeof VV.utils.showScreen === 'function') {
+                    VV.utils.showScreen('location-screen');
+                }
+                if (VV.auth && typeof VV.auth.requestGeolocation === 'function') {
+                    VV.auth.requestGeolocation();
+                }
             }
-            
-            await VV.geo.init();
-            VV.geo.updateLocationUI();
-            // 🌟 ORDEN DE ENCENDIDO CRÍTICA: Encendemos el carrusel superior de novedades aquí
-            if (typeof VV.featured !== 'undefined' && typeof VV.featured.renderNovedadesCarrusel === 'function') {
-                VV.featured.renderNovedadesCarrusel();
-            }
-        } else {
-            VV.utils.showScreen('location-screen');
-            VV.auth.requestGeolocation();
         }
     }, 1500);
     
@@ -42,11 +57,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (menuItem) {
             e.preventDefault();
             const section = menuItem.dataset.section;
-            if (section) {
+            if (section && typeof VV !== 'undefined' && VV.utils && typeof VV.utils.showSection === 'function') {
                 VV.utils.showSection(section);
             }
         }
     });
 });
 
-console.log('✅ Módulo APP cargado correctamente');
+console.log('✅ Módulo APP cargado correctamente con engranaje de innovaciones');
