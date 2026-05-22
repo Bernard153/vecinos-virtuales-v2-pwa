@@ -26,6 +26,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             await VV.geo.init();
             VV.geo.updateLocationUI();
+            // 🌟 ORDEN DE ENCENDIDO CRÍTICA: Encendemos el carrusel superior de novedades aquí
+            if (typeof VV.featured !== 'undefined' && typeof VV.featured.renderNovedadesCarrusel === 'function') {
+                VV.featured.renderNovedadesCarrusel();
+            }
         } else {
             VV.utils.showScreen('location-screen');
             VV.auth.requestGeolocation();
