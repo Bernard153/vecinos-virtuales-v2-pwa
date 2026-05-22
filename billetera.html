@@ -96,6 +96,85 @@
         <button class="flex flex-col items-center gap-1 py-1 text-gray-400"><span>🎤</span>Cultura</button>
         <button class="flex flex-col items-center gap-1 py-1 text-green-600 font-bold"><span>🪙</span>Billetera</button>
     </footer>
+    <!-- ============================================================ -->
+    <!-- MOTOR JAVASCRIPT: CONEXIÓN INTEGRADA CON SUPABASE -->
+    <!-- ============================================================ -->
+    
+    <!-- 1. Cargamos la librería oficial de Supabase desde internet -->
+    <script src="https://jsdelivr.net"></script>
+
+    <script>
+        // 2. CONFIGURACIÓN: Coloca aquí las credenciales de tu proyecto de Supabase
+        // Reemplaza los textos entre comillas con tus datos reales cuando los tengas a mano
+        const SUPABASE_URL = "TU_URL_DE_SUPABASE"; 
+        const SUPABASE_ANON_KEY = "TU_KEY_ANON_DE_SUPABASE";
+
+        // Inicializamos el conector oficial
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 3. FUNCIÓN PRINCIPAL: Carga y muestra los datos financieros en pantalla
+        async function cargarDatosBilletera() {
+            try {
+                // Obtenemos la sesión del usuario actual (Invitado o Registrado por WhatsApp)
+                const { data: { session } } = await supabase.auth.getSession();
+
+                // Si no hay un usuario activo, dejamos la tarjeta en modo "Invitado" por defecto
+                if (!session) {
+                    console.log("Navegando en modo Invitado. Saldo inicial: 0");
+                    return;
+                }
+
+                const userId = session.user.id;
+                
+                // Si el usuario está registrado, actualizamos su nombre en la tarjeta
+                if (session.user.user_metadata && session.user.user_metadata.full_name) {
+                    document.getElementById('nombre-usuario').innerText = session.user.user_metadata.full_name;
+                } else if (session.user.phone) {
+                    // Si solo tiene teléfono (WhatsApp), mostramos su número
+                    document.getElementById('nombre-usuario').innerText = "Vecino " + session.user.phone;
+                }
+
+                // 4. CONSULTA A LA BASE DE DATOS: Traemos el saldo y los puntos XP
+                const { data: billetera, error } = await supabase
+                    .from('billeteras')
+                    .select('saldo_monedas, puntos_xp')
+                    .eq('user_id', userId)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    throw error; // Si hay un error real en la base de datos, lo enviamos al panel
+                }
+
+                // Si el vecino ya tiene una billetera registrada en Supabase, pintamos sus datos reales
+                if (billetera) {
+                    document.getElementById('saldo-texto').innerText = billetera.saldo_monedas;
+                    document.getElementById('xp-texto').innerText = `Tienes ${billetera.puntos_xp} puntos de experiencia (XP)`;
+
+                    // 5. INTELIGENCIA AUTOMÁTICA: Llamamos al cerebro SQL que calcula el rango
+                    const { data: rangoDatos, error: rangoError } = await supabase
+                        .rpc('obtener_rango_vecino', { id_del_vecino: userId });
+
+                    if (!rangoError && rangoDatos && rangoDatos.length > 0) {
+                        const miRango = rangoDatos[0];
+                        const etiqueta = document.getElementById('rango-etiqueta');
+                        const tarjeta = document.getElementById('tarjeta-perfil');
+
+                        // Actualizamos el texto del rango (ej: Leyenda del Barrio)
+                        etiqueta.innerText = miRango.rango_nombre;
+                        
+                        // Aplicamos dinámicamente el color del marco que configuramos en la base de datos
+                        tarjeta.style.borderTopColor = miRango.color_marco;
+                    }
+                }
+
+            } catch (err) {
+                console.error("Pequeño tropiezo al cargar los datos financieros:", err.message);
+            }
+        }
+
+        // Ejecutamos la función de carga en cuanto la página termina de abrirse en el celular
+        document.addEventListener('DOMContentLoaded', cargarDatosBilletera);
+    </script>
 
 </body>
 </html>
