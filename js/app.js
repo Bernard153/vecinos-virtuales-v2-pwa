@@ -5,7 +5,17 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Vecinos Virtuales V2 - Iniciando...');
     
-    const termsAccepted = JSON.parse(localStorage.getItem('termsAccepted') || 'null');
+    // Leemos de forma segura la aceptación de términos
+    const termsAcceptedRaw = localStorage.getItem('termsAccepted');
+    let termsAccepted = null;
+    
+    try {
+        if (termsAcceptedRaw) {
+            termsAccepted = JSON.parse(termsAcceptedRaw);
+        }
+    } catch (e) {
+        console.error('Error leyendo localStorage:', e);
+    }
     
     if (!termsAccepted || !termsAccepted.accepted) {
         console.log('⚠️ Términos no aceptados. Redirigiendo...');
@@ -13,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
+    // Intentamos mostrar la pantalla de carga de forma segura
     if (typeof VV !== 'undefined' && VV.utils && typeof VV.utils.showScreen === 'function') {
         VV.utils.showScreen('loading-screen');
     }
@@ -22,10 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const hasSession = await VV.auth.checkExistingUser();
             
             if (hasSession) {
-                // LOGIN EXITOSO - ARRANCAR APP TRADICIONAL
+                // LOGIN EXITOSO - ARRANCAR APP
                 VV.auth.startApp();
                 
-                // ACTIVAR MÓDULO FOLLETO SOLO AQUÍ
+                // Activar módulos secundarios si existen
                 if (VV.utils && typeof VV.utils.activarFolleto === 'function') {
                     VV.utils.activarFolleto();
                 }
@@ -35,12 +46,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     VV.geo.updateLocationUI();
                 }
 
-                // 🌟 ORDEN DE ENCENDIDO: Activamos el carrusel de avances superior en el inicio
+                // 🌟 ORDEN DE ENCENDIDO: Activamos el carrusel de avances superior
                 if (typeof VV.featured !== 'undefined' && typeof VV.featured.renderNovedadesCarrusel === 'function') {
                     VV.featured.renderNovedadesCarrusel();
                 }
                 
             } else {
+                // Si no hay sesión, mostramos la pantalla de ubicación tradicional
                 if (VV.utils && typeof VV.utils.showScreen === 'function') {
                     VV.utils.showScreen('location-screen');
                 }
@@ -51,8 +63,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 1500);
     
-    // Setup navegación del menú
-    document.addEventListener('click', (e) => {
+    // Control de clics en el menú inferior
+    document.addEventListener('click', function(e) {
         const menuItem = e.target.closest('.menu-item');
         if (menuItem) {
             e.preventDefault();
@@ -64,4 +76,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-console.log('✅ Módulo APP cargado correctamente con engranaje de innovaciones');
+console.log('✅ Módulo APP cargado correctamente y listo para innovaciones');
