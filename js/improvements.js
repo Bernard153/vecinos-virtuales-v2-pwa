@@ -372,24 +372,40 @@ VV.improvements = {
     },
     
     // Renderizar botón de voto
+        // Renderizar botón de voto (ACTUALIZADO CON COFRE DE PRIORIDAD)
     renderVoteButton(improvement) {
         const votedBy = improvement.voted_by || [];
         const hasVoted = votedBy.includes(VV.data.user.id);
         
+        // Estructura base del botón clásico de voto
+        let botonVotoClasico = '';
+        
         if (hasVoted) {
-            return `
+            botonVotoClasico = `
                 <button class="vote-btn" disabled style="opacity: 0.6; cursor: not-allowed;">
                     <i class="fas fa-thumbs-up" style="color: var(--primary-blue);"></i> ${improvement.votes} (Ya votaste)
                 </button>
             `;
+        } else {
+            botonVotoClasico = `
+                <button class="vote-btn" onclick="VV.improvements.vote('${improvement.id}')">
+                    <i class="fas fa-thumbs-up"></i> ${improvement.votes}
+                </button>
+            `;
         }
-        
+
+        // 🌟 AGREGAMOS EL COFRE FLOTANTE AL LADO DEL PULGAR ARRIBA
+        // Usamos comillas invertidas para unir ambos botones en una sola fila
         return `
-            <button class="vote-btn" onclick="VV.improvements.vote('${improvement.id}')">
-                <i class="fas fa-thumbs-up"></i> ${improvement.votes}
-            </button>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                ${botonVotoClasico}
+                <button onclick="VV.improvements.abrirCofreMejoras('${improvement.id}', '${improvement.user_id}', this)" style="background: #f59e0b; color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Dar prioridad urgente con un Megáfono">
+                    🎁
+                </button>
+            </div>
         `;
     },
+
     
     // Votar mejora - MIGRADO A SUPABASE
     async vote(improvementId) {
@@ -547,5 +563,101 @@ VV.improvements = {
         };
     }
 };
+    // 📢 ENVIAR MEGÁFONO CON MONEDAS REALES - NUEVA INNOVACIÓN
+    async abrirCofreMejoras(mejorasId, creadorPostId, elementoBoton) {
+        try {
+            // 1. Verificamos si el vecino está en la sesión global de tu app
+            if (!VV.data.user || !VV.data.user.id) {
+                alert('¡Hola! Para apoyar este reclamo vecinal con megáfonos debes validar tu identidad por WhatsApp.');
+                return;
+            }
+
+            const usuarioIdActual = VV.data.user.id;
+
+            // 2. Consultamos el saldo real en tu Supabase
+            const { data: billetera, error: errorBilletera } = await supabase
+                .from('billeteras')
+                .select('saldo_monedas')
+                .eq('user_id', usuarioIdActual)
+                .single();
+
+            if (errorBilletera || !billetera) {
+                alert('No tienes saldo o tu billetera no está inicializada. Pásate por la sección Billetera.');
+                return;
+            }
+
+            // 3. Definimos el costo del Megáfono (5 monedas)
+            const COSTO_MEGAFONO = 5;
+
+            if (billetera.saldo_monedas < COSTO_MEGAFONO) {
+                alert(`Saldo insuficiente. Necesitas 🪙 ${COSTO_MEGAFONO} VecinoCoins para enviar un Megáfono.`);
+                return;
+            }
+
+            // Confirmación nativa amigable
+            if (!confirm(`¿Deseas aportar 1 Megáfono (🪙 ${COSTO_MEGAFONO}) de tu saldo para dar urgencia a este reclamo?`)) {
+                return;
+            }
+
+            // 4. TRANSACCIÓN SEGURA EN SUPABASE
+            // Acción A: Restamos las monedas de la billetera del vecino que apoya
+            const { error: errorDescuento } = await supabase
+                .from('billeteras')
+                .update({ saldo_monedas: billetera.saldo_monedas - COSTO_MEGAFONO })
+                .eq('user_id', usuarioIdActual);
+
+            if (errorDescuento) throw errorDescuento;
+
+            // Acción B: Registramos el historial unificado (módulo mejoras)
+            const { error: errorHistorial } = await supabase
+                .from('regalos_enviados')
+                .insert([{
+                    emisor_id: usuarioIdActual,
+                    receptor_id: creadorPostId,
+                    tipo_regalo: 'megafono',
+                    costo_monedas: COSTO_MEGAFONO,
+                    modulo_origen: 'mejoras',
+                    publicacion_id: mejorasId
+                }]);
+
+            if (errorHistorial) throw errorHistorial;
+
+            // Acción C: Sumamos puntos XP automáticos a la billetera del creador del reclamo
+            const { data: billeteraReceptor } = await supabase
+                .from('billeteras')
+                .select('puntos_xp')
+                .eq('user_id', creadorPostId)
+                .single();
+            
+            if (billeteraReceptor) {
+                await supabase
+                    .from('billeteras')
+                    .update({ puntos_xp: billeteraReceptor.puntos_xp + (COSTO_MEGAFONO * 10) })
+                    .eq('user_id', creadorPostId);
+            }
+
+            // 5. ÉXITO VISUAL Y ANIMACIÓN
+            VV.utils.showSuccess('📢 ¡Megáfono de urgencia enviado!');
+            
+            // Lanzamos el emoji flotante en pantalla
+            const contenedor = document.createElement('div');
+            contenedor.innerText = '📢';
+            contenedor.style.cssText = 'position: fixed; font-size: 3rem; pointer-events: none; z-index: 9999; left: ' + elementoBoton.getBoundingClientRect().left + 'px; top: ' + elementoBoton.getBoundingClientRect().top + 'px; transition: all 1.5s ease-out; opacity: 1;';
+            document.body.appendChild(contenedor);
+            
+            setTimeout(() => {
+                contenedor.style.transform = 'translateY(-150px) scale(1.5)';
+                contenedor.style.opacity = '0';
+            }, 50);
+            setTimeout(() => { contenedor.remove(); }, 1500);
+
+            // Recargamos el módulo para refrescar cualquier dato visual si fuera necesario
+            VV.improvements.load();
+
+        } catch (err) {
+            console.error("Fallo transaccional en mejoras:", err);
+            alert("Hubo un error al procesar tu apoyo económico.");
+        }
+    },
 
 console.log('✅ Módulo IMPROVEMENTS cargado');
