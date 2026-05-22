@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudio de Grabación - Vecinos Virtuales</title>
+    <!-- Cargamos Tailwind CSS para diseño móvil fluido -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- CABECERA DEL ESTUDIO -->
+    <header class="bg-gray-800 p-4 shadow-md flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">🎤</span>
+            <h1 class="text-lg font-bold">Estudio de Grabación</h1>
+        </div>
+        <a href="billetera.html" class="text-xs bg-gray-700 px-3 py-1 rounded-full text-gray-300 hover:bg-gray-600">Salir</a>
+    </header>
+
+    <!-- ÁREA DE GRABACIÓN Y PISTA (Principal) -->
+    <main class="flex-grow p-4 max-w-md mx-auto w-full flex flex-col justify-start space-y-4">
+        
+        <!-- BUSCADOR SIMULADO DE PISTAS -->
+        <section class="bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-700 space-y-2">
+            <label class="text-xs text-gray-400 uppercase tracking-wider font-semibold">1. Elige tu pista o instrumento</label>
+            <div class="flex gap-2">
+                <input type="text" id="buscar-pista" placeholder="Buscar canción en YouTube..." class="bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm w-full focus:outline-none focus:border-green-500">
+                <button id="btn-acustico" class="bg-blue-600 text-xs font-bold px-3 py-2 rounded-lg hover:bg-blue-700 whitespace-nowrap">🎸 Acústico</button>
+            </div>
+            <!-- Simulación de reproducción de pista embebida -->
+            <div id="contenedor-pista" class="bg-gray-950 h-24 rounded-lg flex items-center justify-center text-xs text-gray-500 border border-dashed border-gray-800">
+                🎵 La pista de YouTube se reproducirá aquí de forma sincronizada.
+            </div>
+        </section>
+
+        <!-- VISOR DE CÁMARA CON FILTROS EN TIEMPO REAL -->
+        <section class="relative bg-black aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center border border-gray-800">
+            <!-- Elemento de video real conectado a la cámara -->
+            <video id="vista-camara" autoplay playsinline muted class="w-full h-full object-cover transition-all duration-300"></video>
+            
+            <!-- Letrero de estado -->
+            <div id="estado-grabacion" class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider hidden animate-pulse">
+                🔴 Grabando Demo
+            </div>
+
+            <!-- MENÚ INFERIOR INTERNO: SELECTOR DE FILTROS VISUALES (CSS Filters) -->
+            <div class="absolute bottom-3 left-0 right-0 px-4 flex justify-center gap-3 bg-gradient-to-t from-black/80 to-transparent pt-6 pb-2">
+                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="none">🚫</button>
+                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="suave" title="Filtro Belleza">✨</button>
+                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="vintage">🎞️</button>
+                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="neon">🌈</button>
+            </div>
+        </section>
+
+        <!-- PANEL DE EFECTOS DE VOZ Y DIAL DE VOLUMEN -->
+        <section class="bg-gray-800 p-4 rounded-xl border border-gray-700 space-y-3">
+            <h3 class="text-xs text-gray-400 uppercase tracking-wider font-semibold">2. Ajustes de Audio</h3>
+            
+            <!-- Control de Volumen del Micrófono -->
+            <div class="flex items-center justify-between gap-4">
+                <span class="text-xs w-24 text-gray-300">🎙️ Vol. Micro:</span>
+                <input type="range" id="control-volumen" min="0" max="1" step="0.1" value="0.8" class="w-full accent-green-500 h-1 bg-gray-900 rounded-lg cursor-pointer">
+            </div>
+
+            <!-- Control de Reverb / Eco digital -->
+            <div class="flex items-center justify-between gap-4">
+                <span class="text-xs w-24 text-gray-300">🏢 Efecto Eco:</span>
+                <input type="range" id="control-eco" min="0" max="1" step="0.1" value="0.2" class="w-full accent-green-500 h-1 bg-gray-900 rounded-lg cursor-pointer">
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PANEL DE ACCIÓN INFERIOR (Grabar, Probar Demo y Publicar) -->
+    <footer class="bg-gray-800 border-t border-gray-700 p-4 flex flex-col items-center gap-3 sticky bottom-0 z-50">
+        <div class="flex w-full max-w-md justify-center gap-4">
+            <!-- Botón Principal de Grabación -->
+            <button id="btn-grabar" class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-full shadow-lg transition flex items-center gap-2 cursor-pointer">
+                <span>⏺️</span> Iniciar Grabación
+            </button>
+            <!-- Botón de Reproducción de Demo (Oculto al inicio) -->
+            <button id="btn-demo" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-lg transition flex items-center gap-2 cursor-pointer hidden">
+                <span>🎧</span> Escuchar Demo
+            </button>
+        </div>
+        <button id="btn-publicar" class="w-full max-w-md bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-xl text-sm shadow transition hidden">
+            🚀 Publicar Demo en mi Barrio
+        </button>
+    </footer>
+
+    <!-- INTERACTIVIDAD CON JAVASCRIPT NATIVO -->
+    <script>
+        const videoCamara = document.getElementById('vista-camara');
+        const estadoGrabacion = document.getElementById('estado-grabacion');
+        const btnGrabar = document.getElementById('btn-grabar');
+        const btnDemo = document.getElementById('btn-demo');
+        const btnPublicar = document.getElementById('btn-publicar');
+
+        let transmitiendoCamara = false;
+        let estaGrabando = false;
+
+        // 1. ACTIVAR LA CÁMARA AUTOMÁTICAMENTE AL ENTRAR (Nativo del Navegador)
+        async function encenderCamara() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+                videoCamara.srcObject = stream;
+                transmitiendoCamara = true;
+                console.log("Cámara y micrófono inicializados de manera exitosa.");
+            } catch (err) {
+                console.error("No se pudo acceder a los periféricos de video/audio:", err.message);
+                alert("Para poder usar el estudio de grabación, necesitas otorgar permisos de cámara y micrófono.");
+            }
+        }
+
+        // 2. APLICAR FILTROS VISUALES DINÁMICOS MEDIANTE CSS
+        document.querySelectorAll('.filtro-btn').forEach(boton => {
+            boton.addEventListener('click', () => {
+                const filtroElegido = boton.getAttribute('data-filtro');
+                
+                // Limpiamos los filtros anteriores aplicados al componente de video
+                videoCamara.style.filter = "none";
+
+                // Inyectamos las propiedades CSS correspondientes en tiempo real
+                if (filtroElegido === 'suave') {
+                    videoCamara.style.filter = "brightness(1.05) contrast(0.95) saturate(1.1) blur(0.3px)"; // Filtro Belleza
+                } else if (filtroElegido === 'vintage') {
+                    videoCamara.style.filter = "sepia(0.6) contrast(1.1)";
+                } else if (filtroElegido === 'neon') {
+                    videoCamara.style.filter = "hue-rotate(45deg) saturate(1.4)";
+                }
+                console.log(`Filtro visual modificado a: ${filtroElegido}`);
+            });
+        });
+
+        // 3. CONTROLADOR DE ACCIONES DE GRABACIÓN
+        btnGrabar.addEventListener('click', () => {
+            if (!transmitiendoCamara) return;
+
+            if (!estaGrabando) {
+                // Iniciar la simulación de grabación
+                estaGrabando = true;
+                btnGrabar.innerHTML = "<span>⏹️</span> Detener Grabación";
+                btnGrabar.classList.replace('bg-red-600', 'bg-gray-600');
+                btnGrabar.classList.replace('hover:bg-red-700', 'hover:bg-gray-700');
+                estadoGrabacion.classList.remove('hidden');
+                
+                // Escondemos los botones de demo previos mientras se graba el nuevo
+                btnDemo.classList.add('hidden');
+                btnPublicar.classList.add('hidden');
+            } else {
+                // Detener la grabación
+                estaGrabando = false;
+                btnGrabar.innerHTML = "<span>⏺️</span> Grabar de Nuevo";
+                btnGrabar.classList.replace('bg-gray-600', 'bg-red-600');
+                btnGrabar.classList.replace('hover:bg-gray-700', 'hover:bg-red-700');
+                estadoGrabacion.classList.add('hidden');
+
+                // Desbloqueamos las herramientas de chequeo de la demo y publicación
+                btnDemo.classList.remove('hidden');
+                btnPublicar.classList.remove('hidden');
+                
+                console.log("Demo de 1 minuto finalizada con éxito. Lista para testeo.");
+            }
+        });
+
+        // Simulación de los botones de testeo de la demo
+        btnDemo.addEventListener('click', () => {
+            alert('🎵 Reproduciendo tu demo de prueba con los efectos de eco aplicados para que evalúes tu performance.');
+        });
+
