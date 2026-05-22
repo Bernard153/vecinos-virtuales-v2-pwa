@@ -88,7 +88,20 @@
     </div>
 
     <!-- JAVASCRIPT: LOGICA INTERACTIVA -->
+        <!-- ============================================================ -->
+    <!-- MOTOR JAVASCRIPT: UNIFICACIÓN REAL CON SUPABASE -->
+    <!-- ============================================================ -->
+    
+    <!-- 1. Cargamos la librería oficial de Supabase -->
+    <script src="https://jsdelivr.net"></script>
+
     <script>
+        // 2. CREDENCIALES: Coloca aquí tus datos reales de Supabase
+        const SUPABASE_URL = "TU_URL_DE_SUPABASE"; 
+        const SUPABASE_ANON_KEY = "TU_KEY_ANON_DE_SUPABASE";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Elementos de la interfaz visual
         const btnCofre = document.getElementById('btn-cofre');
         const modalTienda = document.getElementById('modal-tienda');
         const cuerpoModal = document.getElementById('cuerpo-modal');
@@ -96,9 +109,16 @@
         const saldoDisponible = document.getElementById('saldo-disponible');
         const contenedorAnimaciones = document.getElementById('contenedor-animaciones');
 
-        let saldoVirtualFicticio = 120; // Simulación inicial de saldo para pruebas rápidas
+        // Variables de estado del usuario
+        let usuarioIdActual = null;
+        let saldoRealMonedas = 0;
 
-        // 1. ABRIR TIENDA (Con efectos suaves de CSS)
+        // Datos ficticios del posteo actual para la simulación
+        const POSTEO_ID = "foto_egresados_2026";
+        const MODULO_ORIGEN = "cultura";
+        const CREADOR_POSTEO_ID = "ID_DEL_VECINO_QUE_SUBIO_LA_FOTO"; // UUID del receptor
+
+        // 3. CONTROL DE VENTANA (ABRIR Y CERRAR)
         btnCofre.addEventListener('click', () => {
             modalTienda.classList.remove('hidden');
             setTimeout(() => {
@@ -107,7 +127,6 @@
             }, 10);
         });
 
-        // 2. CERRAR TIENDA
         function cerrarTienda() {
             modalTienda.classList.add('opacity-0');
             cuerpoModal.classList.add('translate-y-full');
@@ -115,43 +134,115 @@
         }
         btnCerrar.addEventListener('click', cerrarTienda);
 
-        // 3. ACCIÓN DE REGALAR (Lógica de descuento y animación voladora)
+        // 4. CONEXIÓN REAL: Sincronizar saldo de la base de datos
+        async function sincronizarBilleteraReal() {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (!session) {
+                    saldoDisponible.innerText = "0 (Invitado)";
+                    return;
+                }
+
+                usuarioIdActual = session.user.id;
+
+                // Consultamos el saldo real en Supabase
+                const { data: billetera, error } = await supabase
+                    .from('billeteras')
+                    .select('saldo_monedas')
+                    .eq('user_id', usuarioIdActual)
+                    .single();
+
+                if (!error && billetera) {
+                    saldoRealMonedas = billetera.saldo_monedas;
+                    saldoDisponible.innerText = saldoRealMonedas;
+                }
+            } catch (err) {
+                console.error("Error al sincronizar fondos:", err.message);
+            }
+        }
+
+        // 5. PROCESAR TRANSACCIÓN: Descontar y registrar el regalo
         document.querySelectorAll('.opcion-regalo').forEach(boton => {
-            boton.addEventListener('click', () => {
+            boton.addEventListener('click', async () => {
+                if (!usuarioIdActual) {
+                    alert('¡Hola! Para enviar regalos debes registrarte rápidamente por WhatsApp.');
+                    return;
+                }
+
                 const costo = parseInt(boton.getAttribute('data-costo'));
                 const icono = boton.getAttribute('data-icono');
                 const nombre = boton.getAttribute('data-nombre');
 
-                // Verificamos si tiene saldo suficiente
-                if (saldoVirtualFicticio < costo) {
-                    alert('¡Ups! Saldo insuficiente. Pásate por la Billetera para recargar.');
+                if (saldoRealMonedas < costo) {
+                    alert('Saldo insuficiente. Visita la sección Billetera para recargar.');
                     return;
                 }
 
-                // Descontamos el saldo en la pantalla
-                saldoVirtualFicticio -= costo;
-                saldoDisponible.innerText = saldoVirtualFicticio;
+                try {
+                    // Acción A: Restamos las monedas de la billetera del emisor
+                    const nuevoSaldo = saldoRealMonedas - costo;
+                    const { error: errorDescuento } = await supabase
+                        .from('billeteras')
+                        .update({ saldo_monedas: nuevoSaldo })
+                        .eq('user_id', usuarioIdActual);
 
-                // Lanzamos el efecto visual en medio de la pantalla
-                lanzarAnimacionRegalo(icono);
+                    if (errorDescuento) throw errorDescuento;
 
-                cerrarTienda();
-                console.log(`Regalo enviado con éxito: ${nombre}. Descontado: 🪙 ${costo}`);
-                
-                // [AQUÍ CONECTAREMOS EN EL FUTURO LA LLAMADA A TU TABLA regalos_enviados DE SUPABASE]
+                    // Acción B: Registramos el regalo en el historial unificado (Cultura, Karaoke, etc.)
+                    const { error: errorHistorial } = await supabase
+                        .from('regalos_enviados')
+                        .insert([{
+                            emisor_id: usuarioIdActual,
+                            receptor_id: CREADOR_POSTEO_ID,
+                            tipo_regalo: nombre.toLowerCase(),
+                            costo_monedas: costo,
+                            modulo_origen: MODULO_ORIGEN,
+                            publicacion_id: POSTEO_ID
+                        }]);
+
+                    if (errorHistorial) throw errorHistorial;
+
+                    // Acción C: Sumamos puntos de experiencia (XP) al creador del posteo para su rango
+                    // Buscamos la billetera del receptor para sumarle el estímulo
+                    const { data: billeteraReceptor } = await supabase
+                        .from('billeteras')
+                        .select('puntos_xp')
+                        .eq('user_id', CREADOR_POSTEO_ID)
+                        .single();
+                    
+                    if (billeteraReceptor) {
+                        await supabase
+                            .from('billeteras')
+                            .update({ puntos_xp: billeteraReceptor.puntos_xp + (costo * 10) }) // 10 XP por cada moneda recibida
+                            .eq('user_id', CREADOR_POSTEO_ID);
+                    }
+
+                    // ÉXITO: Actualizamos la pantalla y lanzamos la animación visual
+                    saldoRealMonedas = nuevoSaldo;
+                    saldoDisponible.innerText = saldoRealMonedas;
+                    lanzarAnimacionRegalo(icono);
+                    cerrarTienda();
+
+                } catch (err) {
+                    alert('Hubo un pequeño problema al procesar el envío del regalo.');
+                    console.error("Detalle del fallo transaccional:", err.message);
+                }
             });
         });
 
-        // 4. MOTOR VISUAL: Crea el emoji gigante flotante
+        // 6. MOTOR VISUAL DE EMOJIS VOLADORES
         function lanzarAnimacionRegalo(emoji) {
             const elemento = document.createElement('div');
             elemento.innerText = emoji;
             elemento.className = "text-6xl efecto-flotante absolute select-none";
             contenedorAnimaciones.appendChild(elemento);
-
-            // Al terminar la animación de 1.5 segundos, destruimos el elemento para no saturar la memoria
             setTimeout(() => { elemento.remove(); }, 1500);
         }
+
+        // Arrancamos la lectura de datos al cargar la página
+        document.addEventListener('DOMContentLoaded', sincronizarBilleteraReal);
     </script>
+
 </body>
 </html>
