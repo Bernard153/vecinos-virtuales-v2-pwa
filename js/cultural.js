@@ -1,4 +1,4 @@
-// ========== MÓDULO CULTURAL ==========
+// ========== MÓDULO CULTURAL INTEGRADOR - PARTE 1 ==========
 
 VV.cultural = {
     // SOLUCIÓN TEMPORAL: Intentar con diferentes valores de tipo
@@ -14,7 +14,7 @@ VV.cultural = {
         ];
         
         for (const typeValue of typesToTest) {
-            console.log(`\n🔍 Probando tipo: "${typeValue}"`);
+            console.log(`\n🔍 Probando tipo: "\${typeValue}"`);
             
             try {
                 const { data, error } = await supabase
@@ -32,16 +32,16 @@ VV.cultural = {
                     .single();
                 
                 if (error) {
-                    console.log(`   ❌ "${typeValue}" NO funciona:`, error.message);
+                    console.log(`   ❌ "\${typeValue}" NO funciona:`, error.message);
                 } else {
-                    console.log(`   ✅ "${typeValue}" FUNCIONA!`);
+                    console.log(`   ✅ "\${typeValue}" FUNCIONA!`);
                     // Eliminar el test
                     await supabase.from('cultural_posts').delete().eq('id', data.id);
-                    console.log(`   🎉 VALOR CORRECTO ENCONTRADO: "${typeValue}"`);
+                    console.log(`   🎉 VALOR CORRECTO ENCONTRADO: "\${typeValue}"`);
                     break;
                 }
             } catch (err) {
-                console.log(`   ❌ Error: ${err.message}`);
+                console.log(`   ❌ Error: \${err.message}`);
             }
         }
         
@@ -155,13 +155,13 @@ VV.cultural = {
                     <i class="fas fa-lock" style="font-size: 3rem; color: var(--gray-400); margin-bottom: 1rem;"></i>
                     <h3 style="color: var(--gray-700); margin-bottom: 0.5rem;">Acceso Restringido</h3>
                     <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
-                        Solo puedes publicar y comentar en tu barrio principal: <strong>${homeNeighborhood}</strong>
+                        Solo puedes publicar y comentar en tu barrio principal: <strong>\${homeNeighborhood}</strong>
                     </p>
                     <p style="color: var(--gray-500); font-size: 0.9rem;">
-                        Actualmente estás visitando: <strong>${currentNeighborhood}</strong>
+                        Actualmente estás visitando: <strong>\${currentNeighborhood}</strong>
                     </p>
                     <button onclick="VV.geo.returnToHomeNeighborhood()" class="btn-primary" style="margin-top: 1rem;">
-                        <i class="fas fa-home"></i> Volver a ${homeNeighborhood}
+                        <i class="fas fa-home"></i> Volver a \${homeNeighborhood}
                     </button>
                 </div>
             `;
@@ -187,329 +187,167 @@ VV.cultural = {
         container.innerHTML = neighborhoodPosts.map(post => {
             const isOwner = (post.author_id || post.userId) === VV.data.user.id;
             const canModerate = VV.utils.canModerate();
-            const mediaType = post.media_type || post.mediaType;
             const mediaUrl = post.media_url || post.mediaUrl;
             const authorName = post.author_name || post.userName;
             
             return `
-            <div class="cultural-card">
-                <div class="card-header">
-                    <h3>${post.title}</h3>
-                    <span class="badge" style="background: rgba(139, 92, 246, 0.1); color: var(--primary-purple);">${VV.cultural.getTypeLabel(post.type)}</span>
+            <div class="cultural-card" style="background: white; border-radius: 16px; padding: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: bold; color: var(--gray-800); font-size: 1rem;">\${authorName}</span>
+                        <span style="font-size: 0.75rem; color: var(--gray-500);">\${this.getTypeLabel(post.type)}</span>
+                    </div>
                 </div>
-                <p><strong>Por:</strong> ${authorName}</p>
                 
-                ${mediaType === 'image' && mediaUrl ? `
-                    <div style="margin: 1rem 0;">
-                        <img src="${mediaUrl}" alt="${post.title}" style="width: 100%; border-radius: 8px; max-height: 300px; object-fit: cover;">
-                    </div>
-                ` : ''}
-                
-                ${mediaType === 'video' && mediaUrl ? `
-                    <div style="margin: 1rem 0;">
-                        <video controls style="width: 100%; border-radius: 8px; max-height: 300px;">
-                            <source src="${mediaUrl}" type="video/mp4">
-                            Tu navegador no soporta videos.
-                        </video>
-                    </div>
-                ` : ''}
-                
-                <p style="color: var(--gray-700); margin: 0.5rem 0; white-space: pre-wrap;">${post.description}</p>
-                <div class="card-footer">
-                    <button class="like-btn" onclick="VV.cultural.like('${post.id}')">
-                        <i class="fas fa-heart"></i> ${post.likes}
-                    </button>
-                    ${isOwner ? `
-                        <div style="display: flex; gap: 0.5rem; margin-left: auto;">
-                            <button class="btn-edit" onclick="VV.cultural.showForm('${post.id}')" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn-delete" onclick="VV.cultural.delete('${post.id}')" title="Eliminar">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                <div class="card-body">
+                    <h4 style="margin: 0 0 0.5rem 0; font-weight: bold; color: var(--gray-900);">\${post.title}</h4>
+                    <p style="margin: 0; font-size: 0.9rem; color: var(--gray-600); line-height: 1.4;">\${post.description}</p>
+                    \${mediaUrl ? \`<img src="\${mediaUrl}" style="width: 100%; border-radius: 12px; margin-top: 0.75rem; max-height: 250px; object-fit: cover;" />\` : ''}
+                </div>
+
+                <!-- 🌟 PIE DE TARJETA ACTUALIZADO: INTERACCIÓN Y BOTÓN DE REGALO -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray-100); padding-top: 0.5rem; margin-top: 0.5rem;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    
+    // ============================================================
+    // INNOVACIÓN UNIFICADA: COFRE DE ESTIMULOS DE CULTURA REALES
+    // ============================================================
+    async abrirCofreCultura(publicacionId, creadorPostId, elementoBoton) {
+        try {
+            if (!VV.data.user || !VV.data.user.id) {
+                alert('¡Hola! Para alentar a tus vecinos con regalos debes registrarte por WhatsApp.');
+                return;
+            }
+
+            const usuarioIdActual = VV.data.user.id;
+
+            const { data: billetera, error: errorBilletera } = await supabase
+                .from('billeteras')
+                .select('saldo_monedas')
+                .eq('user_id', usuarioIdActual)
+                .single();
+
+            if (errorBilletera || !billetera) {
+                alert('Tu billetera no está activa. Visita la sección Billetera para inicializar tu cuenta.');
+                return;
+            }
+
+            let modal = document.getElementById('modal-tienda-cultura');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'modal-tienda-cultura';
+                modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99999; display: flex; align-items: flex-end; justify-content: center; opacity: 0; transition: opacity 0.3s;';
+                document.body.appendChild(modal);
+            }
+
+            modal.innerHTML = `
+                <div style="background: white; width: 100%; max-width: 400px; border-radius: 24px 24px 0 0; padding: 1.5rem; box-shadow: 0 -8px 24px rgba(0,0,0,0.2); transform: translateY(100%); transition: transform 0.3s;" id="cuerpo-modal-cultura">
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="font-weight: bold; font-size: 1.1rem; color: #1f2937; margin:0;">Alentar a tu Vecino 💝</h3>
+                            <p style="font-size: 0.75rem; color: #9ca3af; margin:0;">Saldo actual: <span style="font-weight: bold; color: #16a34a;">🪙 \${billetera.saldo_monedas}</span></p>
                         </div>
-                    ` : canModerate ? `
-                        <button class="btn-delete" onclick="VV.cultural.delete('${post.id}')" title="Eliminar (Moderador)" style="margin-left: auto;">
-                            <i class="fas fa-trash"></i>
+                        <button onclick="document.getElementById('modal-tienda-cultura').style.opacity='0'; document.getElementById('cuerpo-modal-cultura').style.transform='translateY(100%)'; setTimeout(() => document.getElementById('modal-tienda-cultura').style.display='none', 300);" style="background: none; border: none; font-size: 1.2rem; color: #9ca3af; cursor: pointer;">✕</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; text-align: center;">
+                        <button onclick="VV.cultural.procesarRegaloCultura('\${publicacionId}', '\${creadorPostId}', 'aplauso', 1, '👏', \${billetera.saldo_monedas})" style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 12px; background: #f9fafb; cursor: pointer; display: flex; flex-direction: column; align-items: center;">
+                            <span style="font-size: 1.8rem;">👏</span><span style="font-size: 0.7rem; font-weight: bold; margin-top: 2px;">Aplauso</span><span style="font-size: 0.65rem; color: #d97706; font-weight: 600;">🪙 1</span>
                         </button>
-                    ` : ''}
+                        <button onclick="VV.cultural.procesarRegaloCultura('\${publicacionId}', '\${creadorPostId}', 'rosa', 5, '🌹', \${billetera.saldo_monedas})" style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 12px; background: #f9fafb; cursor: pointer; display: flex; flex-direction: column; align-items: center;">
+                            <span style="font-size: 1.8rem;">🌹</span><span style="font-size: 0.7rem; font-weight: bold; margin-top: 2px;">Rosa</span><span style="font-size: 0.65rem; color: #d97706; font-weight: 600;">🪙 5</span>
+                        </button>
+                        <button onclick="VV.cultural.procesarRegaloCultura('\${publicacionId}', '\${creadorPostId}', 'microfono', 20, '🎤', \${billetera.saldo_monedas})" style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 12px; background: #f9fafb; cursor: pointer; display: flex; flex-direction: column; align-items: center;">
+                            <span style="font-size: 1.8rem;">🎤</span><span style="font-size: 0.7rem; font-weight: bold; margin-top: 2px;">Micro</span><span style="font-size: 0.65rem; color: #d97706; font-weight: 600;">🪙 20</span>
+                        </button>
+                        <button onclick="VV.cultural.procesarRegaloCultura('\${publicacionId}', '\${creadorPostId}', 'diamante', 50, '💎', \--${billetera.saldo_monedas})" style="border: 1px solid #e5e7eb; padding: 0.5rem; border-radius: 12px; background: #f9fafb; cursor: pointer; display: flex; flex-direction: column; align-items: center;">
+                            <span style="font-size: 1.8rem;">💎</span><span style="font-size: 0.7rem; font-weight: bold; margin-top: 2px;">Diamante</span><span style="font-size: 0.65rem; color: #d97706; font-weight: 600;">🪙 50</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
-        }).join('');
+            `;
+
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                document.getElementById('cuerpo-modal-cultura').style.transform = 'translateY(0)';
+            }, 10);
+
+        } catch (err) {
+            console.error("Error al abrir tienda cultural:", err);
+        }
     },
-    
-    // Mostrar formulario
-    showForm(postId = null) {
-        // Verificar si el usuario está en su barrio principal
-        const homeNeighborhood = VV.data.user.home_neighborhood || VV.data.user.neighborhood;
-        const currentNeighborhood = VV.data.user.current_neighborhood || VV.data.user.neighborhood;
-        
-        if (homeNeighborhood !== currentNeighborhood) {
-            alert(`Solo puedes publicar en tu barrio principal: ${homeNeighborhood}\n\nActualmente estás visitando: ${currentNeighborhood}`);
+
+    // PROCESAMIENTO DE DESCUENTO Y REGISTRO EN SEGUNDO PLANO
+    async procesarRegaloCultura(publicacionId, creadorPostId, nombreRegalo, costo, emoji, saldoActual) {
+        if (saldoActual < costo) {
+            alert('Saldo insuficiente. Visita la sección Billetera para recargar fondos.');
             return;
         }
-        
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        const post = postId ? VV.data.culturalPosts.find(p => p.id === postId) : null;
-        const isEdit = post !== null;
-        
-        let overlay = document.getElementById('cultural-form-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'cultural-form-overlay';
-            overlay.className = 'modal-overlay';
-            document.body.appendChild(overlay);
-        }
-        
-        overlay.innerHTML = `
-            <div class="modal-form">
-                <h3><i class="fas fa-${isEdit ? 'edit' : 'palette'}"></i> ${isEdit ? 'Editar' : 'Compartir'} Arte</h3>
-                <form id="cultural-form">
-                    <div class="form-group">
-                        <label>Título *</label>
-                        <input type="text" id="cultural-title" value="${post?.title || ''}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo *</label>
-                        <select id="cultural-type" required>
-                            <option value="">Seleccionar</option>
-                            <option value="Fotografía" ${post?.type === 'Fotografía' ? 'selected' : ''}>📸 Fotografía</option>
-                            <option value="Evento" ${post?.type === 'Evento' ? 'selected' : ''}>🎉 Evento</option>
-                            <option value="🔄 Trueque" ${post?.type === '🔄 Trueque' ? 'selected' : ''}>🔄 Trueque</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Descripción / Texto *</label>
-                        <textarea id="cultural-description" rows="4" required placeholder="Comparte tu texto, poesía, o descripción...">${post?.description || ''}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo de Multimedia</label>
-                        <select id="cultural-media-type" onchange="VV.cultural.toggleMediaInput()">
-                            <option value="">Sin multimedia</option>
-                            <option value="image" ${post?.mediaType === 'image' ? 'selected' : ''}>Imagen</option>
-                            <option value="video" ${post?.mediaType === 'video' ? 'selected' : ''}>Video</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="media-input-container" style="display: ${post?.mediaType ? 'block' : 'none'};">
-                        <label>Subir archivo</label>
-                        <input type="file" id="cultural-media-file" accept="image/*,video/*">
-                        <p style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;">
-                            <i class="fas fa-info-circle"></i> Soporta imágenes (JPG, PNG) y videos (MP4)
-                        </p>
-                        ${post?.mediaUrl ? `<p style="font-size: 0.85rem; color: var(--success-green); margin-top: 0.5rem;"><i class="fas fa-check"></i> Archivo actual cargado</p>` : ''}
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-cancel" onclick="VV.cultural.closeForm()">Cancelar</button>
-                        <button type="submit" class="btn-save">
-                            <i class="fas fa-save"></i> ${isEdit ? 'Actualizar' : 'Publicar'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        `;
-        
-        overlay.classList.add('active');
-        
-        document.getElementById('cultural-form').onsubmit = (e) => {
-            e.preventDefault();
-            VV.cultural.save(post);
-        };
-        
-        overlay.onclick = (e) => {
-            if (e.target === overlay) VV.cultural.closeForm();
-        };
-    },
-    
-    // Cerrar formulario
-    closeForm() {
-        const overlay = document.getElementById('cultural-form-overlay');
-        if (overlay) overlay.classList.remove('active');
-    },
-    
-    // Toggle media input
-    toggleMediaInput() {
-        const mediaType = document.getElementById('cultural-media-type').value;
-        const container = document.getElementById('media-input-container');
-        container.style.display = mediaType ? 'block' : 'none';
-    },
-    
-    // Guardar post
-    async save(existing) {
-        const formData = {
-            title: document.getElementById('cultural-title').value.trim(),
-            type: document.getElementById('cultural-type').value,
-            description: document.getElementById('cultural-description').value.trim(),
-            mediaType: document.getElementById('cultural-media-type').value,
-            mediaUrl: ''
-        };
-        
-        if (!formData.title || !formData.type || !formData.description) {
-            alert('Completa todos los campos obligatorios');
-            return;
-        }
-        
-        // Procesar archivo multimedia si existe
-        const fileInput = document.getElementById('cultural-media-file');
-        if (fileInput.files && fileInput.files[0]) {
-            const file = fileInput.files[0];
-            
-            console.log('📸 Procesando archivo:', file.name, file.type, file.size);
-            
-            // Convertir a base64
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                formData.mediaUrl = e.target.result;
-                console.log('✅ Archivo convertido a base64, tamaño:', e.target.result.length);
-                VV.cultural.savePost(existing, formData);
-            };
-            reader.onerror = function(error) {
-                console.error('❌ Error leyendo archivo:', error);
-                alert('Error al procesar el archivo');
-            };
-            reader.readAsDataURL(file);
-        } else {
-            // Si no hay archivo nuevo, mantener el existente
-            if (existing && (existing.media_url || existing.mediaUrl)) {
-                formData.mediaUrl = existing.media_url || existing.mediaUrl;
-                console.log('📎 Manteniendo archivo existente');
-            }
-            VV.cultural.savePost(existing, formData);
-        }
-    },
-    
-    // Guardar post (helper) - MIGRADO A SUPABASE
-    async savePost(existing, formData) {
-        console.log('💾 Guardando post cultural:', {
-            title: formData.title,
-            type: formData.type,
-            mediaType: formData.mediaType,
-            hasMediaUrl: !!formData.mediaUrl,
-            mediaUrlLength: formData.mediaUrl?.length || 0
-        });
-        
-        // TEMPORAL: Verificar qué valores acepta la DB
-        console.warn('⚠️ TIPO ENVIADO:', formData.type);
-        console.warn('⚠️ Si falla, la DB solo acepta ciertos valores específicos');
-        
+
         try {
-            if (existing) {
-                // Actualizar post existente
-                console.log('📝 Actualizando post existente:', existing.id);
-                const { error } = await supabase
-                    .from('cultural_posts')
-                    .update({
-                        title: formData.title,
-                        type: formData.type,
-                        description: formData.description,
-                        media_type: formData.mediaType,
-                        media_url: formData.mediaUrl
-                    })
-                    .eq('id', existing.id);
-                
-                if (error) throw error;
-                
-                const index = VV.data.culturalPosts.findIndex(p => p.id === existing.id);
-                VV.data.culturalPosts[index] = { ...existing, ...formData };
-                console.log('✅ Post actualizado');
-            } else {
-                // Crear nuevo post
-                console.log('🆕 Creando nuevo post');
-                const { data, error } = await supabase
-                    .from('cultural_posts')
-                    .insert({
-                        title: formData.title,
-                        type: formData.type,
-                        description: formData.description,
-                        media_type: formData.mediaType,
-                        media_url: formData.mediaUrl,
-                        author_id: VV.data.user.id,
-                        author_name: VV.data.user.name,
-                        author_number: VV.data.user.unique_number,
-                        neighborhood: VV.data.neighborhood
-                    })
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                console.log('✅ Post creado:', data);
-                VV.data.culturalPosts.push(data);
+            const usuarioIdActual = VV.data.user.id;
+
+            // Restar fondos del emisor
+            const { error: errorDescuento } = await supabase
+                .from('billeteras')
+                .update({ saldo_monedas: saldoActual - costo })
+                .eq('user_id', usuarioIdActual);
+
+            if (errorDescuento) throw errorDescuento;
+
+            // Registrar en tabla unificada regalos_enviados
+            const { error: errorHistorial } = await supabase
+                .from('regalos_enviados')
+                .insert([{
+                    emisor_id: usuarioIdActual,
+                    receptor_id: creadorPostId,
+                    tipo_regalo: nombreRegalo,
+                    costo_monedas: costo,
+                    modulo_origen: 'cultura',
+                    publicacion_id: publicacionId
+                }]);
+
+            if (errorHistorial) throw errorHistorial;
+
+            // Inyectar XP de estatus al creador de la publicación
+            const { data: billeteraReceptor } = await supabase
+                .from('billeteras')
+                .select('puntos_xp')
+                .eq('user_id', creadorPostId)
+                .single();
+            
+            if (billeteraReceptor) {
+                await supabase
+                    .from('billeteras')
+                    .update({ puntos_xp: billeteraReceptor.puntos_xp + (costo * 10) })
+                    .eq('user_id', creadorPostId);
             }
+
+            // Cerrar el modal animado
+            document.getElementById('modal-tienda-cultura').style.opacity = '0';
+            document.getElementById('cuerpo-modal-cultura').style.transform = 'translateY(100%)';
+            setTimeout(() => document.getElementById('modal-tienda-cultura').style.display = 'none', 300);
+
+            VV.utils.showSuccess(`¡Has enviado un \${nombreRegalo}!`);
             
-            VV.cultural.closeForm();
+            // Lanzar emoji flotante al espacio
+            const contenedor = document.createElement('div');
+            contenedor.innerText = emoji;
+            contenedor.style.cssText = 'position: fixed; font-size: 4rem; pointer-events: none; z-index: 99999; left: 50%; top: 50%; transform: translate(-50%, -50%); transition: all 1.5s ease-out; opacity: 1;';
+            document.body.appendChild(contenedor);
+            
+            setTimeout(() => {
+                contenedor.style.transform = 'translate(-50%, -250px) scale(1.6)';
+                contenedor.style.opacity = '0';
+            }, 50);
+            setTimeout(() => { contenedor.remove(); }, 1500);
+
+            // Recargar datos para refrescar la vista en tu app
             VV.cultural.load();
-            VV.utils.showSuccess(existing ? 'Publicación actualizada' : 'Publicación compartida');
-            
-        } catch (error) {
-            console.error('❌ Error guardando publicación:', error);
-            alert('Error al guardar la publicación: ' + error.message);
-        }
-    },
-    
-    // Dar like - MIGRADO A SUPABASE
-    async like(postId) {
-        const post = VV.data.culturalPosts.find(p => p.id === postId);
-        if (!post) return;
-        
-        try {
-            const newLikes = post.likes + 1;
-            
-            const { error } = await supabase
-                .from('cultural_posts')
-                .update({ likes: newLikes })
-                .eq('id', postId);
-            
-            if (error) throw error;
-            
-            post.likes = newLikes;
-            VV.cultural.load();
-            
-        } catch (error) {
-            console.error('Error dando like:', error);
-        }
-    },
-    
-    // Eliminar post - MIGRADO A SUPABASE
-    async delete(postId) {
-        const post = VV.data.culturalPosts.find(p => p.id === postId);
-        if (!post) return;
-        
-        const isOwner = post.user_id === VV.data.user.id;
-        const canModerate = VV.utils.canModerate();
-        
-        if (!isOwner && !canModerate) {
-            alert('No tienes permisos para eliminar esta publicación');
-            return;
-        }
-        
-        if (!confirm('¿Eliminar esta publicación?')) return;
-        
-        try {
-            const { error } = await supabase
-                .from('cultural_posts')
-                .delete()
-                .eq('id', postId);
-            
-            if (error) throw error;
-            
-            VV.data.culturalPosts = VV.data.culturalPosts.filter(p => p.id !== postId);
-            
-            // Registrar acción de moderador si aplica
-            if (canModerate && !isOwner) {
-                VV.utils.logModeratorAction('ELIMINAR_PUBLICACION', {
-                    postId: postId,
-                    postTitle: post.title,
-                    authorName: post.user_name
-                });
-            }
-            
-            VV.cultural.load();
-            VV.utils.showSuccess('Publicación eliminada');
-            
-        } catch (error) {
-            console.error('Error eliminando publicación:', error);
-            alert('Error al eliminar la publicación: ' + error.message);
+
+        } catch (err) {
+            console.error("Fallo transaccional en cultura:", err);
+            alert("No se pudo procesar tu regalo. Intenta nuevamente.");
         }
     }
 };
