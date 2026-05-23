@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Billetera - Vecinos Virtuales</title>
-    <!-- Cargamos Tailwind CSS para un diseño hermoso y rápido -->
+    <!-- Cargamos Tailwind CSS para diseño móvil fluido -->
     <script src="https://jsdelivr.net"></script>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen flex flex-col justify-between">
@@ -15,23 +15,21 @@
             <span class="text-2xl">🪙</span>
             <h1 class="text-xl font-bold">Mi Billetera Virtual</h1>
         </div>
-        <a href="index.html" class="text-sm bg-green-700 px-3 py-1 rounded-full hover:bg-green-800 transition">Volver</a>
+        <a href="index.html#dashboard" class="text-sm bg-green-700 px-3 py-1 rounded-full hover:bg-green-800 transition">Volver</a>
     </header>
 
     <!-- CONTENIDO PRINCIPAL (Optimizado para celulares) -->
     <main class="p-4 max-w-md mx-auto w-full flex-grow space-y-6">
 
-        <!-- TARJETA DE SALDO Y RANGO -->
+        <!-- TARJETA DE SALDO Y RANGO CORREGIDA -->
         <section class="bg-white rounded-2xl p-6 shadow-md border-t-4 border-gray-400 text-center space-y-3" id="tarjeta-perfil">
             <div class="relative w-20 h-20 mx-auto">
-                <!-- Avatar del vecino (Gris por defecto para invitado) -->
                 <div class="w-full h-full bg-gray-300 rounded-full flex items-center justify-center text-3xl border-4 border-gray-400 shadow-inner">👤</div>
             </div>
             <div>
                 <h2 class="text-lg font-bold text-gray-800" id="nombre-usuario">Vecino Invitado</h2>
-                <!-- El rango dinámico que creamos en Supabase -->
                 <span class="inline-block bg-gray-200 text-gray-700 text-xs px-3 py-1 rounded-full font-semibold mt-1" id="rango-etiqueta">
-                    🎧 Oyente del Barrio
+                    🎧 Oyente de Lomas de Tafí
                 </span>
             </div>
             <div class="pt-4 border-t border-gray-100">
@@ -42,47 +40,46 @@
                 <p class="text-xs text-gray-400 mt-1" id="xp-texto">Tienes 0 puntos de experiencia (XP)</p>
             </div>
         </section>
-
-        <!-- SECCIÓN DE COMPRA DE MONEDAS -->
+        <!-- SECCIÓN DE COMPRA DE paquetes -->
         <section class="space-y-3">
             <h3 class="text-gray-700 font-bold text-sm uppercase tracking-wider px-1">Recargar VecinoCoins</h3>
-            <p class="text-xs text-gray-500 px-1">Usa tus monedas para enviar rosas, aplausos o diamantes y apoyar a tu comunidad.</p>
+            <p class="text-xs text-gray-500 px-1">Los fondos impactan de manera real en tu cuenta demo de Lomas de Tafí.</p>
             
             <div class="grid grid-cols-1 gap-3">
-                <!-- Paquete 1 -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:border-green-500 transition cursor-pointer">
+                <!-- Paquete Bronce -->
+                <div onclick="comprarPaqueteMonedas(50)" class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:border-green-500 transition cursor-pointer active:scale-95">
                     <div class="flex items-center gap-3">
                         <span class="text-3xl">📦</span>
-                        <div>
+                        <div class="text-left">
                             <h4 class="font-bold text-gray-800">Paquete Bronce</h4>
                             <p class="text-sm text-green-600 font-semibold">🪙 50 Monedas</p>
                         </div>
                     </div>
-                    <button class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow hover:bg-green-700">Comprar</button>
+                    <button class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow">Simular</button>
                 </div>
 
-                <!-- Paquete 2 -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:border-green-500 transition cursor-pointer">
+                <!-- Paquete Plata -->
+                <div onclick="comprarPaqueteMonedas(120)" class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:border-green-500 transition cursor-pointer active:scale-95">
                     <div class="flex items-center gap-3">
                         <span class="text-3xl">💰</span>
-                        <div>
+                        <div class="text-left">
                             <h4 class="font-bold text-gray-800">Paquete Plata</h4>
                             <p class="text-sm text-green-600 font-semibold">🪙 120 Monedas <span class="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded ml-1">+20 GRATIS</span></p>
                         </div>
                     </div>
-                    <button class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow hover:bg-green-700">Comprar</button>
+                    <button class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow">Simular</button>
                 </div>
 
-                <!-- Paquete 3 -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:border-green-500 transition cursor-pointer">
+                <!-- Paquete Oro VIP -->
+                <div onclick="comprarPaqueteMonedas(350)" class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between hover:border-green-500 transition cursor-pointer active:scale-95">
                     <div class="flex items-center gap-3">
                         <span class="text-3xl">👑</span>
-                        <div>
+                        <div class="text-left">
                             <h4 class="font-bold text-gray-800">Paquete Oro VIP</h4>
-                            <p class="text-sm text-green-600 font-semibold">🪙 300 Monedas <span class="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded ml-1">+50 GRATIS</span></p>
+                            <p class="text-sm text-green-600 font-semibold">🪙 350 Monedas <span class="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded ml-1">+50 GRATIS</span></p>
                         </div>
                     </div>
-                    <button class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow hover:bg-green-700">Comprar</button>
+                    <button class="bg-green-600 text-white font-bold px-4 py-2 rounded-lg text-sm shadow">Simular</button>
                 </div>
             </div>
         </section>
@@ -91,90 +88,105 @@
 
     <!-- MENÚ INFERIOR DE NAVEGACIÓN -->
     <footer class="bg-white border-t border-gray-200 p-2 grid grid-cols-4 text-center text-xs text-gray-500 sticky bottom-0 z-50">
-        <button class="flex flex-col items-center gap-1 py-1 text-gray-400"><span>🏠</span>Inicio</button>
+        <button onclick="window.location.href='index.html#dashboard'" class="flex flex-col items-center gap-1 py-1 text-gray-400"><span>🏠</span>Inicio</button>
         <button class="flex flex-col items-center gap-1 py-1 text-gray-400"><span>🛒</span>Comprar</button>
-        <button class="flex flex-col items-center gap-1 py-1 text-gray-400"><span>🎤</span>Cultura</button>
+        <button onclick="window.location.href='estudio-karaoke.html'" class="flex flex-col items-center gap-1 py-1 text-gray-400"><span>🎤</span>Karaoke</button>
         <button class="flex flex-col items-center gap-1 py-1 text-green-600 font-bold"><span>🪙</span>Billetera</button>
     </footer>
-    <!-- ============================================================ -->
-    <!-- MOTOR JAVASCRIPT: CONEXIÓN INTEGRADA CON SUPABASE -->
-    <!-- ============================================================ -->
-    
-    <!-- 1. Cargamos la librería oficial de Supabase desde internet -->
+
+    <!-- SDK OFICIAL DE SUPABASE -->
     <script src="https://jsdelivr.net"></script>
-
     <script>
-        // 2. CONFIGURACIÓN: Coloca aquí las credenciales de tu proyecto de Supabase
-        // Reemplaza los textos entre comillas con tus datos reales cuando los tengas a mano
-        const SUPABASE_URL = "https://selkbxqazwxxvinnulpb.supabase.co/rest/v1/"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNlbGtieHFhend4eHZpbm51bHBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5MDA5MTUsImV4cCI6MjA3NTQ3NjkxNX0.h5YA8tvXPhktoX8dWRalyPCUSndbZtkBHrOviiB1UiE";
-
-        // Inicializamos el conector oficial
+        // 🌟 CONFIGURACIÓN REAL: Inserta aquí tus credenciales de la API URL y ANON KEY
+        const SUPABASE_URL = "TU_API_URL_DE_SUPABASE"; 
+        const SUPABASE_ANON_KEY = "TU_ANON_KEY_DE_SUPABASE";
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 3. FUNCIÓN PRINCIPAL: Carga y muestra los datos financieros en pantalla
+        let usuarioIdActual = "anonimo-invitado-pwa"; // Fallback por defecto
+        let saldoRealMonedas = 0;
+
+        // 1. CARGAR Y MOSTRAR DATOS REALES DE FONDOS
         async function cargarDatosBilletera() {
             try {
-                // Obtenemos la sesión del usuario actual (Invitado o Registrado por WhatsApp)
+                // Consultamos la sesión activa en el teléfono
                 const { data: { session } } = await supabase.auth.getSession();
 
-                // Si no hay un usuario activo, dejamos la tarjeta en modo "Invitado" por defecto
                 if (!session) {
-                    console.log("Navegando en modo Invitado. Saldo inicial: 0");
+                    // MODO INVITADO SIMULADO PARA ENTORNO LOMAS DE TAFÍ
+                    document.getElementById('nombre-usuario').innerText = "Vecino Invitado (Demo)";
+                    document.getElementById('saldo-texto').innerText = "120"; // Fondo inicial simulado para testeo local
+                    document.getElementById('xp-texto').innerText = "Tienes 0 puntos de experiencia (XP)";
                     return;
                 }
 
-                const userId = session.user.id;
+                usuarioIdActual = session.user.id;
                 
-                // Si el usuario está registrado, actualizamos su nombre en la tarjeta
+                // Actualizamos nombre en pantalla
                 if (session.user.user_metadata && session.user.user_metadata.full_name) {
                     document.getElementById('nombre-usuario').innerText = session.user.user_metadata.full_name;
-                } else if (session.user.phone) {
-                    // Si solo tiene teléfono (WhatsApp), mostramos su número
-                    document.getElementById('nombre-usuario').innerText = "Vecino " + session.user.phone;
+                } else {
+                    document.getElementById('nombre-usuario').innerText = "Vecino " + (session.user.phone || "");
                 }
 
-                // 4. CONSULTA A LA BASE DE DATOS: Traemos el saldo y los puntos XP
+                // Jalar el saldo real desde la tabla de Supabase
                 const { data: billetera, error } = await supabase
                     .from('billeteras')
                     .select('saldo_monedas, puntos_xp')
-                    .eq('user_id', userId)
+                    .eq('user_id', usuarioIdActual)
                     .single();
 
-                if (error && error.code !== 'PGRST116') {
-                    throw error; // Si hay un error real en la base de datos, lo enviamos al panel
-                }
-
-                // Si el vecino ya tiene una billetera registrada en Supabase, pintamos sus datos reales
-                if (billetera) {
-                    document.getElementById('saldo-texto').innerText = billetera.saldo_monedas;
+                if (!error && billetera) {
+                    saldoRealMonedas = billetera.saldo_monedas;
+                    document.getElementById('saldo-texto').innerText = saldoRealMonedas;
                     document.getElementById('xp-texto').innerText = `Tienes ${billetera.puntos_xp} puntos de experiencia (XP)`;
 
-                    // 5. INTELIGENCIA AUTOMÁTICA: Llamamos al cerebro SQL que calcula el rango
+                    // Llamamos al cerebro SQL que calcula el estatus
                     const { data: rangoDatos, error: rangoError } = await supabase
-                        .rpc('obtener_rango_vecino', { id_del_vecino: userId });
+                        .rpc('obtener_rango_vecino', { id_del_vecino: usuarioIdActual });
 
                     if (!rangoError && rangoDatos && rangoDatos.length > 0) {
                         const miRango = rangoDatos[0];
-                        const etiqueta = document.getElementById('rango-etiqueta');
-                        const tarjeta = document.getElementById('tarjeta-perfil');
-
-                        // Actualizamos el texto del rango (ej: Leyenda del Barrio)
-                        etiqueta.innerText = miRango.rango_nombre;
-                        
-                        // Aplicamos dinámicamente el color del marco que configuramos en la base de datos
-                        tarjeta.style.borderTopColor = miRango.color_marco;
+                        document.getElementById('rango-etiqueta').innerText = miRango.rango_nombre;
+                        document.getElementById('tarjeta-perfil').style.borderTopColor = miRango.color_marco;
                     }
                 }
-
             } catch (err) {
-                console.error("Pequeño tropiezo al cargar los datos financieros:", err.message);
+                console.error("Fallo al jalar datos financieros:", err.message);
             }
         }
 
-        // Ejecutamos la función de carga en cuanto la página termina de abrirse en el celular
+        // 2. SIMULAR COMPRA: Sumar monedas de forma real a Supabase
+        async function comprarPaqueteMonedas(cantidadPaquete) {
+            // Si navega como invitado real, simulamos de forma visual
+            if (usuarioIdActual === "anonimo-invitado-pwa") {
+                alert(`🛒 Paquete simulado con éxito: ¡Se han sumado 🪙 ${cantidadPaquete} VecinoCoins de prueba a tu tarjeta!`);
+                const saldoActualVisual = parseInt(document.getElementById('saldo-texto').innerText);
+                document.getElementById('saldo-texto').innerText = saldoActualVisual + cantidadPaquete;
+                return;
+            }
+
+            try {
+                // Si el usuario está registrado por WhatsApp, actualizamos su saldo verdadero en la base de datos
+                const nuevoSaldoCalculado = saldoRealMonedas + cantidadPaquete;
+
+                const { error } = await supabase
+                    .from('billeteras')
+                    .update({ saldo_monedas: nuevoSaldoCalculado })
+                    .eq('user_id', usuarioIdActual);
+
+                if (error) throw error;
+
+                alert(`💳 Transacción exitosa procesada en Supabase: ¡Sumaste 🪙 ${cantidadPaquete} VecinoCoins reales a tu cuenta!`);
+                saldoRealMonedas = nuevoSaldoCalculado;
+                document.getElementById('saldo-texto').innerText = saldoRealMonedas;
+
+            } catch (err) {
+                console.error("Fallo al inyectar monedas en Supabase:", err.message);
+                alert("Hubo un problema al procesar la compra simulada.");
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', cargarDatosBilletera);
     </script>
-
 </body>
 </html>
