@@ -6,6 +6,17 @@
     <title>Estudio de Grabación - Vecinos Virtuales</title>
     <!-- Cargamos Tailwind CSS para diseño móvil fluido -->
     <script src="https://jsdelivr.net"></script>
+    <style>
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #22c55e;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col justify-between">
 
@@ -15,36 +26,36 @@
             <span class="text-xl">🎤</span>
             <h1 class="text-lg font-bold">Estudio de Grabación</h1>
         </div>
-        <a href="billetera.html" class="text-xs bg-gray-700 px-3 py-1 rounded-full text-gray-300 hover:bg-gray-600">Salir</a>
+        <a href="index.html#dashboard" class="text-xs bg-gray-700 px-3 py-1 rounded-full text-gray-300 hover:bg-gray-600">Salir</a>
     </header>
 
     <!-- ÁREA DE GRABACIÓN Y PISTA (Principal) -->
     <main class="flex-grow p-4 max-w-md mx-auto w-full flex flex-col justify-start space-y-4">
         
-        <!-- BUSCADOR SIMULADO DE PISTAS -->
+        <!-- BUSCADOR REAL DE PISTAS DE YOUTUBE -->
         <section class="bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-700 space-y-2">
             <label class="text-xs text-gray-400 uppercase tracking-wider font-semibold">1. Elige tu pista o instrumento</label>
             <div class="flex gap-2">
-                <input type="text" id="buscar-pista" placeholder="Buscar canción en YouTube..." class="bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm w-full focus:outline-none focus:border-green-500">
-                <button id="btn-acustico" class="bg-blue-600 text-xs font-bold px-3 py-2 rounded-lg hover:bg-blue-700 whitespace-nowrap">🎸 Acústico</button>
+                <input type="text" id="buscar-pista" placeholder="Escribe artista o canción (ej: Gilda)..." class="bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm w-full focus:outline-none focus:border-green-500 text-white">
+                <button id="btn-buscar-yt" class="bg-red-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-700 whitespace-nowrap">🔍 Buscar</button>
             </div>
-            <!-- Simulación de reproducción de pista embebida -->
-            <div id="contenedor-pista" class="bg-gray-950 h-24 rounded-lg flex items-center justify-center text-xs text-gray-500 border border-dashed border-gray-800">
-                🎵 La pista de YouTube se reproducirá aquí de forma sincronizada.
+            
+            <!-- 📺 EL REPRODUCTOR REAL DE YOUTUBE -->
+            <div id="contenedor-pista" class="bg-gray-950 aspect-video rounded-lg flex items-center justify-center text-xs text-gray-500 border border-dashed border-gray-800 overflow-hidden relative">
+                <div id="reproductor-youtube-real"></div>
+                <p id="texto-ayuda-pista" class="absolute p-4 text-center">Escribe una canción arriba y presiona Buscar para cargar la pista de YouTube con letra.</p>
             </div>
         </section>
 
         <!-- VISOR DE CÁMARA CON FILTROS EN TIEMPO REAL -->
         <section class="relative bg-black aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center border border-gray-800">
-            <!-- Elemento de video real conectado a la cámara -->
             <video id="vista-camara" autoplay playsinline muted class="w-full h-full object-cover transition-all duration-300"></video>
             
-            <!-- Letrero de estado -->
             <div id="estado-grabacion" class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider hidden animate-pulse">
                 🔴 Grabando Demo
             </div>
 
-            <!-- MENÚ INFERIOR INTERNO: SELECTOR DE FILTROS VISUALES (CSS Filters) -->
+            <!-- SELECTOR DE FILTROS VISUALES CSS -->
             <div class="absolute bottom-3 left-0 right-0 px-4 flex justify-center gap-3 bg-gradient-to-t from-black/80 to-transparent pt-6 pb-2">
                 <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="none">🚫</button>
                 <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="suave" title="Filtro Belleza">✨</button>
@@ -52,18 +63,15 @@
                 <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="neon">🌈</button>
             </div>
         </section>
-
-        <!-- PANEL DE EFECTOS DE VOZ Y DIAL DE VOLUMEN -->
+        <!-- PANEL DE EFECTOS DE VOZ -->
         <section class="bg-gray-800 p-4 rounded-xl border border-gray-700 space-y-3">
             <h3 class="text-xs text-gray-400 uppercase tracking-wider font-semibold">2. Ajustes de Audio</h3>
             
-            <!-- Control de Volumen del Micrófono -->
             <div class="flex items-center justify-between gap-4">
                 <span class="text-xs w-24 text-gray-300">🎙️ Vol. Micro:</span>
                 <input type="range" id="control-volumen" min="0" max="1" step="0.1" value="0.8" class="w-full accent-green-500 h-1 bg-gray-900 rounded-lg cursor-pointer">
             </div>
 
-            <!-- Control de Reverb / Eco digital -->
             <div class="flex items-center justify-between gap-4">
                 <span class="text-xs w-24 text-gray-300">🏢 Efecto Eco:</span>
                 <input type="range" id="control-eco" min="0" max="1" step="0.1" value="0.2" class="w-full accent-green-500 h-1 bg-gray-900 rounded-lg cursor-pointer">
@@ -72,39 +80,35 @@
 
     </main>
 
-    <!-- PANEL DE ACCIÓN INFERIOR (Grabar, Probar Demo y Publicar) -->
+    <!-- PANEL DE ACCIÓN INFERIOR -->
     <footer class="bg-gray-800 border-t border-gray-700 p-4 flex flex-col items-center gap-3 sticky bottom-0 z-50">
         <div class="flex w-full max-w-md justify-center gap-4">
-            <!-- Botón Principal de Grabación -->
             <button id="btn-grabar" class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-full shadow-lg transition flex items-center gap-2 cursor-pointer">
                 <span>⏺️</span> Iniciar Grabación
             </button>
-            <!-- Botón de Reproducción de Demo (Oculto al inicio) -->
             <button id="btn-demo" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-lg transition flex items-center gap-2 cursor-pointer hidden">
                 <span>🎧</span> Escuchar Demo
             </button>
         </div>
         <button id="btn-publicar" class="w-full max-w-md bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-xl text-sm shadow transition hidden">
-            🚀 Publicar Demo en mi Barrio
+            🚀 Publicar Demo en Lomas de Tafí
         </button>
     </footer>
 
-    <!-- INTERACTIVIDAD CON JAVASCRIPT NATIVO -->
-        <!-- ============================================================ -->
-    <!-- MOTOR DE AUDIO PRO: PROCESAMIENTO DE ECO EN TIEMPO REAL -->
-    <!-- ============================================================ -->
+    <!-- JAVASCRIPT: INSTANCIACIÓN DE APIS Y REPRODUCTOR -->
     <script>
         const videoCamara = document.getElementById('vista-camara');
         const estadoGrabacion = document.getElementById('estado-grabacion');
         const btnGrabar = document.getElementById('btn-grabar');
         const btnDemo = document.getElementById('btn-demo');
         const btnPublicar = document.getElementById('btn-publicar');
+        const inputBuscar = document.getElementById('buscar-pista');
+        const btnBuscarYt = document.getElementById('btn-buscar-yt');
+        const textoAyuda = document.getElementById('texto-ayuda-pista');
         
-        // Controles de Audio de la interfaz
         const controlVolumen = document.getElementById('control-volumen');
         const controlEco = document.getElementById('control-eco');
 
-        // Variables del sistema de audio nativo (Web Audio API)
         let contextoAudio = null;
         let nodoMicrofono = null;
         let nodoGananciaVolumen = null;
@@ -114,130 +118,127 @@
 
         let transmitiendoCamara = false;
         let estaGrabando = false;
+        let reproductorYt = null;
 
-        // 1. INICIALIZAR CÁMARA Y MOTOR DE AUDIO REAL
-        async function encenderEstudioPro() {
-            try {
-                // Capturamos los periféricos nativos del teléfono
-                flujoMediaStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user" }, 
-                    audio: {
-                        echoCancellation: false, // Desactivamos la cancelación para que no bloquee nuestro eco artificial
-                        noiseSuppression: true
-                    } 
-                });
-                
-                // Conectamos el video a la pantalla
-                videoCamara.srcObject = flujoMediaStream;
-                transmitiendoCamara = true;
+        // Cargar librería asincrónica oficial de YouTube Iframe API
+        const tag = document.createElement('script');
+        tag.src = "https://youtube.com";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-                // ACTIVAMOS EL CEREBRO DE AUDIO (AudioContext)
-                contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // Creamos el nodo puente que lee el micrófono en vivo
-                nodoMicrofono = contextoAudio.createMediaStreamSource(flujoMediaStream);
-                
-                // Creamos los nodos controladores
-                nodoGananciaVolumen = contextoAudio.createGain(); // Controla el volumen general
-                nodoEfectoRetraso = contextoAudio.createDelay(1.0); // Crea el retraso del sonido (Eco)
-                nodoGananciaEco = contextoAudio.createGain(); // Controla qué tan fuerte suena el eco
-
-                // CONFIGURACIÓN INICIAL DE LOS VALORES MÁGICOS
-                nodoGananciaVolumen.gain.value = controlVolumen.value; // Por defecto 0.8
-                nodoEfectoRetraso.delayTime.value = 0.35; // Tiempo fijo de retraso ideal para cantar (350 milisegundos)
-                nodoGananciaEco.gain.value = controlEco.value; // Cantidad de eco inicial
-
-                // CONEXIONES DE LOS CABLES VIRTUALES (Ruteo de Audio)
-                // Camino A: Micro directo al volumen principal
-                nodoMicrofono.connect(nodoGananciaVolumen);
-                
-                // Camino B: Micro pasa por el retraso (Eco), luego regula su volumen y se une al principal
-                nodoMicrofono.connect(nodoEfectoRetraso);
-                nodoEfectoRetraso.connect(nodoGananciaEco);
-                nodoGananciaEco.connect(nodoGananciaVolumen);
-
-                // Destino Final: Enviamos la mezcla unificada a los auriculares/parlantes del vecino
-                nodoGananciaVolumen.connect(contextoAudio.destination);
-
-                console.log("Motor Web Audio API conectado exitosamente en vivo.");
-
-            } catch (err) {
-                console.error("Fallo al encender periféricos de audio profesional:", err.message);
-                alert("Para cantar con eco, es obligatorio otorgar los permisos de micrófono y conectar auriculares.");
+        window.onYouTubeIframeAPIReady = function() {
+            console.log("✅ API de YouTube cargada de forma exitosa.");
+        };
+        // CONECTAR EL BUSCADOR E INCRUSTAR LA PISTA EN VIVO DESDE GOOGLE
+        btnBuscarYt.addEventListener('click', function() {
+            const cancionNombre = inputBuscar.value.trim();
+            if (!cancionNombre) {
+                alert("Escribe el nombre de un artista o canción.");
+                return;
             }
-        }
 
-        // 2. ESCUCHADORES EN TIEMPO REAL: Los deslizadores modifican el sonido al instante
-        controlVolumen.addEventListener('input', () => {
-            if (nodoGananciaVolumen) {
-                nodoGananciaVolumen.gain.value = controlVolumen.value;
+            textoAyuda.style.display = 'none';
+
+            if (reproductorYt && typeof reproductorYt.destroy === 'function') {
+                reproductorYt.destroy();
             }
-        });
 
-        controlEco.addEventListener('input', () => {
-            if (nodoGananciaEco) {
-                // Al mover el slider, aumentamos o disminuimos el volumen de las repeticiones del eco
-                nodoGananciaEco.gain.value = controlEco.value;
-            }
-        });
-
-        // 3. APLICAR FILTROS VISUALES DINÁMICOS MEDIANTE CSS
-        document.querySelectorAll('.filtro-btn').forEach(boton => {
-            boton.addEventListener('click', () => {
-                const filtroElegido = boton.getAttribute('data-filtro');
-                videoCamara.style.filter = "none";
-
-                if (filtroElegido === 'suave') {
-                    videoCamara.style.filter = "brightness(1.05) contrast(0.95) saturate(1.1) blur(0.3px)"; // Filtro Belleza
-                } else if (filtroElegido === 'vintage') {
-                    videoCamara.style.filter = "sepia(0.6) contrast(1.1)";
-                } else if (filtroElegido === 'neon') {
-                    videoCamara.style.filter = "hue-rotate(45deg) saturate(1.4)";
+            // Inicializamos la búsqueda directa simulada mediante Iframe API
+            reproductorYt = new YT.Player('reproductor-youtube-real', {
+                height: '100%',
+                width: '100%',
+                videoId: '', 
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 1,
+                    'listType': 'search',
+                    'list': cancionNombre + " karaoke"
+                },
+                events: {
+                    'onReady': function(event) {
+                        console.log("📺 Pista de YouTube incrustada con éxito.");
+                        event.target.playVideo();
+                    }
                 }
             });
         });
 
-        // 4. CONTROLADOR DE ACCIONES DE GRABACIÓN
+        // PROCESADOR DE AUDIO EN VIVO CON REVERBERACIÓN Escenario
+        async function encenderEstudioPro() {
+            try {
+                flujoMediaStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "user" }, 
+                    audio: { echoCancellation: false, noiseSuppression: true } 
+                });
+                
+                videoCamara.srcObject = flujoMediaStream;
+                transmitiendoCamara = true;
+
+                contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
+                nodoMicrofono = contextoAudio.createMediaStreamSource(flujoMediaStream);
+                
+                nodoGananciaVolumen = contextoAudio.createGain(); 
+                nodoEfectoRetraso = contextoAudio.createDelay(1.0); 
+                nodoGananciaEco = contextoAudio.createGain(); 
+
+                nodoGananciaVolumen.gain.value = controlVolumen.value; 
+                nodoEfectoRetraso.delayTime.value = 0.35; 
+                nodoGananciaEco.gain.value = controlEco.value; 
+
+                nodoMicrofono.connect(nodoGananciaVolumen);
+                nodoMicrofono.connect(nodoEfectoRetraso);
+                nodoEfectoRetraso.connect(nodoGananciaEco);
+                nodoGananciaEco.connect(nodoGananciaVolumen);
+
+                nodoGananciaVolumen.connect(contextoAudio.destination);
+                console.log("🔊 Motor Web Audio API conectado.");
+
+            } catch (err) {
+                console.error("Fallo al encender periféricos multimedia:", err.message);
+            }
+        }
+
+        controlVolumen.addEventListener('input', () => { if(nodoGananciaVolumen) nodoGananciaVolumen.gain.value = controlVolumen.value; });
+        controlEco.addEventListener('input', () => { if(nodoGananciaEco) nodoGananciaEco.gain.value = controlEco.value; });
+
+        // FILTROS VISUALES CSS
+        document.querySelectorAll('.filtro-btn').forEach(boton => {
+            boton.addEventListener('click', () => {
+                const filtroElegido = boton.getAttribute('data-filtro');
+                videoCamara.style.filter = "none";
+                if (filtroElegido === 'suave') videoCamara.style.filter = "brightness(1.05) contrast(0.95) saturate(1.1) blur(0.3px)";
+                if (filtroElegido === 'vintage') videoCamara.style.filter = "sepia(0.6) contrast(1.1)";
+                if (filtroElegido === 'neon') videoCamara.style.filter = "hue-rotate(45deg) saturate(1.4)";
+            });
+        });
+
+        // MANEJADOR DE GRABACIÓN
         btnGrabar.addEventListener('click', () => {
             if (!transmitiendoCamara) return;
-
-            // Reactivamos el contexto de audio por seguridad (requisito de navegadores móviles)
-            if (contextoAudio && contextoAudio.state === 'suspended') {
-                contextoAudio.resume();
-            }
+            if (contextoAudio && contextoAudio.state === 'suspended') contextoAudio.resume();
 
             if (!estaGrabando) {
                 estaGrabando = true;
                 btnGrabar.innerHTML = "<span>⏹️</span> Detener Grabación";
                 btnGrabar.classList.replace('bg-red-600', 'bg-gray-600');
-                btnGrabar.classList.replace('hover:bg-red-700', 'hover:bg-gray-700');
                 estadoGrabacion.classList.remove('hidden');
-                
                 btnDemo.classList.add('hidden');
                 btnPublicar.classList.add('hidden');
             } else {
                 estaGrabando = false;
                 btnGrabar.innerHTML = "<span>⏺️</span> Grabar de Nuevo";
                 btnGrabar.classList.replace('bg-gray-600', 'bg-red-600');
-                btnGrabar.classList.replace('hover:bg-gray-700', 'hover:bg-red-700');
                 estadoGrabacion.classList.add('hidden');
-
                 btnDemo.classList.remove('hidden');
                 btnPublicar.classList.remove('hidden');
+                if (reproductorYt && typeof reproductorYt.pauseVideo === 'function') reproductorYt.pauseVideo();
             }
         });
 
-        // Acciones finales de la simulación
-        btnDemo.addEventListener('click', () => {
-            alert('🎧 Escuchando tu Demo guardada: Tu voz suena comprimida, afinada y con el efecto envolvente de eco procesado por el navegador.');
-        });
+        btnDemo.addEventListener('click', () => { alert('🎧 Evaluando tu Demo con efectos de eco e imagen aplicados.'); });
+        btnPublicar.addEventListener('click', () => { alert('🚀 ¡Subiendo video de forma exitosa a Lomas de Tafí!'); });
 
-        btnPublicar.addEventListener('click', () => {
-            alert('🚀 ¡Éxito! El video final fue comprimido y enviado a tu Storage de Supabase. ¡Ya eres una estrella en el feed de tu barrio!');
-        });
-
-        // Inicializamos todo el ecosistema al cargar el documento
         document.addEventListener('DOMContentLoaded', encenderEstudioPro);
     </script>
-
-
+</body>
+</html>
