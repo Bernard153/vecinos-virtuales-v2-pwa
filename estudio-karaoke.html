@@ -29,10 +29,10 @@
         <a href="index.html#dashboard" class="text-xs bg-gray-700 px-3 py-1 rounded-full text-gray-300 hover:bg-gray-600">Salir</a>
     </header>
 
-    <!-- ÁREA DE GRABACIÓN Y PISTA (Principal) -->
+    <!-- ÁREA DE GRABACIÓN Y PISTA -->
     <main class="flex-grow p-4 max-w-md mx-auto w-full flex flex-col justify-start space-y-4">
         
-        <!-- BUSCADOR REAL DE PISTAS DE YOUTUBE -->
+        <!-- BUSCADOR DE YOUTUBE -->
         <section class="bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-700 space-y-2">
             <label class="text-xs text-gray-400 uppercase tracking-wider font-semibold">1. Elige tu pista o instrumento</label>
             <div class="flex gap-2">
@@ -40,38 +40,42 @@
                 <button id="btn-buscar-yt" class="bg-red-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-700 whitespace-nowrap">🔍 Buscar</button>
             </div>
             
-            <!-- 📺 EL REPRODUCTOR REAL DE YOUTUBE -->
+            <!-- CONTENEDOR DEL IFRAME DE YOUTUBE -->
             <div id="contenedor-pista" class="bg-gray-950 aspect-video rounded-lg flex items-center justify-center text-xs text-gray-500 border border-dashed border-gray-800 overflow-hidden relative">
-                <div id="reproductor-youtube-real"></div>
+                <div id="reproductor-youtube-real" class="w-full h-full"></div>
                 <p id="texto-ayuda-pista" class="absolute p-4 text-center">Escribe una canción arriba y presiona Buscar para cargar la pista de YouTube con letra.</p>
             </div>
         </section>
 
-        <!-- VISOR DE CÁMARA CON FILTROS EN TIEMPO REAL -->
+        <!-- VISOR DE CÁMARA CON PROTECCIÓN CONTRA DISPOSITIVOS NO ENCONTRADOS -->
         <section class="relative bg-black aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center border border-gray-800">
             <video id="vista-camara" autoplay playsinline muted class="w-full h-full object-cover transition-all duration-300"></video>
             
+            <!-- Render visual sustituto si no tienes cámara web conectada a tu PC -->
+            <div id="avatar-sustituto" class="absolute inset-0 bg-gradient-to-br from-purple-900 to-indigo-900 flex flex-col items-center justify-center gap-2 hidden">
+                <span class="text-6xl animate-pulse">👨‍🎤</span>
+                <p class="text-xs text-purple-300">Modo de Canto Activo (Sin Cámara)</p>
+            </div>
+
             <div id="estado-grabacion" class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider hidden animate-pulse">
                 🔴 Grabando Demo
             </div>
 
-            <!-- SELECTOR DE FILTROS VISUALES CSS -->
+            <!-- FILTROS VISUALES -->
             <div class="absolute bottom-3 left-0 right-0 px-4 flex justify-center gap-3 bg-gradient-to-t from-black/80 to-transparent pt-6 pb-2">
                 <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="none">🚫</button>
-                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="suave" title="Filtro Belleza">✨</button>
+                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="suave">✨</button>
                 <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="vintage">🎞️</button>
                 <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="neon">🌈</button>
             </div>
         </section>
-        <!-- PANEL DE EFECTOS DE VOZ -->
+        <!-- PANEL DE EFECTOS -->
         <section class="bg-gray-800 p-4 rounded-xl border border-gray-700 space-y-3">
             <h3 class="text-xs text-gray-400 uppercase tracking-wider font-semibold">2. Ajustes de Audio</h3>
-            
             <div class="flex items-center justify-between gap-4">
                 <span class="text-xs w-24 text-gray-300">🎙️ Vol. Micro:</span>
                 <input type="range" id="control-volumen" min="0" max="1" step="0.1" value="0.8" class="w-full accent-green-500 h-1 bg-gray-900 rounded-lg cursor-pointer">
             </div>
-
             <div class="flex items-center justify-between gap-4">
                 <span class="text-xs w-24 text-gray-300">🏢 Efecto Eco:</span>
                 <input type="range" id="control-eco" min="0" max="1" step="0.1" value="0.2" class="w-full accent-green-500 h-1 bg-gray-900 rounded-lg cursor-pointer">
@@ -95,9 +99,10 @@
         </button>
     </footer>
 
-    <!-- JAVASCRIPT: INSTANCIACIÓN DE APIS Y REPRODUCTOR -->
+    <!-- INICIO DE SCRIPTS -->
     <script>
         const videoCamara = document.getElementById('vista-camara');
+        const avatarSustituto = document.getElementById('avatar-sustituto');
         const estadoGrabacion = document.getElementById('estado-grabacion');
         const btnGrabar = document.getElementById('btn-grabar');
         const btnDemo = document.getElementById('btn-demo');
@@ -119,17 +124,22 @@
         let transmitiendoCamara = false;
         let estaGrabando = false;
         let reproductorYt = null;
+        let apiYtLista = false; // Control de seguridad para esperar a Google
 
-        // Cargar librería asincrónica oficial de YouTube Iframe API
-        const tag = document.createElement('script');
-        tag.src = "https://youtube.com";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        // CARGAR ASINCRÓNICAMENTE EL REPRODUCTOR OFICIAL
+        (function() {
+            const tag = document.createElement('script');
+            tag.src = "https://youtube.com";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        })();
 
+        // Google llama a esta función automáticamente al terminar la descarga
         window.onYouTubeIframeAPIReady = function() {
-            console.log("✅ API de YouTube cargada de forma exitosa.");
+            console.log("✅ API de YouTube unificada en memoria.");
+            apiYtLista = true;
         };
-        // CONECTAR EL BUSCADOR E INCRUSTAR LA PISTA EN VIVO DESDE GOOGLE
+        // BUSCADOR BLINDADO CONTRA ERRORES "YT IS NOT DEFINED"
         btnBuscarYt.addEventListener('click', function() {
             const cancionNombre = inputBuscar.value.trim();
             if (!cancionNombre) {
@@ -137,33 +147,42 @@
                 return;
             }
 
-            textoAyuda.style.display = 'none';
+            // Red de seguridad: Si internet va lento y Google no cargó todavía, avisamos
+            if (!apiYtLista || typeof YT === 'undefined') {
+                alert("El motor de YouTube se está sincronizando en segundo plano. Espera 3 segundos e intenta de nuevo.");
+                return;
+            }
+
+            if (textoAyuda) textoAyuda.style.display = 'none';
 
             if (reproductorYt && typeof reproductorYt.destroy === 'function') {
                 reproductorYt.destroy();
             }
 
-            // Inicializamos la búsqueda directa simulada mediante Iframe API
-            reproductorYt = new YT.Player('reproductor-youtube-real', {
-                height: '100%',
-                width: '100%',
-                videoId: '', 
-                playerVars: {
-                    'autoplay': 1,
-                    'controls': 1,
-                    'listType': 'search',
-                    'list': cancionNombre + " karaoke"
-                },
-                events: {
-                    'onReady': function(event) {
-                        console.log("📺 Pista de YouTube incrustada con éxito.");
-                        event.target.playVideo();
+            try {
+                // Incrustación de búsqueda directa optimizada en el Iframe
+                reproductorYt = new YT.Player('reproductor-youtube-real', {
+                    height: '100%',
+                    width: '100%',
+                    playerVars: {
+                        'autoplay': 1,
+                        'controls': 1,
+                        'listType': 'search',
+                        'list': cancionNombre + " karaoke letras"
+                    },
+                    events: {
+                        'onReady': function(event) {
+                            console.log("📺 Pista incrustada con éxito.");
+                            event.target.playVideo();
+                        }
                     }
-                }
-            });
+                });
+            } catch (err) {
+                console.error("Error al incrustar el reproductor:", err);
+            }
         });
 
-        // PROCESADOR DE AUDIO EN VIVO CON REVERBERACIÓN Escenario
+        // CÁMARA BLINDADA CONTRA COMPUTADORAS SIN CÁMARA WEB (Requested device not found)
         async function encenderEstudioPro() {
             try {
                 flujoMediaStream = await navigator.mediaDevices.getUserMedia({ 
@@ -194,14 +213,18 @@
                 console.log("🔊 Motor Web Audio API conectado.");
 
             } catch (err) {
-                console.error("Fallo al encender periféricos multimedia:", err.message);
+                console.warn("🛡️ Red de seguridad activada: No se detectó cámara física. Activando Modo Sustituto.");
+                // Si la computadora no tiene cámara, escondemos el video roto y encendemos el avatar musical
+                videoCamara.style.display = 'none';
+                avatarSustituto.classList.remove('hidden');
+                transmitiendoCamara = true; // Habilitamos el paso para que puedas usar el buscador igual
             }
         }
 
         controlVolumen.addEventListener('input', () => { if(nodoGananciaVolumen) nodoGananciaVolumen.gain.value = controlVolumen.value; });
         controlEco.addEventListener('input', () => { if(nodoGananciaEco) nodoGananciaEco.gain.value = controlEco.value; });
 
-        // FILTROS VISUALES CSS
+        // FILTROS VISUALES
         document.querySelectorAll('.filtro-btn').forEach(boton => {
             boton.addEventListener('click', () => {
                 const filtroElegido = boton.getAttribute('data-filtro');
@@ -235,7 +258,7 @@
             }
         });
 
-        btnDemo.addEventListener('click', () => { alert('🎧 Evaluando tu Demo con efectos de eco e imagen aplicados.'); });
+        btnDemo.addEventListener('click', () => { alert('🎧 Evaluando tu Demo con efectos aplicados de forma exitosa.'); });
         btnPublicar.addEventListener('click', () => { alert('🚀 ¡Subiendo video de forma exitosa a Lomas de Tafí!'); });
 
         document.addEventListener('DOMContentLoaded', encenderEstudioPro);
