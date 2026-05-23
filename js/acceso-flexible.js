@@ -1,9 +1,9 @@
 // ============================================================
-// MODULO REAL: ACCESO FLEXIBLE E INTEGRACIÓN DE BARRIO INVITADO
+// MODULO REAL: ACCESO FLEXIBLE CONFIGURADO PARA LOMAS DE TAFÍ
 // ============================================================
 
 const BARRIOS_RESPALDO_LOCAL = [
-    { id: "1", nombre: "Barrio San Martín", lat: -26.808, lng: -65.217 },
+    { id: "1", nombre: "Lomas de Tafí", lat: -26.778, lng: -65.234 },
     { id: "2", nombre: "Barrio Centro", lat: -26.815, lng: -65.225 },
     { id: "3", nombre: "Barrio Las Acacias", lat: -26.801, lng: -65.210 }
 ];
@@ -30,27 +30,27 @@ async function evaluarAccesoVecino() {
             if (!session) {
                 console.log("👤 Vecino navegando en modo 'Invitado'. Sincronizando entorno...");
                 
-                // INYECTAMOS UN USUARIO SIMULADO PARA ENGAÑAR A TU CORE BASE
+                // INYECTAMOS TU BARRIO REAL DE PRUEBAS CON INTERACCIONES
                 if (!VV.data.user) {
                     VV.data.user = {
                         id: "anonimo-invitado-pwa",
                         name: "Vecino Invitado",
                         role: "vecino",
-                        neighborhood: "Barrio San Martín", // 🌟 Tu barrio base de pruebas
-                        home_neighborhood: "Barrio San Martín",
-                        current_neighborhood: "Barrio San Martín"
+                        neighborhood: "Lomas de Tafí", // 🌟 Cambiado de forma óptima
+                        home_neighborhood: "Lomas de Tafí",
+                        current_neighborhood: "Lomas de Tafí"
                     };
                 }
                 
-                // Forzamos la asignación del barrio global
-                VV.data.neighborhood = "Barrio San Martín";
+                // Sincronizamos el barrio global del sistema
+                VV.data.neighborhood = "Lomas de Tafí";
 
-                // Le ordenamos a tu base de datos que descargue los productos y baches de este barrio
+                // Le ordenamos a tu base de datos que descargue los datos de Lomas de Tafí
                 if (typeof VV.data.loadFromSupabase === 'function') {
                     await VV.data.loadFromSupabase();
                 }
 
-                console.log("✅ Entorno de Invitado sincronizado con: Barrio San Martín");
+                console.log("✅ Entorno de Invitado sincronizado con: Lomas de Tafí");
 
             } else {
                 console.log("🔑 Vecino autenticado detectado. ID:", session.user.id);
@@ -66,4 +66,4 @@ window.addEventListener('offline', evaluarAccesoVecino);
 
 document.addEventListener('DOMContentLoaded', evaluarAccesoVecino);
 
-console.log('✅ Módulo ACCESO-FLEXIBLE integrado con motor de sincronización de barrios');
+console.log('✅ Módulo ACCESO-FLEXIBLE calibrado para Lomas de Tafí con éxito');
