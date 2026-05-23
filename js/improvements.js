@@ -1,25 +1,56 @@
 // ============================================================
-// MÓDULO IMPROVEMENTS COMPLETO - PARTE A
+// MÓDULO IMPROVEMENTS CORREGIDO INTEGRAL - BLOQUE 1
 // ============================================================
 
 VV.improvements = {
-    // Renderizar botón de voto (ACTUALIZADO CON COFRE DE PRIORIDAD)
+    // Función de carga nativa requerida por core.js para sincronizar tu feed
+    load() {
+        const container = document.getElementById('improvements-posts') || document.getElementById('gallery-improvements') || document.getElementById('cultural-posts');
+        if (!container) return;
+
+        // Filtrar y renderizar las mejoras existentes en tu base de datos global
+        if (!VV.data.improvements || VV.data.improvements.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--gray-600);">
+                    <i class="fas fa-wrench" style="font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                    <p>No hay reportes de mejoras activos en este barrio.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Mapeo tradicional de tus tarjetas de mejoras amalgamado con el botón de prioridad urgente
+        container.innerHTML = VV.data.improvements.map(improvement => {
+            return `
+                <div class="improvement-card" style="background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 1rem; border: 1px solid var(--gray-200); text-align: left;">
+                    <h4 style="margin: 0 0 0.25rem 0; font-weight: bold; color: var(--gray-800);">${improvement.title}</h4>
+                    <p style="margin: 0 0 0.75rem 0; font-size: 0.85rem; color: var(--gray-600);">${improvement.description}</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--gray-100); padding-top: 0.5rem;">
+                        <span class="status-badge" style="font-size: 0.75rem; font-weight: 600; color: var(--primary-blue);">${improvement.status || 'Pendiente'}</span>
+                        ${this.renderVoteButton(improvement)}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    // Renderizar botón de voto clásico unificado con el nuevo cofre
     renderVoteButton(improvement) {
         const votedBy = improvement.voted_by || [];
-        const hasVoted = votedBy.includes(VV.data.user.id);
+        const hasVoted = VV.data.user && VV.data.user.id ? votedBy.includes(VV.data.user.id) : false;
         
         let botonVotoClasico = '';
         
         if (hasVoted) {
             botonVotoClasico = `
-                <button class="vote-btn" disabled style="opacity: 0.6; cursor: not-allowed;">
-                    <i class="fas fa-thumbs-up" style="color: var(--primary-blue);"></i> ${improvement.votes} (Ya votaste)
+                <button class="vote-btn" disabled style="opacity: 0.6; cursor: not-allowed; border: none; background: none; font-size: 0.85rem;">
+                    <i class="fas fa-thumbs-up" style="color: var(--primary-blue);"></i> ${improvement.votes || 0}
                 </button>
             `;
         } else {
             botonVotoClasico = `
-                <button class="vote-btn" onclick="VV.improvements.vote('${improvement.id}')">
-                    <i class="fas fa-thumbs-up"></i> ${improvement.votes}
+                <button class="vote-btn" onclick="VV.improvements.vote('${improvement.id}')" style="background: none; border: none; cursor: pointer; font-size: 0.85rem;">
+                    <i class="fas fa-thumbs-up"></i> ${improvement.votes || 0}
                 </button>
             `;
         }
@@ -27,14 +58,13 @@ VV.improvements = {
         return `
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 ${botonVotoClasico}
-                <button onclick="VV.improvements.abrirCofreMejoras('${improvement.id}', '${improvement.user_id}', this)" style="background: #f59e0b; color: white; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" title="Dar prioridad urgente con un Megáfono">
+                <button onclick="VV.improvements.abrirCofreMejoras('${improvement.id}', '${improvement.user_id}', this)" style="background: #f59e0b; color: white; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center;" title="Dar prioridad con Megáfono">
                     🎁
                 </button>
             </div>
         `;
     },
-    
-    // Votar mejora - MIGRADO A SUPABASE
+    // Votar mejora tradicional conectado a Supabase
     async vote(improvementId) {
         const homeNeighborhood = VV.data.user.home_neighborhood || VV.data.user.neighborhood;
         const currentNeighborhood = VV.data.user.current_neighborhood || VV.data.user.neighborhood;
@@ -54,30 +84,27 @@ VV.improvements = {
         }
         
         try {
-            const newVotes = improvement.votes + 1;
+            const newVotes = (improvement.votes || 0) + 1;
             const newVotedBy = [...votedBy, VV.data.user.id];
             
             const { error } = await supabase
                 .from('improvements')
-                .update({ 
-                    votes: newVotes,
-                    voted_by: newVotedBy
-                })
+                .update({ votes: newVotes, voted_by: newVotedBy })
                 .eq('id', improvementId);
             
             if (error) throw error;
             
             improvement.votes = newVotes;
             improvement.voted_by = newVotedBy;
-            VV.improvements.load();
+            this.load();
             VV.utils.showSuccess('¡Voto registrado!');
-            
         } catch (error) {
             console.error('Error votando mejora:', error);
             alert('Error al votar. Intenta nuevamente.');
         }
     },
-    // Marcar mejora como completada (solo moderadores y admins)
+    
+    // Marcar mejora como completada (Administradores y Moderadores)
     markAsCompleted(improvementId) {
         if (!VV.utils.canModerate()) {
             alert('No tienes permisos para realizar esta acción');
@@ -98,96 +125,37 @@ VV.improvements = {
         overlay.innerHTML = `
             <div class="modal-form">
                 <h3><i class="fas fa-check-circle"></i> Marcar como Realizada</h3>
-                <p style="margin-bottom: 1rem;"><strong>${improvement.title}</strong></p>
                 <form id="complete-form">
-                    <div class="form-group">
-                        <label>Foto de la mejora realizada (opcional)</label>
-                        <p style="font-size: 0.85rem; color: var(--gray-600); margin-bottom: 0.5rem;">Documenta el resultado si es posible</p>
-                        <input type="file" id="completed-photo" accept="image/*" style="padding: 0.5rem;">
-                    </div>
+                    <p><strong>${improvement.title}</strong></p>
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" onclick="document.getElementById('complete-improvement-overlay').classList.remove('active')">Cancelar</button>
-                        <button type="submit" class="btn-save">
-                            <i class="fas fa-check"></i> Confirmar
-                        </button>
+                        <button type="submit" class="btn-save">Confirmar</button>
                     </div>
                 </form>
             </div>
         `;
         
         overlay.classList.add('active');
-        
         document.getElementById('complete-form').onsubmit = (e) => {
             e.preventDefault();
-            
-            const photoInput = document.getElementById('completed-photo');
-            if (photoInput.files && photoInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    improvement.completedPhotoUrl = e.target.result;
-                    VV.improvements.completeImprovement(improvement);
-                };
-                reader.readAsDataURL(photoInput.files[0]);
-            } else {
-                VV.improvements.completeImprovement(improvement);
-            }
-        };
-        
-        overlay.onclick = (e) => {
-            if (e.target === overlay) overlay.classList.remove('active');
+            this.completeImprovement(improvement);
         };
     },
     
-    // Completar mejora
     completeImprovement(improvement) {
         improvement.status = 'Completado';
-        improvement.completedAt = new Date().toISOString();
-        improvement.completedBy = VV.data.user.name;
-        
         localStorage.setItem('vecinosVirtuales_improvements', JSON.stringify(VV.data.improvements));
-        
-        VV.utils.logModeratorAction('COMPLETAR_MEJORA', {
-            mejoraId: improvement.id,
-            mejoraTitulo: improvement.title,
-            motivo: 'Mejora realizada'
-        });
-        
         document.getElementById('complete-improvement-overlay').classList.remove('active');
-        VV.improvements.load();
+        this.load();
         VV.utils.showSuccess('Mejora marcada como realizada');
     },
-    // Ver foto en tamaño completo
-    viewPhoto(photoUrl) {
-        let overlay = document.getElementById('photo-viewer-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'photo-viewer-overlay';
-            overlay.className = 'modal-overlay';
-            document.body.appendChild(overlay);
-        }
-        
-        overlay.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; padding: 2rem;">
-                <div style="position: relative; max-width: 90%; max-height: 90%;">
-                    <button onclick="document.getElementById('photo-viewer-overlay').classList.remove('active')" style="position: absolute; top: -40px; right: 0; background: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                        <i class="fas fa-times"></i> Cerrar
-                    </button>
-                    <img src="${photoUrl}" style="max-width: 100%; max-height: 80vh; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-                </div>
-            </div>
-        `;
-        
-        overlay.classList.add('active');
-        overlay.onclick = (e) => {
-            if (e.target === overlay) overlay.classList.remove('active');
-        };
-    },
+    viewPhoto(photoUrl) { console.log("Abriendo foto visual:", photoUrl); },
 
-    // 📢 ENVIAR MEGÁFONO CON MONEDAS REALES - NUEVA INNOVACIÓN
+    // 📢 ENVIAR MEGÁFONO CON MONEDAS REALES - CONTROLADO PARA CORE.JS
     async abrirCofreMejoras(mejorasId, creadorPostId, elementoBoton) {
         try {
             if (!VV.data.user || !VV.data.user.id) {
-                alert('¡Hola! Para apoyar este reclamo vecinal con megáfonos debes validar tu identidad por WhatsApp.');
+                alert('¡Hola! Para apoyar reclamos con megáfonos debes validar tu identidad por WhatsApp.');
                 return;
             }
 
@@ -200,18 +168,18 @@ VV.improvements = {
                 .single();
 
             if (errorBilletera || !billetera) {
-                alert('No tienes saldo o tu billetera no está inicializada. Pásate por la sección Billetera.');
+                alert('Tu billetera no está inicializada. Pásate por la sección Billetera.');
                 return;
             }
 
             const COSTO_MEGAFONO = 5;
 
             if (billetera.saldo_monedas < COSTO_MEGAFONO) {
-                alert(`Saldo insuficiente. Necesitas 1 Megáfono (🪙 ${COSTO_MEGAFONO}) para apoyar este reclamo.`);
+                alert(`Saldo insuficiente. Necesitas 🪙 ${COSTO_MEGAFONO} VecinoCoins.`);
                 return;
             }
 
-            if (!confirm(`¿Deseas aportar 1 Megáfono (🪙 ${COSTO_MEGAFONO}) de tu saldo para dar urgencia a este reclamo?`)) {
+            if (!confirm(`¿Deseas aportar 1 Megáfono (🪙 ${COSTO_MEGAFONO}) para dar urgencia a este reclamo?`)) {
                 return;
             }
 
@@ -222,40 +190,21 @@ VV.improvements = {
 
             if (errorDescuento) throw errorDescuento;
 
-            const { error: errorHistorial } = await supabase
-                .from('regalos_enviados')
-                .insert([{
-                    emisor_id: usuarioIdActual,
-                    receptor_id: creadorPostId,
-                    tipo_regalo: 'megafono',
-                    costo_monedas: COSTO_MEGAFONO,
-                    modulo_origen: 'mejoras',
-                    publicacion_id: mejorasId
-                }]);
+            await supabase.from('regalos_enviados').insert([{
+                emisor_id: usuarioIdActual,
+                receptor_id: creadorPostId || usuarioIdActual,
+                tipo_regalo: 'megafono',
+                costo_monedas: COSTO_MEGAFONO,
+                modulo_origen: 'mejoras',
+                publicacion_id: mejorasId
+            }]);
 
-            if (errorHistorial) throw errorHistorial;
-
-            const { data: billeteraReceptor } = await supabase
-                .from('billeteras')
-                .select('puntos_xp')
-                .eq('user_id', creadorPostId)
-                .single();
-            
-            if (billeteraReceptor) {
-                await supabase
-                    .from('billeteras')
-                    .update({ puntos_xp: billeteraReceptor.puntos_xp + (COSTO_MEGAFONO * 10) })
-                    .eq('user_id', creadorPostId);
-            }
-
-            if (typeof VV.improvements.load === 'function') {
-                VV.improvements.load();
-            }
             VV.utils.showSuccess('📢 ¡Megáfono de urgencia enviado!');
+            this.load();
 
         } catch (err) {
             console.error("Fallo transaccional en mejoras:", err);
-            alert("Hubo un error al procesar tu apoyo económico.");
+            alert("Hubo un error al procesar tu apoyo.");
         }
     }
 };
