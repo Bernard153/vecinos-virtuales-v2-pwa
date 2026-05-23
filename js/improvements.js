@@ -1,5 +1,5 @@
 // ============================================================
-// MÓDULO IMPROVEMENTS COMPLETO Y CORREGIDO CON COFRE DE ESTIMULOS
+// MÓDULO IMPROVEMENTS COMPLETO - PARTE A
 // ============================================================
 
 VV.improvements = {
@@ -24,7 +24,6 @@ VV.improvements = {
             `;
         }
 
-        // Unimos de forma armónica tu botón clásico y el nuevo megáfono
         return `
             <div style="display: flex; align-items: center; gap: 0.5rem;">
                 ${botonVotoClasico}
@@ -78,7 +77,6 @@ VV.improvements = {
             alert('Error al votar. Intenta nuevamente.');
         }
     },
-    
     // Marcar mejora como completada (solo moderadores y admins)
     markAsCompleted(improvementId) {
         if (!VV.utils.canModerate()) {
@@ -158,7 +156,6 @@ VV.improvements = {
         VV.improvements.load();
         VV.utils.showSuccess('Mejora marcada como realizada');
     },
-    
     // Ver foto en tamaño completo
     viewPhoto(photoUrl) {
         let overlay = document.getElementById('photo-viewer-overlay');
@@ -186,7 +183,7 @@ VV.improvements = {
         };
     },
 
-    // 📢 ENVIAR MEGÁFONO CON MONEDAS REALES - NUEVA INNOVACIÓN FIJADA
+    // 📢 ENVIAR MEGÁFONO CON MONEDAS REALES - NUEVA INNOVACIÓN
     async abrirCofreMejoras(mejorasId, creadorPostId, elementoBoton) {
         try {
             if (!VV.data.user || !VV.data.user.id) {
@@ -210,7 +207,7 @@ VV.improvements = {
             const COSTO_MEGAFONO = 5;
 
             if (billetera.saldo_monedas < COSTO_MEGAFONO) {
-                alert(`Saldo insuficiente. Necesitas 🪙 ${COSTO_MEGAFONO} VecinoCoins para enviar un Megáfono.`);
+                alert(`Saldo insuficiente. Necesitas 1 Megáfono (🪙 ${COSTO_MEGAFONO}) para apoyar este reclamo.`);
                 return;
             }
 
@@ -229,4 +226,38 @@ VV.improvements = {
                 .from('regalos_enviados')
                 .insert([{
                     emisor_id: usuarioIdActual,
-Usa el código con precaución.receptor_id: creadorPostId,tipo_regalo: 'megafono',costo_monedas: COSTO_MEGAFONO,modulo_origen: 'mejoras',publicacion_id: mejorasId}]);if (errorHistorial) throw errorHistorial;const { data: billeteraReceptor } = await supabase.from('billeteras').select('puntos_xp').eq('user_id', creadorPostId).single();if (billeteraReceptor) {await supabase.from('billeteras').update({ puntos_xp: billeteraReceptor.puntos_xp + (COSTO_MEGAFONO * 10) }).eq('user_id', creadorPostId);}VV.utils.showSuccess('📢 ¡Megáfono de urgencia enviado!');const contenedor = document.createElement('div');contenedor.innerText = '📢';contenedor.style.cssText = 'position: fixed; font-size: 3rem; pointer-events: none; z-index: 9999; left: ' + elementoBoton.getBoundingClientRect().left + 'px; top: ' + elementoBoton.getBoundingClientRect().top + 'px; transition: all 1.5s ease-out; opacity: 1;';document.body.appendChild(contenedor);setTimeout(() => {contenedor.style.transform = 'translateY(-150px) scale(1.5)';contenedor.style.opacity = '0';}, 50);setTimeout(() => { contenedor.remove(); }, 1500);if (typeof VV.improvements.load === 'function') {VV.improvements.load();}} catch (err) {console.error("Fallo transaccional en mejoras:", err);alert("Hubo un error al procesar tu apoyo económico.");}}};console.log('✅ Módulo IMPROVEMENTS cargado');
+                    receptor_id: creadorPostId,
+                    tipo_regalo: 'megafono',
+                    costo_monedas: COSTO_MEGAFONO,
+                    modulo_origen: 'mejoras',
+                    publicacion_id: mejorasId
+                }]);
+
+            if (errorHistorial) throw errorHistorial;
+
+            const { data: billeteraReceptor } = await supabase
+                .from('billeteras')
+                .select('puntos_xp')
+                .eq('user_id', creadorPostId)
+                .single();
+            
+            if (billeteraReceptor) {
+                await supabase
+                    .from('billeteras')
+                    .update({ puntos_xp: billeteraReceptor.puntos_xp + (COSTO_MEGAFONO * 10) })
+                    .eq('user_id', creadorPostId);
+            }
+
+            if (typeof VV.improvements.load === 'function') {
+                VV.improvements.load();
+            }
+            VV.utils.showSuccess('📢 ¡Megáfono de urgencia enviado!');
+
+        } catch (err) {
+            console.error("Fallo transaccional en mejoras:", err);
+            alert("Hubo un error al procesar tu apoyo económico.");
+        }
+    }
+};
+
+console.log('✅ Módulo IMPROVEMENTS cargado correctamente');
