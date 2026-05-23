@@ -28,59 +28,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // 3. Temporizador de arranque con protecciones individuales
-    setTimeout(async () => {
-        console.log('⚡ Procesando engranajes de arranque...');
-        
-        // Ejecutamos el encendido visual tradicional de tu app
-        try {
-            if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.startApp === 'function') {
+        setTimeout(async () => {
+        if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.checkExistingUser === 'function') {
+            const hasSession = await VV.auth.checkExistingUser();
+            
+            if (hasSession) {
+                // CASO A: USUARIO REGISTRADO
                 VV.auth.startApp();
-                console.log('✅ VV.auth.startApp ejecutado.');
-            }
-        } catch (e) {
-            console.error('Fallo controlado en startApp:', e);
-        }
-
-        // Activamos módulos secundarios si están disponibles
-        try {
-            if (VV.utils && typeof VV.utils.activarFolleto === 'function') {
-                VV.utils.activarFolleto();
-            }
-        } catch (e) { console.error('Módulo folleto omitido:', e); }
-
-        try {
-            if (VV.geo && typeof VV.geo.init === 'function') {
-                await VV.geo.init();
-                if (typeof VV.geo.updateLocationUI === 'function') {
+                if (VV.utils && typeof VV.utils.activarFolleto === 'function') { VV.utils.activarFolleto(); }
+                if (VV.geo && typeof VV.geo.init === 'function') {
+                    await VV.geo.init();
                     VV.geo.updateLocationUI();
                 }
+            } else {
+                // CASO B: VECINO INVITADO ANÓNIMO
+                if (VV.utils && typeof VV.utils.showScreen === 'function') {
+                    VV.utils.showScreen('location-screen');
+                }
+                if (VV.auth && typeof VV.auth.requestGeolocation === 'function') {
+                    VV.auth.requestGeolocation();
+                }
             }
-        } catch (e) { console.error('Módulo geolocalización omitido de forma segura:', e); }
 
-        // 🌟 INNOVACIÓN: Forzamos el encendido del Carrusel Superior SÍ O SÍ
-        try {
+            // 🌟 ORDEN INDEPENDIENTE: El carrusel se enciende SÍ O SÍ para registrados e invitados
             if (typeof VV.featured !== 'undefined' && typeof VV.featured.renderNovedadesCarrusel === 'function') {
                 VV.featured.renderNovedadesCarrusel();
-                console.log('🌟 Carrusel superior renderizado con éxito.');
-            } else {
-                console.warn('⚠️ El módulo VV.featured o la función renderNovedadesCarrusel no están listos en memoria.');
             }
-        } catch (e) {
-            console.error('Error crítico al dibujar el carrusel de novedades:', e);
         }
-
-        // Forzamos el apagado del loading screen por si se quedó trabado
-        try {
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-                loadingScreen.style.display = 'none';
-                loadingScreen.classList.remove('active');
-                console.log('🛡️ Pantalla de carga retirada por la fuerza.');
-            }
-        } catch (e) { console.error('No se pudo remover el elemento loading-screen:', e); }
-
-    }, 1000);
-    
+    }, 1500);   
     // 4. Control de navegación del menú inferior
     document.addEventListener('click', function(e) {
         try {
