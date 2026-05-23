@@ -1,5 +1,5 @@
 // ============================================================
-// MODULO REAL REPARADO: ACCESO FLEXIBLE E INTELIGENCIA OFFLINE
+// MODULO REAL: ACCESO FLEXIBLE E INTEGRACIÓN DE BARRIO INVITADO
 // ============================================================
 
 const BARRIOS_RESPALDO_LOCAL = [
@@ -28,10 +28,30 @@ async function evaluarAccesoVecino() {
             const { data: { session } } = await supabase.auth.getSession();
 
             if (!session) {
-                console.log("👤 Vecino navegando en modo 'Invitado'. Acceso concedido.");
-                if (typeof activarGeolocalizacionInvitado === 'function') {
-                    activarGeolocalizacionInvitado();
+                console.log("👤 Vecino navegando en modo 'Invitado'. Sincronizando entorno...");
+                
+                // INYECTAMOS UN USUARIO SIMULADO PARA ENGAÑAR A TU CORE BASE
+                if (!VV.data.user) {
+                    VV.data.user = {
+                        id: "anonimo-invitado-pwa",
+                        name: "Vecino Invitado",
+                        role: "vecino",
+                        neighborhood: "Barrio San Martín", // 🌟 Tu barrio base de pruebas
+                        home_neighborhood: "Barrio San Martín",
+                        current_neighborhood: "Barrio San Martín"
+                    };
                 }
+                
+                // Forzamos la asignación del barrio global
+                VV.data.neighborhood = "Barrio San Martín";
+
+                // Le ordenamos a tu base de datos que descargue los productos y baches de este barrio
+                if (typeof VV.data.loadFromSupabase === 'function') {
+                    await VV.data.loadFromSupabase();
+                }
+
+                console.log("✅ Entorno de Invitado sincronizado con: Barrio San Martín");
+
             } else {
                 console.log("🔑 Vecino autenticado detectado. ID:", session.user.id);
             }
@@ -41,10 +61,9 @@ async function evaluarAccesoVecino() {
     }
 }
 
-// Escuchadores apuntando correctamente a la función del sistema
 window.addEventListener('online', evaluarAccesoVecino);
 window.addEventListener('offline', evaluarAccesoVecino);
 
 document.addEventListener('DOMContentLoaded', evaluarAccesoVecino);
 
-console.log('✅ Módulo ACCESO-FLEXIBLE cargado de manera óptima sin errores de cierre');
+console.log('✅ Módulo ACCESO-FLEXIBLE integrado con motor de sincronización de barrios');
