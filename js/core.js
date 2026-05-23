@@ -1,4 +1,7 @@
-// ========== VECINOS VIRTUALES - MÓDULO CORE (CORREGIDO) ==========
+// ============================================================
+// VECINOS VIRTUALES - MÓDULO CORE REPARADO PARA ACCESOS DIRECTOS
+// ============================================================
+
 const VV = {
     data: {
         user: null,
@@ -47,7 +50,6 @@ const VV = {
     },
     
     utils: {
-        // FUNCIÓN CRÍTICA RESTAURADA: Verifica permisos para Mejoras, Cultura y Servicios
         canModerate() {
             try {
                 const user = VV.data.user || JSON.parse(localStorage.getItem('vv_user_session'));
@@ -66,7 +68,7 @@ const VV = {
             const folletoCont = document.getElementById('folleto-container');
             if (folletoCont) {
                 folletoCont.classList.remove('active');
-                folletoCont.style.display = 'none'; // Limpia la pantalla gigante
+                folletoCont.style.display = 'none';
             }
 
             if (addToHistory && history.pushState) {
@@ -74,9 +76,16 @@ const VV = {
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
-            document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
-            const menuItem = document.querySelector(`[data-section="${sectionId}"]`);
-            if (menuItem) menuItem.classList.add('active');
+            // 🛡️ RED DE SEGURIDAD PROTECTORA EN LA NAVEGACIÓN
+            try {
+                document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+                const menuItem = document.querySelector(`[data-section="${sectionId}"]`);
+                if (menuItem) {
+                    menuItem.classList.add('active');
+                }
+            } catch (err) {
+                console.log("Aviso de menú: Navegando mediante acceso directo externo.");
+            }
             
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
@@ -90,7 +99,6 @@ const VV = {
             }
             
             try {
-                // Ejecutamos la carga de cada módulo
                 if (sectionId === 'marketplace' && VV.marketplace) VV.marketplace.load();
                 if (sectionId === 'services' && VV.services) VV.services.load();
                 if (sectionId === 'improvements' && VV.improvements) VV.improvements.load();
@@ -149,5 +157,5 @@ const VV = {
     } 
 };
 
-// Exportamos para que sea global
 window.VV = VV;
+console.log('✅ Módulo CORE unificado e indestructible cargado con éxito');
