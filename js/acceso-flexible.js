@@ -1,6 +1,5 @@
-```javascript
 // ============================================================
-// MODULO REAL CORREGIDO: ACCESO FLEXIBLE E INTELIGENCIA OFFLINE
+// MODULO REAL REPARADO: ACCESO FLEXIBLE E INTELIGENCIA OFFLINE
 // ============================================================
 
 const BARRIOS_RESPALDO_LOCAL = [
@@ -11,14 +10,16 @@ const BARRIOS_RESPALDO_LOCAL = [
 
 async function evaluarAccesoVecino() {
     if (!navigator.onLine) {
-        console.log("⚠️ Modo Fuera de Línea Activo.");
-        navigator.geolocation.getCurrentPosition((position) => {
-            const miLat = position.coords.latitude;
-            const miLng = position.coords.longitude;
-            if (typeof inicializarAppOffline === 'function') {
-                inicializarAppOffline(miLat, miLng, BARRIOS_RESPALDO_LOCAL);
-            }
-        });
+        console.log("⚠️ Modo Fuera de Línea Activo de manera automática.");
+        if (typeof navigator.geolocation !== 'undefined') {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const miLat = position.coords.latitude;
+                const miLng = position.coords.longitude;
+                if (typeof inicializarAppOffline === 'function') {
+                    inicializarAppOffline(miLat, miLng, BARRIOS_RESPALDO_LOCAL);
+                }
+            });
+        }
         return;
     }
 
@@ -27,7 +28,7 @@ async function evaluarAccesoVecino() {
             const { data: { session } } = await supabase.auth.getSession();
 
             if (!session) {
-                console.log("👤 Vecino navegando en modo 'Invitado'.");
+                console.log("👤 Vecino navegando en modo 'Invitado'. Acceso concedido.");
                 if (typeof activarGeolocalizacionInvitado === 'function') {
                     activarGeolocalizacionInvitado();
                 }
@@ -40,8 +41,10 @@ async function evaluarAccesoVecino() {
     }
 }
 
-// Escuchadores corregidos apuntando a la función real
+// Escuchadores apuntando correctamente a la función del sistema
 window.addEventListener('online', evaluarAccesoVecino);
 window.addEventListener('offline', evaluarAccesoVecino);
 
 document.addEventListener('DOMContentLoaded', evaluarAccesoVecino);
+
+console.log('✅ Módulo ACCESO-FLEXIBLE cargado de manera óptima sin errores de cierre');
