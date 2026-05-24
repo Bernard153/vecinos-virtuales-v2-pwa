@@ -97,7 +97,12 @@ const VV = {
                 sectionEl.classList.add('active');
                 sectionEl.style.display = 'block';
             }
-            
+            // 🌟 NUEVA RED DE SEGURIDAD: Si el vecino entra al dashboard, forzamos el carrusel siempre
+            if (sectionId === 'dashboard' || sectionId === '') {
+                if (typeof VV !== 'undefined' && VV.featured && typeof VV.featured.renderNovedadesCarrusel === 'function') {
+                    VV.featured.renderNovedadesCarrusel();
+                }
+            }
             try {
                 if (sectionId === 'marketplace' && VV.marketplace) VV.marketplace.load();
                 if (sectionId === 'services' && VV.services) VV.services.load();
