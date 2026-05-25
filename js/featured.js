@@ -33,7 +33,8 @@ VV.featured = {
                     <div class="form-group" style="display: flex; flex-direction: column; gap: 0.25rem;">
                         <label style="font-size: 0.75rem; font-weight: bold; color: #4b5563;">1. Selecciona tu producto comercial *</label>
                         <select id="featured-product" required style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; background: #f9fafb;">
-                            <option value="demo">Producto Demo de Muestra - \$1500</option>
+                            <option value="">-- Elegir de mis publicaciones --</option>
+                            ${userProducts.map(p => `<option value="${p.id}">${p.product || p.title || 'Producto'} - $${p.price || '0'}</option>`).join('')}
                         </select>
                     </div>
 
