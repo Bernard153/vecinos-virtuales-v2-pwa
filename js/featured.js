@@ -8,6 +8,12 @@ if (typeof VV === 'undefined') {
 
 VV.featured = {
     requestFeatured() {
+        // 🔄 MOTOR INTELIGENTE: Filtra por tus productos; si no tienes, carga el almacén general de Lomas de Tafí
+        let userProducts = VV.data.products.filter(p => p.seller_id === VV.data.user?.id || p.userId === VV.data.user?.id);
+        if (userProducts.length === 0 && VV.data.products.length > 0) {
+            userProducts = VV.data.products;
+        }
+
         let overlay = document.getElementById('featured-request-overlay');
         if (!overlay) {
             overlay = document.createElement('div');
