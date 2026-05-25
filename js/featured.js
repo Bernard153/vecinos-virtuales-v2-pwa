@@ -94,8 +94,12 @@ VV.featured = {
     },
     renderNovedadesCarrusel() {
         const contenedorDashboard = document.getElementById('featured-container') || document.body;
-        if (document.getElementById('carrusel-novedades-superior')) return;
-
+        
+        // 🔄 LIMPIEZA ACTIVA: Removemos el carrusel viejo si existe para redibujarlo con el nuevo contexto de usuario
+        const carruselExistente = document.getElementById('carrusel-novedades-superior');
+        if (carruselExistente) {
+            carruselExistente.remove();
+        }
         const seccionNovedades = document.createElement('section');
         seccionNovedades.id = 'carrusel-novedades-superior';
         seccionNovedades.style.cssText = 'margin-bottom: 1.5rem; width: 100%; overflow: hidden; padding: 0.5rem 0; font-family: sans-serif;';
