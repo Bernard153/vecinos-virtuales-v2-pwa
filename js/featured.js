@@ -158,3 +158,6 @@ VV.featured = {
 };
 
 console.log('✅ Módulo FEATURED reparado al 100% sin errores de comillas');
+// 🔗 ENLACE DE COMPATIBILIDAD: Mapea la función antigua al nuevo motor del carrusel
+VV.featured.loadFeaturedOffers = function() { if (typeof this.renderNovedadesCarrusel === 'function') this.renderNovedadesCarrusel(); };
+
