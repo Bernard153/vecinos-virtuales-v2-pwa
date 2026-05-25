@@ -1,5 +1,5 @@
 // ============================================================
-// CORE PRINCIPAL DE LA APP - MOTOR DE ARRANQUE BLINDADO
+// CORE PRINCIPAL DE LA APP - MOTOR DE ARRANQUE BLINDADO V2
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -27,14 +27,43 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('No se pudo invocar showScreen inicial:', e);
     }
     
-    // 3. Temporizador de arranque con protecciones individuales
-        setTimeout(async () => {
-        if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.checkExistingUser === 'function') {
-            const hasSession = await VV.auth.checkExistingUser();
-            
+    // 3. Temporizador de arranque con protecciones individuales y puente de compatibilidad
+    setTimeout(async () => {
+        let hasSession = false;
+        
+        // PUENTE INTELIGENTE: Busca la función en el objeto VV o de forma global en auth-supabase
+        try {
+            if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.checkExistingUser === 'function') {
+                hasSession = await VV.auth.checkExistingUser();
+            } else if (typeof window.checkExistingUser === 'function') {
+                hasSession = await window.checkExistingUser();
+            } else if (typeof checkExistingUser === 'function') {
+                hasSession = await checkExistingUser();
+            } else {
+                console.log('⚠️ No se detectó función de sesión. Forzando ingreso como invitado.');
+            }
+        } catch (errSession) {
+            console.error('Error al comprobar sesión existente:', errSession);
+        }
+        
+        // PROCESAMIENTO DE ACCESO
+        try {
             if (hasSession) {
-                // CASO A: USUARIO REGISTRADO
-                VV.auth.startApp();
+                // CASO A: USUARIO REGISTRADO / DEMO LOGUEADO
+                if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.startApp === 'function') {
+                    VV.auth.startApp();
+                } else if (typeof window.startApp === 'function') {
+                    window.startApp();
+                } else if (typeof startApp === 'function') {
+                    startApp();
+                } else {
+                    // Red de seguridad si falla startApp: enviamos directo al dashboard
+                    if (typeof VV !== 'undefined' && VV.utils && typeof VV.utils.showScreen === 'function') {
+                        VV.utils.showScreen('dashboard-screen');
+                        if (typeof VV.utils.showSection === 'function') VV.utils.showSection('dashboard');
+                    }
+                }
+
                 if (VV.utils && typeof VV.utils.activarFolleto === 'function') { VV.utils.activarFolleto(); }
                 if (VV.geo && typeof VV.geo.init === 'function') {
                     await VV.geo.init();
@@ -42,20 +71,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 // CASO B: VECINO INVITADO ANÓNIMO
-                if (VV.utils && typeof VV.utils.showScreen === 'function') {
+                if (typeof VV !== 'undefined' && VV.utils && typeof VV.utils.showScreen === 'function') {
                     VV.utils.showScreen('location-screen');
                 }
-                if (VV.auth && typeof VV.auth.requestGeolocation === 'function') {
+                
+                if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.requestGeolocation === 'function') {
                     VV.auth.requestGeolocation();
+                } else if (typeof window.requestGeolocation === 'function') {
+                    window.requestGeolocation();
                 }
             }
+        } catch (errRoute) {
+            console.error('Error en el enrutamiento de arranque:', errRoute);
+            // Red de seguridad extrema: romper el spinner y mostrar pantalla de localización
+            const loadingEl = document.getElementById('loading-screen');
+            if (loadingEl) loadingEl.classList.remove('active');
+            const locEl = document.getElementById('location-screen');
+            if (locEl) locEl.classList.add('active');
+        }
 
-            // 🌟 ORDEN INDEPENDIENTE: El carrusel se enciende SÍ O SÍ para registrados e invitados
-            if (typeof VV.featured !== 'undefined' && typeof VV.featured.renderNovedadesCarrusel === 'function') {
-                VV.featured.renderNovedadesCarrusel();
-            }
+        // 🌟 ORDEN INDEPENDIENTE: El carrusel se enciende SÍ O SÍ para registrados e invitados
+        if (typeof VV !== 'undefined' && typeof VV.featured !== 'undefined' && typeof VV.featured.renderNovedadesCarrusel === 'function') {
+            VV.featured.renderNovedadesCarrusel();
         }
     }, 1500);   
+
     // 4. Control de navegación del menú inferior
     document.addEventListener('click', function(e) {
         try {
@@ -73,4 +113,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-console.log('✅ Módulo APP blindado cargado correctamente');
+console.log('✅ Módulo APP blindado cargado correctamente con puente dual');
