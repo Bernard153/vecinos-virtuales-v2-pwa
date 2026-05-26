@@ -52,11 +52,15 @@ self.addEventListener('activate', event => {
   );
   return self.clients.claim();
 });
-
 // Interceptar peticiones
 self.addEventListener('fetch', event => {
   // Ignorar peticiones a Supabase (siempre ir a la red)
   if (event.request.url.includes('supabase.co')) {
+    return;
+  }
+
+  // 🚀 LIBERTAD MULTIMEDIA: Ignorar peticiones a Google y YouTube (ir directo a la red sin alterar la URL)
+  if (event.request.url.includes('googleapis.com') || event.request.url.includes('youtube.com') || event.request.url.includes('youtu.be')) {
     return;
   }
 
