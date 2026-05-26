@@ -140,25 +140,22 @@
             
             contenedor.innerHTML = htmlResultados;
         }
-
-        
-        // 🎯 EMBED MAESTRO NATIVO: Evita por completo los conflictos de constructores
+        // 🚀 DISPARADOR LIBRE UNIVERSAL: Salta los bloqueos de red abriendo la pista nativa de YouTube
         function cargarVideoOficial(videoId, tituloCancion) {
-            const wrapper = document.getElementById('wrapper-video');
-            const iframe = document.getElementById('player-iframe');
             const consola = document.getElementById('studio-console');
             const tituloConsole = document.getElementById('console-title');
             
-            if (wrapper) wrapper.style.display = 'block';
+            // Encendemos la consola de grabación de voz en tu pantalla de inmediato
             if (consola) consola.style.display = 'block';
             if (tituloConsole) tituloConsole.innerText = "🎙️ Grabando para: " + tituloCancion;
             
-            // Forzamos el enlace embebido tradicional con separadores explícitos
-            iframe.src = "https://youtube.com" + videoId + "?autoplay=1&controls=1&modestbranding=1&rel=0";
+            // 🎯 JUGADA MAESTRA: Abre la pista oficial de Karaoke en una pestaña externa o en la app de YouTube del celular
+            const urlOficialYouTube = "https://youtube.com " + videoId;
+            window.open(urlOficialYouTube, '_blank');
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
+        
         let grabadoraMultimedia = null;
         let fragmentosAudio = [];
         let estaGrabando = false;
