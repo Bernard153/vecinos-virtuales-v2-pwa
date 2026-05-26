@@ -115,9 +115,8 @@
                 document.head.appendChild(tag);
             }
         })();
-
-                // ============================================================
-        // LÓGICA DE BÚSQUEDA INTELIGENTE CON URL CORREGIDA Y CORRECCIÓN DE MOTOR
+        // ============================================================
+        // LÓGICA DE BÚSQUEDA INTELIGENTE CORREGIDA A NIVEL DE INGENIERÍA
         // ============================================================
         function buscarCancion() {
             const input = document.getElementById('search-input');
@@ -148,10 +147,10 @@
                     renderizarResultados(CATALOGO_LOCAL);
                 }
             } else {
-                // 🚀 URL LIMPIA Y CORREGIDA PARA GOOGLE DATA API V3
-                const urlGoogle = "https://googleapis.com" + encodeURIComponent(consulta + " karaoke") + "&type=video&key=" + YOUTUBE_API_KEY;
+                // 🚀 CADENA ESTÁTICA CORREGIDA CON MÁXIMA PRECISIÓN PARA GOOGLE
+                const urlLimpia = "https://googleapis.com" + encodeURIComponent(consulta + " karaoke") + "&key=" + YOUTUBE_API_KEY;
                 
-                fetch(urlGoogle)
+                fetch(urlLimpia)
                     .then(res => res.json())
                     .then(data => {
                         if (data.items && data.items.length > 0) {
@@ -186,128 +185,6 @@
             `).join('');
         }
 
-        // 🛡️ BLINDAJE EXTREMO: Si el objeto YT no existe en la ventana, creamos la estructura base para que no rompa
-        if (typeof window.YT === 'undefined') {
-            window.YT = { Player: null };
-        }
-
-        // ============================================================
-        // INYECCIÓN DE VIDEO Y CONTROL REPRODUCTOR + DESPLIEGUE CONSOLA
-        // ============================================================
-        function cargarVideo(videoId, tituloCancion) {
-            const wrapper = document.getElementById('wrapper-video');
-            const consola = document.getElementById('studio-console');
-            const tituloConsole = document.getElementById('console-title');
-            
-            wrapper.style.display = 'block';
-            consola.style.display = 'block';
-            tituloConsole.innerText = `🎙️ Grabando para: ${tituloCancion}`;
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            if (ytPlayer) {
-                ytPlayer.loadVideoById(videoId);
-            } else {
-                ytPlayer = new YT.Player('player-iframe', {
-                    videoId: videoId,
-                    playerVars: {
-                        'autoplay': 1,
-                        'modestbranding': 1,
-                        'rel': 0
-                    },
-                    events: {
-                        'onReady': (e) => e.target.playVideo()
-                    }
-                });
-            }
-        }
-
-        // ============================================================
-        // MOTOR DE GRABACIÓN MULTIMEDIA NATIVA (MEDIARECORDER)
-        // ============================================================
-        let grabadoraMultimedia = null;
-        let fragmentosAudio = [];
-        let estaGrabando = false;
-
-        async function toggleGrabacion() {
-            const btn = document.getElementById('rec-btn');
-            const statusText = document.getElementById('rec-status');
-            const eqLoader = document.getElementById('eq-loader');
-            const preview = document.getElementById('audio-preview');
-            const linkDescarga = document.getElementById('download-link');
-
-            if (!estaGrabando) {
-                // SOLICITAR ACCESO AL MICRÓFONO FISICO DEL VECINO
-                try {
-                    const flujoMicrofono = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    grabadoraMultimedia = new MediaRecorder(flujoMicrofono);
-                    fragmentosAudio = [];
-
-                    grabadoraMultimedia.ondataavailable = (e) => {
-                        if (e.data.size > 0) fragmentosAudio.push(e.data);
-                    };
-
-                    grabadoraMultimedia.onstop = () => {
-                        const blobAudio = new Blob(fragmentosAudio, { type: 'audio/mp3' });
-                        const urlAudio = URL.createObjectURL(blobAudio);
-                        
-                        // Cargar el preview de reproducción del vecino
-                        preview.src = urlAudio;
-                        preview.style.display = 'block';
-
-                        // Configurar el botón de guardado local
-                        linkDescarga.href = urlAudio;
-                        linkDescarga.download = `Mi_Karaoke_LomasDeTafi_${Date.now()}.mp3`;
-                        linkDescarga.style.display = 'inline-flex';
-                        
-                        // Apagar las luces del micrófono físico para privacidad del usuario
-                        flujoMicrofono.getTracks().forEach(track => track.stop());
-                    };
-
-                    // Arrancar captura y encender interfaces animadas
-                    grabadoraMultimedia.start();
-                    estaGrabando = true;
-                    btn.classList.add('recording');
-                    btn.innerHTML = '<i class="fas fa-stop"></i>';
-                    statusText.innerText = "🔴 GRABANDO TU VOZ... ¡Dale con todo!";
-                    statusText.style.color = "#ef4444";
-                    eqLoader.style.display = 'flex';
-                    
-                    preview.style.display = 'none';
-                    linkDescarga.style.display = 'none';
-
-                } catch (errMic) {
-                    console.error("Acceso al micrófono denegado:", errMic);
-                    alert("⚠️ Error comercial: Necesitamos permisos de micrófono para grabar tu voz en el estudio.");
-                }
-            } else {
-                // DETENER LA GRABACIÓN
-                if (grabadoraMultimedia && grabadoraMultimedia.state !== "inactive") {
-                    grabadoraMultimedia.stop();
-                }
-                estaGrabando = false;
-                btn.classList.remove('recording');
-                btn.innerHTML = '<i class="fas fa-microphone"></i>';
-                statusText.innerText = "✅ Grabación finalizada. Escucha o guarda tu canción abajo.";
-                statusText.style.color = "#22c55e";
-                eqLoader.style.display = 'none';
-            }
-        }
-
-        // ============================================================
-        // PUENTES GLOBALES GOOGLE YOUTUBE
-        // ============================================================
-        window.onYouTubeIframeAPIReady = function() {
-            motorSincronizado = true;
-            console.log("✅ Motor de reproducción de YouTube acoplado en el entorno global");
-        };
-
-        setTimeout(() => {
-            if (!motorSincronizado) {
-                motorSincronizado = true;
-                console.log("⚡ Red de seguridad: Forzando encendido del motor local para el catálogo.");
-            }
-        }, 2000);
     </script>
 </body>
 </html>
