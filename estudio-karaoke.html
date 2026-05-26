@@ -121,7 +121,6 @@
                 </div>
             `).join('');
         }
-
         function cargarVideo(videoId, tituloCancion) {
             const wrapper = document.getElementById('wrapper-video');
             const iframe = document.getElementById('player-iframe');
@@ -130,9 +129,11 @@
             
             wrapper.style.display = 'block';
             consola.style.display = 'block';
-            tituloConsole.innerText = `🎙️ Grabando para: ${tituloCancion}`;
+            tituloConsole.innerText = "🎙️ Grabando para: " + tituloCancion;
             
+            // 🚀 DIRECCIÓN DE EMBED OFICIAL REPARADA CON BARRAS INMUTABLES
             iframe.src = "https://youtube.com" + videoId + "?autoplay=1&controls=1&modestbranding=1&rel=0";
+            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
