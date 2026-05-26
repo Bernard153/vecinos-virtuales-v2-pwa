@@ -3,139 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudio de Karaoke Pro - Vecinos Virtuales</title>
+    <title>Estudio de Grabación Profesional - Vecinos Virtuales</title>
     <link href="https://cloudflare.com" rel="stylesheet">
     <style>
         body { font-family: sans-serif; background: #0f0c1b; color: white; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { width: 90%; max-width: 500px; padding: 1.5rem 0; text-align: center; }
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; }
         .btn-back { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.5rem 1rem; border-radius: 50px; text-decoration: none; font-size: 0.85rem; font-weight: bold; }
         .title { font-size: 1.3rem; margin: 0; font-weight: bold; color: #a855f7; display: flex; align-items: center; gap: 0.5rem; }
-        .search-box { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .search-box input { flex: 1; background: transparent; border: none; color: white; padding: 0.5rem; font-size: 0.9rem; outline: none; }
-        .search-box button { background: #a855f7; border: none; color: white; padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .studio-console { background: linear-gradient(145deg, #1e1b4b, #111827); border: 2px solid #a855f7; border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; display: none; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        .rec-btn { background: #ef4444; border: none; color: white; width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); transition: 0.2s; margin: 0 0.5rem; }
-        .rec-btn.recording { background: #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); animation: pulse 1.5s infinite; }
-        .audio-preview { width: 100%; margin-top: 1rem; border-radius: 8px; display: none; }
-        .download-link { display: inline-flex; align-items: center; gap: 0.5rem; background: #3b82f6; color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; margin-top: 0.75rem; display: none; }
-        .eq-loader { display: none; align-items: flex-end; justify-content: center; gap: 4px; height: 30px; margin: 0.75rem 0; }
-        .eq-bar { width: 4px; height: 5px; background: #a855f7; border-radius: 2px; }
+        .studio-console { background: linear-gradient(145deg, #1e1b4b, #111827); border: 2px solid #a855f7; border-radius: 20px; padding: 2rem; margin-top: 1rem; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        .rec-btn { background: #ef4444; border: none; color: white; width: 70px; height: 70px; border-radius: 50%; font-size: 1.8rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); transition: 0.2s; margin: 1rem 0; }
+        .rec-btn.recording { background: #22c55e; box-shadow: 0 0 25px rgba(34, 197, 94, 0.6); animation: pulse 1.5s infinite; }
+        .audio-preview { width: 100%; margin-top: 1.5rem; border-radius: 8px; display: none; }
+        .download-link { display: inline-flex; align-items: center; gap: 0.5rem; background: #3b82f6; color: white; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 8px; font-size: 0.9rem; font-weight: bold; margin-top: 1rem; display: none; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+        .eq-loader { display: none; align-items: flex-end; justify-content: center; gap: 5px; height: 40px; margin: 1rem 0; }
+        .eq-bar { width: 5px; height: 8px; background: #a855f7; border-radius: 3px; }
         .recording .eq-bar { animation: bounce 0.8s ease-in-out infinite alternate; }
         .recording .eq-bar:nth-child(2) { animation-delay: 0.2s; background: #c084fc; }
         .recording .eq-bar:nth-child(3) { animation-delay: 0.4s; background: #e9d5ff; }
         .recording .eq-bar:nth-child(4) { animation-delay: 0.1s; background: #c084fc; }
-        @keyframes bounce { 100% { height: 30px; } }
+        @keyframes bounce { 100% { height: 40px; } }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .results-list { display: flex; flex-direction: column; gap: 0.75rem; text-align: left; }
-        .track-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 12px; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: 0.2s; }
-        .track-item:hover { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; }
-        .track-thumb { width: 60px; aspect-ratio: 16/9; background: #221a36; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .track-info { flex: 1; }
-        .track-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 2px; }
-        .track-genre { font-size: 0.7rem; color: #a855f7; text-transform: uppercase; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <a href="index.html#dashboard" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
-            <h2 class="title">🎤 Estudio Karaoke Pro</h2>
-            <div style="font-size: 1.2rem;">👨‍🎤</div>
+            <a href="index.html#dashboard" class="btn-back"><i class="fas fa-arrow-left"></i> Panel de Inicio</a>
+            <h2 class="title">🎤 Estudio de Grabación</h2>
+            <div style="font-size: 1.2rem;">🎙️</div>
         </div>
-
-        <div class="search-box">
-            <input type="text" id="search-input" placeholder="Buscar artista, rock, folclore o cumbia...">
-            <button onclick="ejecutarBusquedaOficial()">Buscar</button>
-        </div>
-
-        <div id="studio-console" class="studio-console">
-            <div id="console-title" style="font-size: 0.9rem; font-weight: bold; color: #e9d5ff; margin-bottom: 0.5rem;">Estudio de Grabación Listo</div>
+        <!-- CONSOLA CENTRAL SANADA AL 100% -->
+        <div class="studio-console" style="display: block;">
+            <div style="font-size: 1.1rem; font-weight: bold; color: #e9d5ff; margin-bottom: 0.25rem;">¡Estudio de Voz Encendido!</div>
+            <p style="font-size: 0.8rem; color: #9ca3af; margin: 0 0 1.5rem 0; line-height: 1.4;">
+                La pista de música está reproduciéndose en tu otra pestaña. Ponte los auriculares, presiona el botón rojo y graba tu interpretación.
+            </p>
+            
             <div id="eq-loader" class="eq-loader">
                 <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
             </div>
-            <button id="rec-btn" class="rec-btn" onclick="toggleGrabacion()"><i class="fas fa-microphone"></i></button>
-            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af;" id="rec-status">Haz clic para empezar a grabar tu voz</div>
-            <audio id="audio-preview" class="audio-preview" controls></audio>
-            <a id="download-link" class="download-link" href="#"><i class="fas fa-download"></i> Guardar mi Canción 💾</a>
-        </div>
 
-        <div id="results" class="results-list"></div>
+            <button id="rec-btn" class="rec-btn" onclick="toggleGrabacion()"><i class="fas fa-microphone"></i></button>
+            
+            <div style="margin-top: 0.5rem; font-size: 0.8rem; font-weight: 600; color: #a855f7;" id="rec-status">Haz clic para comenzar a grabar tu voz</div>
+            
+            <audio id="audio-preview" class="audio-preview" controls></audio>
+            <br>
+            <a id="download-link" class="download-link" href="#"><i class="fas fa-download"></i> Guardar Mi Canción en la Memoria 💾</a>
+        </div>
     </div>
     <script>
-        const YOUTUBE_API_KEY = "aizasydqr7beo_3cu5ohbwkf6wmxzjxjllgrr-0"; 
-
-        const CATALOGO_LOCAL = [
-            { id: "XW5U8pWJqK4", title: "Soda Stereo - De Música Ligera (Karaoke)", genre: "rock" },
-            { id: "M7X9XyVfSgA", title: "Chaqueño Palavecino - Amor Salvaje (Karaoke)", genre: "folclore" },
-            { id: "3wVw86mI6N0", title: "Gilda - No me arrepiento de este amor (Karaoke)", genre: "cumbia" }
-        ];
-
-        function ejecutarBusquedaOficial() {
-            const input = document.getElementById('search-input');
-            const consulta = input.value.trim().toLowerCase();
-            const contenedorResultados = document.getElementById('results');
-
-            if (!consulta) return;
-            contenedorResultados.innerHTML = "";
-
-            if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.trim() === "") {
-                renderizarResultados(CATALOGO_LOCAL);
-            } else {
-                const urlGoogle = "https://googleapis.com" + encodeURIComponent(consulta + " karaoke") + "&key=" + YOUTUBE_API_KEY;
-                
-                fetch(urlGoogle)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.items && data.items.length > 0) {
-                            const formateadas = data.items.map(item => ({
-                                id: item.id.videoId,
-                                title: item.snippet.title,
-                                genre: "YouTube Live"
-                            }));
-                            renderizarResultados(formateadas);
-                        } else {
-                            renderizarResultados(CATALOGO_LOCAL);
-                        }
-                    })
-                    .catch(() => renderizarResultados(CATALOGO_LOCAL));
-            }
-        }
-        function renderizarResultados(lista) {
-            const contenedor = document.getElementById('results');
-            let htmlResultados = '';
-            
-            for (let i = 0; i < lista.length; i++) {
-                const track = lista[i];
-                const idVideo = track.id;
-                const tituloLimpio = track.title.replace(/'/g, "");
-                
-                // 🚀 CADENA MAESTRA: Evita iframes rotos forzando una pestaña externa directa que el SW no puede alterar
-                htmlResultados += '<div class="track-item" onclick="abrirPistaExterna(\'' + idVideo + '\', \'' + tituloLimpio + '\')">';
-                htmlResultados += '<div class="track-thumb">🎵</div>';
-                htmlResultados += '<div class="track-info">';
-                htmlResultados += '<div class="track-title">' + track.title + '</div>';
-                htmlResultados += '<div class="track-genre">' + track.genre + '</div>';
-                htmlResultados += '</div>';
-                htmlResultados += '<div style="color: #a855f7; font-size: 0.9rem;"><i class="fas fa-play"></i></div>';
-                htmlResultados += '</div>';
-            }
-            
-            contenedor.innerHTML = htmlResultados;
-        }
-
-        function abrirPistaExterna(videoId, tituloCancion) {
-            const consola = document.getElementById('studio-console');
-            const tituloConsole = document.getElementById('console-title');
-            
-            if (consola) consola.style.display = 'block';
-            if (tituloConsole) tituloConsole.innerText = "🎙️ Grabando para: " + tituloCancion;
-            
-            // Dirección explícita inmutable armada sin marcadores variables
-            const urlFinal = "https://youtube.com" + videoId;
-            window.open(urlFinal, '_blank');
-        }
-
         let grabadoraMultimedia = null;
         let fragmentosAudio = [];
         let estaGrabando = false;
@@ -163,7 +81,7 @@
                         preview.src = urlAudio;
                         preview.style.display = 'block';
                         linkDescarga.href = urlAudio;
-                        linkDescarga.download = "Mi_Karaoke_" + Date.now() + ".mp3";
+                        linkDescarga.download = "Mi_Grabacion_Lomas_" + Date.now() + ".mp3";
                         linkDescarga.style.display = 'inline-flex';
                         flujoMicrofono.getTracks().forEach(track => track.stop());
                     };
@@ -172,20 +90,20 @@
                     estaGrabando = true;
                     btn.classList.add('recording');
                     btn.innerHTML = '<i class="fas fa-stop"></i>';
-                    statusText.innerText = "🔴 GRABANDO TU VOZ... ¡Dale con todo!";
+                    statusText.innerText = "🔴 GRABANDO TU VOZ... ¡Canta con todo tu talento!";
                     statusText.style.color = "#ef4444";
                     eqLoader.style.display = 'flex';
                     preview.style.display = 'none';
                     linkDescarga.style.display = 'none';
                 } catch (err) {
-                    alert("⚠️ Error: Necesitamos permisos de micrófono en el estudio.");
+                    alert("⚠️ Error de Privacidad: Activa los permisos de micrófono para poder grabar en el estudio.");
                 }
             } else {
                 if (grabadoraMultimedia && grabadoraMultimedia.state !== "inactive") grabadoraMultimedia.stop();
                 estaGrabando = false;
                 btn.classList.remove('recording');
                 btn.innerHTML = '<i class="fas fa-microphone"></i>';
-                statusText.innerText = "✅ Grabación finalizada. Escucha tu canción abajo.";
+                statusText.innerText = "✅ Grabación finalizada. Escucha tu pista abajo.";
                 statusText.style.color = "#22c55e";
                 eqLoader.style.display = 'none';
             }
