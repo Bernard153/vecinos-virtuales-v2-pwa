@@ -92,21 +92,24 @@ VV.featured = {
         alert('¡Solicitud de Oferta Expandida procesada con éxito!');
         this.closeRequestForm();
     },
-    renderNovedadesCarrusel() {
-        const contenedorDashboard = document.getElementById('featured-container') || document.body;
-        
-        // 🔄 LIMPIEZA ACTIVA: Removemos el carrusel viejo si existe para redibujarlo con el nuevo contexto de usuario
+        renderNovedadesCarrusel() {
+        // 🎯 FIJACIÓN ESTRICTA: Forzamos que se cuelgue únicamente en el contenedor real del Dashboard de inicio
+        const contenedorDashboard = document.getElementById('dashboard');
+        if (!contenedorDashboard) return; // Si no estamos en el dashboard, nos retiramos inmediatamente para no invadir otros módulos
+
+        // 🔄 LIMPIEZA DE SEGURIDAD: Si ya existe el carrusel en esta pantalla, lo removemos para evitar duplicados
         const carruselExistente = document.getElementById('carrusel-novedades-superior');
         if (carruselExistente) {
             carruselExistente.remove();
         }
+
         const seccionNovedades = document.createElement('section');
         seccionNovedades.id = 'carrusel-novedades-superior';
-        seccionNovedades.style.cssText = 'margin-bottom: 1.5rem; width: 100%; overflow: hidden; padding: 0.5rem 0; font-family: sans-serif;';
+        seccionNovedades.style.cssText = 'margin: 1rem 0 1.5rem 0; width: 100%; overflow: hidden; padding: 0.5rem 0; font-family: sans-serif;';
 
-                let htmlCards = '';
+        let htmlCards = '';
         
-        // 🎤 CARD 1: KARAOKE (FORZADA UNIVERSAL PARA TODOS LOS VECINOS)
+        // 🎤 CARD 1: KARAOKE (FIJO Y UNIVERSAL)
         htmlCards += `
             <div style="background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%); color: white; min-width: 260px; width: 260px; border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                 <div style="display: flex; align-items: start; gap: 0.75rem;">
@@ -163,6 +166,7 @@ VV.featured = {
             </div>
         `;
 
+        // 🚀 INYECCIÓN AL PRINCIPIO: Lo metemos arriba de todo dentro del dashboard principal
         if (contenedorDashboard.firstChild) {
             contenedorDashboard.insertBefore(seccionNovedades, contenedorDashboard.firstChild);
         } else {
@@ -171,10 +175,13 @@ VV.featured = {
     }
 };
 
-console.log('✅ Módulo FEATURED reparado al 100% sin errores de comillas');
 // 🔗 ENLACE DE COMPATIBILIDAD: Mapea la función antigua al nuevo motor del carrusel
 VV.featured.loadFeaturedOffers = function() { if (typeof this.renderNovedadesCarrusel === 'function') this.renderNovedadesCarrusel(); };
+
 // 🚀 ENCENDIDO INMEDIATO: Fuerza el dibujado del carrusel en el Dashboard
 if (typeof VV !== 'undefined' && VV.featured && typeof VV.featured.renderNovedadesCarrusel === 'function') {
     VV.featured.renderNovedadesCarrusel();
 }
+
+console.log('✅ Módulo FEATURED reparado al 100% sin errores de comillas');
+
