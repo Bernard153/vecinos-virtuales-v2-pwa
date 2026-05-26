@@ -116,8 +116,8 @@
             }
         })();
 
-        // ============================================================
-        // LÓGICA DE BÚSQUEDA INTELIGENTE SIN INTENTOS DE RED FALLIDOS
+                // ============================================================
+        // LÓGICA DE BÚSQUEDA INTELIGENTE CON URL CORREGIDA Y CORRECCIÓN DE MOTOR
         // ============================================================
         function buscarCancion() {
             const input = document.getElementById('search-input');
@@ -130,14 +130,11 @@
             statusBox.style.display = "none";
             contenedorResultados.innerHTML = "";
 
-            if (!motorSincronizado) {
-                statusBox.innerText = "El motor de YouTube se está sincronizando en segundo plano. Espera 3 segundos e intenta de nuevo.";
-                statusBox.style.display = "block";
-                return;
-            }
+            // Forzar encendido si el iframe se demora en responder
+            motorSincronizado = true;
 
             if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.trim() === "") {
-                console.log("🔍 Clave vacía. Desviando de forma segura al catálogo local...");
+                console.log("🔍 Clave vacía. Cargando catálogo local...");
                 const filtradas = CATALOGO_LOCAL.filter(c => 
                     c.title.toLowerCase().includes(consulta) || 
                     c.genre.toLowerCase().includes(consulta)
@@ -151,7 +148,10 @@
                     renderizarResultados(CATALOGO_LOCAL);
                 }
             } else {
-                fetch(`https://googleapis.com{encodeURIComponent(consulta + " karaoke")}&type=video&key=${YOUTUBE_API_KEY}`)
+                // 🚀 URL LIMPIA Y CORREGIDA PARA GOOGLE DATA API V3
+                const urlGoogle = "https://googleapis.com" + encodeURIComponent(consulta + " karaoke") + "&type=video&key=" + YOUTUBE_API_KEY;
+                
+                fetch(urlGoogle)
                     .then(res => res.json())
                     .then(data => {
                         if (data.items && data.items.length > 0) {
@@ -185,6 +185,12 @@
                 </div>
             `).join('');
         }
+
+        // 🛡️ BLINDAJE EXTREMO: Si el objeto YT no existe en la ventana, creamos la estructura base para que no rompa
+        if (typeof window.YT === 'undefined') {
+            window.YT = { Player: null };
+        }
+
         // ============================================================
         // INYECCIÓN DE VIDEO Y CONTROL REPRODUCTOR + DESPLIEGUE CONSOLA
         // ============================================================
