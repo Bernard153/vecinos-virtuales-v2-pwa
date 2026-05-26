@@ -121,22 +121,22 @@
                 </div>
             `).join('');
         }
-        function cargarVideo(videoId, tituloCancion) {
+                function cargarVideo(videoId, tituloCancion) {
             const wrapper = document.getElementById('wrapper-video');
             const iframe = document.getElementById('player-iframe');
             const consola = document.getElementById('studio-console');
             const tituloConsole = document.getElementById('console-title');
             
-            wrapper.style.display = 'block';
-            consola.style.display = 'block';
-            tituloConsole.innerText = "🎙️ Grabando para: " + tituloCancion;
+            if (wrapper) wrapper.style.display = 'block';
+            if (consola) consola.style.display = 'block';
+            if (tituloConsole) tituloConsole.innerText = `🎙️ Grabando para: ${tituloCancion}`;
             
-            // 🚀 DIRECCIÓN DE EMBED OFICIAL REPARADA CON BARRAS INMUTABLES
-            iframe.src = "https://youtube.com" + videoId + "?autoplay=1&controls=1&modestbranding=1&rel=0";
+            // 🚀 INYECCIÓN LITERAL DIRECTA CON PARÁMETRO DE TIEMPO PARA DESTRUIR EL CACHÉ
+            const cacheBuster = Date.now();
+            iframe.src = `https://youtube.com{videoId}?autoplay=1&controls=1&modestbranding=1&rel=0&v=${cacheBuster}`;
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
         let grabadoraMultimedia = null;
         let fragmentosAudio = [];
         let estaGrabando = false;
