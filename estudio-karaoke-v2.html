@@ -33,27 +33,27 @@
             <h2 class="title">🎤 Estudio de Grabación</h2>
             <div style="font-size: 1.2rem;">🎙️</div>
         </div>
-        <!-- CONSOLA CENTRAL SANADA AL 100% -->
+
         <div class="studio-console" style="display: block;">
             <div style="font-size: 1.1rem; font-weight: bold; color: #e9d5ff; margin-bottom: 0.25rem;">¡Estudio de Voz Encendido!</div>
             <p style="font-size: 0.8rem; color: #9ca3af; margin: 0 0 1.5rem 0; line-height: 1.4;">
                 La pista de música está reproduciéndose en tu otra pestaña. Ponte los auriculares, presiona el botón rojo y graba tu interpretación.
             </p>
-            
             <div id="eq-loader" class="eq-loader">
                 <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
             </div>
-
             <button id="rec-btn" class="rec-btn" onclick="toggleGrabacion()"><i class="fas fa-microphone"></i></button>
-            
             <div style="margin-top: 0.5rem; font-size: 0.8rem; font-weight: 600; color: #a855f7;" id="rec-status">Haz clic para comenzar a grabar tu voz</div>
-            
             <audio id="audio-preview" class="audio-preview" controls></audio>
             <br>
             <a id="download-link" class="download-link" href="#"><i class="fas fa-download"></i> Guardar Mi Canción en la Memoria 💾</a>
         </div>
     </div>
+
     <script>
+        // 🔑 TU NUEVA LLAVE DE GOOGLE PROTEGIDA: Pégala aquí adentro reemplazando el texto de muestra
+        const YOUTUBE_API_KEY = "AIzaSyBV75vgH2KWvNgGn-OuNldrSHIignAkisA"; 
+
         let grabadoraMultimedia = null;
         let fragmentosAudio = [];
         let estaGrabando = false;
