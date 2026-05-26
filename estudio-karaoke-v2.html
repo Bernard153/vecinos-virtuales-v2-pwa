@@ -118,17 +118,18 @@
                     });
             }
         }
-        function renderizarResultados(lista) {
+                function renderizarResultados(lista) {
             const contenedor = document.getElementById('results');
             let htmlResultados = '';
             
-            // 🚀 ESTRUCTURA TRADICIONAL COMPATIBLE CON CACHÉ DE SERVICE WORKER
+            // 🚀 ESTRUCTURA TRADICIONAL COMPATIBLE CON CUALQUIER CACHÉ
             for (let i = 0; i < lista.length; i++) {
                 const track = lista[i];
                 const idVideo = track.id;
                 const tituloLimpio = track.title.replace(/'/g, "");
                 
-                htmlResultados += '<div class="track-item" onclick="cargarVideoOficial(\'' + idVideo + '\', \'' + tituloLimpio + '\')">';
+                // Forzamos que al hacer clic abra DIRECTAMENTE la pestaña externa de YouTube
+                htmlResultados += '<div class="track-item" onclick="window.open(\'https://youtube.com' + idVideo + '&autoplay=1\', \'_blank\'); document.getElementById(\'studio-console\').style.display = \'block\'; document.getElementById(\'console-title\').innerText = \'🎙️ Grabando para: ' + tituloLimpio + '\'; window.scrollTo({ top: 0, behavior: \'smooth\' });">';
                 htmlResultados += '<div class="track-thumb">🎵</div>';
                 htmlResultados += '<div class="track-info">';
                 htmlResultados += '<div class="track-title">' + track.title + '</div>';
@@ -140,6 +141,7 @@
             
             contenedor.innerHTML = htmlResultados;
         }
+
         // 🚀 DISPARADOR LIBRE UNIVERSAL: Salta los bloqueos de red abriendo la pista nativa de YouTube
         function cargarVideoOficial(videoId, tituloCancion) {
             const consola = document.getElementById('studio-console');
