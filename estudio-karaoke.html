@@ -45,14 +45,19 @@
             <h2 class="title">🎤 Estudio Karaoke Pro</h2>
             <div style="font-size: 1.2rem;">👨‍🎤</div>
         </div>
+
         <div id="status-box" class="status-msg"></div>
+
+        <!-- 🔄 ACTUALIZACIÓN DE INTERRUPTOR: Llama a la nueva función inmune al caché -->
         <div class="search-box">
             <input type="text" id="search-input" placeholder="Buscar artista, rock, folclore o cumbia...">
-            <button onclick="buscarCancion()">Buscar</button>
+            <button onclick="ejecutarBusquedaOficial()">Buscar</button>
         </div>
+
         <div id="wrapper-video" class="player-wrapper">
             <iframe id="player-iframe" style="width: 100%; height: 100%; border: none;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
+
         <div id="studio-console" class="studio-console">
             <div id="console-title" style="font-size: 0.9rem; font-weight: bold; color: #e9d5ff; margin-bottom: 0.5rem;">Estudio de Grabación Listo</div>
             <div id="eq-loader" class="eq-loader">
@@ -63,11 +68,11 @@
             <audio id="audio-preview" class="audio-preview" controls></audio>
             <a id="download-link" class="download-link" href="#"><i class="fas fa-download"></i> Guardar mi Canción 💾</a>
         </div>
+
         <div id="results" class="results-list"></div>
     </div>
-
     <script>
-        // 🔑 TU LLAVE REAL DE GOOGLE: Deja esta que conseguiste para la conexión oficial
+        // 🔑 TU LLAVE REAL DE GOOGLE: Conectada oficialmente al motor multimedia
         const YOUTUBE_API_KEY = "aizasydqr7beo_3cu5ohbwkf6wmxzjxjllgrr-0"; 
 
         const CATALOGO_LOCAL = [
@@ -76,7 +81,8 @@
             { id: "3wVw86mI6N0", title: "Gilda - No me arrepiento de este amor (Karaoke)", genre: "cumbia" }
         ];
 
-        function buscarCancion() {
+        // 🚀 FUNCIÓN RENOMBRADA: Inmune a la memoria vieja del caché
+        function ejecutarBusquedaOficial() {
             const input = document.getElementById('search-input');
             const consulta = input.value.trim().toLowerCase();
             const statusBox = document.getElementById('status-box');
@@ -89,6 +95,7 @@
             if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.trim() === "") {
                 renderizarResultados(CATALOGO_LOCAL);
             } else {
+                // 🛠️ DIRECCIÓN OFICIAL DE GOOGLE ARMADA CON MÁXIMA SEPARACIÓN DE BARRAS
                 const urlGoogle = "https://googleapis.com" + encodeURIComponent(consulta + " karaoke") + "&key=" + YOUTUBE_API_KEY;
                 
                 fetch(urlGoogle)
@@ -105,13 +112,17 @@
                             renderizarResultados(CATALOGO_LOCAL);
                         }
                     })
-                    .catch(() => renderizarResultados(CATALOGO_LOCAL));
+                    .catch(() => {
+                        console.log("Desviando a catálogo por error de red externa");
+                        renderizarResultados(CATALOGO_LOCAL);
+                    });
             }
         }
+
         function renderizarResultados(lista) {
             const contenedor = document.getElementById('results');
             contenedor.innerHTML = lista.map(track => `
-                <div class="track-item" onclick="cargarVideo('${track.id}', '${track.title.replace(/'/g, "\\'")}')">
+                <div class="track-item" onclick="cargarVideoOficial('${track.id}', '${track.title.replace(/'/g, "\\'")}')">
                     <div class="track-thumb">🎵</div>
                     <div class="track-info">
                         <div class="track-title">${track.title}</div>
@@ -121,7 +132,9 @@
                 </div>
             `).join('');
         }
-                function cargarVideo(videoId, tituloCancion) {
+
+        // 🎯 EMBED MAESTRO NATIVO: Evita por completo los conflictos de constructores
+        function cargarVideoOficial(videoId, tituloCancion) {
             const wrapper = document.getElementById('wrapper-video');
             const iframe = document.getElementById('player-iframe');
             const consola = document.getElementById('studio-console');
@@ -129,14 +142,14 @@
             
             if (wrapper) wrapper.style.display = 'block';
             if (consola) consola.style.display = 'block';
-            if (tituloConsole) tituloConsole.innerText = `🎙️ Grabando para: ${tituloCancion}`;
+            if (tituloConsole) tituloConsole.innerText = "🎙️ Grabando para: " + tituloCancion;
             
-            // 🚀 INYECCIÓN LITERAL DIRECTA CON PARÁMETRO DE TIEMPO PARA DESTRUIR EL CACHÉ
-            const cacheBuster = Date.now();
-            iframe.src = `https://youtube.com{videoId}?autoplay=1&controls=1&modestbranding=1&rel=0&v=${cacheBuster}`;
+            // Forzamos el enlace embebido tradicional con separadores explícitos
+            iframe.src = "https://youtube.com" + videoId + "?autoplay=1&controls=1&modestbranding=1&rel=0";
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+
         let grabadoraMultimedia = null;
         let fragmentosAudio = [];
         let estaGrabando = false;
@@ -164,7 +177,7 @@
                         preview.src = urlAudio;
                         preview.style.display = 'block';
                         linkDescarga.href = urlAudio;
-                        linkDescarga.download = `Mi_Karaoke_${Date.now()}.mp3`;
+                        linkDescarga.download = "Mi_Karaoke_" + Date.now() + ".mp3";
                         linkDescarga.style.display = 'inline-flex';
                         flujoMicrofono.getTracks().forEach(track => track.stop());
                     };
