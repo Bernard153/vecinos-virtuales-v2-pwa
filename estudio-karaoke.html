@@ -3,130 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudio de Grabación - Vecinos Virtuales</title>
-    <!-- Cargamos Tailwind CSS para diseño móvil fluido -->
+    <title>Estudio de Karaoke - Vecinos Virtuales</title>
     <script src="https://jsdelivr.net"></script>
+    <link href="https://cloudflare.com" rel="stylesheet">
     <style>
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: #22c55e;
-            cursor: pointer;
-        }
+        body { font-family: sans-serif; background: #0f0c1b; color: white; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 90%; max-width: 500px; padding: 1.5rem 0; text-align: center; }
+        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+        .btn-back { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.5rem 1rem; border-radius: 50px; text-decoration: none; font-size: 0.85rem; font-weight: bold; }
+        .title { font-size: 1.3rem; margin: 0; font-weight: bold; color: #a855f7; display: flex; align-items: center; gap: 0.5rem; }
+        .search-box { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .search-box input { flex: 1; background: transparent; border: none; color: white; padding: 0.5rem; font-size: 0.9rem; outline: none; }
+        .search-box button { background: #a855f7; border: none; color: white; padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .status-msg { background: rgba(234, 179, 8, 0.15); border: 1px solid #eab308; color: #fde047; padding: 0.75rem; border-radius: 10px; font-size: 0.8rem; line-height: 1.4; display: none; margin-bottom: 1rem; text-align: left; }
+        .player-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; border: 2px solid #a855f7; }
+        .results-list { display: flex; flex-direction: column; gap: 0.75rem; text-align: left; }
+        .track-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 12px; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: 0.2s; }
+        .track-item:hover { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; }
+        .track-thumb { width: 60px; aspect-ratio: 16/9; background: #221a36; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .track-info { flex: 1; }
+        .track-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 2px; }
+        .track-genre { font-size: 0.7rem; color: #a855f7; text-transform: uppercase; font-weight: 600; }
     </style>
 </head>
-<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col justify-between">
-
-    <!-- CABECERA DEL ESTUDIO -->
-    <header class="bg-gray-800 p-4 shadow-md flex items-center justify-between">
-        <div class="flex items-center gap-2">
-            <span class="text-xl">🎤</span>
-            <h1 class="text-lg font-bold">Estudio de Grabación</h1>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html#dashboard" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
+            <h2 class="title">🎤 Estudio Karaoke</h2>
+            <div style="font-size: 1.2rem;">👨‍🎤</div>
         </div>
-        <a href="index.html#dashboard" class="text-xs bg-gray-700 px-3 py-1 rounded-full text-gray-300 hover:bg-gray-600">Salir</a>
-    </header>
 
-    <!-- ÁREA DE GRABACIÓN Y PISTA -->
-    <main class="flex-grow p-4 max-w-md mx-auto w-full flex flex-col justify-start space-y-4">
-        
-        <!-- BUSCADOR DE YOUTUBE -->
-        <section class="bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-700 space-y-2">
-            <label class="text-xs text-gray-400 uppercase tracking-wider font-semibold">1. Elige tu pista o instrumento</label>
-            <div class="flex gap-2">
-                <input type="text" id="buscar-pista" placeholder="Escribe artista o canción (ej: Gilda)..." class="bg-gray-950 border border-gray-700 rounded-lg p-2 text-sm w-full focus:outline-none focus:border-green-500 text-white">
-                <button id="btn-buscar-yt" class="bg-red-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-700 whitespace-nowrap">🔍 Buscar</button>
-            </div>
-            
-            <!-- CONTENEDOR DEL IFRAME DE YOUTUBE -->
-            <div id="contenedor-pista" class="bg-gray-950 aspect-video rounded-lg flex items-center justify-center text-xs text-gray-500 border border-dashed border-gray-800 overflow-hidden relative">
-                <div id="reproductor-youtube-real" class="w-full h-full"></div>
-                <p id="texto-ayuda-pista" class="absolute p-4 text-center">Escribe una canción arriba y presiona Buscar para cargar la pista de YouTube con letra.</p>
-            </div>
-        </section>
+        <div id="status-box" class="status-msg"></div>
 
-        <!-- VISOR DE CÁMARA CON PROTECCIÓN CONTRA DISPOSITIVOS NO ENCONTRADOS -->
-        <section class="relative bg-black aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center border border-gray-800">
-            <video id="vista-camara" autoplay playsinline muted class="w-full h-full object-cover transition-all duration-300"></video>
-            
-            <!-- Render visual sustituto si no tienes cámara web conectada a tu PC -->
-            <div id="avatar-sustituto" class="absolute inset-0 bg-gradient-to-br from-purple-900 to-indigo-900 flex flex-col items-center justify-center gap-2 hidden">
-                <span class="text-6xl animate-pulse">👨‍🎤</span>
-                <p class="text-xs text-purple-300">Modo de Canto Activo (Sin Cámara)</p>
-            </div>
-
-            <div id="estado-grabacion" class="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider hidden animate-pulse">
-                🔴 Grabando Demo
-            </div>
-
-            <!-- FILTROS VISUALES -->
-            <div class="absolute bottom-3 left-0 right-0 px-4 flex justify-center gap-3 bg-gradient-to-t from-black/80 to-transparent pt-6 pb-2">
-                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="none">🚫</button>
-                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="suave">✨</button>
-                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="vintage">🎞️</button>
-                <button class="filtro-btn bg-white/20 hover:bg-white/40 w-10 h-10 rounded-full text-xs font-bold transition border border-white/40" data-filtro="neon">🌈</button>
-            </div>
-        </section>
-        <!-- PANEL DE EFECTOS -->
-        <section class="bg-gray-800 p-4 rounded-xl border border-gray-700 space-y-3">
-            <h3 class="text-xs text-gray-400 uppercase tracking-wider font-semibold">2. Ajustes de Audio</h3>
-            <div class="flex items-center justify-between gap-4">
-                <span class="text-xs w-24 text-gray-300">🎙️ Vol. Micro:</span>
-                <input type="range" id="control-volumen" min="0" max="1" step="0.1" value="0.8" class="w-full accent-green-500 h-1 bg-gray-900 rounded-lg cursor-pointer">
-            </div>
-            <div class="flex items-center justify-between gap-4">
-                <span class="text-xs w-24 text-gray-300">🏢 Efecto Eco:</span>
-                <input type="range" id="control-eco" min="0" max="1" step="0.1" value="0.2" class="w-full accent-green-500 h-1 bg-gray-900 rounded-lg cursor-pointer">
-            </div>
-        </section>
-
-    </main>
-
-    <!-- PANEL DE ACCIÓN INFERIOR -->
-    <footer class="bg-gray-800 border-t border-gray-700 p-4 flex flex-col items-center gap-3 sticky bottom-0 z-50">
-        <div class="flex w-full max-w-md justify-center gap-4">
-            <button id="btn-grabar" class="bg-red-600 hover:bg-red-700 text-white font-bold px-6 py-3 rounded-full shadow-lg transition flex items-center gap-2 cursor-pointer">
-                <span>⏺️</span> Iniciar Grabación
-            </button>
-            <button id="btn-demo" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-lg transition flex items-center gap-2 cursor-pointer hidden">
-                <span>🎧</span> Escuchar Demo
-            </button>
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Buscar artista, folclore o clásicos de Karaoke...">
+            <button onclick="buscarCancion()">Buscar</button>
         </div>
-        <button id="btn-publicar" class="w-full max-w-md bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-xl text-sm shadow transition hidden">
-            🚀 Publicar Demo en Lomas de Tafí
-        </button>
-    </footer>
 
-    <!-- INICIO DE SCRIPTS -->
+        <div id="wrapper-video" class="player-wrapper">
+            <div id="player-iframe" style="width: 100%; height: 100%;"></div>
+        </div>
+
+        <div id="results" class="results-list"></div>
+    </div>
+
     <script>
-        const videoCamara = document.getElementById('vista-camara');
-        const avatarSustituto = document.getElementById('avatar-sustituto');
-        const estadoGrabacion = document.getElementById('estado-grabacion');
-        const btnGrabar = document.getElementById('btn-grabar');
-        const btnDemo = document.getElementById('btn-demo');
-        const btnPublicar = document.getElementById('btn-publicar');
-        const inputBuscar = document.getElementById('buscar-pista');
-        const btnBuscarYt = document.getElementById('btn-buscar-yt');
-        const textoAyuda = document.getElementById('texto-ayuda-pista');
+        // ============================================================
+        // CONFIGURACIÓN DE APIS Y CATÁLOGO DE RESPALDO LOCAL
+        // ============================================================
         
-        const controlVolumen = document.getElementById('control-volumen');
-        const controlEco = document.getElementById('control-eco');
+        // 🔑 TU LLAVE DE GOOGLE: Déjala en blanco para usar catálogo o pega tu API real para búsqueda libre
+        const YOUTUBE_API_KEY = ""; 
 
-        let contextoAudio = null;
-        let nodoMicrofono = null;
-        let nodoGananciaVolumen = null;
-        let nodoEfectoRetraso = null;
-        let nodoGananciaEco = null;
-        let flujoMediaStream = null;
+        // 🎵 ALMACÉN COMERCIAL DE CANCIONES (Videos reales listos para cantar)
+        const CATALOGO_LOCAL = [
+            { id: "M7X9XyVfSgA", title: "Chaqueño Palavecino - Amor Salvaje (Karaoke)", genre: "folclore" },
+            { id: "eK9W34Y2wM8", title: "Los Nocheros - Entre la Tierra y el Cielo (Karaoke)", genre: "folclore" },
+            { id: "XW5U8pWJqK4", title: "Soda Stereo - De Música Ligera (Karaoke con Coros)", genre: "rock" },
+            { id: "3wVw86mI6N0", title: "Gilda - No me arrepiento de este amor (Karaoke)", genre: "cumbia" },
+            { id: "98mO_V_W8z4", title: "Mercedes Sosa - Luna Tucumana (Letra / Instrumental)", genre: "folclore" },
+            { id: "P7mR34xWq88", title: "Rodrigo - Ocho Cuarenta (Karaoke Espectáculo)", genre: "cuarteto" }
+        ];
 
-        let transmitiendoCamara = false;
-        let estaGrabando = false;
-        let reproductorYt = null;
-        let apiYtLista = false; // Control de seguridad para esperar a Google
+        let ytPlayer = null;
+        let motorSincronizado = false;
 
-        // CARGAR ASINCRÓNICAMENTE EL REPRODUCTOR OFICIAL
+        // Iniciar la carga de la API oficial de YouTube
         (function() {
             const tag = document.createElement('script');
             tag.src = "https://youtube.com";
@@ -134,134 +77,110 @@
             firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
         })();
 
-        // Google llama a esta función automáticamente al terminar la descarga
-        window.onYouTubeIframeAPIReady = function() {
-            console.log("✅ API de YouTube unificada en memoria.");
-            apiYtLista = true;
-        };
-        // BUSCADOR BLINDADO CONTRA ERRORES "YT IS NOT DEFINED"
-        btnBuscarYt.addEventListener('click', function() {
-            const cancionNombre = inputBuscar.value.trim();
-            if (!cancionNombre) {
-                alert("Escribe el nombre de un artista o canción.");
+        function onYouTubeIframeAPIReady() {
+            motorSincronizado = true;
+            console.log("✅ Motor de reproducción de YouTube acoplado");
+        }
+        // ============================================================
+        // LÓGICA DE BÚSQUEDA INTELIGENTE DUAL
+        // ============================================================
+        function buscarCancion() {
+            const input = document.getElementById('search-input');
+            const consulta = input.value.trim().toLowerCase();
+            const statusBox = document.getElementById('status-box');
+            const contenedorResultados = document.getElementById('results');
+
+            if (!consulta) return;
+
+            statusBox.style.display = "none";
+            contenedorResultados.innerHTML = "";
+
+            // 🛡️ CONTROL DE SINCRONIZACIÓN
+            if (!motorSincronizado) {
+                statusBox.innerText = "El motor de YouTube se está sincronizando en segundo plano. Espera 3 segundos e intenta de nuevo.";
+                statusBox.style.display = "block";
                 return;
             }
 
-            // Red de seguridad: Si internet va lento y Google no cargó todavía, avisamos
-            if (!apiYtLista || typeof YT === 'undefined') {
-                alert("El motor de YouTube se está sincronizando en segundo plano. Espera 3 segundos e intenta de nuevo.");
-                return;
-            }
+            // CASO A: SI NO TIENES CLAVE REAL, DISPARA EL MOTOR DE ALMACÉN LOCAL
+            if (!YOUTUBE_API_KEY) {
+                console.log("🔍 Rastreando catálogo local...");
+                const filtradas = CATALOGO_LOCAL.filter(c => 
+                    c.title.toLowerCase().includes(consulta) || 
+                    c.genre.toLowerCase().includes(consulta)
+                );
 
-            if (textoAyuda) textoAyuda.style.display = 'none';
-
-            if (reproductorYt && typeof reproductorYt.destroy === 'function') {
-                reproductorYt.destroy();
-            }
-
-            try {
-                // Incrustación de búsqueda directa optimizada en el Iframe
-                reproductorYt = new YT.Player('reproductor-youtube-real', {
-                    height: '100%',
-                    width: '100%',
-                    playerVars: {
-                        'autoplay': 1,
-                        'controls': 1,
-                        'listType': 'search',
-                        'list': cancionNombre + " karaoke letras"
-                    },
-                    events: {
-                        'onReady': function(event) {
-                            console.log("📺 Pista incrustada con éxito.");
-                            event.target.playVideo();
+                if (filtradas.length > 0) {
+                    renderizarResultados(filtradas);
+                } else {
+                    // Si busca algo que no está, le regalamos todo el catálogo para que elija
+                    statusBox.innerText = "No encontramos coincidencias exactas. Te mostramos los clásicos disponibles para cantar:";
+                    statusBox.style.display = "block";
+                    renderizarResultados(CATALOGO_LOCAL);
+                }
+            } else {
+                // CASO B: CONEXIÓN LIBRE A GOOGLE YOUTUBE
+                fetch(`https://googleapis.com{encodeURIComponent(consulta + " karaoke")}&type=video&key=${YOUTUBE_API_KEY}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.items && data.items.length > 0) {
+                            const formateadas = data.items.map(item => ({
+                                id: item.id.videoId,
+                                title: item.snippet.title,
+                                genre: "YouTube Live"
+                            }));
+                            renderizarResultados(formateadas);
+                        } else {
+                            renderizarResultados(CATALOGO_LOCAL);
                         }
-                    }
-                });
-            } catch (err) {
-                console.error("Error al incrustar el reproductor:", err);
-            }
-        });
-
-        // CÁMARA BLINDADA CONTRA COMPUTADORAS SIN CÁMARA WEB (Requested device not found)
-        async function encenderEstudioPro() {
-            try {
-                flujoMediaStream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { facingMode: "user" }, 
-                    audio: { echoCancellation: false, noiseSuppression: true } 
-                });
-                
-                videoCamara.srcObject = flujoMediaStream;
-                transmitiendoCamara = true;
-
-                contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
-                nodoMicrofono = contextoAudio.createMediaStreamSource(flujoMediaStream);
-                
-                nodoGananciaVolumen = contextoAudio.createGain(); 
-                nodoEfectoRetraso = contextoAudio.createDelay(1.0); 
-                nodoGananciaEco = contextoAudio.createGain(); 
-
-                nodoGananciaVolumen.gain.value = controlVolumen.value; 
-                nodoEfectoRetraso.delayTime.value = 0.35; 
-                nodoGananciaEco.gain.value = controlEco.value; 
-
-                nodoMicrofono.connect(nodoGananciaVolumen);
-                nodoMicrofono.connect(nodoEfectoRetraso);
-                nodoEfectoRetraso.connect(nodoGananciaEco);
-                nodoGananciaEco.connect(nodoGananciaVolumen);
-
-                nodoGananciaVolumen.connect(contextoAudio.destination);
-                console.log("🔊 Motor Web Audio API conectado.");
-
-            } catch (err) {
-                console.warn("🛡️ Red de seguridad activada: No se detectó cámara física. Activando Modo Sustituto.");
-                // Si la computadora no tiene cámara, escondemos el video roto y encendemos el avatar musical
-                videoCamara.style.display = 'none';
-                avatarSustituto.classList.remove('hidden');
-                transmitiendoCamara = true; // Habilitamos el paso para que puedas usar el buscador igual
+                    })
+                    .catch(err => {
+                        console.error("Error en API YouTube, cargando respaldo local:", err);
+                        renderizarResultados(CATALOGO_LOCAL);
+                    });
             }
         }
 
-        controlVolumen.addEventListener('input', () => { if(nodoGananciaVolumen) nodoGananciaVolumen.gain.value = controlVolumen.value; });
-        controlEco.addEventListener('input', () => { if(nodoGananciaEco) nodoGananciaEco.gain.value = controlEco.value; });
+        function renderizarResultados(lista) {
+            const contenedor = document.getElementById('results');
+            contenedor.innerHTML = lista.map(track => `
+                <div class="track-item" onclick="cargarVideo('${track.id}')">
+                    <div class="track-thumb">🎵</div>
+                    <div class="track-info">
+                        <div class="track-title">${track.title}</div>
+                        <div class="track-genre">${track.genre}</div>
+                    </div>
+                    <div style="color: #a855f7; font-size: 0.9rem;"><i class="fas fa-play"></i></div>
+                </div>
+            `).join('');
+        }
 
-        // FILTROS VISUALES
-        document.querySelectorAll('.filtro-btn').forEach(boton => {
-            boton.addEventListener('click', () => {
-                const filtroElegido = boton.getAttribute('data-filtro');
-                videoCamara.style.filter = "none";
-                if (filtroElegido === 'suave') videoCamara.style.filter = "brightness(1.05) contrast(0.95) saturate(1.1) blur(0.3px)";
-                if (filtroElegido === 'vintage') videoCamara.style.filter = "sepia(0.6) contrast(1.1)";
-                if (filtroElegido === 'neon') videoCamara.style.filter = "hue-rotate(45deg) saturate(1.4)";
-            });
-        });
+        // ============================================================
+        // INYECCIÓN DE VIDEO Y CONTROL REPRODUCTOR
+        // ============================================================
+        function cargarVideo(videoId) {
+            const wrapper = document.getElementById('wrapper-video');
+            wrapper.style.display = 'block';
+            
+            // Subir la pantalla suavemente para ver el reproductor
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // MANEJADOR DE GRABACIÓN
-        btnGrabar.addEventListener('click', () => {
-            if (!transmitiendoCamara) return;
-            if (contextoAudio && contextoAudio.state === 'suspended') contextoAudio.resume();
-
-            if (!estaGrabando) {
-                estaGrabando = true;
-                btnGrabar.innerHTML = "<span>⏹️</span> Detener Grabación";
-                btnGrabar.classList.replace('bg-red-600', 'bg-gray-600');
-                estadoGrabacion.classList.remove('hidden');
-                btnDemo.classList.add('hidden');
-                btnPublicar.classList.add('hidden');
+            if (ytPlayer) {
+                ytPlayer.loadVideoById(videoId);
             } else {
-                estaGrabando = false;
-                btnGrabar.innerHTML = "<span>⏺️</span> Grabar de Nuevo";
-                btnGrabar.classList.replace('bg-gray-600', 'bg-red-600');
-                estadoGrabacion.classList.add('hidden');
-                btnDemo.classList.remove('hidden');
-                btnPublicar.classList.remove('hidden');
-                if (reproductorYt && typeof reproductorYt.pauseVideo === 'function') reproductorYt.pauseVideo();
+                ytPlayer = new YT.Player('player-iframe', {
+                    videoId: videoId,
+                    playerVars: {
+                        'autoplay': 1,
+                        'modestbranding': 1,
+                        'rel': 0
+                    },
+                    events: {
+                        'onReady': (e) => e.target.playVideo()
+                    }
+                });
             }
-        });
-
-        btnDemo.addEventListener('click', () => { alert('🎧 Evaluando tu Demo con efectos aplicados de forma exitosa.'); });
-        btnPublicar.addEventListener('click', () => { alert('🚀 ¡Subiendo video de forma exitosa a Lomas de Tafí!'); });
-
-        document.addEventListener('DOMContentLoaded', encenderEstudioPro);
+        }
     </script>
 </body>
 </html>
