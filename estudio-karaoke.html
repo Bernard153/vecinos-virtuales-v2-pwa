@@ -16,25 +16,19 @@
         .search-box button { background: #a855f7; border: none; color: white; padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .status-msg { background: rgba(234, 179, 8, 0.15); border: 1px solid #eab308; color: #fde047; padding: 0.75rem; border-radius: 10px; font-size: 0.8rem; line-height: 1.4; display: none; margin-bottom: 1rem; text-align: left; }
         .player-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 1.25rem; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; border: 2px solid #a855f7; }
-        
-        /* 🎤 CONSOLA DE GRABACIÓN AVANZADA */
         .studio-console { background: linear-gradient(145deg, #1e1b4b, #111827); border: 2px solid #a855f7; border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; display: none; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
         .rec-btn { background: #ef4444; border: none; color: white; width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); transition: 0.2s; margin: 0 0.5rem; }
         .rec-btn.recording { background: #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); animation: pulse 1.5s infinite; }
         .audio-preview { width: 100%; margin-top: 1rem; border-radius: 8px; display: none; }
         .download-link { display: inline-flex; align-items: center; gap: 0.5rem; background: #3b82f6; color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; margin-top: 0.75rem; display: none; }
-        
-        /* Animación del Ecualizador Visual */
         .eq-loader { display: none; align-items: flex-end; justify-content: center; gap: 4px; height: 30px; margin: 0.75rem 0; }
         .eq-bar { width: 4px; height: 5px; background: #a855f7; border-radius: 2px; }
         .recording .eq-bar { animation: bounce 0.8s ease-in-out infinite alternate; }
         .recording .eq-bar:nth-child(2) { animation-delay: 0.2s; background: #c084fc; }
         .recording .eq-bar:nth-child(3) { animation-delay: 0.4s; background: #e9d5ff; }
         .recording .eq-bar:nth-child(4) { animation-delay: 0.1s; background: #c084fc; }
-
         @keyframes bounce { 100% { height: 30px; } }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
         .results-list { display: flex; flex-direction: column; gap: 0.75rem; text-align: left; }
         .track-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 12px; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: 0.2s; }
         .track-item:hover { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; }
@@ -51,73 +45,37 @@
             <h2 class="title">🎤 Estudio Karaoke Pro</h2>
             <div style="font-size: 1.2rem;">👨‍🎤</div>
         </div>
-
         <div id="status-box" class="status-msg"></div>
-
         <div class="search-box">
             <input type="text" id="search-input" placeholder="Buscar artista, rock, folclore o cumbia...">
             <button onclick="buscarCancion()">Buscar</button>
         </div>
-
-        <!-- REPRODUCTOR -->
         <div id="wrapper-video" class="player-wrapper">
-            <div id="player-iframe" style="width: 100%; height: 100%;"></div>
+            <iframe id="player-iframe" style="width: 100%; height: 100%; border: none;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
-
-        <!-- 🎤 CONSOLA DE GRABACIÓN DE VOZ -->
         <div id="studio-console" class="studio-console">
             <div id="console-title" style="font-size: 0.9rem; font-weight: bold; color: #e9d5ff; margin-bottom: 0.5rem;">Estudio de Grabación Listo</div>
-            
             <div id="eq-loader" class="eq-loader">
                 <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
             </div>
-
             <button id="rec-btn" class="rec-btn" onclick="toggleGrabacion()"><i class="fas fa-microphone"></i></button>
-            
             <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af;" id="rec-status">Haz clic para empezar a grabar tu voz</div>
-            
             <audio id="audio-preview" class="audio-preview" controls></audio>
             <a id="download-link" class="download-link" href="#"><i class="fas fa-download"></i> Guardar mi Canción 💾</a>
         </div>
-
         <div id="results" class="results-list"></div>
     </div>
-        <script src="https://youtube.com"></script>
-    <script>
-        // ============================================================
-        // CONFIGURACIÓN DE APIS Y CATÁLOGO DE RESPALDO LOCAL
-        // ============================================================
-        
-        // 🔑 TU LLAVE DE GOOGLE: Déjala en blanco para usar catálogo o pega tu API real para búsqueda libre
-        const YOUTUBE_API_KEY = "AIzaSyDQr7BEo_3cu5OhBWKf6WMxzJxjlLgrr-0"; 
 
-        // 🎵 ALMACÉN COMERCIAL DE CANCIONES (Videos reales listos para cantar)
+    <script>
+        // 🔑 TU LLAVE REAL DE GOOGLE: Deja esta que conseguiste para la conexión oficial
+        const YOUTUBE_API_KEY = "aizasydqr7beo_3cu5ohbwkf6wmxzjxjllgrr-0"; 
+
         const CATALOGO_LOCAL = [
+            { id: "XW5U8pWJqK4", title: "Soda Stereo - De Música Ligera (Karaoke)", genre: "rock" },
             { id: "M7X9XyVfSgA", title: "Chaqueño Palavecino - Amor Salvaje (Karaoke)", genre: "folclore" },
-            { id: "eK9W34Y2wM8", title: "Los Nocheros - Entre la Tierra y el Cielo (Karaoke)", genre: "folclore" },
-            { id: "XW5U8pWJqK4", title: "Soda Stereo - De Música Ligera (Karaoke con Coros)", genre: "rock" },
-            { id: "3wVw86mI6N0", title: "Gilda - No me arrepiento de este amor (Karaoke)", genre: "cumbia" },
-            { id: "98mO_V_W8z4", title: "Mercedes Sosa - Luna Tucumana (Letra / Instrumental)", genre: "folclore" },
-            { id: "P7mR34xWq88", title: "Rodrigo - Ocho Cuarenta (Karaoke Espectáculo)", genre: "cuarteto" }
+            { id: "3wVw86mI6N0", title: "Gilda - No me arrepiento de este amor (Karaoke)", genre: "cumbia" }
         ];
 
-        let ytPlayer = null;
-        let motorSincronizado = true; // Forzamos sincronización nativa inmediata al estar el script en la cabecera
-
-        // Iniciar la carga de la API oficial de YouTube
-        (function() {
-            const tag = document.createElement('script');
-            tag.src = "https://youtube.com";
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            if (firstScriptTag && firstScriptTag.parentNode) {
-                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-            } else {
-                document.head.appendChild(tag);
-            }
-        })();
-        // ============================================================
-        // LÓGICA DE BÚSQUEDA INTELIGENTE CORREGIDA A NIVEL DE INGENIERÍA
-        // ============================================================
         function buscarCancion() {
             const input = document.getElementById('search-input');
             const consulta = input.value.trim().toLowerCase();
@@ -125,32 +83,15 @@
             const contenedorResultados = document.getElementById('results');
 
             if (!consulta) return;
-
             statusBox.style.display = "none";
             contenedorResultados.innerHTML = "";
 
-            // Forzar encendido si el iframe se demora en responder
-            motorSincronizado = true;
-
             if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.trim() === "") {
-                console.log("🔍 Clave vacía. Cargando catálogo local...");
-                const filtradas = CATALOGO_LOCAL.filter(c => 
-                    c.title.toLowerCase().includes(consulta) || 
-                    c.genre.toLowerCase().includes(consulta)
-                );
-
-                if (filtradas.length > 0) {
-                    renderizarResultados(filtradas);
-                } else {
-                    statusBox.innerText = `No encontramos coincidencias para "${input.value}". Elige uno de nuestros clásicos para cantar:`;
-                    statusBox.style.display = "block";
-                    renderizarResultados(CATALOGO_LOCAL);
-                }
+                renderizarResultados(CATALOGO_LOCAL);
             } else {
-                // 🚀 CADENA ESTÁTICA CORREGIDA CON MÁXIMA PRECISIÓN PARA GOOGLE
-                const urlLimpia = "https://googleapis.com" + encodeURIComponent(consulta + " karaoke") + "&key=" + YOUTUBE_API_KEY;
+                const urlGoogle = "https://googleapis.com" + encodeURIComponent(consulta + " karaoke") + "&key=" + YOUTUBE_API_KEY;
                 
-                fetch(urlLimpia)
+                fetch(urlGoogle)
                     .then(res => res.json())
                     .then(data => {
                         if (data.items && data.items.length > 0) {
@@ -164,13 +105,9 @@
                             renderizarResultados(CATALOGO_LOCAL);
                         }
                     })
-                    .catch(err => {
-                        console.error("Error en API externa, cargando respaldo local:", err);
-                        renderizarResultados(CATALOGO_LOCAL);
-                    });
+                    .catch(() => renderizarResultados(CATALOGO_LOCAL));
             }
         }
-
         function renderizarResultados(lista) {
             const contenedor = document.getElementById('results');
             contenedor.innerHTML = lista.map(track => `
@@ -185,6 +122,74 @@
             `).join('');
         }
 
+        function cargarVideo(videoId, tituloCancion) {
+            const wrapper = document.getElementById('wrapper-video');
+            const iframe = document.getElementById('player-iframe');
+            const consola = document.getElementById('studio-console');
+            const tituloConsole = document.getElementById('console-title');
+            
+            wrapper.style.display = 'block';
+            consola.style.display = 'block';
+            tituloConsole.innerText = `🎙️ Grabando para: ${tituloCancion}`;
+            
+            iframe.src = "https://youtube.com" + videoId + "?autoplay=1&controls=1&modestbranding=1&rel=0";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        let grabadoraMultimedia = null;
+        let fragmentosAudio = [];
+        let estaGrabando = false;
+
+        async function toggleGrabacion() {
+            const btn = document.getElementById('rec-btn');
+            const statusText = document.getElementById('rec-status');
+            const eqLoader = document.getElementById('eq-loader');
+            const preview = document.getElementById('audio-preview');
+            const linkDescarga = document.getElementById('download-link');
+
+            if (!estaGrabando) {
+                try {
+                    const flujoMicrofono = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    grabadoraMultimedia = new MediaRecorder(flujoMicrofono);
+                    fragmentosAudio = [];
+
+                    grabadoraMultimedia.ondataavailable = (e) => {
+                        if (e.data.size > 0) fragmentosAudio.push(e.data);
+                    };
+
+                    grabadoraMultimedia.onstop = () => {
+                        const blobAudio = new Blob(fragmentosAudio, { type: 'audio/mp3' });
+                        const urlAudio = URL.createObjectURL(blobAudio);
+                        preview.src = urlAudio;
+                        preview.style.display = 'block';
+                        linkDescarga.href = urlAudio;
+                        linkDescarga.download = `Mi_Karaoke_${Date.now()}.mp3`;
+                        linkDescarga.style.display = 'inline-flex';
+                        flujoMicrofono.getTracks().forEach(track => track.stop());
+                    };
+
+                    grabadoraMultimedia.start();
+                    estaGrabando = true;
+                    btn.classList.add('recording');
+                    btn.innerHTML = '<i class="fas fa-stop"></i>';
+                    statusText.innerText = "🔴 GRABANDO TU VOZ... ¡Dale con todo!";
+                    statusText.style.color = "#ef4444";
+                    eqLoader.style.display = 'flex';
+                    preview.style.display = 'none';
+                    linkDescarga.style.display = 'none';
+                } catch (err) {
+                    alert("⚠️ Error: Necesitamos permisos de micrófono en el estudio.");
+                }
+            } else {
+                if (grabadoraMultimedia && grabadoraMultimedia.state !== "inactive") grabadoraMultimedia.stop();
+                estaGrabando = false;
+                btn.classList.remove('recording');
+                btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                statusText.innerText = "✅ Grabación finalizada. Escucha tu canción abajo.";
+                statusText.style.color = "#22c55e";
+                eqLoader.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
