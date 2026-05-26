@@ -180,6 +180,19 @@
                 });
             }
         }
+                // 🌟 PUENTE MAESTRO DE ACCESO GLOBAL PARA GOOGLE YOUTUBE
+        window.onYouTubeIframeAPIReady = function() {
+            motorSincronizado = true;
+            console.log("✅ Motor de reproducción de YouTube acoplado en el entorno global");
+        };
+
+        // Red de seguridad: si pasados 2 segundos el iframe api no avisó, forzamos el encendido local para pruebas
+        setTimeout(() => {
+            if (!motorSincronizado) {
+                motorSincronizado = true;
+                console.log("⚡ Red de seguridad: Forzando encendido del motor local para el catálogo.");
+            }
+        }, 2000);
     </script>
 </body>
 </html>
