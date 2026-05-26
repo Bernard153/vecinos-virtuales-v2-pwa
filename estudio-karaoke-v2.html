@@ -150,9 +150,8 @@
             if (tituloConsole) tituloConsole.innerText = "🎙️ Grabando para: " + tituloCancion;
             
             // 🎯 JUGADA MAESTRA: Abre la pista oficial de Karaoke en una pestaña externa o en la app de YouTube del celular
-            const urlOficialYouTube = "https://youtube.com " + videoId;
+            const urlOficialYouTube = "https://youtube.com" + videoId + "&autoplay=1";
             window.open(urlOficialYouTube, '_blank');
-            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
