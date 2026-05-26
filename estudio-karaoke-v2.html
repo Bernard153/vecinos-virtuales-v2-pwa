@@ -118,21 +118,30 @@
                     });
             }
         }
-
         function renderizarResultados(lista) {
             const contenedor = document.getElementById('results');
-            contenedor.innerHTML = lista.map(track => `
-                <div class="track-item" onclick="cargarVideoOficial('${track.id}', '${track.title.replace(/'/g, "\\'")}')">
-                    <div class="track-thumb">🎵</div>
-                    <div class="track-info">
-                        <div class="track-title">${track.title}</div>
-                        <div class="track-genre">${track.genre}</div>
-                    </div>
-                    <div style="color: #a855f7; font-size: 0.9rem;"><i class="fas fa-play"></i></div>
-                </div>
-            `).join('');
+            let htmlResultados = '';
+            
+            // 🚀 ESTRUCTURA TRADICIONAL COMPATIBLE CON CACHÉ DE SERVICE WORKER
+            for (let i = 0; i < lista.length; i++) {
+                const track = lista[i];
+                const idVideo = track.id;
+                const tituloLimpio = track.title.replace(/'/g, "");
+                
+                htmlResultados += '<div class="track-item" onclick="cargarVideoOficial(\'' + idVideo + '\', \'' + tituloLimpio + '\')">';
+                htmlResultados += '<div class="track-thumb">🎵</div>';
+                htmlResultados += '<div class="track-info">';
+                htmlResultados += '<div class="track-title">' + track.title + '</div>';
+                htmlResultados += '<div class="track-genre">' + track.genre + '</div>';
+                htmlResultados += '</div>';
+                htmlResultados += '<div style="color: #a855f7; font-size: 0.9rem;"><i class="fas fa-play"></i></div>';
+                htmlResultados += '</div>';
+            }
+            
+            contenedor.innerHTML = htmlResultados;
         }
 
+        
         // 🎯 EMBED MAESTRO NATIVO: Evita por completo los conflictos de constructores
         function cargarVideoOficial(videoId, tituloCancion) {
             const wrapper = document.getElementById('wrapper-video');
