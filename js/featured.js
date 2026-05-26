@@ -104,8 +104,9 @@ VV.featured = {
         seccionNovedades.id = 'carrusel-novedades-superior';
         seccionNovedades.style.cssText = 'margin-bottom: 1.5rem; width: 100%; overflow: hidden; padding: 0.5rem 0; font-family: sans-serif;';
 
-        let htmlCards = '';
+                let htmlCards = '';
         
+        // 🎤 CARD 1: KARAOKE (FORZADA UNIVERSAL PARA TODOS LOS VECINOS)
         htmlCards += `
             <div style="background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%); color: white; min-width: 260px; width: 260px; border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                 <div style="display: flex; align-items: start; gap: 0.75rem;">
@@ -121,6 +122,7 @@ VV.featured = {
             </div>
         `;
 
+        // 🛒 CARD 2: MARKETPLACE
         htmlCards += `
             <div style="background: linear-gradient(135deg, #064e3b 0%, #022c22 100%); color: white; min-width: 260px; width: 260px; border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                 <div style="display: flex; align-items: start; gap: 0.75rem;">
@@ -136,6 +138,7 @@ VV.featured = {
             </div>
         `;
 
+        // 📢 CARD 3: MEJORAS
         htmlCards += `
             <div style="background: linear-gradient(135deg, #7c2d12 0%, #431407 100%); color: white; min-width: 260px; width: 260px; border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                 <div style="display: flex; align-items: start; gap: 0.75rem;">
@@ -175,5 +178,3 @@ VV.featured.loadFeaturedOffers = function() { if (typeof this.renderNovedadesCar
 if (typeof VV !== 'undefined' && VV.featured && typeof VV.featured.renderNovedadesCarrusel === 'function') {
     VV.featured.renderNovedadesCarrusel();
 }
-
-
