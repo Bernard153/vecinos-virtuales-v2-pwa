@@ -119,10 +119,9 @@ VV.featured = {
                         <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: rgba(255,255,255,0.7); line-height: 1.3;">Canta tus temas favoritos con eco real. ¡Suma aplausos en el barrio!</p>
                     </div>
                 </div>
-                <button onclick="window.open('https://youtube.com', '_blank')" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.2); font-weight: 600; font-size: 0.75rem; padding: 0.4rem; border-radius: 50px; cursor: pointer; width: 100%; text-align: center;">
+                                <button onclick="window.open('https://youtube.com', '_blank'); window.location.href='estudio-karaoke-v2.html';" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.2); font-weight: 600; font-size: 0.75rem; padding: 0.4rem; border-radius: 50px; cursor: pointer; width: 100%; text-align: center;">
                     Cantar Ahora 🎙️
                 </button>
-
             </div>
         `;
 
