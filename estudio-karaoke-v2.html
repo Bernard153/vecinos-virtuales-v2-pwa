@@ -14,8 +14,6 @@
         .search-box { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
         .search-box input { flex: 1; background: transparent; border: none; color: white; padding: 0.5rem; font-size: 0.9rem; outline: none; }
         .search-box button { background: #a855f7; border: none; color: white; padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .status-msg { background: rgba(234, 179, 8, 0.15); border: 1px solid #eab308; color: #fde047; padding: 0.75rem; border-radius: 10px; font-size: 0.8rem; line-height: 1.4; display: none; margin-bottom: 1rem; text-align: left; }
-        .player-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 1.25rem; box-shadow: 0 8px 24px rgba(0,0,0,0.5); display: none; border: 2px solid #a855f7; }
         .studio-console { background: linear-gradient(145deg, #1e1b4b, #111827); border: 2px solid #a855f7; border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; display: none; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
         .rec-btn { background: #ef4444; border: none; color: white; width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); transition: 0.2s; margin: 0 0.5rem; }
         .rec-btn.recording { background: #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); animation: pulse 1.5s infinite; }
@@ -46,16 +44,9 @@
             <div style="font-size: 1.2rem;">👨‍🎤</div>
         </div>
 
-        <div id="status-box" class="status-msg"></div>
-
-        <!-- 🔄 ACTUALIZACIÓN DE INTERRUPTOR: Llama a la nueva función inmune al caché -->
         <div class="search-box">
             <input type="text" id="search-input" placeholder="Buscar artista, rock, folclore o cumbia...">
             <button onclick="ejecutarBusquedaOficial()">Buscar</button>
-        </div>
-
-        <div id="wrapper-video" class="player-wrapper">
-            <iframe id="player-iframe" style="width: 100%; height: 100%; border: none;" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
 
         <div id="studio-console" class="studio-console">
@@ -72,7 +63,6 @@
         <div id="results" class="results-list"></div>
     </div>
     <script>
-        // 🔑 TU LLAVE REAL DE GOOGLE: Conectada oficialmente al motor multimedia
         const YOUTUBE_API_KEY = "aizasydqr7beo_3cu5ohbwkf6wmxzjxjllgrr-0"; 
 
         const CATALOGO_LOCAL = [
@@ -81,21 +71,17 @@
             { id: "3wVw86mI6N0", title: "Gilda - No me arrepiento de este amor (Karaoke)", genre: "cumbia" }
         ];
 
-        // 🚀 FUNCIÓN RENOMBRADA: Inmune a la memoria vieja del caché
         function ejecutarBusquedaOficial() {
             const input = document.getElementById('search-input');
             const consulta = input.value.trim().toLowerCase();
-            const statusBox = document.getElementById('status-box');
             const contenedorResultados = document.getElementById('results');
 
             if (!consulta) return;
-            statusBox.style.display = "none";
             contenedorResultados.innerHTML = "";
 
             if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.trim() === "") {
                 renderizarResultados(CATALOGO_LOCAL);
             } else {
-                // 🛠️ DIRECCIÓN OFICIAL DE GOOGLE ARMADA CON MÁXIMA SEPARACIÓN DE BARRAS
                 const urlGoogle = "https://googleapis.com" + encodeURIComponent(consulta + " karaoke") + "&key=" + YOUTUBE_API_KEY;
                 
                 fetch(urlGoogle)
@@ -112,24 +98,20 @@
                             renderizarResultados(CATALOGO_LOCAL);
                         }
                     })
-                    .catch(() => {
-                        console.log("Desviando a catálogo por error de red externa");
-                        renderizarResultados(CATALOGO_LOCAL);
-                    });
+                    .catch(() => renderizarResultados(CATALOGO_LOCAL));
             }
         }
-                function renderizarResultados(lista) {
+        function renderizarResultados(lista) {
             const contenedor = document.getElementById('results');
             let htmlResultados = '';
             
-            // 🚀 ESTRUCTURA TRADICIONAL COMPATIBLE CON CUALQUIER CACHÉ
             for (let i = 0; i < lista.length; i++) {
                 const track = lista[i];
                 const idVideo = track.id;
                 const tituloLimpio = track.title.replace(/'/g, "");
                 
-                // Forzamos que al hacer clic abra DIRECTAMENTE la pestaña externa de YouTube
-                htmlResultados += '<div class="track-item" onclick="window.open(\'https://youtube.com' + idVideo + '&autoplay=1\', \'_blank\'); document.getElementById(\'studio-console\').style.display = \'block\'; document.getElementById(\'console-title\').innerText = \'🎙️ Grabando para: ' + tituloLimpio + '\'; window.scrollTo({ top: 0, behavior: \'smooth\' });">';
+                // 🚀 CADENA MAESTRA: Evita iframes rotos forzando una pestaña externa directa que el SW no puede alterar
+                htmlResultados += '<div class="track-item" onclick="abrirPistaExterna(\'' + idVideo + '\', \'' + tituloLimpio + '\')">';
                 htmlResultados += '<div class="track-thumb">🎵</div>';
                 htmlResultados += '<div class="track-info">';
                 htmlResultados += '<div class="track-title">' + track.title + '</div>';
@@ -142,21 +124,18 @@
             contenedor.innerHTML = htmlResultados;
         }
 
-        // 🚀 DISPARADOR LIBRE UNIVERSAL: Salta los bloqueos de red abriendo la pista nativa de YouTube
-        function cargarVideoOficial(videoId, tituloCancion) {
+        function abrirPistaExterna(videoId, tituloCancion) {
             const consola = document.getElementById('studio-console');
             const tituloConsole = document.getElementById('console-title');
             
-            // Encendemos la consola de grabación de voz en tu pantalla de inmediato
             if (consola) consola.style.display = 'block';
             if (tituloConsole) tituloConsole.innerText = "🎙️ Grabando para: " + tituloCancion;
             
-            // 🎯 JUGADA MAESTRA: Abre la pista oficial de Karaoke en una pestaña externa o en la app de YouTube del celular
-            const urlOficialYouTube = "https://youtube.com" + videoId + "&autoplay=1";
-            window.open(urlOficialYouTube, '_blank');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Dirección explícita inmutable armada sin marcadores variables
+            const urlFinal = "https://youtube.com" + videoId;
+            window.open(urlFinal, '_blank');
         }
-        
+
         let grabadoraMultimedia = null;
         let fragmentosAudio = [];
         let estaGrabando = false;
