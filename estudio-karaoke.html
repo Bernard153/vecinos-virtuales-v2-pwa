@@ -82,6 +82,7 @@
 
         <div id="results" class="results-list"></div>
     </div>
+        <script src="https://youtube.com"></script>
     <script>
         // ============================================================
         // CONFIGURACIÓN DE APIS Y CATÁLOGO DE RESPALDO LOCAL
@@ -101,7 +102,7 @@
         ];
 
         let ytPlayer = null;
-        let motorSincronizado = false;
+        let motorSincronizado = true; // Forzamos sincronización nativa inmediata al estar el script en la cabecera
 
         // Iniciar la carga de la API oficial de YouTube
         (function() {
