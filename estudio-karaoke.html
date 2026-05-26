@@ -81,8 +81,8 @@
             motorSincronizado = true;
             console.log("✅ Motor de reproducción de YouTube acoplado");
         }
-        // ============================================================
-        // LÓGICA DE BÚSQUEDA INTELIGENTE DUAL
+                // ============================================================
+        // LÓGICA DE BÚSQUEDA INTELIGENTE SIN INTENTOS DE RED FALLIDOS
         // ============================================================
         function buscarCancion() {
             const input = document.getElementById('search-input');
@@ -95,16 +95,17 @@
             statusBox.style.display = "none";
             contenedorResultados.innerHTML = "";
 
-            // 🛡️ CONTROL DE SINCRONIZACIÓN
+            // 🛡️ CONTROL DE SINCRONIZACIÓN MOTOR IFRAME
             if (!motorSincronizado) {
                 statusBox.innerText = "El motor de YouTube se está sincronizando en segundo plano. Espera 3 segundos e intenta de nuevo.";
                 statusBox.style.display = "block";
                 return;
             }
 
-            // CASO A: SI NO TIENES CLAVE REAL, DISPARA EL MOTOR DE ALMACÉN LOCAL
-            if (!YOUTUBE_API_KEY) {
-                console.log("🔍 Rastreando catálogo local...");
+            // 🎯 DESVÍO INTELIGENTE COMERCIAL
+            if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.trim() === "") {
+                console.log("🔍 Clave vacía. Desviando de forma segura al catálogo local de rock y folclore...");
+                
                 const filtradas = CATALOGO_LOCAL.filter(c => 
                     c.title.toLowerCase().includes(consulta) || 
                     c.genre.toLowerCase().includes(consulta)
@@ -113,13 +114,12 @@
                 if (filtradas.length > 0) {
                     renderizarResultados(filtradas);
                 } else {
-                    // Si busca algo que no está, le regalamos todo el catálogo para que elija
-                    statusBox.innerText = "No encontramos coincidencias exactas. Te mostramos los clásicos disponibles para cantar:";
+                    statusBox.innerText = `No encontramos coincidencias exactas para "${input.value}". Elige uno de nuestros clásicos para cantar:`;
                     statusBox.style.display = "block";
                     renderizarResultados(CATALOGO_LOCAL);
                 }
             } else {
-                // CASO B: CONEXIÓN LIBRE A GOOGLE YOUTUBE
+                // SOLO ACCEDE A LA RED SI COLOCASTE LA CLAVE REAL
                 fetch(`https://googleapis.com{encodeURIComponent(consulta + " karaoke")}&type=video&key=${YOUTUBE_API_KEY}`)
                     .then(res => res.json())
                     .then(data => {
@@ -135,7 +135,7 @@
                         }
                     })
                     .catch(err => {
-                        console.error("Error en API YouTube, cargando respaldo local:", err);
+                        console.error("Error en API externa, cargando respaldo local:", err);
                         renderizarResultados(CATALOGO_LOCAL);
                     });
             }
