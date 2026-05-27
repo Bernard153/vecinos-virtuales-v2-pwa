@@ -1,9 +1,9 @@
 // ============================================================
-// CORE PRINCIPAL DE LA APP - MOTOR DE ARRANQUE NATIVO V4
+// CORE PRINCIPAL DE LA APP - MOTOR DE ARRANQUE VISUAL SPA V5
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Vecinos Virtuales V4 - Iniciando motor de arranque nativo SPA...');
+    console.log('🚀 Vecinos Virtuales V5 - Iniciando motor de arranque visual...');
     
     // 1. Bypass estricto de términos y condiciones para agilizar
     try {
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 // ============================================================
-                // CASO B: VECINO INVITADO ANÓNIMO (ACCESO MAESTRO SIN FORMULARIOS)
+                // CASO B: VECINO INVITADO ANÓNIMO (ACCESO DIRECTO SIN ESCALAS)
                 // ============================================================
                 console.log("🚀 Invitado detectado. Inyectando Lomas de Tafí y ejecutando disparadores SPA.");
                 
@@ -52,20 +52,33 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.VV.data.user.barrio = "Lomas de Tafí";
                 }
 
+                // 🚨 DERRIBADO DE MURALES: Forzamos el apagado de los contenedores de bloqueo
+                const pantallasBloqueo = ['loading-screen', 'location-screen', 'auth-screen'];
+                pantallasBloqueo.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.style.display = 'none';
+                        el.classList.remove('active');
+                    }
+                });
+
+                // Forzamos el encendido físico de tu contenedor nativo principal
+                const mainDash = document.getElementById('dashboard');
+                if (mainDash) {
+                    mainDash.style.display = 'block';
+                    mainDash.classList.add('active');
+                }
+
                 // 🚀 SISTEMA DE APAGADO DE CARGA NATIVO: Llamamos a tus propias herramientas del Core
                 if (window.VV.utils) {
-                    // Forzamos la apertura de la pantalla del Dashboard borrando la de carga
                     if (typeof window.VV.utils.showScreen === 'function') {
-                        window.VV.utils.showScreen('dashboard-screen');
                         window.VV.utils.showScreen('main-screen');
                     }
-                    // Forzamos el renderizado de la sección del muro de inicio
                     if (typeof window.VV.utils.showSection === 'function') {
                         window.VV.utils.showSection('dashboard');
                     }
                 } else {
-                    // Red de seguridad si utils no cargó: buscamos las funciones globales sueltas
-                    if (typeof window.showScreen === 'function') window.showScreen('dashboard-screen');
+                    if (typeof window.showScreen === 'function') window.showScreen('main-screen');
                     if (typeof window.showSection === 'function') window.showSection('dashboard');
                 }
             }
@@ -101,4 +114,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-console.log('✅ Módulo APP blindado en V4 acoplado al ruteo SPA con éxito.');
+console.log('✅ Módulo APP blindado en V5 acoplado al ruteo SPA con éxito.');
