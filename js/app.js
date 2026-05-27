@@ -44,15 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (dashEl) dashEl.style.display = 'block';
                 }
             } else {
-                // ============================================================
-                // CASO B: VECINO INVITADO ANÓNIMO (ACCESO DIRECTO SIN ESCALAS)
-                // ============================================================
-                console.log("🚀 Invitado por WhatsApp o Cartel detectado. Cargando Lomas de Tafí.");
-                
-                if (typeof window.VV === 'undefined') window.VV = {};
-                if (!window.VV.geo) window.VV.geo = {};
-                window.VV.geo.currentBarrio = "Lomas de Tafí";
-
                 // Apagar el spinner de carga y encender el Dashboard de inmediato
                 const loadingEl = document.getElementById('loading-screen') || document.querySelector('.loading-screen');
                 if (loadingEl) {
@@ -60,15 +51,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     loadingEl.classList.remove('active');
                 }
 
-                const dashScreen = document.getElementById('dashboard-screen') || document.getElementById('main-screen');
+                // 🚀 CAMBIO DE LLAVE: Buscamos tu contenedor real del muro de inicio
+                const dashScreen = document.getElementById('dashboard') || document.getElementById('main-screen');
                 if (dashScreen) {
                     dashScreen.style.display = 'block';
                     dashScreen.classList.add('active');
                 }
 
-                // Forzar el encendido visual de la sección del muro principal
-                if (typeof window.VV.utils !== 'undefined' && typeof window.VV.utils.showSection === 'function') {
+                // Forzar la inyección y el ruteo visual del muro principal
+                if (typeof window.VV !== 'undefined' && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
                     window.VV.utils.showSection('dashboard');
+                } else if (typeof window.showSection === 'function') {
+                    window.showSection('dashboard');
                 }
             }
         } catch (errRoute) {
