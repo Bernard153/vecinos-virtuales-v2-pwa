@@ -1,9 +1,9 @@
 // ============================================================
-// CORE PRINCIPAL DE LA APP - MOTOR DE ARRANQUE DIRECTO V3
+// CORE PRINCIPAL DE LA APP - MOTOR DE ARRANQUE NATIVO V4
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Vecinos Virtuales V3 - Iniciando motor de arranque directo...');
+    console.log('🚀 Vecinos Virtuales V4 - Iniciando motor de arranque nativo SPA...');
     
     // 1. Bypass estricto de términos y condiciones para agilizar
     try {
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error en bypass de términos:', e);
     }
     
-    // 2. Temporizador de arranque limpio e inmediato
+    // 2. Temporizador de arranque limpio calibrado con tu arquitectura
     setTimeout(async () => {
         let hasSession = false;
         
@@ -27,52 +27,53 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error al comprobar sesión existente:', errSession);
         }
         
-        // ENRUTAMIENTO DE ACCESO DIRECTO CRUDO
+        // ENRUTAMIENTO DIRECTO USANDO TUS PROPIAS FUNCIONES SPA
         try {
             if (hasSession) {
                 // CASO A: USUARIO REGISTRADO LOGUEADO
-                console.log("👤 Usuario registrado detectado. Iniciando panel...");
+                console.log("👤 Usuario registrado detectado. Acoplando panel nativo...");
                 if (typeof window.VV !== 'undefined' && window.VV.auth && typeof window.VV.auth.startApp === 'function') {
                     window.VV.auth.startApp();
                 } else if (typeof window.startApp === 'function') {
                     window.startApp();
-                } else {
-                    // Red de seguridad directa
-                    const loadingEl = document.getElementById('loading-screen');
-                    if (loadingEl) loadingEl.style.display = 'none';
-                    const dashEl = document.getElementById('dashboard-screen');
-                    if (dashEl) dashEl.style.display = 'block';
                 }
             } else {
-                // Apagar el spinner de carga y encender el Dashboard de inmediato
-                const loadingEl = document.getElementById('loading-screen') || document.querySelector('.loading-screen');
-                if (loadingEl) {
-                    loadingEl.style.display = 'none';
-                    loadingEl.classList.remove('active');
+                // ============================================================
+                // CASO B: VECINO INVITADO ANÓNIMO (ACCESO MAESTRO SIN FORMULARIOS)
+                // ============================================================
+                console.log("🚀 Invitado detectado. Inyectando Lomas de Tafí y ejecutando disparadores SPA.");
+                
+                if (typeof window.VV === 'undefined') window.VV = {};
+                if (!window.VV.geo) window.VV.geo = {};
+                
+                // Fijamos el barrio de forma estricta en todo el entorno comercial
+                window.VV.geo.currentBarrio = "Lomas de Tafí";
+                if (window.VV.data && window.VV.data.user) {
+                    window.VV.data.user.barrio = "Lomas de Tafí";
                 }
 
-                // 🚀 CAMBIO DE LLAVE: Buscamos tu contenedor real del muro de inicio
-                const dashScreen = document.getElementById('dashboard') || document.getElementById('main-screen');
-                if (dashScreen) {
-                    dashScreen.style.display = 'block';
-                    dashScreen.classList.add('active');
-                }
-
-                // Forzar la inyección y el ruteo visual del muro principal
-                if (typeof window.VV !== 'undefined' && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
-                    window.VV.utils.showSection('dashboard');
-                } else if (typeof window.showSection === 'function') {
-                    window.showSection('dashboard');
+                // 🚀 SISTEMA DE APAGADO DE CARGA NATIVO: Llamamos a tus propias herramientas del Core
+                if (window.VV.utils) {
+                    // Forzamos la apertura de la pantalla del Dashboard borrando la de carga
+                    if (typeof window.VV.utils.showScreen === 'function') {
+                        window.VV.utils.showScreen('dashboard-screen');
+                        window.VV.utils.showScreen('main-screen');
+                    }
+                    // Forzamos el renderizado de la sección del muro de inicio
+                    if (typeof window.VV.utils.showSection === 'function') {
+                        window.VV.utils.showSection('dashboard');
+                    }
+                } else {
+                    // Red de seguridad si utils no cargó: buscamos las funciones globales sueltas
+                    if (typeof window.showScreen === 'function') window.showScreen('dashboard-screen');
+                    if (typeof window.showSection === 'function') window.showSection('dashboard');
                 }
             }
         } catch (errRoute) {
-            console.error('Error en el enrutamiento de arranque:', errRoute);
-            // Red de seguridad extrema para que nunca se quede congelado
-            const loadingEl = document.getElementById('loading-screen');
-            if (loadingEl) loadingEl.style.display = 'none';
+            console.error('Error en el enrutamiento nativo de arranque:', errRoute);
         }
 
-        // 🌟 RENDERIZADO OBLIGATORIO DE LA CARTELERA COMERCIAL
+        // 📺 RENDERIZADO OBLIGATORIO DE LA CARTELERA COMERCIAL CRUDA Y DIRECTA
         try {
             if (typeof window.VV !== 'undefined' && window.VV.featured && typeof window.VV.featured.renderNovedadesCarrusel === 'function') {
                 window.VV.featured.renderNovedadesCarrusel();
@@ -100,4 +101,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-console.log('✅ Módulo APP unificado y blindado en V3 cargado con éxito.');
+console.log('✅ Módulo APP blindado en V4 acoplado al ruteo SPA con éxito.');
