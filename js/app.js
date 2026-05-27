@@ -1,116 +1,103 @@
 // ============================================================
-// CORE PRINCIPAL DE LA APP - MOTOR DE ARRANQUE BLINDADO V2
+// CORE PRINCIPAL DE LA APP - MOTOR DE ARRANQUE DIRECTO V3
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Vecinos Virtuales V2 - Iniciando controlador...');
+    console.log('🚀 Vecinos Virtuales V3 - Iniciando motor de arranque directo...');
     
-    // 1. Evitar bloqueo por términos y condiciones
+    // 1. Bypass estricto de términos y condiciones para agilizar
     try {
-        const termsAcceptedRaw = localStorage.getItem('termsAccepted');
-        let termsAccepted = termsAcceptedRaw ? JSON.parse(termsAcceptedRaw) : null;
-        
-        if (!termsAccepted || !termsAccepted.accepted) {
-            console.log('⚠️ Términos no detectados. Forzando aceptación simulada para pruebas locales.');
-            localStorage.setItem('termsAccepted', JSON.stringify({ accepted: true, date: new Date().toISOString() }));
-        }
+        localStorage.setItem('termsAccepted', JSON.stringify({ accepted: true, date: new Date().toISOString() }));
     } catch (e) {
         console.error('Error en bypass de términos:', e);
     }
     
-    // 2. Intentar quitar la pantalla de carga inmediatamente
-    try {
-        if (typeof VV !== 'undefined' && VV.utils && typeof VV.utils.showScreen === 'function') {
-            VV.utils.showScreen('loading-screen');
-        }
-    } catch (e) {
-        console.error('No se pudo invocar showScreen inicial:', e);
-    }
-    
-    // 3. Temporizador de arranque con protecciones individuales y puente de compatibilidad
+    // 2. Temporizador de arranque limpio e inmediato
     setTimeout(async () => {
         let hasSession = false;
         
-        // PUENTE INTELIGENTE: Busca la función en el objeto VV o de forma global en auth-supabase
+        // Comprobar si hay una sesión activa de usuario registrado
         try {
-            if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.checkExistingUser === 'function') {
-                hasSession = await VV.auth.checkExistingUser();
+            if (typeof window.VV !== 'undefined' && window.VV.auth && typeof window.VV.auth.checkExistingUser === 'function') {
+                hasSession = await window.VV.auth.checkExistingUser();
             } else if (typeof window.checkExistingUser === 'function') {
                 hasSession = await window.checkExistingUser();
-            } else if (typeof checkExistingUser === 'function') {
-                hasSession = await checkExistingUser();
-            } else {
-                console.log('⚠️ No se detectó función de sesión. Forzando ingreso como invitado.');
             }
         } catch (errSession) {
             console.error('Error al comprobar sesión existente:', errSession);
         }
         
-        // PROCESAMIENTO DE ACCESO
+        // ENRUTAMIENTO DE ACCESO DIRECTO CRUDO
         try {
             if (hasSession) {
-                // CASO A: USUARIO REGISTRADO / DEMO LOGUEADO
-                if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.startApp === 'function') {
-                    VV.auth.startApp();
+                // CASO A: USUARIO REGISTRADO LOGUEADO
+                console.log("👤 Usuario registrado detectado. Iniciando panel...");
+                if (typeof window.VV !== 'undefined' && window.VV.auth && typeof window.VV.auth.startApp === 'function') {
+                    window.VV.auth.startApp();
                 } else if (typeof window.startApp === 'function') {
                     window.startApp();
-                } else if (typeof startApp === 'function') {
-                    startApp();
                 } else {
-                    // Red de seguridad si falla startApp: enviamos directo al dashboard
-                    if (typeof VV !== 'undefined' && VV.utils && typeof VV.utils.showScreen === 'function') {
-                        VV.utils.showScreen('dashboard-screen');
-                        if (typeof VV.utils.showSection === 'function') VV.utils.showSection('dashboard');
-                    }
-                }
-
-                if (VV.utils && typeof VV.utils.activarFolleto === 'function') { VV.utils.activarFolleto(); }
-                if (VV.geo && typeof VV.geo.init === 'function') {
-                    await VV.geo.init();
-                    VV.geo.updateLocationUI();
+                    // Red de seguridad directa
+                    const loadingEl = document.getElementById('loading-screen');
+                    if (loadingEl) loadingEl.style.display = 'none';
+                    const dashEl = document.getElementById('dashboard-screen');
+                    if (dashEl) dashEl.style.display = 'block';
                 }
             } else {
-                                // ============================================================
-                // CASO B: VECINO INVITADO ANÓNIMO (ACCESO INMEDIATO SIN ESCALAS)
                 // ============================================================
-                console.log("🚀 Invitado detectado. Saltando pantallas y cargando Lomas de Tafí por defecto.");
+                // CASO B: VECINO INVITADO ANÓNIMO (ACCESO DIRECTO SIN ESCALAS)
+                // ============================================================
+                console.log("🚀 Invitado por WhatsApp o Cartel detectado. Cargando Lomas de Tafí.");
                 
-                // Forzamos el barrio comercial en el motor geográfico para que no pida GPS
                 if (typeof window.VV === 'undefined') window.VV = {};
                 if (!window.VV.geo) window.VV.geo = {};
                 window.VV.geo.currentBarrio = "Lomas de Tafí";
 
-                // Mandamos al usuario directo al Dashboard a ver la cartelera
-                if (typeof window.VV.utils !== 'undefined' && typeof window.VV.utils.showScreen === 'function') {
-                    window.VV.utils.showScreen('dashboard-screen');
-                    if (typeof window.VV.utils.showSection === 'function') {
-                        window.VV.utils.showSection('dashboard');
-                    }
+                // Apagar el spinner de carga y encender el Dashboard de inmediato
+                const loadingEl = document.getElementById('loading-screen') || document.querySelector('.loading-screen');
+                if (loadingEl) {
+                    loadingEl.style.display = 'none';
+                    loadingEl.classList.remove('active');
                 }
+
+                const dashScreen = document.getElementById('dashboard-screen') || document.getElementById('main-screen');
+                if (dashScreen) {
+                    dashScreen.style.display = 'block';
+                    dashScreen.classList.add('active');
+                }
+
+                // Forzar el encendido visual de la sección del muro principal
+                if (typeof window.VV.utils !== 'undefined' && typeof window.VV.utils.showSection === 'function') {
+                    window.VV.utils.showSection('dashboard');
+                }
+            }
         } catch (errRoute) {
             console.error('Error en el enrutamiento de arranque:', errRoute);
-            // Red de seguridad extrema: romper el spinner y mostrar pantalla de localización
+            // Red de seguridad extrema para que nunca se quede congelado
             const loadingEl = document.getElementById('loading-screen');
-            if (loadingEl) loadingEl.classList.remove('active');
-            const locEl = document.getElementById('location-screen');
-            if (locEl) locEl.classList.add('active');
+            if (loadingEl) loadingEl.style.display = 'none';
         }
 
-        // 🌟 ORDEN INDEPENDIENTE: El carrusel se enciende SÍ O SÍ para registrados e invitados
-        if (typeof VV !== 'undefined' && typeof VV.featured !== 'undefined' && typeof VV.featured.renderNovedadesCarrusel === 'function') {
-            VV.featured.renderNovedadesCarrusel();
+        // 🌟 RENDERIZADO OBLIGATORIO DE LA CARTELERA COMERCIAL
+        try {
+            if (typeof window.VV !== 'undefined' && window.VV.featured && typeof window.VV.featured.renderNovedadesCarrusel === 'function') {
+                window.VV.featured.renderNovedadesCarrusel();
+            }
+        } catch (errFeatured) {
+            console.error('Error renderizando la cartelera comercial:', errFeatured);
         }
-    }, 1500);   
 
-    // 4. Control de navegación del menú inferior
+    }, 1200);   
+
+    // 3. Control de navegación del menú inferior
     document.addEventListener('click', function(e) {
         try {
             const menuItem = e.target.closest('.menu-item');
             if (menuItem) {
                 e.preventDefault();
                 const section = menuItem.dataset.section;
-                if (section && typeof VV !== 'undefined' && VV.utils && typeof VV.utils.showSection === 'function') {
-                    VV.utils.showSection(section);
+                if (section && typeof window.VV !== 'undefined' && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
+                    window.VV.utils.showSection(section);
                 }
             }
         } catch (err) {
@@ -119,4 +106,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-console.log('✅ Módulo APP blindado cargado correctamente con puente dual');
+console.log('✅ Módulo APP unificado y blindado en V3 cargado con éxito.');
