@@ -70,17 +70,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     VV.geo.updateLocationUI();
                 }
             } else {
-                // CASO B: VECINO INVITADO ANÓNIMO
-                if (typeof VV !== 'undefined' && VV.utils && typeof VV.utils.showScreen === 'function') {
-                    VV.utils.showScreen('location-screen');
-                }
+                                // ============================================================
+                // CASO B: VECINO INVITADO ANÓNIMO (ACCESO INMEDIATO SIN ESCALAS)
+                // ============================================================
+                console.log("🚀 Invitado detectado. Saltando pantallas y cargando Lomas de Tafí por defecto.");
                 
-                if (typeof VV !== 'undefined' && VV.auth && typeof VV.auth.requestGeolocation === 'function') {
-                    VV.auth.requestGeolocation();
-                } else if (typeof window.requestGeolocation === 'function') {
-                    window.requestGeolocation();
+                // Forzamos el barrio comercial en el motor geográfico para que no pida GPS
+                if (typeof window.VV === 'undefined') window.VV = {};
+                if (!window.VV.geo) window.VV.geo = {};
+                window.VV.geo.currentBarrio = "Lomas de Tafí";
+
+                // Mandamos al usuario directo al Dashboard a ver la cartelera
+                if (typeof window.VV.utils !== 'undefined' && typeof window.VV.utils.showScreen === 'function') {
+                    window.VV.utils.showScreen('dashboard-screen');
+                    if (typeof window.VV.utils.showSection === 'function') {
+                        window.VV.utils.showSection('dashboard');
+                    }
                 }
-            }
         } catch (errRoute) {
             console.error('Error en el enrutamiento de arranque:', errRoute);
             // Red de seguridad extrema: romper el spinner y mostrar pantalla de localización
