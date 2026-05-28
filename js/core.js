@@ -1,11 +1,11 @@
 // ============================================================
-// VECINOS VIRTUALES - MÓDULO CORE REPARADO PARA ACCESOS DIRECTOS
+// VECINOS VIRTUALES - MÓDULO CORE MAESTRO UNIFICADO V5
 // ============================================================
 
 const VV = {
     data: {
         user: null,
-        neighborhood: '',
+        neighborhood: 'Lomas de Tafí', // Barrio insignia por defecto para invitados
         products: [],
         improvements: [],
         culturalPosts: [],
@@ -18,6 +18,12 @@ const VV = {
         
         async loadFromSupabase() {
             try {
+                // Sincronización segura de sesión persistente para evitar bloqueos del Admin
+                if (!VV.data.user) {
+                    const sessionUser = localStorage.getItem('vv_user_session');
+                    if (sessionUser) VV.data.user = JSON.parse(sessionUser);
+                }
+
                 const { data: products } = await supabase.from('products').select('*').order('created_at', { ascending: false });
                 VV.data.products = products || [];
                 
@@ -36,7 +42,12 @@ const VV = {
                 const { data: sponsors } = await supabase.from('sponsors').select('*').order('created_at', { ascending: false });
                 VV.data.sponsors = sponsors || [];
                 
-                console.log('✅ Datos de Folleto y Core cargados');
+                console.log('✅ Datos de Folleto y Core cargados con éxito desde Supabase');
+                
+                // Disparador de seguridad: Si estamos en el Dashboard de inicio, forzamos el dibujado de la cartelera
+                if (typeof window.VV !== 'undefined' && window.VV.featured && typeof window.VV.featured.renderNovedadesCarrusel === 'function') {
+                    window.VV.featured.renderNovedadesCarrusel();
+                }
             } catch (error) {
                 console.error('Error en loadFromSupabase:', error);
             }
@@ -57,14 +68,34 @@ const VV = {
             } catch(e) { return false; }
         },
 
+        // 📺 CONTROLADOR DE LONAS GIGANTES DE PANTALLA
         showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+                s.style.display = 'none'; // Forzamos el apagado físico para evitar bloqueos
+            });
             const el = document.getElementById(screenId);
-            if (el) el.classList.add('active');
+            if (el) {
+                el.classList.add('active');
+                el.style.display = 'block';
+            }
         },
         
+        // 🚀 CONTROLADOR DE MÓDULOS DEL INTERIOR (EL STAND DE NAVEGACIÓN)
         showSection(sectionId, addToHistory = true) {
             document.body.style.overflow = 'auto'; 
+            
+            // 🚨 EL LEVANTADOR DE TELÓN AUTOMÁTICO:
+            // Si el sistema navega al dashboard o secciones, nos aseguramos de pulverizar las pantallas de bloqueo
+            const pantallasCarga = ['loading-screen', 'location-screen', 'auth-screen', 'registration-screen', 'login-screen'];
+            pantallasCarga.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.classList.remove('active');
+                    el.style.display = 'none';
+                }
+            });
+
             const folletoCont = document.getElementById('folleto-container');
             if (folletoCont) {
                 folletoCont.classList.remove('active');
@@ -76,7 +107,7 @@ const VV = {
             }
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
-            // 🛡️ RED DE SEGURIDAD PROTECTORA EN LA NAVEGACIÓN
+            // 🛡️ RED DE SEGURIDAD PROTECTORA EN LA NAVEGACIÓN DEL MENÚ INFERIOR
             try {
                 document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
                 const menuItem = document.querySelector(`[data-section="${sectionId}"]`);
@@ -97,24 +128,30 @@ const VV = {
                 sectionEl.classList.add('active');
                 sectionEl.style.display = 'block';
             }
-            // 🌟 NUEVA RED DE SEGURIDAD: Si el vecino entra al dashboard, forzamos el carrusel siempre
+
+            // 🌟 ACTIVADOR DE LA NUEVA CARTELERA COMERCIAL EXCLUSIVA POR BARRIO
             if (sectionId === 'dashboard' || sectionId === '') {
-                if (typeof VV !== 'undefined' && VV.featured && typeof VV.featured.renderNovedadesCarrusel === 'function') {
-                    VV.featured.renderNovedadesCarrusel();
+                if (typeof window.VV !== 'undefined' && window.VV.featured && typeof window.VV.featured.renderNovedadesCarrusel === 'function') {
+                    window.VV.featured.renderNovedadesCarrusel();
                 }
             }
+
             try {
                 if (sectionId === 'marketplace' && VV.marketplace) VV.marketplace.load();
                 if (sectionId === 'services' && VV.services) VV.services.load();
                 if (sectionId === 'improvements' && VV.improvements) VV.improvements.load();
                 if (sectionId === 'cultural' && VV.cultural) VV.cultural.load();
                 
+                // 👑 CONEXIÓN BLINDADA DEL ADMINISTRADOR SUPREMO
                 if (sectionId === 'admin') {
                     if (VV.utils.isAdmin()) {
-                        VV.admin.load();
+                        if (VV.admin && typeof VV.admin.load === 'function') VV.admin.load();
                         if (typeof window.cargarSolicitudesPendientes === 'function') {
                             window.cargarSolicitudesPendientes();
                         }
+                    } else {
+                        console.warn("⚠️ Acceso denegado: No posees rol de Administrador Supremo.");
+                        VV.utils.showSection('dashboard');
                     }
                 }
                 if (sectionId === 'folleto') {
@@ -141,14 +178,23 @@ const VV = {
         },
 
         generateId() { return Date.now().toString() + Math.random().toString(36).substr(2, 9); },
-        isAdmin() { return VV.data.user && VV.data.user.role === 'admin'; },
-        isModerator() { return VV.data.user && VV.data.user.role === 'moderator'; },
+        
+        // 🔒 VALIDACIONES JERÁRQUICAS AMPLIADAS CON RESPALDO LOCAL
+        isAdmin() { 
+            const user = VV.data.user || JSON.parse(localStorage.getItem('vv_user_session'));
+            return !!(user && user.role === 'admin'); 
+        },
+        isModerator() { 
+            const user = VV.data.user || JSON.parse(localStorage.getItem('vv_user_session'));
+            return !!(user && user.role === 'moderator'); 
+        },
         
         logModeratorAction(action, details) {
-            if (!VV.data.user) return;
+            const user = VV.data.user || JSON.parse(localStorage.getItem('vv_user_session'));
+            if (!user) return;
             const logData = {
                 id: VV.utils.generateId(),
-                moderatorId: VV.data.user.id,
+                moderatorId: user.id,
                 action: action,
                 details: details,
                 timestamp: new Date().toISOString()
@@ -163,4 +209,4 @@ const VV = {
 };
 
 window.VV = VV;
-console.log('✅ Módulo CORE unificado e indestructible cargado con éxito');
+console.log('✅ Columna Vertebral CORE V5 unificada, blindada e indestructible cargada.');
