@@ -1,11 +1,11 @@
 // ============================================================
-// CORE PRINCIPAL DE LA APP - ENRUTADOR RÁPIDO V6 BLINDADO
+// CORE PRINCIPAL DE LA APP - ENRUTADOR RÁPIDO V6 ASÍNCRONO
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Vecinos Virtuales V6 - Sincronizando enrutador con el Core...');
     
-    // Bypass automático de términos
+    // Bypass automático de términos y condiciones
     try {
         localStorage.setItem('termsAccepted', JSON.stringify({ accepted: true, date: new Date().toISOString() }));
     } catch (e) { console.error(e); }
@@ -29,53 +29,62 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 console.log("🚀 Modo Invitado Activo: Levantando telón de Lomas de Tafí.");
                 
-                // Fijamos el entorno geográfico
+                // Fijamos el entorno geográfico de la aplicación
                 if (!window.VV) window.VV = {};
                 if (!window.VV.geo) window.VV.geo = {};
                 window.VV.geo.currentBarrio = "Lomas de Tafí";
 
-                // 🔥 MOTOR DE REINTENTO: Espera a que la cartelera comercial esté lista en memoria
+                // 🔄 ESTRATEGIA DE INYECCIÓN ASÍNCRONA: Espera a que Supabase monte los módulos
                 let intentos = 0;
-                const verificarYEncender = setInterval(() => {
+                const forzarArranque = setInterval(() => {
                     intentos++;
                     
-                    // Comprobamos si el módulo comercial ya se cargó por completo
-                    const carteleraLista = (window.VV && window.VV.featured && typeof window.VV.featured.init === 'function') || (typeof initFeatured === 'function');
+                    // Comprobamos si el motor comercial del Core V5 está listo en memoria
+                    const coreListo = (window.VV && window.VV.featured && typeof window.VV.featured.init === 'function') || (typeof initFeatured === 'function');
                     
-                    if (carteleraLista) {
-                        clearInterval(verificarYEncender);
+                    if (coreListo) {
+                        clearInterval(forzarArranque);
                         
-                        // 1. Mostramos la sección visualmente
+                        // 1. Forzamos la visibilidad de los contenedores clave del HTML
+                        const idsDashboard = ['dashboard', 'panel-dashboard', 'main-dashboard', 'stats-dashboard'];
+                        idsDashboard.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el) el.style.setProperty('display', 'block', 'important');
+                        });
+
+                        // 2. Le ordenamos al enrutador gráfico abrir la sección principal
                         if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
                             window.VV.utils.showSection('dashboard');
                         } else if (typeof window.showSection === 'function') {
                             window.showSection('dashboard');
                         }
                         
-                        // 2. Inyectamos los datos comerciales descargados de Supabase
+                        // 3. Inicializamos las ofertas y anuncios destacados descargados de Supabase
                         if (window.VV && window.VV.featured && typeof window.VV.featured.init === 'function') {
                             window.VV.featured.init();
                         } else if (typeof initFeatured === 'function') {
                             initFeatured();
                         }
-                        console.log("⚡ Cartelera comercial acoplada con éxito tras sincronía.");
-                    } 
+                        console.log("⚡ Cartelera comercial de Lomas de Tafí acoplada y renderizada.");
+                    }
                     
-                    // Límite de seguridad: si pasa mucho tiempo, levanta igual para no congelar
+                    // Límite de seguridad (2 segundos) para que la app no quede colgada si falla la red
                     if (intentos > 20) {
-                        clearInterval(verificarYEncender);
+                        clearInterval(forzarArranque);
+                        const elBase = document.getElementById('dashboard') || document.getElementById('panel-dashboard');
+                        if (elBase) elBase.style.display = 'block';
                         if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
                             window.VV.utils.showSection('dashboard');
                         }
                     }
-                }, 100); // Revisa cada 100 milisegundos
+                }, 100); // Revisa la memoria del navegador cada 100 milisegundos
             }
         } catch (errRoute) {
-            console.error('Error en el ruteo:', errRoute);
+            console.error('Error en el ruteo de inicio:', errRoute);
         }
-    }, 300);
+    }, 400); // Margen de tiempo para permitir la carga fluida de configuraciones previas
 
-    // Control de navegación del menú inferior
+    // Control de navegación interactiva del menú inferior
     document.addEventListener('click', function(e) {
         try {
             const menuItem = e.target.closest('.menu-item');
