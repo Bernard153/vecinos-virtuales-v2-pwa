@@ -500,5 +500,303 @@
     border-radius: 20px;
     font-weight: bold;
 }
+/* ==========================================================================
+   CONFIGURACIÓN GENERAL Y RESPONSIVE
+   ========================================================================== */
+body { 
+    font-family: sans-serif; 
+    background: #0f0c1b; 
+    color: white; 
+    margin: 0; 
+    padding: 0; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    min-height: 100vh; 
+}
+
+.container { 
+    width: 90%; 
+    max-width: 500px; 
+    padding: 1.5rem 0; 
+    text-align: center; 
+}
+
+/* ==========================================================================
+   ENCABEZADO Y ELEMENTOS DE NAVEGACIÓN
+   ========================================================================== */
+.header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 1.5rem; 
+}
+
+.btn-back { 
+    background: rgba(255,255,255,0.1); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    color: white; 
+    padding: 0.5rem 1rem; 
+    border-radius: 50px; 
+    text-decoration: none; 
+    font-size: 0.85rem; 
+    font-weight: bold; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+}
+
+.title { 
+    font-size: 1.3rem; 
+    margin: 0; 
+    font-weight: bold; 
+    color: #a855f7; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+}
+
+/* ==========================================================================
+   BUSCADOR Y ALERTAS
+   ========================================================================== */
+.search-box { 
+    display: flex; 
+    gap: 0.5rem; 
+    margin-bottom: 1.25rem; 
+    background: rgba(255,255,255,0.05); 
+    padding: 0.5rem; 
+    border-radius: 12px; 
+    border: 1px solid rgba(255,255,255,0.1); 
+}
+
+.search-box input { 
+    flex: 1; 
+    background: transparent; 
+    border: none; 
+    color: white; 
+    padding: 0.5rem; 
+    font-size: 0.9rem; 
+    outline: none; 
+}
+
+.search-box button { 
+    background: #a855f7; 
+    border: none; 
+    color: white; 
+    padding: 0.5rem 1.2rem; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer; 
+}
+
+.status-msg { 
+    background: rgba(234, 179, 8, 0.15); 
+    border: 1px solid #eab308; 
+    color: #fde047; 
+    padding: 0.75rem; 
+    border-radius: 10px; 
+    font-size: 0.8rem; 
+    line-height: 1.4; 
+    display: none; 
+    margin-bottom: 1rem; 
+    text-align: left; 
+}
+
+/* ==========================================================================
+   CONSOLA DE CONTROL Y VIDEO RESPONSIVO
+   ========================================================================== */
+.studio-console { 
+    background: linear-gradient(145deg, #1e1b4b, #111827); 
+    border: 2px solid #a855f7; 
+    border-radius: 16px; 
+    padding: 1.25rem; 
+    margin-bottom: 1.5rem; 
+    display: none; 
+    text-align: center; 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3); 
+}
+
+.video-wrapper { 
+    position: relative; 
+    padding-bottom: 56.25%; /* Relación de aspecto 16:9 */
+    height: 0; 
+    overflow: hidden; 
+    border-radius: 12px; 
+    border: 1px solid rgba(168, 85, 247, 0.4); 
+    margin-bottom: 1rem; 
+    background: #000; 
+}
+
+.video-wrapper iframe { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    border: 0; 
+}
+
+/* ==========================================================================
+   MEZCLADOR DE AUDIO, BOTONES Y GRABACIÓN
+   ========================================================================== */
+.mixer-panel { 
+    background: rgba(0,0,0,0.3); 
+    padding: 0.75rem; 
+    border-radius: 10px; 
+    margin-bottom: 1rem; 
+    text-align: left; 
+}
+
+.mixer-row { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 0.5rem; 
+    font-size: 0.8rem; 
+    color: #cbd5e1; 
+}
+
+.mixer-row input[type="range"] { 
+    width: 65%; 
+    accent-color: #a855f7; 
+}
+
+.rec-btn { 
+    background: #ef4444; 
+    border: none; 
+    color: white; 
+    width: 60px; 
+    height: 60px; 
+    border-radius: 50%; 
+    font-size: 1.5rem; 
+    cursor: pointer; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); 
+    transition: 0.2s; 
+    margin: 0 0.5rem; 
+}
+
+.rec-btn.recording { 
+    background: #22c55e; 
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); 
+    animation: pulse 1.5s infinite; 
+}
+
+.audio-preview { 
+    width: 100%; 
+    margin-top: 1rem; 
+    border-radius: 8px; 
+    display: none; 
+}
+
+.download-link { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+    background: #3b82f6; 
+    color: white; 
+    text-decoration: none; 
+    padding: 0.5rem 1rem; 
+    border-radius: 8px; 
+    font-size: 0.85rem; 
+    font-weight: bold; 
+    margin-top: 0.75rem; 
+    display: none; 
+}
+
+/* ==========================================================================
+   ANIMACIONES (ECUALIZADOR Y PULSO)
+   ========================================================================== */
+.eq-loader { 
+    display: none; 
+    align-items: flex-end; 
+    justify-content: center; 
+    gap: 4px; 
+    height: 30px; 
+    margin: 0.75rem 0; 
+}
+
+.eq-bar { 
+    width: 4px; 
+    height: 5px; 
+    background: #a855f7; 
+    border-radius: 2px; 
+}
+
+.recording .eq-bar { 
+    animation: bounce 0.8s ease-in-out infinite alternate; 
+}
+
+.recording .eq-bar:nth-child(2) { animation-delay: 0.2s; background: #c084fc; }
+.recording .eq-bar:nth-child(3) { animation-delay: 0.4s; background: #e9d5ff; }
+.recording .eq-bar:nth-child(4) { animation-delay: 0.1s; background: #c084fc; }
+
+@keyframes bounce { 
+    100% { height: 30px; } 
+}
+
+@keyframes pulse { 
+    0% { transform: scale(1); } 
+    50% { transform: scale(1.05); } 
+    100% { transform: scale(1); } 
+}
+
+/* ==========================================================================
+   LISTA DE RESULTADOS DE BÚSQUEDA
+   ========================================================================== */
+.results-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0.75rem; 
+    text-align: left; 
+    margin-top: 1rem; 
+}
+
+.track-item { 
+    background: rgba(255,255,255,0.05); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    padding: 0.75rem; 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.75rem; 
+    cursor: pointer; 
+    transition: 0.2s; 
+}
+
+.track-item:hover { 
+    background: rgba(168, 85, 247, 0.2); 
+    border-color: #a855f7; 
+}
+
+.track-thumb { 
+    width: 60px; 
+    aspect-ratio: 16/9; 
+    background: #221a36; 
+    border-radius: 6px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.2rem; 
+}
+
+.track-info { 
+    flex: 1; 
+}
+
+.track-title { 
+    font-size: 0.85rem; 
+    font-weight: bold; 
+    margin-bottom: 2px; 
+}
+
+.track-genre { 
+    font-size: 0.7rem; 
+    color: #a855f7; 
+    text-transform: uppercase; 
+    font-weight: 600; 
+}
 
 }
