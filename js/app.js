@@ -1,16 +1,16 @@
 // ============================================================
-// CORE PRINCIPAL DE LA APP - ENRUTADOR RÁPIDO V6 ASÍNCRONO
+// CORE PRINCIPAL DE LA APP - ENRUTADOR RÁPIDO V6 ORIGINAL NATIVO
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Vecinos Virtuales V6 - Sincronizando enrutador con el Core...');
     
-    // Bypass automático de términos y condiciones
+    // Bypass automático de términos
     try {
         localStorage.setItem('termsAccepted', JSON.stringify({ accepted: true, date: new Date().toISOString() }));
     } catch (e) { console.error(e); }
     
-    // Ejecución sincronizada con Core V5 y Supabase
+    // Ejecución inmediata sincronizada con Core V5
     setTimeout(async () => {
         let hasSession = false;
         
@@ -29,82 +29,79 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 console.log("🚀 Modo Invitado Activo: Levantando telón de Lomas de Tafí.");
                 
-                // Fijamos el entorno geográfico de la aplicación
+                // Fijamos el entorno geográfico
                 if (!window.VV) window.VV = {};
                 if (!window.VV.geo) window.VV.geo = {};
                 window.VV.geo.currentBarrio = "Lomas de Tafí";
 
-                // 🔄 ESTRATEGIA DE INYECCIÓN ASÍNCRONA: Espera a que Supabase monte los módulos
-                let intentos = 0;
-                const forzarArranque = setInterval(() => {
-                    intentos++;
-                    
-                    // Comprobamos si el motor comercial del Core V5 está listo en memoria
-                    const coreListo = (window.VV && window.VV.featured && typeof window.VV.featured.init === 'function') || (typeof initFeatured === 'function');
-                    
-                    if (coreListo) {
-                        clearInterval(forzarArranque);
-                        
-                        // 1. Forzamos la visibilidad de los contenedores clave del HTML
-                        const idsDashboard = ['dashboard', 'panel-dashboard', 'main-dashboard', 'stats-dashboard'];
-                        idsDashboard.forEach(id => {
-                            const el = document.getElementById(id);
-                            if (el) el.style.setProperty('display', 'block', 'important');
-                        });
-
-                        // 2. Le ordenamos al enrutador gráfico abrir la sección principal
-                        if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
-                            window.VV.utils.showSection('dashboard');
-                        } else if (typeof window.showSection === 'function') {
-                            window.showSection('dashboard');
-                        }
-                        
-                        // 3. Inicializamos las ofertas y anuncios destacados descargados de Supabase
-                        if (window.VV && window.VV.featured && typeof window.VV.featured.init === 'function') {
-                            window.VV.featured.init();
-                        } else if (typeof initFeatured === 'function') {
-                            initFeatured();
-                        }
-                        console.log("⚡ Cartelera comercial de Lomas de Tafí acoplada y renderizada.");
+                // Evaluamos si el navegador solicita el nuevo espacio de entretenimiento
+                if (window.location.hash === '#karaoke') {
+                    conmutarVistasPro('#karaoke');
+                } else {
+                    // Forzamos al enrutador nativo del Core V5 a tomar el control visual
+                    if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
+                        window.VV.utils.showSection('dashboard');
+                    } else if (typeof window.showSection === 'function') {
+                        window.showSection('dashboard');
                     }
-                    
-                    // Límite de seguridad (2 segundos) para que la app no quede colgada si falla la red
-                    if (intentos > 20) {
-                        clearInterval(forzarArranque);
-                        const elBase = document.getElementById('dashboard') || document.getElementById('panel-dashboard');
-                        if (elBase) elBase.style.display = 'block';
-                        if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
-                            window.VV.utils.showSection('dashboard');
-                        }
-                    }
-                }, 100); // Revisa la memoria del navegador cada 100 milisegundos
+                }
             }
         } catch (errRoute) {
-            console.error('Error en el ruteo de inicio:', errRoute);
+            console.error('Error en el ruteo:', errRoute);
         }
-    }, 400); // Margen de tiempo para permitir la carga fluida de configuraciones previas
+    }, 300);
 
-    // Control de navegación interactiva del menú inferior
+    // Control de navegación del menú inferior e interactivo
     document.addEventListener('click', function(e) {
         try {
-            const menuItem = e.target.closest('.menu-item');
+            const menuItem = e.target.closest('.menu-item') || e.target.closest('a[href^="#"]');
             if (menuItem) {
-                e.preventDefault();
-                const section = menuItem.dataset.section;
-                if (section && window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
-                    window.VV.utils.showSection(section);
+                const href = menuItem.getAttribute('href') || menuItem.dataset.section;
+                if (href === '#karaoke' || href === 'karaoke') {
+                    e.preventDefault();
+                    conmutarVistasPro('#karaoke');
+                } else if (href === '#dashboard' || href === 'dashboard') {
+                    e.preventDefault();
+                    conmutarVistasPro('#dashboard');
                 }
             }
         } catch (err) { console.error(err); }
     });
 });
 
+// Conmutador atómico de capas para compatibilidad total con Core V5
+function conmutarVistasPro(destino) {
+    try {
+        const capaKaraoke = document.getElementById('modulo-karaoke-container');
+        
+        if (destino === '#karaoke') {
+            // Ocultamos las secciones nativas usando el motor inyector del Core
+            if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
+                window.VV.utils.showSection('');
+            }
+            if (capaKaraoke) {
+                capaKaraoke.style.setProperty('display', 'block', 'important');
+            }
+            window.location.hash = '#karaoke';
+            console.log("🎤 Cambiado a: Estudio Karaoke Pro");
+        } else {
+            if (capaKaraoke) capaKaraoke.style.setProperty('display', 'none', 'important');
+            if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
+                window.VV.utils.showSection('dashboard');
+            }
+            window.location.hash = '#dashboard';
+        }
+    } catch (err) {
+        console.error("Error en conmutador nativo:", err);
+    }
+}
+
 console.log('✅ Enrutador rápido V6 acoplado de forma óptima.');
 // ============================================================
-// 🎙️ LÓGICA INTERNA DEL ESTUDIO KARAOKE PRO (AL FINAL DEL ARCHIVO)
+// 🎙️ ENTORNO INTERNO DEL ESTUDIO KARAOKE PRO (CONSOLA DE AUDIO)
 // ============================================================
 
-const YOUTUBE_API_KEY = "AIzaSyBV75vgH2KWvNgGn-OuNldrSHIignAkisA"; // Coloca tu clave real de Google Cloud aquí
+const YOUTUBE_API_KEY = "AQUI_TU_API_KEY_REAL"; // Coloca tu clave real de Google Cloud aquí
 
 const CATALOGO_LOCAL = [
     { id: "XW5U8pWJqK4", title: "Soda Stereo - De Música Ligera (Karaoke)", genre: "rock" },
@@ -118,7 +115,7 @@ let audioChunks = [];
 let estaGrabando = false;
 let audioCtx, micStream, source, gainNode, delayNode, feedbackNode;
 
-// Inicialización automática del reproductor de YouTube
+// Inicialización automática del reproductor de YouTube requerida por Google
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('youtube-player', {
         height: '100%', width: '100%', videoId: '',
@@ -135,7 +132,7 @@ function ejecutarBusquedaOficial() {
     if (!consulta) return;
     contenedorResultados.innerHTML = "";
 
-    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "" || YOUTUBE_API_KEY.includes("AIzaSyBV75vgH2KWvNgGn-OuNldrSHIignAkisA")) {
+    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "" || YOUTUBE_API_KEY.includes("AQUI_TU_API_KEY")) {
         renderizarResultados(CATALOGO_LOCAL);
     } else {
         const urlGoogle = `https://googleapis.com{encodeURIComponent(consulta + " karaoke")}&type=video&key=${YOUTUBE_API_KEY}`;
