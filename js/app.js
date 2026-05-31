@@ -1,5 +1,5 @@
 // ============================================================
-// CORE PRINCIPAL DE LA APP - ENRUTADOR RÁPIDO V6
+// CORE PRINCIPAL DE LA APP - ENRUTADOR RÁPIDO V6 BLINDADO
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('termsAccepted', JSON.stringify({ accepted: true, date: new Date().toISOString() }));
     } catch (e) { console.error(e); }
     
-    // Ejecución inmediata sincronizada con Core V5
+    // Ejecución sincronizada con Core V5 y Supabase
     setTimeout(async () => {
         let hasSession = false;
         
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.VV && window.VV.auth && typeof window.VV.auth.startApp === 'function') {
                     window.VV.auth.startApp();
                 }
-                } else {
+            } else {
                 console.log("🚀 Modo Invitado Activo: Levantando telón de Lomas de Tafí.");
                 
                 // Fijamos el entorno geográfico
@@ -34,30 +34,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!window.VV.geo) window.VV.geo = {};
                 window.VV.geo.currentBarrio = "Lomas de Tafí";
 
-                // 🌟 LLAMADA DIRECTA AL MOTOR DEL CORE V5: El encargado oficial de ordenar las pantallas
-                if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
-                    window.VV.utils.showSection('dashboard');
-                } else if (typeof window.showSection === 'function') {
-                    window.showSection('dashboard');
-                }
-
-                // 🔥 CORRECCIÓN CRÍTICA: Forzar el renderizado de la cartelera comercial de Supabase
-                try {
-                    if (window.VV && window.VV.featured && typeof window.VV.featured.init === 'function') {
-                        window.VV.featured.init();
-                        console.log("⚡ Cartelera comercial encendida manualmente.");
-                    } else if (typeof initFeatured === 'function') {
-                        initFeatured();
+                // 🔥 MOTOR DE REINTENTO: Espera a que la cartelera comercial esté lista en memoria
+                let intentos = 0;
+                const verificarYEncender = setInterval(() => {
+                    intentos++;
+                    
+                    // Comprobamos si el módulo comercial ya se cargó por completo
+                    const carteleraLista = (window.VV && window.VV.featured && typeof window.VV.featured.init === 'function') || (typeof initFeatured === 'function');
+                    
+                    if (carteleraLista) {
+                        clearInterval(verificarYEncender);
+                        
+                        // 1. Mostramos la sección visualmente
+                        if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
+                            window.VV.utils.showSection('dashboard');
+                        } else if (typeof window.showSection === 'function') {
+                            window.showSection('dashboard');
+                        }
+                        
+                        // 2. Inyectamos los datos comerciales descargados de Supabase
+                        if (window.VV && window.VV.featured && typeof window.VV.featured.init === 'function') {
+                            window.VV.featured.init();
+                        } else if (typeof initFeatured === 'function') {
+                            initFeatured();
+                        }
+                        console.log("⚡ Cartelera comercial acoplada con éxito tras sincronía.");
+                    } 
+                    
+                    // Límite de seguridad: si pasa mucho tiempo, levanta igual para no congelar
+                    if (intentos > 20) {
+                        clearInterval(verificarYEncender);
+                        if (window.VV && window.VV.utils && typeof window.VV.utils.showSection === 'function') {
+                            window.VV.utils.showSection('dashboard');
+                        }
                     }
-                } catch (errFeatured) { 
-                    console.error('Error al forzar la cartelera:', errFeatured); 
-                }
+                }, 100); // Revisa cada 100 milisegundos
             }
-
         } catch (errRoute) {
             console.error('Error en el ruteo:', errRoute);
         }
-    }, 300); // Reducimos el tiempo a 300ms para un arranque instantáneo
+    }, 300);
 
     // Control de navegación del menú inferior
     document.addEventListener('click', function(e) {
