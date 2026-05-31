@@ -4,212 +4,587 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estudio de Karaoke Interactivo - Vecinos Virtuales</title>
-    <link href="https://cloudflare.com" rel="stylesheet">
-    <style>
-        body { font-family: sans-serif; background: #0f0c1b; color: white; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .container { width: 90%; max-width: 500px; padding: 1.5rem 0; text-align: center; }
-        .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-        .btn-back { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.5rem 1rem; border-radius: 50px; text-decoration: none; font-size: 0.85rem; font-weight: bold; }
-        .title { font-size: 1.3rem; margin: 0; font-weight: bold; color: #a855f7; display: flex; align-items: center; gap: 0.5rem; }
-        .search-box { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
-        .search-box input { flex: 1; background: transparent; border: none; color: white; padding: 0.5rem; font-size: 0.9rem; outline: none; }
-        .search-box button { background: #a855f7; border: none; color: white; padding: 0.5rem 1.2rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .status-msg { background: rgba(234, 179, 8, 0.15); border: 1px solid #eab308; color: #fde047; padding: 0.75rem; border-radius: 10px; font-size: 0.8rem; line-height: 1.4; display: none; margin-bottom: 1rem; text-align: left; }
-        .studio-console { background: linear-gradient(145deg, #1e1b4b, #111827); border: 2px solid #a855f7; border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem; display: none; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        .rec-btn { background: #ef4444; border: none; color: white; width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); transition: 0.2s; margin: 0 0.5rem; }
-        .rec-btn.recording { background: #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); animation: pulse 1.5s infinite; }
-        .audio-preview { width: 100%; margin-top: 1rem; border-radius: 8px; display: none; }
-        .download-link { display: inline-flex; align-items: center; gap: 0.5rem; background: #3b82f6; color: white; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: bold; margin-top: 0.75rem; display: none; }
-        .eq-loader { display: none; align-items: flex-end; justify-content: center; gap: 4px; height: 30px; margin: 0.75rem 0; }
-        .eq-bar { width: 4px; height: 5px; background: #a855f7; border-radius: 2px; }
-        .recording .eq-bar { animation: bounce 0.8s ease-in-out infinite alternate; }
-        .recording .eq-bar:nth-child(2) { animation-delay: 0.2s; background: #c084fc; }
-        .recording .eq-bar:nth-child(3) { animation-delay: 0.4s; background: #e9d5ff; }
-        .recording .eq-bar:nth-child(4) { animation-delay: 0.1s; background: #c084fc; }
-        @keyframes bounce { 100% { height: 30px; } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .results-list { display: flex; flex-direction: column; gap: 0.75rem; text-align: left; }
-        .track-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 0.75rem; border-radius: 12px; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: 0.2s; }
-        .track-item:hover { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; }
-        .track-thumb { width: 60px; aspect-ratio: 16/9; background: #221a36; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .track-info { flex: 1; }
-        .track-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 2px; }
-        .track-genre { font-size: 0.7rem; color: #a855f7; text-transform: uppercase; font-weight: 600; }
-    </style>
+    <!-- Iconos de FontAwesome para los controles del estudio -->
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <!-- Vinculación del archivo de estilos independientes -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
+        
+        <!-- ENCABEZADO DE LA APP -->
         <div class="header">
             <a href="index.html#dashboard" class="btn-back"><i class="fas fa-arrow-left"></i> Volver</a>
             <h2 class="title">🎤 Estudio Karaoke Pro</h2>
             <div style="font-size: 1.2rem;">👨‍🎤</div>
         </div>
 
+        <!-- MENSAJES DE ALERTA O ERROR (PERMISOS DE MICRÓFONO) -->
         <div id="status-box" class="status-msg"></div>
 
-        <!-- 🔍 BARRA DE BÚSQUEDA REAL -->
+        <!-- 🔍 BARRA DE BÚSQUEDA INTEGRADA -->
         <div class="search-box">
             <input type="text" id="search-input" placeholder="Escribe un artista o canción de Karaoke...">
             <button onclick="ejecutarBusquedaOficial()">Buscar</button>
         </div>
 
-        <!-- 🎙️ CONSOLA DE AUDIO INTELIGENTE -->
+        <!-- 🎙️ CONSOLA CENTRAL DEL ESTUDIO (TODO EN UNA PANTALLA) -->
         <div id="studio-console" class="studio-console">
-            <div id="console-title" style="font-size: 0.9rem; font-weight: bold; color: #e9d5ff; margin-bottom: 0.5rem;">Estudio Listo</div>
-            <div id="eq-loader" class="eq-loader">
-                <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+            <div id="console-title" style="font-size: 0.9rem; font-weight: bold; color: #e9d5ff; margin-bottom: 0.5rem;">Cargando Pista...</div>
+            
+            <!-- REPRODUCTOR EMBEBIDO DE YOUTUBE -->
+            <div class="video-wrapper">
+                <div id="youtube-player"></div>
             </div>
+
+            <!-- MEZCLADOR DE AUDIO EN TIEMPO REAL (ACCESIBILIDAD) -->
+            <div class="mixer-panel">
+                <div class="mixer-row">
+                    <label for="vol-mic"><i class="fas fa-microphone"></i> Micrófono</label>
+                    <input type="range" id="vol-mic" min="0" max="1" step="0.1" value="0.8">
+                </div>
+                <div class="mixer-row">
+                    <label for="vol-eco"><i class="fas fa-wand-magic-sparkles"></i> Eco/Reverb</label>
+                    <input type="range" id="vol-eco" min="0" max="1" step="0.1" value="0.3">
+                </div>
+            </div>
+
+            <!-- ECUALIZADOR VISUAL ANIMADO -->
+            <div id="eq-loader" class="eq-loader">
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+            </div>
+
+            <!-- BOTÓN CENTRAL DE GRABACIÓN SINCRONIZADA -->
             <button id="rec-btn" class="rec-btn" onclick="toggleGrabacion()"><i class="fas fa-microphone"></i></button>
-            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af;" id="rec-status">Haz clic para empezar a grabar tu voz</div>
+            <div id="rec-status" style="margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af;">Haz clic para empezar a cantar</div>
+            
+            <!-- REPRODUCTOR DE PREVISTA Y ENLACE DE GUARDADO -->
             <audio id="audio-preview" class="audio-preview" controls></audio>
-            <a id="download-link" class="download-link" href="#"><i class="fas fa-download"></i> Guardar mi Canción 💾</a>
+            <br>
+            <a id="download-link" class="download-link" href="#"><i class="fas fa-download"></i> Guardar mi Actuación 💾</a>
         </div>
 
+        <!-- CONTENEDOR DINÁMICO PARA LOS RESULTADOS DE BÚSQUEDA -->
         <div id="results" class="results-list"></div>
     </div>
-    <script>
-        // 🔑 TU NUEVA LLAVE DE GOOGLE PROTEGIDA: Reemplaza las letras de muestra por tu API real
-        const YOUTUBE_API_KEY = "aizasydqr7beo_3cu5ohbwkf6wmxzjxjllgrr-0"; 
 
-        const CATALOGO_LOCAL = [
-            { id: "XW5U8pWJqK4", title: "Soda Stereo - De Música Ligera (Karaoke)", genre: "rock" },
-            { id: "M7X9XyVfSgA", title: "Chaqueño Palavecino - Amor Salvaje (Karaoke)", genre: "folclore" },
-            { id: "3wVw86mI6N0", title: "Gilda - No me arrepiento de este amor (Karaoke)", genre: "cumbia" }
-        ];
-
-        // 🚀 MOTOR DE BÚSQUEDA ASÍNCRONO DIRECTO
-        function ejecutarBusquedaOficial() {
-            const input = document.getElementById('search-input');
-            const consulta = input.value.trim().toLowerCase();
-            const statusBox = document.getElementById('status-box');
-            const contenedorResultados = document.getElementById('results');
-
-            if (!consulta) return;
-            statusBox.style.display = "none";
-            contenedorResultados.innerHTML = "";
-
-            if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY.trim() === "" || YOUTUBE_API_KEY.includes("AIzaSyBV75vgH2KWvNgGn-OuNldrSHIignAkisA")) {
-                renderizarResultados(CATALOGO_LOCAL);
-            } else {
-                // Generamos la URL de Google estructurada de forma atómica para evitar mutilaciones
-                const urlGoogle = "https://googleapis.com" + encodeURIComponent(consulta + " karaoke") + "&key=" + YOUTUBE_API_KEY;
-                
-                fetch(urlGoogle)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.items && data.items.length > 0) {
-                            const formateadas = data.items.map(item => ({
-                                id: item.id.videoId,
-                                title: item.snippet.title,
-                                genre: "YouTube Live"
-                            }));
-                            renderizarResultados(formateadas);
-                        } else {
-                            renderizarResultados(CATALOGO_LOCAL);
-                        }
-                    })
-                    .catch(() => {
-                        console.log("Desviando a catálogo por protección de red");
-                        renderizarResultados(CATALOGO_LOCAL);
-                    });
-            }
-        }
-
-        function renderizarResultados(lista) {
-            const contenedor = document.getElementById('results');
-            let htmlResultados = '';
-            
-            // Unificamos las cadenas usando concatenación tradicional, inmune al minificado del Service Worker
-            for (let i = 0; i < lista.length; i++) {
-                const track = lista[i];
-                const idVideo = track.id;
-                const tituloLimpio = track.title.replace(/'/g, "");
-                
-                htmlResultados += '<div class="track-item" onclick="activarEstudioYFuga(\'' + idVideo + '\', \'' + tituloLimpio + '\')">';
-                htmlResultados += '<div class="track-thumb">🎵</div>';
-                htmlResultados += '<div class="track-info">';
-                htmlResultados += '<div class="track-title">' + track.title + '</div>';
-                htmlResultados += '<div class="track-genre">' + track.genre + '</div>';
-                htmlResultados += '</div>';
-                htmlResultados += '<div style="color: #a855f7; font-size: 0.9rem;"><i class="fas fa-play"></i></div>';
-                htmlResultados += '</div>';
-            }
-            
-            contenedor.innerHTML = htmlResultados;
-        }
-
-        // 🎯 ESTRATEGIA DE DEVIACIÓN EXTERNA: Abre la pista y despliega el mic al mismo tiempo
-        function activarEstudioYFuga(videoId, tituloCancion) {
-            const consola = document.getElementById('studio-console');
-            const tituloConsole = document.getElementById('console-title');
-            
-            if (consola) consola.style.display = 'block';
-            if (tituloConsole) tituloConsole.innerText = "🎙️ Grabando para: " + tituloCancion;
-            
-            // Rompemos el bloqueo de iframe saltando directo a YouTube oficial de manera limpia
-            const urlFinal = "https://youtube.com" + videoId + "&autoplay=1";
-            window.open(urlFinal, '_blank');
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // ============================================================
-        // LÓGICA NATURA DE MICROFONO Y CAPTURA MULTIMEDIA
-        // ============================================================
-        let grabadoraMultimedia = null;
-        let fragmentosAudio = [];
-        let estaGrabando = false;
-
-        async function toggleGrabacion() {
-            const btn = document.getElementById('rec-btn');
-            const statusText = document.getElementById('rec-status');
-            const eqLoader = document.getElementById('eq-loader');
-            const preview = document.getElementById('audio-preview');
-            const linkDescarga = document.getElementById('download-link');
-
-            if (!estaGrabando) {
-                try {
-                    const flujoMicrofono = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    grabadoraMultimedia = new MediaRecorder(flujoMicrofono);
-                    fragmentosAudio = [];
-
-                    grabadoraMultimedia.ondataavailable = (e) => {
-                        if (e.data.size > 0) fragmentosAudio.push(e.data);
-                    };
-
-                    grabadoraMultimedia.onstop = () => {
-                        const blobAudio = new Blob(fragmentosAudio, { type: 'audio/mp3' });
-                        const urlAudio = URL.createObjectURL(blobAudio);
-                        preview.src = urlAudio;
-                        preview.style.display = 'block';
-                        linkDescarga.href = urlAudio;
-                        linkDescarga.download = "Mi_Karaoke_Lomas_" + Date.now() + ".mp3";
-                        linkDescarga.style.display = 'inline-flex';
-                        flujoMicrofono.getTracks().forEach(track => track.stop());
-                    };
-
-                    grabadoraMultimedia.start();
-                    estaGrabando = true;
-                    btn.classList.add('recording');
-                    btn.innerHTML = '<i class="fas fa-stop"></i>';
-                    statusText.innerText = "🔴 GRABANDO TU VOZ... ¡Dale con todo tu talento!";
-                    statusText.style.color = "#ef4444";
-                    eqLoader.style.display = 'flex';
-                    preview.style.display = 'none';
-                    linkDescarga.style.display = 'none';
-                } catch (err) {
-                    alert("⚠️ Error: Necesitamos accesos de micrófono para registrar la voz en la consola.");
-                }
-            } else {
-                if (grabadoraMultimedia && grabadoraMultimedia.state !== "inactive") grabadoraMultimedia.stop();
-                estaGrabando = false;
-                btn.classList.remove('recording');
-                btn.innerHTML = '<i class="fas fa-microphone"></i>';
-                statusText.innerText = "✅ Grabación finalizada. Escucha o guarda tu pista abajo.";
-                statusText.style.color = "#22c55e";
-                eqLoader.style.display = 'none';
-            }
-        }
-    </script>
+    <!-- API OFICIAL DE IFRAME DE YOUTUBE -->
+    <script src="https://youtube.com"></script>
+    <!-- Vinculación de la lógica del sistema -->
+    <script src="app.js"></script>
 </body>
 </html>
+/* ==========================================================================
+   CONFIGURACIÓN GENERAL Y RESPONSIVE
+   ========================================================================== */
+body { 
+    font-family: sans-serif; 
+    background: #0f0c1b; 
+    color: white; 
+    margin: 0; 
+    padding: 0; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    min-height: 100vh; 
+}
+
+.container { 
+    width: 90%; 
+    max-width: 500px; 
+    padding: 1.5rem 0; 
+    text-align: center; 
+}
+
+/* ==========================================================================
+   ENCABEZADO Y ELEMENTOS DE NAVEGACIÓN
+   ========================================================================== */
+.header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 1.5rem; 
+}
+
+.btn-back { 
+    background: rgba(255,255,255,0.1); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    color: white; 
+    padding: 0.5rem 1rem; 
+    border-radius: 50px; 
+    text-decoration: none; 
+    font-size: 0.85rem; 
+    font-weight: bold; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+}
+
+.title { 
+    font-size: 1.3rem; 
+    margin: 0; 
+    font-weight: bold; 
+    color: #a855f7; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+}
+
+/* ==========================================================================
+   BUSCADOR Y ALERTAS
+   ========================================================================== */
+.search-box { 
+    display: flex; 
+    gap: 0.5rem; 
+    margin-bottom: 1.25rem; 
+    background: rgba(255,255,255,0.05); 
+    padding: 0.5rem; 
+    border-radius: 12px; 
+    border: 1px solid rgba(255,255,255,0.1); 
+}
+
+.search-box input { 
+    flex: 1; 
+    background: transparent; 
+    border: none; 
+    color: white; 
+    padding: 0.5rem; 
+    font-size: 0.9rem; 
+    outline: none; 
+}
+
+.search-box button { 
+    background: #a855f7; 
+    border: none; 
+    color: white; 
+    padding: 0.5rem 1.2rem; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer; 
+}
+
+.status-msg { 
+    background: rgba(234, 179, 8, 0.15); 
+    border: 1px solid #eab308; 
+    color: #fde047; 
+    padding: 0.75rem; 
+    border-radius: 10px; 
+    font-size: 0.8rem; 
+    line-height: 1.4; 
+    display: none; 
+    margin-bottom: 1rem; 
+    text-align: left; 
+}
+
+/* ==========================================================================
+   CONSOLA DE CONTROL Y VIDEO RESPONSIVO
+   ========================================================================== */
+.studio-console { 
+    background: linear-gradient(145deg, #1e1b4b, #111827); 
+    border: 2px solid #a855f7; 
+    border-radius: 16px; 
+    padding: 1.25rem; 
+    margin-bottom: 1.5rem; 
+    display: none; 
+    text-align: center; 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3); 
+}
+
+.video-wrapper { 
+    position: relative; 
+    padding-bottom: 56.25%; /* Relación de aspecto 16:9 */
+    height: 0; 
+    overflow: hidden; 
+    border-radius: 12px; 
+    border: 1px solid rgba(168, 85, 247, 0.4); 
+    margin-bottom: 1rem; 
+    background: #000; 
+}
+
+.video-wrapper iframe { 
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    border: 0; 
+}
+
+/* ==========================================================================
+   MEZCLADOR DE AUDIO, BOTONES Y GRABACIÓN
+   ========================================================================== */
+.mixer-panel { 
+    background: rgba(0,0,0,0.3); 
+    padding: 0.75rem; 
+    border-radius: 10px; 
+    margin-bottom: 1rem; 
+    text-align: left; 
+}
+
+.mixer-row { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 0.5rem; 
+    font-size: 0.8rem; 
+    color: #cbd5e1; 
+}
+
+.mixer-row input[type="range"] { 
+    width: 65%; 
+    accent-color: #a855f7; 
+}
+
+.rec-btn { 
+    background: #ef4444; 
+    border: none; 
+    color: white; 
+    width: 60px; 
+    height: 60px; 
+    border-radius: 50%; 
+    font-size: 1.5rem; 
+    cursor: pointer; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); 
+    transition: 0.2s; 
+    margin: 0 0.5rem; 
+}
+
+.rec-btn.recording { 
+    background: #22c55e; 
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); 
+    animation: pulse 1.5s infinite; 
+}
+
+.audio-preview { 
+    width: 100%; 
+    margin-top: 1rem; 
+    border-radius: 8px; 
+    display: none; 
+}
+
+.download-link { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 0.5rem; 
+    background: #3b82f6; 
+    color: white; 
+    text-decoration: none; 
+    padding: 0.5rem 1rem; 
+    border-radius: 8px; 
+    font-size: 0.85rem; 
+    font-weight: bold; 
+    margin-top: 0.75rem; 
+    display: none; 
+}
+
+/* ==========================================================================
+   ANIMACIONES (ECUALIZADOR Y PULSO)
+   ========================================================================== */
+.eq-loader { 
+    display: none; 
+    align-items: flex-end; 
+    justify-content: center; 
+    gap: 4px; 
+    height: 30px; 
+    margin: 0.75rem 0; 
+}
+
+.eq-bar { 
+    width: 4px; 
+    height: 5px; 
+    background: #a855f7; 
+    border-radius: 2px; 
+}
+
+.recording .eq-bar { 
+    animation: bounce 0.8s ease-in-out infinite alternate; 
+}
+
+.recording .eq-bar:nth-child(2) { animation-delay: 0.2s; background: #c084fc; }
+.recording .eq-bar:nth-child(3) { animation-delay: 0.4s; background: #e9d5ff; }
+.recording .eq-bar:nth-child(4) { animation-delay: 0.1s; background: #c084fc; }
+
+@keyframes bounce { 
+    100% { height: 30px; } 
+}
+
+@keyframes pulse { 
+    0% { transform: scale(1); } 
+    50% { transform: scale(1.05); } 
+    100% { transform: scale(1); } 
+}
+
+/* ==========================================================================
+   LISTA DE RESULTADOS DE BÚSQUEDA
+   ========================================================================== */
+.results-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0.75rem; 
+    text-align: left; 
+    margin-top: 1rem; 
+}
+
+.track-item { 
+    background: rgba(255,255,255,0.05); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    padding: 0.75rem; 
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.75rem; 
+    cursor: pointer; 
+    transition: 0.2s; 
+}
+
+.track-item:hover { 
+    background: rgba(168, 85, 247, 0.2); 
+    border-color: #a855f7; 
+}
+
+.track-thumb { 
+    width: 60px; 
+    aspect-ratio: 16/9; 
+    background: #221a36; 
+    border-radius: 6px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.2rem; 
+}
+
+.track-info { 
+    flex: 1; 
+}
+
+.track-title { 
+    font-size: 0.85rem; 
+    font-weight: bold; 
+    margin-bottom: 2px; 
+}
+
+.track-genre { 
+    font-size: 0.7rem; 
+    color: #a855f7; 
+    text-transform: uppercase; 
+    font-weight: 600; 
+}
+/* ==========================================================================
+   CONFIGURACIÓN INICIAL Y VARIABLES GLOBALES
+   ========================================================================== */
+// Reemplaza con tu clave de Google Cloud Console para activar búsquedas reales
+const YOUTUBE_API_KEY = "AIzaSyBV75vgH2KWvNgGn-OuNldrSHIignAkisA"; 
+
+// Catálogo de respaldo local por si no hay API Key o falla la conexión
+const CATALOGO_LOCAL = [
+    { id: "XW5U8pWJqK4", title: "Soda Stereo - De Música Ligera (Karaoke)", genre: "rock" },
+    { id: "M7X9XyVfSgA", title: "Chaqueño Palavecino - Amor Salvaje (Karaoke)", genre: "folclore" },
+    { id: "3wVw86mI6N0", title: "Gilda - No me arrepiento de este amor (Karaoke)", genre: "cumbia" }
+];
+
+let player;            // Instancia del reproductor de YouTube
+let mediaRecorder;     // Grabador de audio nativo del navegador
+let audioChunks = [];  // Fragmentos de la voz grabada
+let estaGrabando = false;
+
+// Nodos del Web Audio API para el retorno y efectos de voz
+let audioCtx, micStream, source, gainNode, delayNode, feedbackNode;
+
+/* ==========================================================================
+   INTEGRACIÓN DEL REPRODUCTOR DE YOUTUBE
+   ========================================================================== */
+// Función requerida por la API de YouTube para inicializar el reproductor vacío
+function onYouTubeIframeAPIReady() {
+    player = new YT.Player('youtube-player', {
+        height: '100%',
+        width: '100%',
+        videoId: '',
+        playerVars: { 
+            'autoplay': 0, 
+            'controls': 1, 
+            'modestbranding': 1, 
+            'rel': 0 
+        }
+    });
+}
+
+/* ==========================================================================
+   MOTOR DE BÚSQUEDA ASÍNCRONO
+   ========================================================================== */
+function ejecutarBusquedaOficial() {
+    const input = document.getElementById('search-input');
+    const consulta = input.value.trim();
+    const contenedorResultados = document.getElementById('results');
+
+    if (!consulta) return;
+    contenedorResultados.innerHTML = "";
+
+    // Si no configuraste la API Key, usa directamente los temas locales
+    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === "" || YOUTUBE_API_KEY.includes("AIzaSyBV75vgH2KWvNgGn-OuNldrSHIignAkisA")) {
+        renderizarResultados(CATALOGO_LOCAL);
+    } else {
+        const urlGoogle = `https://googleapis.com{encodeURIComponent(consulta + " karaoke")}&type=video&key=${YOUTUBE_API_KEY}`;
+        
+        fetch(urlGoogle)
+            .then(res => res.json())
+            .then(data => {
+                if (data.items && data.items.length > 0) {
+                    const formateadas = data.items.map(item => ({
+                        id: item.id.videoId,
+                        title: item.snippet.title,
+                        genre: "YouTube Live"
+                    }));
+                    renderizarResultados(formateadas);
+                } else {
+                    renderizarResultados(CATALOGO_LOCAL);
+                }
+            })
+            .catch(() => renderizarResultados(CATALOGO_LOCAL));
+    }
+}
+
+// Dibuja los resultados encontrados en la interfaz de usuario
+function renderizarResultados(lista) {
+    const contenedor = document.getElementById('results');
+    contenedor.innerHTML = "";
+    lista.forEach(track => {
+        const div = document.createElement('div');
+        div.className = 'track-item';
+        div.onclick = () => seleccionarCancion(track.id, track.title);
+        div.innerHTML = `
+            <div class="track-thumb">🎵</div>
+            <div class="track-info">
+                <div class="track-title">${track.title}</div>
+                <div class="track-genre">${track.genre}</div>
+            </div>
+        `;
+        contenedor.appendChild(div);
+    });
+}
+
+// Activa el estudio y monta la pista de video seleccionada
+function seleccionarCancion(id, titulo) {
+    document.getElementById('studio-console').style.display = 'block';
+    document.getElementById('console-title').innerText = titulo;
+    
+    if (player && player.loadVideoById) {
+        player.loadVideoById(id);
+        player.stopVideo(); // Se congela hasta que el vecino decida cantar
+    }
+    
+    // Scroll automático suave hacia la consola (UX móvil para evitar perder de vista el estudio)
+    document.getElementById('studio-console').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ==========================================================================
+   PROCESAMIENTO DE AUDIO EN TIEMPO REAL (RETORNO Y ECO)
+   ========================================================================== */
+async function inicializarAudioProesado() {
+    if (!audioCtx) {
+        // Inicializa el contexto de audio y solicita permisos de micrófono
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        
+        // Creación de nodos del circuito de audio
+        source = audioCtx.createMediaStreamSource(micStream);
+        gainNode = audioCtx.createGain();       // Control de volumen del micrófono
+        delayNode = audioCtx.createDelay();     // Tiempo del eco
+        feedbackNode = audioCtx.createGain();   // Repetición/Intensidad del eco
+
+        // Valores por defecto del mezclador
+        delayNode.delayTime.value = 0.3; 
+        feedbackNode.gain.value = document.getElementById('vol-eco').value;
+        gainNode.gain.value = document.getElementById('vol-mic').value;
+
+        // Conexiones del circuito físico virtualizado
+        source.connect(gainNode);
+        
+        // Lazo cerrado para crear el eco repetitivo (Feedback Loop)
+        gainNode.connect(delayNode);
+        delayNode.connect(feedbackNode);
+        feedbackNode.connect(delayNode);
+        
+        // Salidas hacia el hardware del usuario (Auriculares/Altavoces)
+        gainNode.connect(audioCtx.destination);
+        delayNode.connect(audioCtx.destination);
+
+        // Escuchas reactivas para ajustar los valores en tiempo real mediante los sliders
+        document.getElementById('vol-mic').addEventListener('input', (e) => {
+            gainNode.gain.value = e.target.value;
+        });
+        document.getElementById('vol-eco').addEventListener('input', (e) => {
+            feedbackNode.gain.value = e.target.value;
+        });
+
+        // Configuración para la grabación del archivo final de voz limpia
+        mediaRecorder = new MediaRecorder(micStream);
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const preview = document.getElementById('audio-preview');
+            const link = document.getElementById('download-link');
+            
+            // Muestra los controles de reproducción y descarga de la obra
+            preview.src = audioUrl;
+            preview.style.display = 'block';
+            link.href = audioUrl;
+            link.download = `VecinosVirtuales_Karaoke.mp3`;
+            link.style.display = 'inline-flex';
+        };
+    }
+}
+
+/* ==========================================================================
+   CONTROL DE GRABACIÓN SINCRONIZADA
+   ========================================================================== */
+async function toggleGrabacion() {
+    const btn = document.getElementById('rec-btn');
+    const statusText = document.getElementById('rec-status');
+    const eq = document.getElementById('eq-loader');
+
+    if (!estaGrabando) {
+        try {
+            await inicializarAudioProesado();
+            audioChunks = [];
+            
+            // Asegura que el hilo de audio del navegador esté despierto
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
+            
+            mediaRecorder.start();
+            if (player && player.playVideo) player.playVideo(); // Enciende YouTube al mismo tiempo
+
+            estaGrabando = true;
+            btn.classList.add('recording');
+            btn.innerHTML = '<i class="fas fa-stop"></i>';
+            statusText.innerText = "¡Estás al aire! Canta con confianza...";
+            statusText.style.color = "#22c55e";
+            eq.style.display = 'flex';
+            
+            // Oculta pistas viejas mientras se graba el nuevo intento
+            document.getElementById('audio-preview').style.display = 'none';
+            document.getElementById('download-link').style.display = 'none';
+        } catch (err) {
+            const statusBox = document.getElementById('status-box');
+            statusBox.style.display = 'block';
+            statusBox.innerText = "⚠️ Error: Activa los permisos de micrófono para poder cantar en el estudio.";
+        }
+    } else {
+        // Apaga la grabación y detiene el video en paralelo
+        mediaRecorder.stop();
+        if (player && player.pauseVideo) player.pauseVideo();
+        
+        estaGrabando = false;
+        btn.classList.remove('recording');
+        btn.innerHTML = '<i class="fas fa-microphone"></i>';
+        statusText.innerText = "Canción finalizada. Escucha y guarda tu voz abajo.";
+        statusText.style.color = "#9ca3af";
+        eq.style.display = 'none';
+    }
+}
