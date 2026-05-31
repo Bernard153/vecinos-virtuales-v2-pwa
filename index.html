@@ -1144,5 +1144,57 @@
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
+    <!-- 🎙️ MÓDULO ESTUDIO KARAOKE PRO (INTEGRADO) -->
+<div id="modulo-karaoke-container" style="display: none; width: 90%; max-width: 500px; margin: 0 auto; text-align: center; padding: 1.5rem 0;">
+    <div class="header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+        <a href="#dashboard" class="btn-back" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.5rem 1rem; border-radius: 50px; text-decoration: none; font-size: 0.85rem; font-weight: bold;"><i class="fas fa-arrow-left"></i> Volver</a>
+        <h2 class="title" style="font-size: 1.3rem; margin: 0; font-weight: bold; color: #a855f7; display: flex; align-items: center; gap: 0.5rem;">🎤 Estudio Karaoke Pro</h2>
+        <div style="font-size: 1.2rem;">👨‍🎤</div>
+    </div>
+
+    <div id="status-box" class="status-msg"></div>
+
+    <!-- 🔍 BARRA DE BÚSQUEDA -->
+    <div class="search-box">
+        <input type="text" id="search-input" placeholder="Escribe un artista o canción de Karaoke...">
+        <button onclick="ejecutarBusquedaOficial()">Buscar</button>
+    </div>
+
+    <!-- 🎙️ CONSOLA DE AUDIO Y VIDEO INTEGRADA -->
+    <div id="studio-console" class="studio-console">
+        <div id="console-title" style="font-size: 0.9rem; font-weight: bold; color: #e9d5ff; margin-bottom: 0.5rem;">Cargando Pista...</div>
+        
+        <div class="video-wrapper">
+            <div id="youtube-player"></div>
+        </div>
+
+        <div class="mixer-panel">
+            <div class="mixer-row">
+                <label for="vol-mic"><i class="fas fa-microphone"></i> Micrófono</label>
+                <input type="range" id="vol-mic" min="0" max="1" step="0.1" value="0.8">
+            </div>
+            <div class="mixer-row">
+                <label for="vol-eco"><i class="fas fa-wand-magic-sparkles"></i> Eco/Reverb</label>
+                <input type="range" id="vol-eco" min="0" max="1" step="0.1" value="0.3">
+            </div>
+        </div>
+
+        <div id="eq-loader" class="eq-loader">
+            <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+        </div>
+
+        <button id="rec-btn" class="rec-btn" onclick="toggleGrabacion()"><i class="fas fa-microphone"></i></button>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #9ca3af;" id="rec-status">Haz clic para empezar a cantar</div>
+        
+        <audio id="audio-preview" class="audio-preview" controls></audio>
+        <br>
+        <a id="download-link" class="download-link" href="#"><i class="fas fa-download"></i> Guardar mi Actuación 💾</a>
+    </div>
+
+    <div id="results" class="results-list"></div>
+</div>
+
+<!-- API oficial de YouTube (Necesaria para el funcionamiento) -->
+<script src="https://youtube.com"></script>
 </body>
 </html>
