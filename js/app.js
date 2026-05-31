@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.VV && window.VV.auth && typeof window.VV.auth.startApp === 'function') {
                     window.VV.auth.startApp();
                 }
-            } else {
+                } else {
                 console.log("🚀 Modo Invitado Activo: Levantando telón de Lomas de Tafí.");
                 
                 // Fijamos el entorno geográfico
@@ -40,7 +40,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (typeof window.showSection === 'function') {
                     window.showSection('dashboard');
                 }
+
+                // 🔥 CORRECCIÓN CRÍTICA: Forzar el renderizado de la cartelera comercial de Supabase
+                try {
+                    if (window.VV && window.VV.featured && typeof window.VV.featured.init === 'function') {
+                        window.VV.featured.init();
+                        console.log("⚡ Cartelera comercial encendida manualmente.");
+                    } else if (typeof initFeatured === 'function') {
+                        initFeatured();
+                    }
+                } catch (errFeatured) { 
+                    console.error('Error al forzar la cartelera:', errFeatured); 
+                }
             }
+
         } catch (errRoute) {
             console.error('Error en el ruteo:', errRoute);
         }
