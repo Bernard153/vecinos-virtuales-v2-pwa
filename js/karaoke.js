@@ -4,7 +4,7 @@
 
 const VV_KARAOKE = {
     // Configuración
-    YOUTUBE_API_KEY: 'AIzaSyDummy123456789_Reemplaza_con_tu_clave_real', // REEMPLAZA CON TU CLAVE REAL
+    YOUTUBE_API_KEY: 'AIzaSyBV75vgH2KWvNgGn-OuNldrSHIignAkisA', // REEMPLAZA CON TU CLAVE REAL
     
     CATALOGO_LOCAL: [
         { id: 'XW5U8pWJqK4', title: 'Soda Stereo - De Música Ligera (Karaoke)', genre: 'rock' },
