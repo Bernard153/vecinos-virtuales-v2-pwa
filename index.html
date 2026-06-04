@@ -1140,6 +1140,61 @@
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
+    <script>
+// Conmutador de vistas - Karaoke vs Dashboard
+function conmutarVistasPro(destino) {
+    try {
+        var capaKaraoke = document.getElementById('modulo-karaoke-container');
+        var mainApp = document.getElementById('main-app');
+        var loadingScreen = document.getElementById('loading-screen');
+        
+        if (loadingScreen) loadingScreen.style.display = 'none';
+        
+        if (destino === '#karaoke') {
+            if (capaKaraoke) {
+                capaKaraoke.style.setProperty('display', 'block', 'important');
+                capaKaraoke.classList.add('active');
+            }
+            if (mainApp) mainApp.style.setProperty('display', 'none', 'important');
+            
+            window.location.hash = '#karaoke';
+            console.log("🎤 Karaoke activado");
+            
+            if (window.VV_KARAOKE && typeof window.VV_KARAOKE.init === 'function') {
+                setTimeout(function() { VV_KARAOKE.init(); }, 100);
+            }
+        } else {
+            if (capaKaraoke) {
+                capaKaraoke.style.setProperty('display', 'none', 'important');
+                capaKaraoke.classList.remove('active');
+            }
+            if (mainApp) {
+                mainApp.style.setProperty('display', 'flex', 'important');
+                mainApp.classList.add('active');
+            }
+            
+            var secciones = document.querySelectorAll('.content-section');
+            secciones.forEach(function(s) { s.classList.remove('active'); });
+            
+            var dashboard = document.getElementById('dashboard');
+            if (dashboard) dashboard.classList.add('active');
+            
+            window.location.hash = '#dashboard';
+            console.log("📊 Dashboard activado");
+        }
+    } catch (err) {
+        console.error("Error en conmutador:", err);
+    }
+}
+
+window.addEventListener('hashchange', function() {
+    if (window.location.hash === '#karaoke') {
+        conmutarVistasPro('#karaoke');
+    } else if (window.location.hash === '#dashboard') {
+        conmutarVistasPro('#dashboard');
+    }
+});
+</script>
 	<!-- 🎤 MÓDULO KARAOKE PRO -->
 <div id="modulo-karaoke-container" style="display: none;">
     <div class="karaoke-main-container">
