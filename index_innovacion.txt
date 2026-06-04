@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="description" content="Red social de barrio para comprar, vender, mejorar y conectar con tu comunidad">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vecinos Virtuales">
+    <title>Vecinos Virtuales - Conecta con tu Barrio</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/images/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/images/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/icon-72x72.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="css/karaoke.css">
+</head>
+<body>
+    <!-- 🎤 MÓDULO KARAOKE PRO -->
+    <div id="modulo-karaoke-container">
+        <div class="karaoke-main-container">
+            <div class="karaoke-header">
+                <button class="karaoke-back-btn" onclick="conmutarVistasPro('#dashboard')">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+                <h1><i class="fas fa-microphone"></i> Estudio Karaoke Pro</h1>
+                <p>🎵 Canta tus canciones favoritas con calidad de estudio 🎵</p>
+            </div>
+
+            <div class="karaoke-search-bar">
+                <input type="text" id="karaoke-search-input" placeholder="🔍 Busca cualquier canción... (Ej: Soda Stereo, Mercedes Sosa, Juan Gabriel, etc.)" autocomplete="off">
+                <button id="karaoke-search-btn"><i class="fas fa-search"></i> Buscar</button>
+            </div>
+
+            <div id="karaoke-results"></div>
+
+            <div id="karaoke-studio-console" style="display: none;">
+                <h2 id="karaoke-console-title" style="text-align: center; font-size: 1.2rem; margin-bottom: 1rem;">Selecciona una canción</h2>
+                <div id="youtube-player" style="width: 100%; height: 400px; background: #000; border-radius: 12px; margin-bottom: 2rem;"></div>
+                <div id="karaoke-rec-status"><i class="fas fa-circle-notch"></i> Listo para grabar. Selecciona una canción y presiona GRABAR.</div>
+                <div id="karaoke-status-box" style="display: none; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 8px; color: #fca5a5; margin-bottom: 1rem;"></div>
+                <div class="karaoke-recording-controls">
+                    <button id="karaoke-rec-btn"><i class="fas fa-microphone"></i> GRABAR</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="karaoke-volume-control">
+                        <label for="karaoke-vol-mic">🎙️ Volumen del Micrófono</label>
+                        <input type="range" id="karaoke-vol-mic" class="karaoke-volume-slider" min="0" max="1" step="0.1" value="0.5">
+                    </div>
+                    <div class="karaoke-volume-control">
+                        <label for="karaoke-vol-eco">🔊 Volumen del Eco</label>
+                        <input type="range" id="karaoke-vol-eco" class="karaoke-volume-slider" min="0" max="1" step="0.1" value="0.3">
+                    </div>
+                </div>
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h3 style="margin-bottom: 1rem; font-size: 1rem;">📥 Tu Grabación</h3>
+                    <audio id="karaoke-audio-preview" controls style="width: 100%; margin-bottom: 1rem; border-radius: 8px; display: none;"></audio>
+                    <a id="karaoke-download-link" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; text-decoration: none; display: none; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-download"></i> Descargar Mi Canción
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-screen" class="screen active">
+        <div class="screen-container">
+            <div class="logo-large"><i class="fas fa-home"></i></div>
+            <h1>Vecinos Virtuales</h1>
+            <p class="subtitle">By O'skar</p>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <div id="location-screen" class="screen">
+        <div class="screen-container">
+            <div class="logo-large"><i class="fas fa-map-marker-alt"></i></div>
+            <h1>Vecinos Virtuales</h1>
+            <p class="subtitle">By O'skar</p>
+            <div id="location-content"></div>
+        </div>
+    </div>
+
+    <div id="registration-screen" class="screen">
+        <div class="screen-container">
+            <div class="logo-large"><i class="fas fa-user-plus"></i></div>
+            <h1>Registro</h1>
+            <p class="subtitle">Barrio: <strong id="selected-neighborhood"></strong></p>
+            <form id="registration-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.register();">
+                <div class="form-group">
+                    <label for="register-name">Nombre completo *</label>
+                    <input type="text" id="register-name" required placeholder="Tu nombre">
+                </div>
+                <div class="form-group">
+                    <label for="register-email">Email *</label>
+                    <input type="email" id="register-email" required placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="register-phone">Teléfono *</label>
+                    <input type="tel" id="register-phone" required placeholder="1234567890">
+                </div>
+                <div class="form-group">
+                    <label for="register-password">Contraseña *</label>
+                    <input type="password" id="register-password" required placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label for="register-confirm-password">Confirmar Contraseña *</label>
+                    <input type="password" id="register-confirm-password" required placeholder="Repite tu contraseña">
+                </div>
+                <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #f59e0b;">
+                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
+                        <input type="checkbox" id="consent-age" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
+                        <span style="font-size: 0.9rem; color: #92400e;"><strong>Declaro que soy mayor de 18 años</strong></span>
+                    </label>
+                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
+                        <input type="checkbox" id="consent-data" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
+                        <span style="font-size: 0.9rem;">Acepto que mis datos (nombre, teléfono) sean visibles para otros vecinos</span>
+                    </label>
+                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="consent-terms" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
+                        <span style="font-size: 0.9rem;">Acepto los <a href="terminos.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Términos y Condiciones</a> y la <a href="privacidad.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Política de Privacidad</a></span>
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fas fa-check"></i> Registrarse</button>
+            </form>
+            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+    </div>
+
+    <div id="login-screen" class="screen">
+        <div class="screen-container">
+            <div class="logo-large"><i class="fas fa-sign-in-alt"></i></div>
+            <h1>Iniciar Sesión</h1>
+            <p class="subtitle">Ingresa con tu cuenta</p>
+            <form id="login-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.login();">
+                <div class="form-group">
+                    <label for="login-email">Email *</label>
+                    <input type="email" id="login-email" required placeholder="tu@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Contraseña *</label>
+                    <input type="password" id="login-password" required placeholder="Tu contraseña">
+                </div>
+                <button type="submit" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Ingresar</button>
+                <div id="login-error" class="error-message" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="login-error-text"></span>
+                </div>
+            </form>
+            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();"><i class="fas fa-arrow-left"></i> Volver</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="screen">
+        <header class="app-header">
+            <button class="menu-toggle" id="menu-toggle" style="display: none;"><i class="fas fa-bars"></i></button>
+            <div class="header-info">
+                <span class="header-neighborhood"><i class="fas fa-map-marker-alt"></i><span id="header-neighborhood"></span></span>
+                <span class="header-user">#<span id="header-user-number"></span></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <button class="user-avatar-btn" onclick="VV.avatars.showProfile()" title="Mi Perfil" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple)); border: none; cursor: pointer; color: white; font-size: 1.5rem;">
+                    <span class="user-avatar">😊</span>
+                </button>
+                <button class="cart-toggle" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i><span class="cart-badge" id="cart-badge">0</span></button>
+                <button class="logout-btn" onclick="VV.auth.logout()" title="Cerrar Sesión"><i class="fas fa-sign-out-alt"></i></button>
+                <button class="logout-btn" onclick="VV.auth.deleteAccount()" title="Eliminar Cuenta" style="background: #ef4444;"><i class="fas fa-user-times"></i></button>
+            </div>
+        </header>
+
+        <div class="app-container">
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-header"><i class="fas fa-home"></i><span>Vecinos Virtuales</span></div>
+                <div class="menu">
+                    <a href="#" class="menu-item active" data-section="dashboard"><i class="fas fa-home"></i><span>Inicio</span></a>
+                    <a href="#" class="menu-item" data-section="marketplace"><i class="fas fa-store"></i><span>Mis Productos</span></a>
+                    <a href="#" class="menu-item" data-section="shopping"><i class="fas fa-shopping-bag"></i><span>Comprar</span></a>
+                    <a href="#" class="menu-item" data-section="improvements"><i class="fas fa-tools"></i><span>Mejoras</span></a>
+                    <a href="#" class="menu-item" data-section="cultural"><i class="fas fa-palette"></i><span>Cultura, Deportes y Trueque</span></a>
+                    <a href="#" class="menu-item" data-section="services"><i class="fas fa-users"></i><span>Servicios</span></a>
+                    <a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#karaoke');"><i class="fas fa-microphone"></i><span>🎤 Karaoke</span></a>
+                </div>
+                <div class="sidebar-footer">
+                    <div style="text-align: center; padding: 1rem 0.5rem; font-size: 0.75rem; color: var(--gray-500); border-top: 1px solid var(--gray-200); margin-top: 1rem;">
+                        <p style="margin: 0 0 0.25rem 0;">© 2025 Vecinos Virtuales</p>
+                        <p style="margin: 0; font-size: 0.7rem;">Todos los derechos reservados</p>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.7rem;">v2.1 PWA + Karaoke 🎤</p>
+                    </div>
+                </div>
+            </nav>
+
+            <main class="main-content">
+                <section id="dashboard" class="content-section active">
+                    <div class="welcome-banner" id="welcome-banner">
+                        <div class="welcome-content">
+                            <h2>¡Bienvenido, <span id="welcome-name"></span>!</h2>
+                            <div class="user-details"><i class="fas fa-map-marker-alt"></i><span id="welcome-neighborhood"></span><span class="user-badge">#<span id="welcome-number"></span></span></div>
+                        </div>
+                    </div>
+
+                    <div class="main-modules-grid">
+                        <button class="module-card" onclick="VV.utils.showSection('marketplace')">
+                            <div class="module-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);"><i class="fas fa-store"></i></div>
+                            <h3>Voy a Vender</h3>
+                            <p>Publica tus productos</p>
+                        </button>
+                        
+                        <button class="module-card" onclick="VV.utils.showSection('shopping')">
+                            <div class="module-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);"><i class="fas fa-shopping-cart"></i></div>
+                            <h3>Voy a Comprar</h3>
+                            <p>Encuentra lo que necesitas</p>
+                        </button>
+                        
+                        <button class="module-card" onclick="conmutarVistasPro('#karaoke')" style="background: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%); color: white; cursor: pointer; border: none;">
+                            <div class="module-icon" style="background: rgba(255,255,255,0.2);"><i class="fas fa-microphone"></i></div>
+                            <h3>🎤 Karaoke</h3>
+                            <p>Canta tus canciones favoritas</p>
+                        </button>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="js/karaoke.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

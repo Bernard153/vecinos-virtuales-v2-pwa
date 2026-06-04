@@ -1,4 +1,4 @@
-// ========== INICIALIZACIÓN DE LA APLICACIÓN ==========
+﻿// ========== INICIALIZACIÓN DE LA APLICACIÓN ==========
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Vecinos Virtuales V2 - Iniciando...');
