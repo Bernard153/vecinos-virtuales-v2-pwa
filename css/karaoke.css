@@ -1,0 +1,376 @@
+/* ============================================================
+   🎤 ESTILOS DEL MÓDULO KARAOKE PRO
+   ============================================================ */
+
+#modulo-karaoke-container {
+    display: none;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    padding: 2rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-y: auto;
+}
+
+#modulo-karaoke-container.active {
+    display: block;
+}
+
+/* Contenedor principal */
+.karaoke-main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header */
+.karaoke-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.karaoke-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.karaoke-header p {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Barra de búsqueda */
+.karaoke-search-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#karaoke-search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+#karaoke-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#karaoke-search-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+#karaoke-search-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#karaoke-search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+}
+
+#karaoke-search-btn:active {
+    transform: translateY(0);
+}
+
+/* Grid de canciones */
+#karaoke-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.karaoke-track-item {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.karaoke-track-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: #f59e0b;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(245, 158, 11, 0.2);
+}
+
+.karaoke-track-thumb {
+    font-size: 2.5rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.karaoke-track-info {
+    text-align: center;
+    flex: 1;
+}
+
+.karaoke-track-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    color: white;
+    line-height: 1.3;
+}
+
+.karaoke-track-genre {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Consola del estudio */
+#karaoke-studio-console {
+    display: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+#karaoke-studio-console.active {
+    display: block;
+}
+
+#karaoke-console-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #f59e0b;
+    text-align: center;
+}
+
+/* Reproductor de YouTube */
+#youtube-player {
+    width: 100%;
+    height: 400px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    background: #000;
+}
+
+/* Estado de grabación */
+#karaoke-rec-status {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Controles de grabación */
+.karaoke-recording-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+#karaoke-rec-btn {
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+#karaoke-rec-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(239, 68, 68, 0.3);
+}
+
+#karaoke-rec-btn.karaoke-recording {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Controles de volumen */
+.karaoke-volume-control {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.karaoke-volume-control label {
+    display: block;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.karaoke-volume-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.karaoke-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.karaoke-volume-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.karaoke-volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+}
+
+/* Preview de audio */
+#karaoke-audio-preview {
+    display: none;
+    width: 100%;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}
+
+/* Link de descarga */
+#karaoke-download-link {
+    display: none;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#karaoke-download-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+}
+
+/* Mensaje de error */
+#karaoke-status-box {
+    display: none;
+    padding: 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    border-radius: 8px;
+    color: #fca5a5;
+    margin-bottom: 1rem;
+}
+
+/* Botón para volver */
+.karaoke-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+}
+
+.karaoke-back-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #f59e0b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #modulo-karaoke-container {
+        padding: 1rem;
+    }
+    
+    .karaoke-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .karaoke-search-bar {
+        flex-direction: column;
+    }
+    
+    #karaoke-results {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    #youtube-player {
+        height: 300px;
+    }
+    
+    .karaoke-recording-controls {
+        grid-template-columns: 1fr;
+    }
+}

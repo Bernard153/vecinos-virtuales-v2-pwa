@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -33,7 +33,6 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/admin.css">
-    <link rel="stylesheet" href="css/karaoke.css">
 </head>
 <body>
     <!-- PANTALLA DE CARGA -->
@@ -231,7 +230,6 @@
                         <i class="fas fa-users"></i>
                         <span>Servicios</span>
                     </a>
-		    <a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#karaoke');"><i class="fas fa-microphone"></i><span>🎤 Karaoke</span></a>
                     <!-- UBICACIÓN: Justo debajo de Servicios y antes de los menús de Admin -->
                     <a href="#" class="menu-item" data-section="folleto" onclick="event.preventDefault(); VV.utils.showSection('folleto');">
                         <i class="fas fa-images"></i>
@@ -1140,106 +1138,5 @@
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
-    <script>
-// Conmutador de vistas - Karaoke vs Dashboard
-function conmutarVistasPro(destino) {
-    try {
-        var capaKaraoke = document.getElementById('modulo-karaoke-container');
-        var mainApp = document.getElementById('main-app');
-        var loadingScreen = document.getElementById('loading-screen');
-        
-        if (loadingScreen) loadingScreen.style.display = 'none';
-        
-        if (destino === '#karaoke') {
-            if (capaKaraoke) {
-                capaKaraoke.style.setProperty('display', 'block', 'important');
-                capaKaraoke.classList.add('active');
-            }
-            if (mainApp) mainApp.style.setProperty('display', 'none', 'important');
-            
-            window.location.hash = '#karaoke';
-            console.log("🎤 Karaoke activado");
-            
-            if (window.VV_KARAOKE && typeof window.VV_KARAOKE.init === 'function') {
-                setTimeout(function() { VV_KARAOKE.init(); }, 100);
-            }
-        } else {
-            if (capaKaraoke) {
-                capaKaraoke.style.setProperty('display', 'none', 'important');
-                capaKaraoke.classList.remove('active');
-            }
-            if (mainApp) {
-                mainApp.style.setProperty('display', 'flex', 'important');
-                mainApp.classList.add('active');
-            }
-            
-            var secciones = document.querySelectorAll('.content-section');
-            secciones.forEach(function(s) { s.classList.remove('active'); });
-            
-            var dashboard = document.getElementById('dashboard');
-            if (dashboard) dashboard.classList.add('active');
-            
-            window.location.hash = '#dashboard';
-            console.log("📊 Dashboard activado");
-        }
-    } catch (err) {
-        console.error("Error en conmutador:", err);
-    }
-}
-
-window.addEventListener('hashchange', function() {
-    if (window.location.hash === '#karaoke') {
-        conmutarVistasPro('#karaoke');
-    } else if (window.location.hash === '#dashboard') {
-        conmutarVistasPro('#dashboard');
-    }
-});
-</script>
-	<!-- 🎤 MÓDULO KARAOKE PRO -->
-<div id="modulo-karaoke-container" style="display: none;">
-    <div class="karaoke-main-container">
-        <div class="karaoke-header">
-            <button class="karaoke-back-btn" onclick="conmutarVistasPro('#dashboard')">
-                <i class="fas fa-arrow-left"></i> Volver
-            </button>
-            <h1><i class="fas fa-microphone"></i> Estudio Karaoke Pro</h1>
-            <p>🎵 Canta tus canciones favoritas 🎵</p>
-        </div>
-        <div class="karaoke-search-bar">
-            <input type="text" id="karaoke-search-input" placeholder="🔍 Busca cualquier canción..." autocomplete="off">
-            <button id="karaoke-search-btn"><i class="fas fa-search"></i> Buscar</button>
-        </div>
-        <div id="karaoke-results"></div>
-        <div id="karaoke-studio-console" style="display: none;">
-            <h2 id="karaoke-console-title" style="text-align:center;font-size:1.2rem;margin-bottom:1rem;">Selecciona una canción</h2>
-            <div id="youtube-player" style="width:100%;height:400px;background:#000;border-radius:12px;margin-bottom:2rem;"></div>
-            <div id="karaoke-rec-status">Listo para grabar</div>
-            <div id="karaoke-status-box" style="display:none;padding:1rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.5);border-radius:8px;color:#fca5a5;margin-bottom:1rem;"></div>
-            <div class="karaoke-recording-controls">
-                <button id="karaoke-rec-btn"><i class="fas fa-microphone"></i> GRABAR</button>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem;">
-                <div class="karaoke-volume-control">
-                    <label for="karaoke-vol-mic">🎙️ Micrófono</label>
-                    <input type="range" id="karaoke-vol-mic" class="karaoke-volume-slider" min="0" max="1" step="0.1" value="0.5">
-                </div>
-                <div class="karaoke-volume-control">
-                    <label for="karaoke-vol-eco">🔊 Eco</label>
-                    <input type="range" id="karaoke-vol-eco" class="karaoke-volume-slider" min="0" max="1" step="0.1" value="0.3">
-                </div>
-            </div>
-            <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-                <h3 style="margin-bottom:1rem;">📥 Tu Grabación</h3>
-                <audio id="karaoke-audio-preview" controls style="width:100%;margin-bottom:1rem;display:none;"></audio>
-                <a id="karaoke-download-link" style="padding:0.75rem 1.5rem;background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:8px;color:white;font-weight:600;cursor:pointer;text-decoration:none;display:none;align-items:center;gap:0.5rem;">
-                    <i class="fas fa-download"></i> Descargar Mi Canción
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://www.youtube.com/iframe_api"></script>
-<script src="js/karaoke.js"></script>
 </body>
 </html>
