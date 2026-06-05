@@ -1,11 +1,31 @@
 ﻿window.VV_ROLES = {
-    getCurrentUser: function() {
-        if (window.VV && window.VV.auth && window.VV.auth.currentUser) {
-            return window.VV.auth.currentUser;
+        getCurrentUser: function() {
+        // 1. Intentar desde VV.data.user (si está en memoria)
+        if (window.VV && window.VV.data && window.VV.data.user) {
+            return window.VV.data.user;
         }
-        const stored = localStorage.getItem('vv_user');
-        return stored ? JSON.parse(stored) : null;
+        
+        // 2. Intentar desde localStorage (key correcta)
+        const stored = localStorage.getItem('vecinosVirtualesUser');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch(e) {
+                console.error('Error parsing user:', e);
+            }
+        }
+        
+        // 3. Fallback a vv_user (por si acaso)
+        const oldStored = localStorage.getItem('vv_user');
+        if (oldStored) {
+            try {
+                return JSON.parse(oldStored);
+            } catch(e) {}
+        }
+        
+        return null;
     },
+
 
     getPermissions: function() {
         const user = this.getCurrentUser();
