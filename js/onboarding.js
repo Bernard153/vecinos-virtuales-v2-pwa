@@ -46,6 +46,7 @@ window.VV_ONBOARDING = {
             container = document.createElement('div');
             container.id = 'vv-onboarding';
             container.className = 'vv-onboarding-container';
+            container.style.cssText = 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; z-index: 999999 !important; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%); color: white; font-family: inherit;';
             document.body.appendChild(container);
         }
         
