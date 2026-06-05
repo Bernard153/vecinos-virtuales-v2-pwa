@@ -1,11 +1,11 @@
 ﻿window.VV_ROLES = {
-        getCurrentUser: function() {
-        // 1. Intentar desde VV.data.user (si está en memoria)
+    getCurrentUser: function() {
+        // 1. Intentar desde VV.data.user (memoria activa)
         if (window.VV && window.VV.data && window.VV.data.user) {
             return window.VV.data.user;
         }
         
-        // 2. Intentar desde localStorage (key correcta)
+        // 2. Intentar desde localStorage
         const stored = localStorage.getItem('vecinosVirtualesUser');
         if (stored) {
             try {
@@ -15,17 +15,8 @@
             }
         }
         
-        // 3. Fallback a vv_user (por si acaso)
-        const oldStored = localStorage.getItem('vv_user');
-        if (oldStored) {
-            try {
-                return JSON.parse(oldStored);
-            } catch(e) {}
-        }
-        
         return null;
     },
-
 
     getPermissions: function() {
         const user = this.getCurrentUser();
@@ -33,36 +24,47 @@
             return { role: 'invitado', displayRole: 'Invitado', isVecino: false, canPostEvent: false, canCommentImprovement: false, canFullKaraoke: false, hasFreeDraw: false, canGiftMedals: false, isAdmin: false, isModerator: false };
         }
 
-        const currentNeighborhood = localStorage.getItem('current_neighborhood') || user.neighborhood || user.home_neighborhood;
-        const homeNeighborhood = user.home_neighborhood || user.neighborhood;
+        // El barrio actual (donde está navegando)
+        const currentNeighborhood = localStorage.getItem('current_neighborhood') || user.neighborhood || '';
+        // Su barrio de registro
+        const homeNeighborhood = user.neighborhood || '';
         const isEnSuBarrio = homeNeighborhood === currentNeighborhood;
+        
+        // El rol (los nuevos registros todavía dicen 'user', los migrados dicen 'vecino')
         let role = user.role || 'invitado';
         if (role === 'user') role = 'vecino';
 
+        // ADMINISTRADOR
         if (role === 'administrador' || role === 'admin') {
             return { role: role, displayRole: '👑 Administrador', isVecino: true, canPostEvent: true, canCommentImprovement: true, canFullKaraoke: true, hasFreeDraw: true, canGiftMedals: true, isAdmin: true, isModerator: true };
         }
 
+        // MODERADOR
         if (role === 'moderador' || role === 'moderator') {
             return { role: role, displayRole: '🛡️ Moderador', isVecino: true, canPostEvent: true, canCommentImprovement: true, canFullKaraoke: true, hasFreeDraw: true, canGiftMedals: false, isAdmin: false, isModerator: true };
         }
 
+        // INVITADO HONORÍFICO
         if (role === 'invitado_honorifico') {
             return { role: role, displayRole: '🏅 Invitado Honorífico', isVecino: false, canPostEvent: false, canCommentImprovement: false, canFullKaraoke: true, hasFreeDraw: false, canGiftMedals: true, isAdmin: false, isModerator: false };
         }
 
+        // INVITADO VIP
         if (role === 'invitado_vip') {
             return { role: role, displayRole: '✨ Invitado VIP', isVecino: false, canPostEvent: false, canCommentImprovement: false, canFullKaraoke: true, hasFreeDraw: false, canGiftMedals: false, isVipLimited: true, isAdmin: false, isModerator: false };
         }
 
+        // VECINO en su barrio
         if (role === 'vecino' && isEnSuBarrio) {
             return { role: role, displayRole: '🏠 Vecino', isVecino: true, canPostEvent: true, canCommentImprovement: true, canFullKaraoke: true, hasFreeDraw: true, canGiftMedals: false, isAdmin: false, isModerator: false };
         }
 
+        // VECINO en OTRO barrio = visitante
         if (role === 'vecino' && !isEnSuBarrio) {
             return { role: 'invitado', displayRole: '🌐 Visitante', isVecino: false, canPostEvent: false, canCommentImprovement: false, canFullKaraoke: false, hasFreeDraw: false, canGiftMedals: false, isAdmin: false, isModerator: false };
         }
 
+        // Default: invitado
         return { role: 'invitado', displayRole: 'Invitado', isVecino: false, canPostEvent: false, canCommentImprovement: false, canFullKaraoke: false, hasFreeDraw: false, canGiftMedals: false, isAdmin: false, isModerator: false };
     },
 

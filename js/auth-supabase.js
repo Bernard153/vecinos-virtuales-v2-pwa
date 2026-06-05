@@ -1,4 +1,4 @@
-// ========== MÓDULO DE AUTENTICACIÓN CON SUPABASE ==========
+﻿// ========== MÓDULO DE AUTENTICACIÓN CON SUPABASE ==========
 // Versión migrada de localStorage a Supabase
 // Mantiene TODAS las funcionalidades originales
 
@@ -319,7 +319,7 @@ VV.auth = {
                     phone: phone,
                     neighborhood: VV.data.neighborhood,
                     unique_number: uniqueNumber,
-                    role: 'user',
+                    role: 'vecino',
                     avatar: 'basic-1',
                     unlocked_avatars: [],
                     featured_credits: 0,
