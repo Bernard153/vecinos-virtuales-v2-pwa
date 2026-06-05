@@ -44,5 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-
+// Mostrar onboarding para nuevos usuarios
+if (window.VV_ONBOARDING && VV_ROLES && VV_ROLES.shouldShowOnboarding()) {
+    VV_ONBOARDING.init();
+}
 console.log('✅ Módulo APP cargado correctamente');

@@ -34,6 +34,136 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/karaoke.css">
+<style>
+<style>
+/* ============================================================
+   ONBOARDING VOCES VIRTUALES
+   ============================================================ */
+.vv-onboarding-container {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%);
+    color: white;
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+    z-index: 9999;
+    font-family: inherit;
+}
+
+.vv-onboarding-slide {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.vv-onboarding-skip {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.vv-onboarding-skip:hover {
+    color: white;
+}
+
+.vv-onboarding-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin: auto 0;
+    animation: vvFadeIn 0.4s ease;
+}
+
+.vv-onboarding-icon {
+    font-size: 5rem;
+    margin-bottom: 2rem;
+    display: block;
+    animation: vvBounce 2s infinite;
+}
+
+.vv-onboarding-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.vv-onboarding-desc {
+    font-size: 1rem;
+    opacity: 0.9;
+    max-width: 280px;
+    line-height: 1.5;
+}
+
+.vv-onboarding-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+}
+
+.vv-onboarding-dots {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.vv-onboarding-dot {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.3);
+    transition: all 0.3s ease;
+}
+
+.vv-onboarding-dot.active {
+    width: 24px;
+    background: white;
+}
+
+.vv-onboarding-dot:not(.active) {
+    width: 8px;
+}
+
+.vv-onboarding-btn {
+    width: 100%;
+    background: white;
+    color: #1e3a8a;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: transform 0.15s;
+}
+
+.vv-onboarding-btn:active {
+    transform: scale(0.97);
+}
+
+@keyframes vvFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vvBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+</style>
 </head>
 <body>
     <!-- PANTALLA DE CARGA -->
@@ -1076,6 +1206,7 @@
     <script src="js/admin.js"></script>
     <script src="js/banner.js"></script>
     <script src="js/roles.js"></script>
+    <script src="js/onboarding.js"></script>
     <script src="js/app.js"></script>
     
     <!-- Service Worker Registration -->
