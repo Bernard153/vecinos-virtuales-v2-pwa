@@ -86,7 +86,7 @@ window.VV_VOCES = {
         }
     },
     
-    // Iniciar grabación
+        // Iniciar grabación (solo cámara + micrófono, pista por YouTube)
     startRecording: async function() {
         if (!this.currentTrack) {
             alert('Seleccioná una canción primero');
@@ -94,16 +94,10 @@ window.VV_VOCES = {
         }
         
         try {
-            // 1. AudioContext
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            this.audioContext = new AudioContextClass({ sampleRate: 44100 });
+            // 1. Mostrar reproductor de YouTube con la pista
+            this.loadYouTubePlayer(this.currentTrack.id);
             
-            // 2. Descargar pista MP3
-            const response = await fetch(this.currentTrack.url);
-            const arrayBuffer = await response.arrayBuffer();
-            const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-            
-            // 3. Capturar cámara y micrófono
+            // 2. Capturar cámara y micrófono del usuario
             const constraints = {
                 video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
                 audio: {
@@ -115,47 +109,19 @@ window.VV_VOCES = {
             
             this.micStream = await navigator.mediaDevices.getUserMedia(constraints);
             
-            // Mostrar preview
+            // Mostrar preview en espejo
             if (this.elements.videoPreview) {
                 this.elements.videoPreview.srcObject = this.micStream;
-                this.elements.videoPreview.style.transform = 'scaleX(-1)'; // Espejo
+                this.elements.videoPreview.style.transform = 'scaleX(-1)';
             }
             
-            // 4. Grafo de audio
-            const destination = this.audioContext.createMediaStreamDestination();
-            
-            // Pista musical
-            this.audioSource = this.audioContext.createBufferSource();
-            this.audioSource.buffer = audioBuffer;
-            const trackGain = this.audioContext.createGain();
-            trackGain.gain.value = 0.7;
-            
-            this.audioSource.connect(trackGain);
-            trackGain.connect(destination);
-            
-            // Micrófono
-            const micSource = this.audioContext.createMediaStreamSource(this.micStream);
-            const micGain = this.audioContext.createGain();
-            micGain.gain.value = 1.0;
-            
-            micSource.connect(micGain);
-            micGain.connect(destination);
-            
-            // Monitoreo (solo con auriculares evita feedback)
-            trackGain.connect(this.audioContext.destination);
-            
-            // 5. Combinar streams
-            const combinedStream = new MediaStream();
-            combinedStream.addTrack(this.micStream.getVideoTracks()[0]);
-            combinedStream.addTrack(destination.stream.getAudioTracks()[0]);
-            
-            // 6. MediaRecorder
+            // 3. MediaRecorder con solo el stream del usuario
             const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
                 ? 'video/webm;codecs=vp9'
                 : 'video/webm';
             
             const chunks = [];
-            this.mediaRecorder = new MediaRecorder(combinedStream, { mimeType });
+            this.mediaRecorder = new MediaRecorder(this.micStream, { mimeType });
             
             this.mediaRecorder.ondataavailable = (e) => {
                 if (e.data && e.data.size > 0) chunks.push(e.data);
@@ -166,29 +132,80 @@ window.VV_VOCES = {
                 this.onRecordingReady();
             };
             
-            // Iniciar
-            this.audioSource.start(0);
+            // Iniciar grabación
             this.mediaRecorder.start(250);
             this.isRecording = true;
+            
+            // Reproducir pista de YouTube con delay para sincronización
+            setTimeout(() => {
+                if (this.ytPlayer && this.ytPlayer.playVideo) {
+                    this.ytPlayer.playVideo();
+                }
+            }, 500);
             
             this.updateUIRecording(true);
             
         } catch (err) {
             console.error('Error iniciando grabación:', err);
-            alert('Error al acceder a cámara/micrófono: ' + err.message);
+            
+            if (err.name === 'NotFoundError' || err.message.includes('device')) {
+                alert('⚠️ No se detectó cámara o micrófono.\n\nPara usar Voces Virtuales necesitás:\n• Celular con cámara frontal\n• O auriculares con micrófono\n\n💡 Abrí esta app desde tu celular para la mejor experiencia.');
+            } else if (err.name === 'NotAllowedError') {
+                alert('⚠️ Permiso denegado.\n\nPor favor permití el acceso a cámara y micrófono.');
+            } else {
+                alert('Error: ' + err.message);
+            }
         }
     },
     
-    // Detener grabación
+    // Cargar reproductor de YouTube
+    ytPlayer: null,
+    
+    loadYouTubePlayer: function(videoId) {
+        // Si ya existe el reproductor, cargar nuevo video
+        if (this.ytPlayer && this.ytPlayer.loadVideoById) {
+            this.ytPlayer.loadVideoById(videoId);
+            return;
+        }
+        
+        // Crear contenedor si no existe
+        let playerContainer = document.getElementById('vv-youtube-player');
+        if (!playerContainer) {
+            playerContainer = document.createElement('div');
+            playerContainer.id = 'vv-youtube-player';
+            playerContainer.style.cssText = 'position:absolute;top:10px;right:10px;width:160px;height:90px;z-index:100;border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.5);';
+            
+            const videoArea = document.querySelector('.vv-video-area');
+            if (videoArea) videoArea.appendChild(playerContainer);
+        }
+        
+        // Crear player de YouTube
+        if (window.YT && window.YT.Player) {
+            this.ytPlayer = new YT.Player('vv-youtube-player', {
+                width: '160',
+                height: '90',
+                videoId: videoId,
+                playerVars: {
+                    autoplay: 0,
+                    controls: 0,
+                    modestbranding: 1,
+                    rel: 0
+                }
+            });
+        }
+    },
+    
+        // Detener grabación
     stopRecording: function() {
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
             this.mediaRecorder.stop();
         }
-        if (this.audioSource) this.audioSource.stop();
         if (this.micStream) {
             this.micStream.getTracks().forEach(track => track.stop());
         }
-        if (this.audioContext) this.audioContext.close();
+        if (this.ytPlayer && this.ytPlayer.pauseVideo) {
+            this.ytPlayer.pauseVideo();
+        }
         
         this.isRecording = false;
         this.updateUIRecording(false);
@@ -249,7 +266,7 @@ window.VV_VOCES = {
                 .from('barrio-media')
                 .getPublicUrl(filePath);
             
-            // Guardar en DB
+                        // Guardar en DB
             const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
             const { error: dbError } = await supabase.from('karaoke_videos').insert([{
                 user_id: user ? user.id : null,
