@@ -164,6 +164,222 @@
     50% { transform: translateY(-10px); }
 }
 </style>
+<style>
+/* ============================================================
+   VOCES VIRTUALES - Estudio de Grabación
+   ============================================================ */
+#modulo-voces-virtuales {
+    position: fixed;
+    inset: 0;
+    background: #0f172a;
+    color: white;
+    z-index: 9999;
+    overflow-y: auto;
+}
+
+.vv-estudio {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.vv-estudio-header {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.vv-estudio-header h1 {
+    font-size: 1.2rem;
+    margin: 0;
+    flex: 1;
+    text-align: center;
+}
+
+.vv-btn-back {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.vv-mode-badge {
+    position: absolute;
+    top: 4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.vv-video-area {
+    flex: 1;
+    position: relative;
+    background: #000;
+    margin: 1rem;
+    border-radius: 1rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.vv-parent-video {
+    flex: 1;
+    position: relative;
+    border-bottom: 2px solid #6366f1;
+}
+
+.vv-preview-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+.vv-video-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vv-preview-label {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(99, 102, 241, 0.8);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.vv-comments-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.vv-comment-bubble {
+    position: absolute;
+    font-size: 2.5rem;
+    animation: vvBubbleFloat 2s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    pointer-events: none;
+}
+
+@keyframes vvBubbleFloat {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    15% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+    100% { transform: translateY(-200px) scale(0.9); opacity: 0; }
+}
+
+.vv-track-info {
+    padding: 0 1rem;
+    text-align: center;
+}
+
+.vv-track-info p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.vv-controls {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.vv-btn-record {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: none;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.vv-btn-record.recording {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    animation: vvPulse 1.5s infinite;
+}
+
+@keyframes vvPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.vv-btn-upload {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 1rem;
+    border: none;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.vv-progress-container {
+    text-align: center;
+}
+
+.vv-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.vv-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.vv-emojis-pad {
+    display: flex;
+    gap: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.vv-emojis-pad button {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.vv-emojis-pad button:active {
+    transform: scale(0.9);
+}
+</style>
 </head>
 <body>
     <!-- PANTALLA DE CARGA -->
@@ -361,7 +577,10 @@
                         <i class="fas fa-users"></i>
                         <span>Servicios</span>
                     </a>
-		    <a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#karaoke');"><i class="fas fa-microphone"></i><span>🎤 Karaoke</span></a>
+		    <a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#voces');">
+                       <i class="fas fa-microphone"></i><span>🎤 Voces Virtuales</span>
+                    </a>
+
                     <!-- UBICACIÓN: Justo debajo de Servicios y antes de los menús de Admin -->
                     <a href="#" class="menu-item" data-section="folleto" onclick="event.preventDefault(); VV.utils.showSection('folleto');">
                         <i class="fas fa-images"></i>
@@ -1273,37 +1492,47 @@
         checkMobileMenu();
     </script>
     <script>
-// Conmutador de vistas - Karaoke vs Dashboard
+// Conmutador de vistas - Voces Virtuales vs Dashboard
 function conmutarVistasPro(destino) {
     try {
         var capaKaraoke = document.getElementById('modulo-karaoke-container');
+        var capaVoces = document.getElementById('modulo-voces-virtuales');
         var mainApp = document.getElementById('main-app');
         var loadingScreen = document.getElementById('loading-screen');
         
         if (loadingScreen) loadingScreen.style.display = 'none';
         
-        if (destino === '#karaoke') {
-            if (capaKaraoke) {
-                capaKaraoke.style.setProperty('display', 'block', 'important');
-                capaKaraoke.classList.add('active');
+        if (destino === '#voces') {
+            // Mostrar Voces Virtuales
+            if (capaVoces) capaVoces.style.display = 'block';
+            if (capaKaraoke) capaKaraoke.style.display = 'none';
+            if (mainApp) mainApp.style.display = 'none';
+            
+            window.location.hash = '#voces';
+            console.log("🎤 Voces Virtuales activado");
+            
+            if (window.VV_VOCES && typeof VV_VOCES.init === 'function') {
+                setTimeout(function() { VV_VOCES.init(); }, 100);
             }
-            if (mainApp) mainApp.style.setProperty('display', 'none', 'important');
+            
+        } else if (destino === '#karaoke') {
+            // Mostrar Karaoke (viejo, si todavía existe)
+            if (capaKaraoke) capaKaraoke.style.display = 'block';
+            if (capaVoces) capaVoces.style.display = 'none';
+            if (mainApp) mainApp.style.display = 'none';
             
             window.location.hash = '#karaoke';
             console.log("🎤 Karaoke activado");
             
-            if (window.VV_KARAOKE && typeof window.VV_KARAOKE.init === 'function') {
+            if (window.VV_KARAOKE && typeof VV_KARAOKE.init === 'function') {
                 setTimeout(function() { VV_KARAOKE.init(); }, 100);
             }
+            
         } else {
-            if (capaKaraoke) {
-                capaKaraoke.style.setProperty('display', 'none', 'important');
-                capaKaraoke.classList.remove('active');
-            }
-            if (mainApp) {
-                mainApp.style.setProperty('display', 'flex', 'important');
-                mainApp.classList.add('active');
-            }
+            // Mostrar Dashboard (default)
+            if (capaKaraoke) capaKaraoke.style.display = 'none';
+            if (capaVoces) capaVoces.style.display = 'none';
+            if (mainApp) mainApp.style.display = 'flex';
             
             var secciones = document.querySelectorAll('.content-section');
             secciones.forEach(function(s) { s.classList.remove('active'); });
@@ -1320,58 +1549,88 @@ function conmutarVistasPro(destino) {
 }
 
 window.addEventListener('hashchange', function() {
-    if (window.location.hash === '#karaoke') {
+    if (window.location.hash === '#voces') {
+        conmutarVistasPro('#voces');
+    } else if (window.location.hash === '#karaoke') {
         conmutarVistasPro('#karaoke');
     } else if (window.location.hash === '#dashboard') {
         conmutarVistasPro('#dashboard');
     }
 });
+
+window.addEventListener('load', function() {
+    if (window.location.hash === '#voces') {
+        setTimeout(function() { conmutarVistasPro('#voces'); }, 1000);
+    } else if (window.location.hash === '#karaoke') {
+        setTimeout(function() { conmutarVistasPro('#karaoke'); }, 1000);
+    }
+});
 </script>
-	<!-- 🎤 MÓDULO KARAOKE PRO -->
-<div id="modulo-karaoke-container" style="display: none;">
-    <div class="karaoke-main-container">
-        <div class="karaoke-header">
-            <button class="karaoke-back-btn" onclick="conmutarVistasPro('#dashboard')">
+	<!-- 🎤 VOCES VIRTUALES - Estudio de Grabación -->
+<div id="modulo-voces-virtuales" style="display: none;">
+    <div id="vv-estudio" class="vv-estudio">
+        <!-- Header -->
+        <div class="vv-estudio-header">
+            <button class="vv-btn-back" onclick="conmutarVistasPro('#dashboard')">
                 <i class="fas fa-arrow-left"></i> Volver
             </button>
-            <h1><i class="fas fa-microphone"></i> Estudio Karaoke Pro</h1>
-            <p>🎵 Canta tus canciones favoritas 🎵</p>
+            <span id="vv-mode-label" class="vv-mode-badge">Modo Solista 🎤</span>
+            <h1><i class="fas fa-microphone"></i> Voces Virtuales</h1>
         </div>
-        <div class="karaoke-search-bar">
-            <input type="text" id="karaoke-search-input" placeholder="🔍 Busca cualquier canción..." autocomplete="off">
-            <button id="karaoke-search-btn"><i class="fas fa-search"></i> Buscar</button>
+        
+        <!-- Área de Video -->
+        <div class="vv-video-area">
+            <!-- Video padre (modo dueto) -->
+            <div id="vv-parent-video" class="vv-parent-video" style="display: none;"></div>
+            
+            <!-- Preview propia -->
+            <div class="vv-preview-wrapper">
+                <video id="vv-video-preview" class="vv-video-preview" muted playsinline autoplay></video>
+                <span class="vv-preview-label">Tu Cámara</span>
+            </div>
+            
+            <!-- Capa de comentarios flotantes -->
+            <div id="vv-comments-layer" class="vv-comments-layer"></div>
         </div>
-        <div id="karaoke-results"></div>
-        <div id="karaoke-studio-console" style="display: none;">
-            <h2 id="karaoke-console-title" style="text-align:center;font-size:1.2rem;margin-bottom:1rem;">Selecciona una canción</h2>
-            <div id="youtube-player" style="width:100%;height:400px;background:#000;border-radius:12px;margin-bottom:2rem;"></div>
-            <div id="karaoke-rec-status">Listo para grabar</div>
-            <div id="karaoke-status-box" style="display:none;padding:1rem;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.5);border-radius:8px;color:#fca5a5;margin-bottom:1rem;"></div>
-            <div class="karaoke-recording-controls">
-                <button id="karaoke-rec-btn"><i class="fas fa-microphone"></i> GRABAR</button>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:2rem;">
-                <div class="karaoke-volume-control">
-                    <label for="karaoke-vol-mic">🎙️ Micrófono</label>
-                    <input type="range" id="karaoke-vol-mic" class="karaoke-volume-slider" min="0" max="1" step="0.1" value="0.5">
+        
+        <!-- Info de pista -->
+        <div class="vv-track-info">
+            <p id="vv-track-title">Seleccioná una canción para empezar</p>
+        </div>
+        
+        <!-- Controles -->
+        <div class="vv-controls">
+            <button id="vv-btn-record" class="vv-btn-record">
+                <i class="fas fa-circle"></i> Iniciar Grabación
+            </button>
+            
+            <button id="vv-btn-upload" class="vv-btn-upload" style="display: none;">
+                🚀 Publicar en el Barrio
+            </button>
+            
+            <!-- Barra de progreso -->
+            <div class="vv-progress-container" style="display: none;">
+                <div class="vv-progress-bar">
+                    <div id="vv-upload-progress" class="vv-progress-fill"></div>
                 </div>
-                <div class="karaoke-volume-control">
-                    <label for="karaoke-vol-eco">🔊 Eco</label>
-                    <input type="range" id="karaoke-vol-eco" class="karaoke-volume-slider" min="0" max="1" step="0.1" value="0.3">
-                </div>
+                <span>Subiendo...</span>
             </div>
-            <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-                <h3 style="margin-bottom:1rem;">📥 Tu Grabación</h3>
-                <audio id="karaoke-audio-preview" controls style="width:100%;margin-bottom:1rem;display:none;"></audio>
-                <a id="karaoke-download-link" style="padding:0.75rem 1.5rem;background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:8px;color:white;font-weight:600;cursor:pointer;text-decoration:none;display:none;align-items:center;gap:0.5rem;">
-                    <i class="fas fa-download"></i> Descargar Mi Canción
-                </a>
-            </div>
+        </div>
+        
+        <!-- Emoji Pad (solo en reproducción) -->
+        <div id="vv-emojis-pad" class="vv-emojis-pad">
+            <button onclick="VV_VOCES.sendEmoji('❤️')">❤️</button>
+            <button onclick="VV_VOCES.sendEmoji('👏')">👏</button>
+            <button onclick="VV_VOCES.sendEmoji('🌸')">🌸</button>
+            <button onclick="VV_VOCES.sendEmoji('💎')">💎</button>
+            <button onclick="VV_VOCES.sendEmoji('🔥')">🔥</button>
+            <button onclick="VV_VOCES.sendEmoji('🎤')">🎤</button>
+            <button onclick="VV_VOCES.sendEmoji('💪')">💪</button>
+            <button onclick="VV_VOCES.sendEmoji('🌟')">🌟</button>
         </div>
     </div>
 </div>
-
 <script src="https://www.youtube.com/iframe_api"></script>
-<script src="js/karaoke.js"></script>
+<script src="js/voces-virtuales.js"></script>
 </body>
 </html>
