@@ -1594,9 +1594,22 @@ window.addEventListener('load', function() {
         </div>
         
         <!-- Info de pista -->
-        <div class="vv-track-info">
-            <p id="vv-track-title">Seleccioná una canción para empezar</p>
-        </div>
+        <!-- Buscador de Canciones -->
+<div class="vv-search-section">
+    <div class="vv-search-bar">
+        <input type="text" id="vv-search-input" placeholder="🔍 Busca un artista o canción..." autocomplete="off">
+        <button id="vv-search-btn" onclick="VV_VOCES.searchTracks()">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+    <div id="vv-search-results" class="vv-search-results"></div>
+</div>
+
+<!-- Info de pista seleccionada -->
+<div class="vv-track-info">
+    <p id="vv-track-title">Seleccioná una canción arriba para empezar</p>
+</div>
+
         
         <!-- Controles -->
         <div class="vv-controls">

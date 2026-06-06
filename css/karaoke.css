@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    🎤 ESTILOS DEL MÓDULO KARAOKE PRO
    ============================================================ */
 
@@ -373,4 +373,87 @@
     .karaoke-recording-controls {
         grid-template-columns: 1fr;
     }
+    .vv-search-section {
+    padding: 0 1rem 1rem;
+    }
+
+    .vv-search-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    }
+
+    .vv-search-bar input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 0.9rem;
+    }
+
+    .vv-search-bar input::placeholder {
+    color: rgba(255,255,255,0.5);
+    }
+
+    .vv-search-bar button {
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: none;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    cursor: pointer;
+    }
+
+    .vv-search-results {
+    max-height: 150px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    }
+
+    .vv-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(255,255,255,0.05);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    }
+
+    .vv-result-item:hover {
+    background: rgba(255,255,255,0.15);
+    }
+
+    .vv-result-thumb {
+    width: 60px;
+    height: 45px;
+    background: #333;
+    border-radius: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    }
+
+    .vv-result-info {
+    flex: 1;
+    }
+
+    .vv-result-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0;
+    }
+
+    .vv-result-genre {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin: 0;
+    }
+
 }

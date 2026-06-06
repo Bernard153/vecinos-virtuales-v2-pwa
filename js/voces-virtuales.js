@@ -298,6 +298,98 @@ window.VV_VOCES = {
             this.elements.videoPreview.style.transform = '';
         }
     },
+    // ============================================================
+    // 🔍 BÚSQUEDA DE CANCIONES
+    // ============================================================
+    
+    CATALOGO_LOCAL: [
+        { id: 'XW5U8pWJqK4', title: 'Soda Stereo - De Música Ligera (Karaoke)', genre: 'rock' },
+        { id: 'M7X9XyVfSgA', title: 'Chaqueño Palavecino - Amor Salvaje (Karaoke)', genre: 'folclore' },
+        { id: '3wVw86mI6N0', title: 'Gilda - No me arrepiento de este amor (Karaoke)', genre: 'cumbia' },
+        { id: 'dLHtK9UVaaA', title: 'Los Fabulosos Cadillacs - Matador de Matadores', genre: 'rock' },
+        { id: 'qqfQaWRAyfo', title: 'Mercedes Sosa - Gracias a la Vida (Karaoke)', genre: 'folclore' }
+    ],
+    
+    searchTracks: async function() {
+        const input = document.getElementById('vv-search-input');
+        const container = document.getElementById('vv-search-results');
+        if (!input || !container) return;
+        
+        const query = input.value.trim().toLowerCase();
+        if (!query) {
+            this.showCatalog(container);
+            return;
+        }
+        
+        container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">🔍 Buscando...</p>';
+        
+        // Buscar en catálogo local
+        const local = this.CATALOGO_LOCAL.filter(t => 
+            t.title.toLowerCase().includes(query) || 
+            t.genre.toLowerCase().includes(query)
+        );
+        
+        if (local.length > 0) {
+            this.renderResults(container, local);
+            return;
+        }
+        
+        // Buscar en YouTube si hay API key
+        const apiKey = 'AIzaSydfghdasdffasd--dfghdf'; // Tu clave o dejar vacío
+        if (apiKey && !apiKey.includes('Dummy')) {
+            try {
+                const url = `https://www.googleapis.com/youtube/v3/search?q=${encodeURIComponent(query + ' karaoke')}&type=video&key=${apiKey}&maxResults=8&part=snippet`;
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                if (data.items) {
+                    const results = data.items.map(item => ({
+                        id: item.id.videoId,
+                        title: item.snippet.title,
+                        genre: 'YouTube'
+                    }));
+                    this.renderResults(container, results);
+                }
+            } catch(e) {
+                console.error('Error YouTube:', e);
+            }
+        } else {
+            container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">No se encontraron resultados locales.</p>';
+        }
+    },
+    
+    showCatalog: function(container) {
+        this.renderResults(container, this.CATALOGO_LOCAL);
+    },
+    
+    renderResults: function(container, tracks) {
+        if (!tracks.length) {
+            container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">Sin resultados</p>';
+            return;
+        }
+        
+        container.innerHTML = tracks.map(t => `
+            <div class="vv-result-item" onclick="VV_VOCES.selectTrack('${t.id}', '${t.title.replace(/'/g, "\\'")}')">
+                <div class="vv-result-thumb">🎵</div>
+                <div class="vv-result-info">
+                    <p class="vv-result-title">${t.title}</p>
+                    <p class="vv-result-genre">${t.genre}</p>
+                </div>
+            </div>
+        `).join('');
+    },
+    
+    selectTrack: function(trackId, trackTitle) {
+        // Construir URL del audio (usamos YouTube como fuente, pero en producción deberías tener MP3)
+        const trackUrl = `https://www.youtube.com/watch?v=${trackId}`;
+        
+        this.setup(trackId, trackUrl, trackTitle, this.currentMode, this.parentVideo);
+        
+        document.getElementById('vv-search-results').innerHTML = '';
+        document.getElementById('vv-search-input').value = '';
+        
+        alert(`🎵 Pista seleccionada: ${trackTitle}\n\nAhora podés iniciar la grabación.`);
+    },
     
     // ============================================================
     // 💬 SISTEMA DE COMENTARIOS BURBUJA
@@ -323,6 +415,16 @@ window.VV_VOCES = {
                 this.showBubble(payload.new.emoji);
             })
             .subscribe();
+    },
+    init: function() {
+        this.cacheElements();
+        this.bindEvents();
+        
+        // Mostrar catálogo al inicio
+        const resultsContainer = document.getElementById('vv-search-results');
+        if (resultsContainer) this.showCatalog(resultsContainer);
+        
+        console.log('🎤 Voces Virtuales V2 inicializado');
     },
     
     // Mostrar burbuja flotante
