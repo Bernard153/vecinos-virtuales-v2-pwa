@@ -355,7 +355,7 @@ window.VV_VOCES = {
         const apiKey = 'AIzaSyBV75vgH2KWvNgGn-OuNldrSHIignAkisA'; // Tu clave o dejar vacío
         if (apiKey && !apiKey.includes('Dummy')) {
             try {
-                const url = `https://www.googleapis.com/youtube/v3/search?q=${encodeURIComponent(query + ' karaoke')}&type=video&key=${apiKey}&maxResults=8&part=snippet`;
+                const url = `https://youtube-proxy.cibernico01.workers.dev/youtube/search?q=${encodeURIComponent(query)}&maxResults=${maxResults}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 
