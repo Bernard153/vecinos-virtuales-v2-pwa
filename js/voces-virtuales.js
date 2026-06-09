@@ -1,246 +1,347 @@
 ﻿// ============================================================
-// 🎤 VOCES VIRTUALES V2 - Motor de Grabación Audio/Video
+// 🎤 VOCES VIRTUALES V2 — Estudio de Creación + Ensayo
 // ============================================================
 
 window.VV_VOCES = {
-    // Estado
-    isRecording: false,
-    recordingBlob: null,
-    audioContext: null,
+    
+    // ============================================================
+    // ESTADO INTERNO
+    // ============================================================
+    
+    audioTrackBlobURL: null,
+    lrcLineas: [],
+    isLRC: false,
     mediaRecorder: null,
-    micStream: null,
-    audioSource: null,
+    fragmentosVideo: [],
+    streamCamaraMicro: null,
+    videoGrabadoBlob: null,
     currentTrack: null,
-    currentMode: 'solo', // 'solo' o 'dueto'
-    parentVideo: null, // Para duetos
+    currentYouTubeId: null,
+    currentYouTubeTitle: null,
     
-    // Referencias DOM
-    elements: {},
+    CATALOGO_LOCAL: [
+        { id: 'XW5U8pWJqK4', title: 'Soda Stereo - De Música Ligera (Karaoke)', genre: 'rock' },
+        { id: 'M7X9XyVfSgA', title: 'Chaqueño Palavecino - Amor Salvaje (Karaoke)', genre: 'folclore' },
+        { id: '3wVw86mI6N0', title: 'Gilda - No me arrepiento de este amor (Karaoke)', genre: 'cumbia' },
+        { id: 'dLHtK9UVaaA', title: 'Los Fabulosos Cadillacs - Matador de Matadores', genre: 'rock' },
+        { id: 'qqfQaWRAyfo', title: 'Mercedes Sosa - Gracias a la Vida (Karaoke)', genre: 'folclore' }
+    ],
     
-    // Inicializar
+    // ============================================================
+    // INICIALIZACIÓN
+    // ============================================================
+    
     init: function() {
         this.cacheElements();
         this.bindEvents();
         console.log('🎤 Voces Virtuales V2 inicializado');
     },
     
-    // Cachear elementos del DOM
     cacheElements: function() {
-        this.elements = {
-            container: document.getElementById('vv-estudio'),
-            videoPreview: document.getElementById('vv-video-preview'),
-            btnRecord: document.getElementById('vv-btn-record'),
-            btnUpload: document.getElementById('vv-btn-upload'),
-            trackTitle: document.getElementById('vv-track-title'),
-            progressBar: document.getElementById('vv-upload-progress'),
-            commentsContainer: document.getElementById('vv-comments-layer'),
-            emojisPad: document.getElementById('vv-emojis-pad'),
-            modeLabel: document.getElementById('vv-mode-label'),
-            parentVideoContainer: document.getElementById('vv-parent-video')
-        };
+        // Cachear elementos principales si es necesario
     },
     
-    // Eventos
     bindEvents: function() {
-        if (this.elements.btnRecord) {
-            this.elements.btnRecord.addEventListener('click', () => this.toggleRecording());
-        }
-        if (this.elements.btnUpload) {
-            this.elements.btnUpload.addEventListener('click', () => this.uploadVideo());
-        }
+        // Eventos principales ya están en el HTML inline (onclick)
+        // o se pueden agregar aquí si se prefiere
     },
     
-    // Configurar pista y modo
-    setup: function(trackId, trackUrl, trackTitle, mode, parentVideoData) {
-        this.currentTrack = { id: trackId, url: trackUrl, title: trackTitle };
-        this.currentMode = mode || 'solo';
-        this.parentVideo = parentVideoData || null;
-        
-        if (this.elements.trackTitle) {
-            this.elements.trackTitle.textContent = trackTitle || 'Sin título';
-        }
-        
-        if (this.elements.modeLabel) {
-            this.elements.modeLabel.textContent = this.currentMode === 'dueto' 
-                ? 'Modo Dueto Secuencial 👥' 
-                : 'Modo Solista 🎤';
-        }
-        
-        // Si es dueto, mostrar video padre
-        if (this.currentMode === 'dueto' && this.parentVideo && this.elements.parentVideoContainer) {
-            this.elements.parentVideoContainer.innerHTML = `
-                <video src="${this.parentVideo.video_url}" muted playsinline autoplay loop 
-                    style="width:100%;height:100%;object-fit:cover;"></video>
-                <span style="position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.6);color:white;padding:4px 8px;border-radius:4px;font-size:12px;">Parte 1</span>
-            `;
-            this.elements.parentVideoContainer.style.display = 'block';
-        }
-    },
+    // ============================================================
+    // NAVEGACIÓN DE TABS
+    // ============================================================
     
-    // Iniciar/Detener grabación
-    toggleRecording: async function() {
-        if (this.isRecording) {
-            this.stopRecording();
+    switchTab: function(tabName) {
+        const crear = document.getElementById('vv-tab-crear');
+        const ensayo = document.getElementById('vv-tab-ensayo');
+        if (!crear || !ensayo) return;
+        
+        if (tabName === 'ensayo') {
+            crear.style.display = 'none';
+            ensayo.style.display = 'block';
         } else {
-            await this.startRecording();
+            ensayo.style.display = 'none';
+            crear.style.display = 'block';
         }
     },
     
-        // Iniciar grabación (solo cámara + micrófono, pista por YouTube)
-    startRecording: async function() {
-        if (!this.currentTrack) {
-            alert('Seleccioná una canción primero');
+    // ============================================================
+    // ZONA DE SUBIDA (Modo Artista)
+    // ============================================================
+    
+    onAudioSelected: function() {
+        const file = document.getElementById('vv-upload-audio').files[0];
+        const nameEl = document.getElementById('vv-audio-name');
+        if (nameEl) nameEl.textContent = file ? `🎵 ${file.name}` : '';
+        this.checkCanLoad();
+    },
+    
+    onLyricSelected: function() {
+        const file = document.getElementById('vv-upload-letra').files[0];
+        const nameEl = document.getElementById('vv-letra-name');
+        if (nameEl) nameEl.textContent = file ? `📄 ${file.name}` : '';
+    },
+    
+    checkCanLoad: function() {
+        const hasAudio = document.getElementById('vv-upload-audio').files.length > 0;
+        const btn = document.getElementById('vv-btn-cargar-estudio');
+        if (btn) {
+            btn.disabled = !hasAudio;
+            btn.style.opacity = hasAudio ? '1' : '0.5';
+        }
+    },
+    
+    loadLocalTrackFromInputs: function() {
+        const audioFile = document.getElementById('vv-upload-audio').files[0];
+        const lrcFile = document.getElementById('vv-upload-letra').files[0];
+        if (!audioFile) {
+            alert('Seleccioná una pista de audio primero.');
             return;
         }
-        
-        try {
-            // 1. Mostrar reproductor de YouTube con la pista
-            this.loadYouTubePlayer(this.currentTrack.id);
+        this.loadLocalTrack(audioFile, lrcFile);
+    },
+    
+    loadLocalTrack: function(audioFile, lrcFile) {
+        if (!audioFile) return;
+
+        const readerAudio = new FileReader();
+        readerAudio.onload = (e) => {
+            this.audioTrackBlobURL = URL.createObjectURL(new Blob([e.target.result], {type: audioFile.type}));
+            const audioEl = document.getElementById('vv-pista-audio');
+            if (audioEl) audioEl.src = this.audioTrackBlobURL;
             
-            // 2. Capturar cámara y micrófono del usuario
-            const constraints = {
-                video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+            const zonaSubida = document.getElementById('vv-zona-subida');
+            const zonaGrabacion = document.getElementById('vv-zona-grabacion');
+            if (zonaSubida) zonaSubida.style.display = 'none';
+            if (zonaGrabacion) zonaGrabacion.style.display = 'block';
+        };
+        readerAudio.readAsArrayBuffer(audioFile);
+
+        if (lrcFile) {
+            const readerLetra = new FileReader();
+            readerLetra.onload = (e) => {
+                const texto = e.target.result;
+                if (lrcFile.name.toLowerCase().endsWith('.lrc')) {
+                    this.parsearLRC(texto);
+                } else {
+                    this.isLRC = false;
+                    const container = document.getElementById('vv-letra-container');
+                    if (container) container.innerHTML = texto.replace(/\n/g, '<br>');
+                }
+            };
+            readerLetra.readAsText(lrcFile);
+        } else {
+            this.isLRC = false;
+            const container = document.getElementById('vv-letra-container');
+            if (container) container.innerHTML = '<p class="vv-letra-placeholder">Canción Original<br>(Sin letra sincronizada)</p>';
+        }
+    },
+    
+    // ============================================================
+    // PARSER LRC Y SINCRONIZACIÓN
+    // ============================================================
+    
+    parsearLRC: function(texto) {
+        this.lrcLineas = [];
+        this.isLRC = true;
+        const lineas = texto.split('\n');
+        const regexTiempo = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+
+        lineas.forEach(linea => {
+            const match = regexTiempo.exec(linea);
+            if (match) {
+                const minutos = parseInt(match[1]);
+                const segundos = parseInt(match[2]);
+                const milisegundos = parseInt(match[3]);
+                const divisorMs = match[3].length === 2 ? 100 : 1000;
+                const tiempoTotal = (minutos * 60) + segundos + (milisegundos / divisorMs);
+                const textoLinea = linea.replace(regexTiempo, '').trim();
+                this.lrcLineas.push({ tiempo: tiempoTotal, texto: textoLinea });
+            }
+        });
+        
+        if (this.lrcLineas.length > 0) {
+            const container = document.getElementById('vv-letra-container');
+            if (container) container.innerHTML = `<span class="linea-activa">${this.lrcLineas[0].texto}</span>`;
+        }
+        
+        const audioEl = document.getElementById('vv-pista-audio');
+        if (audioEl) {
+            audioEl.addEventListener('timeupdate', () => {
+                this.sincronizarLetras(audioEl.currentTime);
+            });
+        }
+    },
+    
+    sincronizarLetras: function(currentTime) {
+        if (!this.isLRC || this.lrcLineas.length === 0) return;
+        
+        let lineaActiva = this.lrcLineas[0];
+        for (let i = 0; i < this.lrcLineas.length; i++) {
+            if (currentTime >= this.lrcLineas[i].tiempo) {
+                lineaActiva = this.lrcLineas[i];
+            } else {
+                break;
+            }
+        }
+        
+        const container = document.getElementById('vv-letra-container');
+        if (container && container.innerText !== lineaActiva.texto) {
+            container.innerHTML = `<span class="linea-activa">${lineaActiva.texto}</span>`;
+        }
+    },
+    
+    // ============================================================
+    // GRABACIÓN (Modo Artista)
+    // ============================================================
+    
+    toggleRecording: function() {
+        if (!this.mediaRecorder || this.mediaRecorder.state === "inactive") {
+            this.startRecording();
+        } else {
+            this.stopRecording();
+        }
+    },
+    
+    startRecording: async function() {
+        const btnRec = document.getElementById('vv-btn-rec-action');
+        const audioComponent = document.getElementById('vv-pista-audio');
+
+        try {
+            this.streamCamaraMicro = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24 } },
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
                     autoGainControl: true
                 }
-            };
-            
-            this.micStream = await navigator.mediaDevices.getUserMedia(constraints);
-            
-            // Mostrar preview en espejo
-            if (this.elements.videoPreview) {
-                this.elements.videoPreview.srcObject = this.micStream;
-                this.elements.videoPreview.style.transform = 'scaleX(-1)';
+            });
+
+            const camaraPreview = document.getElementById('vv-camara-preview');
+            if (camaraPreview) camaraPreview.srcObject = this.streamCamaraMicro;
+
+            let opcionesCodec = { mimeType: 'video/webm;codecs=vp8,opus' };
+            if (!MediaRecorder.isTypeSupported(opcionesCodec.mimeType)) {
+                opcionesCodec = { mimeType: 'video/mp4' };
             }
-            
-            // 3. MediaRecorder con solo el stream del usuario
-            const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-                ? 'video/webm;codecs=vp9'
-                : 'video/webm';
-            
-            const chunks = [];
-            this.mediaRecorder = new MediaRecorder(this.micStream, { mimeType });
+
+            this.mediaRecorder = new MediaRecorder(this.streamCamaraMicro, opcionesCodec);
+            this.fragmentosVideo = [];
             
             this.mediaRecorder.ondataavailable = (e) => {
-                if (e.data && e.data.size > 0) chunks.push(e.data);
+                if (e.data && e.data.size > 0) this.fragmentosVideo.push(e.data);
             };
-            
+
             this.mediaRecorder.onstop = () => {
-                this.recordingBlob = new Blob(chunks, { type: mimeType });
-                this.onRecordingReady();
+                this.videoGrabadoBlob = new Blob(this.fragmentosVideo, { type: opcionesCodec.mimeType });
+                const previewEl = document.getElementById('vv-preview-grabacion');
+                if (previewEl) previewEl.src = URL.createObjectURL(this.videoGrabadoBlob);
+                
+                const zonaGrabacion = document.getElementById('vv-zona-grabacion');
+                const zonaPost = document.getElementById('vv-zona-post-grabacion');
+                if (zonaGrabacion) zonaGrabacion.style.display = 'none';
+                if (zonaPost) zonaPost.style.display = 'block';
             };
+
+            if (btnRec) btnRec.classList.add('grabando');
+            this.mediaRecorder.start();
             
-            // Iniciar grabación
-            this.mediaRecorder.start(250);
-            this.isRecording = true;
-            
-            // Reproducir pista de YouTube con delay para sincronización
-            setTimeout(() => {
-                if (this.ytPlayer && this.ytPlayer.playVideo) {
-                    this.ytPlayer.playVideo();
-                }
-            }, 500);
-            
-            this.updateUIRecording(true);
-            
-        } catch (err) {
-            console.error('Error iniciando grabación:', err);
-            
-            if (err.name === 'NotFoundError' || err.message.includes('device')) {
-                alert('⚠️ No se detectó cámara o micrófono.\n\nPara usar Voces Virtuales necesitás:\n• Celular con cámara frontal\n• O auriculares con micrófono\n\n💡 Abrí esta app desde tu celular para la mejor experiencia.');
-            } else if (err.name === 'NotAllowedError') {
-                alert('⚠️ Permiso denegado.\n\nPor favor permití el acceso a cámara y micrófono.');
-            } else {
-                alert('Error: ' + err.message);
+            if (audioComponent) {
+                audioComponent.currentTime = 0;
+                audioComponent.play();
             }
+
+        } catch (err) {
+            alert("Fallo de hardware de cámara/micrófono: " + err.message);
         }
     },
     
-    // Cargar reproductor de YouTube
-    ytPlayer: null,
+    stopRecording: function() {
+        const btnRec = document.getElementById('vv-btn-rec-action');
+        if (btnRec) btnRec.classList.remove('grabando');
+        
+        if (this.mediaRecorder) this.mediaRecorder.stop();
+        
+        const audioComponent = document.getElementById('vv-pista-audio');
+        if (audioComponent) audioComponent.pause();
+        
+        if (this.streamCamaraMicro) {
+            this.streamCamaraMicro.getTracks().forEach(track => track.stop());
+        }
+    },
     
-    loadYouTubePlayer: function(videoId) {
-        // Si ya existe el reproductor, cargar nuevo video
-        if (this.ytPlayer && this.ytPlayer.loadVideoById) {
-            this.ytPlayer.loadVideoById(videoId);
+    playPreview: function() {
+        const previewEl = document.getElementById('vv-preview-grabacion');
+        if (previewEl) previewEl.play();
+    },
+    
+    discardRecording: function() {
+        this.videoGrabadoBlob = null;
+        this.fragmentosVideo = [];
+        this.mediaRecorder = null;
+        
+        const inputTitulo = document.getElementById('vv-input-titulo-obra');
+        const checkDerechos = document.getElementById('vv-check-derechos');
+        const zonaPost = document.getElementById('vv-zona-post-grabacion');
+        const zonaGrabacion = document.getElementById('vv-zona-grabacion');
+        const contenedorProgreso = document.getElementById('vv-contenedor-progreso');
+        const barraProgreso = document.getElementById('vv-barra-progreso');
+        
+        if (inputTitulo) inputTitulo.value = "";
+        if (checkDerechos) checkDerechos.checked = false;
+        if (zonaPost) zonaPost.style.display = 'none';
+        if (zonaGrabacion) zonaGrabacion.style.display = 'block';
+        if (contenedorProgreso) contenedorProgreso.style.display = 'none';
+        if (barraProgreso) barraProgreso.style.width = '0%';
+        
+        const camaraPreview = document.getElementById('vv-camara-preview');
+        if (camaraPreview) {
+            camaraPreview.srcObject = null;
+        }
+    },
+    
+    // ============================================================
+    // PUBLICACIÓN Y SUBIDA A SUPABASE
+    // ============================================================
+    
+    publishOriginal: function() {
+        const titleInput = document.getElementById('vv-input-titulo-obra');
+        const checkDerechos = document.getElementById('vv-check-derechos');
+        
+        const title = titleInput ? titleInput.value.trim() : '';
+        const isAuthor = checkDerechos ? checkDerechos.checked : false;
+        
+        if (!title) {
+            alert('Por favor, ingresá el título de tu obra.');
+            return;
+        }
+        if (!isAuthor) {
+            alert('Debés confirmar que sos el autor de la obra para publicarla.');
             return;
         }
         
-        // Crear contenedor si no existe
-        let playerContainer = document.getElementById('vv-youtube-player');
-        if (!playerContainer) {
-            playerContainer = document.createElement('div');
-            playerContainer.id = 'vv-youtube-player';
-            playerContainer.style.cssText = 'position:absolute;top:10px;right:10px;width:160px;height:90px;z-index:100;border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.5);';
-            
-            const videoArea = document.querySelector('.vv-video-area');
-            if (videoArea) videoArea.appendChild(playerContainer);
+        const perms = VV_ROLES ? VV_ROLES.getPermissions() : {};
+        if (!perms.canFullKaraoke) {
+            alert('Necesitás ser vecino verificado para publicar obras.');
+            return;
         }
         
-        // Crear player de YouTube
-        if (window.YT && window.YT.Player) {
-            this.ytPlayer = new YT.Player('vv-youtube-player', {
-                width: '160',
-                height: '90',
-                videoId: videoId,
-                playerVars: {
-                    autoplay: 0,
-                    controls: 0,
-                    modestbranding: 1,
-                    rel: 0
-                }
-            });
-        }
-    },
-    
-        // Detener grabación
-    stopRecording: function() {
-        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
-            this.mediaRecorder.stop();
-        }
-        if (this.micStream) {
-            this.micStream.getTracks().forEach(track => track.stop());
-        }
-        if (this.ytPlayer && this.ytPlayer.pauseVideo) {
-            this.ytPlayer.pauseVideo();
+        if (!this.videoGrabadoBlob) {
+            alert('No hay grabación para subir.');
+            return;
         }
         
-        this.isRecording = false;
-        this.updateUIRecording(false);
+        this.uploadVideo(this.videoGrabadoBlob, {
+            title: title,
+            is_original: true,
+            track_id: this.currentTrack ? this.currentTrack.id : null,
+            track_title: this.currentTrack ? this.currentTrack.title : null
+        });
     },
-    
-    // Grabación lista
-    onRecordingReady: function() {
-        if (this.elements.btnUpload) {
-            this.elements.btnUpload.style.display = 'block';
-        }
-        alert('¡Grabación lista! Podés reproducirla o publicarla.');
-    },
-    
-    // Actualizar UI
-    updateUIRecording: function(recording) {
-        if (!this.elements.btnRecord) return;
-        
-        if (recording) {
-            this.elements.btnRecord.innerHTML = '⏹️ Detener Grabación';
-            this.elements.btnRecord.classList.add('recording');
-        } else {
-            this.elements.btnRecord.innerHTML = '🔴 Iniciar Grabación';
-            this.elements.btnRecord.classList.remove('recording');
-        }
-    },
-    
-    // Subir video
-        // ============================================================
-    // 9. SUBIDA A SUPABASE STORAGE + BASE DE DATOS (Integrado)
-    // ============================================================
     
     uploadVideo: async function(blob, metadataObra) {
-        if (!blob) { 
-            alert("No hay ninguna grabación de video válida."); 
-            return; 
+        if (!blob) {
+            alert('No hay video para subir.');
+            return;
         }
 
         const btnPublicar = document.getElementById('vv-btn-publicar');
@@ -250,14 +351,12 @@ window.VV_VOCES = {
         const textoProgreso = document.getElementById('vv-texto-progreso');
         const porcentajeProgreso = document.getElementById('vv-porcentaje-progreso');
 
-        // Obtener usuario real
         const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
         if (!user || !user.id) {
-            alert("Debes estar logueado para publicar.");
+            alert('Debes estar logueado para publicar.');
             return;
         }
 
-        // Bloquear interfaz
         if (btnPublicar) btnPublicar.disabled = true;
         if (btnDescartar) btnDescartar.disabled = true;
         if (contenedorProgreso) contenedorProgreso.style.display = 'block';
@@ -265,14 +364,12 @@ window.VV_VOCES = {
         if (textoProgreso) textoProgreso.textContent = 'Preparando subida...';
 
         try {
-            // Generar nombre único
             const extension = blob.type.includes('mp4') ? 'mp4' : 'webm';
             const nombreArchivo = `video_${Date.now()}_${Math.floor(Math.random() * 1000)}.${extension}`;
             const filePath = `voces-virtuales/${nombreArchivo}`;
 
-            // PASO 1: Subir a Supabase Storage con progreso real
             if (textoProgreso) textoProgreso.textContent = 'Subiendo video al barrio...';
-            
+
             const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('barrio-media')
                 .upload(filePath, blob, {
@@ -290,7 +387,6 @@ window.VV_VOCES = {
 
             if (uploadError) throw uploadError;
 
-            // Obtener URL pública
             const { data: { publicUrl } } = supabase.storage
                 .from('barrio-media')
                 .getPublicUrl(filePath);
@@ -299,7 +395,6 @@ window.VV_VOCES = {
             if (porcentajeProgreso) porcentajeProgreso.textContent = '100%';
             if (textoProgreso) textoProgreso.textContent = '¡Subido! Guardando datos...';
 
-            // PASO 2: Insertar metadata en tabla karaoke_videos
             const { error: dbError } = await supabase
                 .from('karaoke_videos')
                 .insert([{
@@ -318,15 +413,11 @@ window.VV_VOCES = {
 
             if (dbError) throw dbError;
 
-            // Éxito total
-            if (textoProgreso) textoProgreso.textContent = '¡Publicado con éxito!';
-            
-            // Trackear acción para VIP
             if (VV_ROLES) VV_ROLES.trackAction('karaoke');
 
             setTimeout(() => {
                 alert(`🎉 ¡Tu obra "${metadataObra.title}" fue publicada en el barrio!`);
-                this.discardRecording(); // Limpiar sin recargar la página
+                this.discardRecording();
             }, 500);
 
         } catch (error) {
@@ -335,8 +426,7 @@ window.VV_VOCES = {
             this.restablecerUIControles();
         }
     },
-
-    // Función auxiliar para restaurar controles si falla
+    
     restablecerUIControles: function() {
         const btnPublicar = document.getElementById('vv-btn-publicar');
         const btnDescartar = document.getElementById('vv-btn-descartar');
@@ -347,235 +437,6 @@ window.VV_VOCES = {
         if (btnDescartar) btnDescartar.disabled = false;
         if (contenedorProgreso) contenedorProgreso.style.display = 'none';
         if (barraProgreso) barraProgreso.style.width = '0%';
-    }
-
-    // ============================================================
-    // 🔍 BÚSQUEDA DE CANCIONES
-    // ============================================================
-    
-    CATALOGO_LOCAL: [
-        { id: 'XW5U8pWJqK4', title: 'Soda Stereo - De Música Ligera (Karaoke)', genre: 'rock' },
-        { id: 'M7X9XyVfSgA', title: 'Chaqueño Palavecino - Amor Salvaje (Karaoke)', genre: 'folclore' },
-        { id: '3wVw86mI6N0', title: 'Gilda - No me arrepiento de este amor (Karaoke)', genre: 'cumbia' },
-        { id: 'dLHtK9UVaaA', title: 'Los Fabulosos Cadillacs - Matador de Matadores', genre: 'rock' },
-        { id: 'qqfQaWRAyfo', title: 'Mercedes Sosa - Gracias a la Vida (Karaoke)', genre: 'folclore' }
-    ],
-    
-    searchTracks: async function() {
-        const input = document.getElementById('vv-search-input');
-        const container = document.getElementById('vv-search-results');
-        if (!input || !container) return;
-        
-        const query = input.value.trim().toLowerCase();
-        if (!query) {
-            this.showCatalog(container);
-            return;
-        }
-        
-        container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">🔍 Buscando...</p>';
-        
-        // Buscar en catálogo local
-        const local = this.CATALOGO_LOCAL.filter(t => 
-            t.title.toLowerCase().includes(query) || 
-            t.genre.toLowerCase().includes(query)
-        );
-        
-        if (local.length > 0) {
-            this.renderResults(container, local);
-            return;
-        }
-        
-        // Buscar en YouTube si hay API key
-        const apiKey = 'AIzaSyBV75vgH2KWvNgGn-OuNldrSHIignAkisA'; // Tu clave o dejar vacío
-        if (apiKey && !apiKey.includes('Dummy')) {
-            try {
-                const url = `https://youtube-proxy.cibernico01.workers.dev/youtube/search?q=${encodeURIComponent(query)}&maxResults=${maxResults}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                
-                if (data.items) {
-                    const results = data.items.map(item => ({
-                        id: item.id.videoId,
-                        title: item.snippet.title,
-                        genre: 'YouTube'
-                    }));
-                    this.renderResults(container, results);
-                }
-            } catch(e) {
-                console.error('Error YouTube:', e);
-            }
-        } else {
-            container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">No se encontraron resultados locales.</p>';
-        }
-    },
-    
-    showCatalog: function(container) {
-        this.renderResults(container, this.CATALOGO_LOCAL);
-    },
-    
-    renderResults: function(container, tracks) {
-        if (!tracks.length) {
-            container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">Sin resultados</p>';
-            return;
-        }
-        
-        container.innerHTML = tracks.map(t => `
-            <div class="vv-result-item" onclick="VV_VOCES.selectTrack('${t.id}', '${t.title.replace(/'/g, "\\'")}')">
-                <div class="vv-result-thumb">🎵</div>
-                <div class="vv-result-info">
-                    <p class="vv-result-title">${t.title}</p>
-                    <p class="vv-result-genre">${t.genre}</p>
-                </div>
-            </div>
-        `).join('');
-    },
-    
-    selectTrack: function(trackId, trackTitle) {
-        // Construir URL del audio (usamos YouTube como fuente, pero en producción deberías tener MP3)
-        const trackUrl = `https://www.youtube.com/watch?v=${trackId}`;
-        
-        this.setup(trackId, trackUrl, trackTitle, this.currentMode, this.parentVideo);
-        
-        document.getElementById('vv-search-results').innerHTML = '';
-        document.getElementById('vv-search-input').value = '';
-        
-        alert(`🎵 Pista seleccionada: ${trackTitle}\n\nAhora podés iniciar la grabación.`);
-    },
-    
-    // ============================================================
-    // 💬 SISTEMA DE COMENTARIOS BURBUJA
-    // ============================================================
-    
-    comments: [],
-    commentChannel: null,
-    
-    // Inicializar comentarios para un video
-    initComments: function(videoId) {
-        this.currentVideoId = videoId;
-        this.comments = [];
-        
-        // Escuchar en tiempo real
-        this.commentChannel = supabase
-            .channel(`voces-comments-${videoId}`)
-            .on('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'karaoke_comments',
-                filter: `video_id=eq.${videoId}`
-            }, (payload) => {
-                this.showBubble(payload.new.emoji);
-            })
-            .subscribe();
-    },
-    init: function() {
-        this.cacheElements();
-        this.bindEvents();
-        
-        // Mostrar catálogo al inicio
-        const resultsContainer = document.getElementById('vv-search-results');
-        if (resultsContainer) this.showCatalog(resultsContainer);
-        
-        console.log('🎤 Voces Virtuales V2 inicializado');
-    },
-    
-    // Mostrar burbuja flotante
-    showBubble: function(emoji) {
-        const container = this.elements.commentsContainer;
-        if (!container) return;
-        
-        const bubble = document.createElement('div');
-        bubble.className = 'vv-comment-bubble';
-        bubble.textContent = emoji;
-        
-        // Posición aleatoria horizontal
-        const randomX = Math.floor(Math.random() * 60) - 30;
-        bubble.style.left = `calc(50% + ${randomX}px)`;
-        bubble.style.bottom = '20px';
-        
-        container.appendChild(bubble);
-        
-        // Eliminar después de animación
-        setTimeout(() => {
-            if (bubble.parentNode) bubble.parentNode.removeChild(bubble);
-        }, 2000);
-    },
-    
-    // Enviar emoji
-    sendEmoji: async function(emoji) {
-        if (!this.currentVideoId) return;
-        
-        // Mostrar localmente
-        this.showBubble(emoji);
-        
-        // Guardar en DB
-        try {
-            const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
-            await supabase.from('karaoke_comments').insert([{
-                video_id: this.currentVideoId,
-                user_id: user ? user.id : null,
-                user_name: user ? user.name || user.nickname : 'Anónimo',
-                emoji: emoji,
-                video_timestamp: 0
-            }]);
-        } catch (e) {
-            console.error('Error enviando emoji:', e);
-        }
-    },
-    
-    // Limpiar comentarios
-    cleanupComments: function() {
-        if (this.commentChannel) {
-            supabase.removeChannel(this.commentChannel);
-            this.commentChannel = null;
-        }
-        this.currentVideoId = null;
-    }
-    // ============================================================
-    // NAVEGACIÓN Y UTILIDADES
-    // ============================================================
-    
-    switchTab: function(tabName) {
-        const crear = document.getElementById('vv-tab-crear');
-        const ensayo = document.getElementById('vv-tab-ensayo');
-        if (tabName === 'ensayo') {
-            crear.style.display = 'none';
-            ensayo.style.display = 'block';
-        } else {
-            ensayo.style.display = 'none';
-            crear.style.display = 'block';
-        }
-    },
-    
-    onAudioSelected: function() {
-        const file = document.getElementById('vv-upload-audio').files[0];
-        document.getElementById('vv-audio-name').textContent = file ? `🎵 ${file.name}` : '';
-        this.checkCanLoad();
-    },
-    
-    onLyricSelected: function() {
-        const file = document.getElementById('vv-upload-letra').files[0];
-        document.getElementById('vv-letra-name').textContent = file ? `📄 ${file.name}` : '';
-    },
-    
-    checkCanLoad: function() {
-        const hasAudio = document.getElementById('vv-upload-audio').files.length > 0;
-        const btn = document.getElementById('vv-btn-cargar-estudio');
-        btn.disabled = !hasAudio;
-    },
-    
-    loadLocalTrackFromInputs: function() {
-        const audioFile = document.getElementById('vv-upload-audio').files[0];
-        const lrcFile = document.getElementById('vv-upload-letra').files[0];
-        if (!audioFile) return;
-        this.loadLocalTrack(audioFile, lrcFile);
-    },
-    
-    toggleRecording: function() {
-        if (!this.mediaRecorder || this.mediaRecorder.state === "inactive") {
-            this.startRecording();
-        } else {
-            this.stopRecording();
-        }
     },
     
     // ============================================================
@@ -587,7 +448,7 @@ window.VV_VOCES = {
         const container = document.getElementById('vv-resultados-ensayo');
         if (!container) return;
         
-        container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;"><i class="fas fa-spinner fa-spin"></i> Buscando...</p>';
+        container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">🔍 Buscando...</p>';
         
         try {
             const res = await fetch(`https://youtube-proxy.cibernico01.workers.dev/youtube/search?q=${encodeURIComponent(query)}&maxResults=8`);
@@ -658,12 +519,11 @@ window.VV_VOCES = {
             this.mediaRecorder.start();
             alert('🎤 Grabando ensayo...\n\nCantá mientras suena la pista.\nTocá Aceptar para detener.');
             
-            // El usuario toca Aceptar en el alert para detener
             setTimeout(() => {
                 if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
                     this.mediaRecorder.stop();
                 }
-            }, 100); // El alert bloquea, así que esto corre después
+            }, 100);
             
         } catch(err) {
             alert('Error: ' + err.message);
@@ -689,5 +549,9 @@ window.VV_VOCES = {
             alert('Sistema de subida no disponible.');
         }
     }
-
 };
+
+// Inicializar al cargar la PWA
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.VV_VOCES) VV_VOCES.init();
+});
