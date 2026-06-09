@@ -233,88 +233,122 @@ window.VV_VOCES = {
     },
     
     // Subir video
-    uploadVideo: async function() {
-        if (!this.recordingBlob) return;
-        
-        const perms = VV_ROLES ? VV_ROLES.getPermissions() : {};
-        if (!perms.canFullKaraoke) {
-            alert('Necesitás ser vecino o VIP para publicar videos.');
+        // ============================================================
+    // 9. SUBIDA A SUPABASE STORAGE + BASE DE DATOS (Integrado)
+    // ============================================================
+    
+    uploadVideo: async function(blob, metadataObra) {
+        if (!blob) { 
+            alert("No hay ninguna grabación de video válida."); 
+            return; 
+        }
+
+        const btnPublicar = document.getElementById('vv-btn-publicar');
+        const btnDescartar = document.getElementById('vv-btn-descartar');
+        const contenedorProgreso = document.getElementById('vv-contenedor-progreso');
+        const barraProgreso = document.getElementById('vv-barra-progreso');
+        const textoProgreso = document.getElementById('vv-texto-progreso');
+        const porcentajeProgreso = document.getElementById('vv-porcentaje-progreso');
+
+        // Obtener usuario real
+        const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
+        if (!user || !user.id) {
+            alert("Debes estar logueado para publicar.");
             return;
         }
-        
+
+        // Bloquear interfaz
+        if (btnPublicar) btnPublicar.disabled = true;
+        if (btnDescartar) btnDescartar.disabled = true;
+        if (contenedorProgreso) contenedorProgreso.style.display = 'block';
+        if (barraProgreso) barraProgreso.style.width = '5%';
+        if (textoProgreso) textoProgreso.textContent = 'Preparando subida...';
+
         try {
-            this.elements.progressBar.parentElement.style.display = 'block';
-            this.elements.progressBar.style.width = '30%';
+            // Generar nombre único
+            const extension = blob.type.includes('mp4') ? 'mp4' : 'webm';
+            const nombreArchivo = `video_${Date.now()}_${Math.floor(Math.random() * 1000)}.${extension}`;
+            const filePath = `voces-virtuales/${nombreArchivo}`;
+
+            // PASO 1: Subir a Supabase Storage con progreso real
+            if (textoProgreso) textoProgreso.textContent = 'Subiendo video al barrio...';
             
-            const fileExt = this.recordingBlob.type.includes('mp4') ? 'mp4' : 'webm';
-            const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-            const filePath = `voces-virtuales/${fileName}`;
-            
-            // Subir a Supabase Storage
-            const { data, error } = await supabase.storage
+            const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('barrio-media')
-                .upload(filePath, this.recordingBlob, {
+                .upload(filePath, blob, {
                     cacheControl: '3600',
-                    upsert: false
+                    upsert: false,
+                    contentType: blob.type || 'video/webm',
+                    onProgress: (progress) => {
+                        const percent = Math.round((progress.loaded / progress.total) * 100);
+                        const displayPercent = Math.min(percent, 99);
+                        if (barraProgreso) barraProgreso.style.width = displayPercent + '%';
+                        if (porcentajeProgreso) porcentajeProgreso.textContent = displayPercent + '%';
+                        if (textoProgreso) textoProgreso.textContent = `Subiendo video al barrio... ${displayPercent}%`;
+                    }
                 });
-            
-            if (error) throw error;
-            
-            this.elements.progressBar.style.width = '70%';
-            
+
+            if (uploadError) throw uploadError;
+
+            // Obtener URL pública
             const { data: { publicUrl } } = supabase.storage
                 .from('barrio-media')
                 .getPublicUrl(filePath);
-            
-                        // Guardar en DB
-            const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
-            const { error: dbError } = await supabase.from('karaoke_videos').insert([{
-                user_id: user ? user.id : null,
-                user_name: user ? user.name || user.nickname : 'Anónimo',
-                title: this.currentMode === 'dueto' 
-                    ? `Dueto con ${this.parentVideo ? this.parentVideo.user_name : 'Otro'}` 
-                    : this.currentTrack.title || 'Grabación Solo',
-                video_url: publicUrl,
-                track_id: this.currentTrack.id,
-                track_title: this.currentTrack.title,
-                is_duet: this.currentMode === 'dueto',
-                parent_video_id: this.parentVideo ? this.parentVideo.id : null,
-                visible: true
-            }]);
-            
-            this.elements.progressBar.style.width = '100%';
-            
+
+            if (barraProgreso) barraProgreso.style.width = '100%';
+            if (porcentajeProgreso) porcentajeProgreso.textContent = '100%';
+            if (textoProgreso) textoProgreso.textContent = '¡Subido! Guardando datos...';
+
+            // PASO 2: Insertar metadata en tabla karaoke_videos
+            const { error: dbError } = await supabase
+                .from('karaoke_videos')
+                .insert([{
+                    user_id: user.id,
+                    user_name: user.name || user.nickname || 'Anónimo',
+                    title: metadataObra.title || 'Sin título',
+                    video_url: publicUrl,
+                    track_id: metadataObra.track_id || null,
+                    track_title: metadataObra.track_title || null,
+                    is_duet: metadataObra.is_duet || false,
+                    parent_video_id: metadataObra.parent_video_id || null,
+                    is_original: metadataObra.is_original || false,
+                    visible: true,
+                    created_at: new Date().toISOString()
+                }]);
+
             if (dbError) throw dbError;
+
+            // Éxito total
+            if (textoProgreso) textoProgreso.textContent = '¡Publicado con éxito!';
             
             // Trackear acción para VIP
             if (VV_ROLES) VV_ROLES.trackAction('karaoke');
-            
-            alert('¡Video publicado en Voces Virtuales!');
-            this.reset();
-            
-        } catch (err) {
-            console.error('Error subiendo:', err);
-            alert('Error al subir: ' + err.message);
-        } finally {
+
             setTimeout(() => {
-                if (this.elements.progressBar) {
-                    this.elements.progressBar.parentElement.style.display = 'none';
-                    this.elements.progressBar.style.width = '0%';
-                }
-            }, 2000);
+                alert(`🎉 ¡Tu obra "${metadataObra.title}" fue publicada en el barrio!`);
+                this.discardRecording(); // Limpiar sin recargar la página
+            }, 500);
+
+        } catch (error) {
+            console.error('Error en subida:', error);
+            alert('❌ Error al publicar: ' + (error.message || 'Error desconocido'));
+            this.restablecerUIControles();
         }
     },
-    
-    // Resetear
-    reset: function() {
-        this.recordingBlob = null;
-        this.currentTrack = null;
-        if (this.elements.btnUpload) this.elements.btnUpload.style.display = 'none';
-        if (this.elements.videoPreview) {
-            this.elements.videoPreview.srcObject = null;
-            this.elements.videoPreview.style.transform = '';
-        }
-    },
+
+    // Función auxiliar para restaurar controles si falla
+    restablecerUIControles: function() {
+        const btnPublicar = document.getElementById('vv-btn-publicar');
+        const btnDescartar = document.getElementById('vv-btn-descartar');
+        const contenedorProgreso = document.getElementById('vv-contenedor-progreso');
+        const barraProgreso = document.getElementById('vv-barra-progreso');
+        
+        if (btnPublicar) btnPublicar.disabled = false;
+        if (btnDescartar) btnDescartar.disabled = false;
+        if (contenedorProgreso) contenedorProgreso.style.display = 'none';
+        if (barraProgreso) barraProgreso.style.width = '0%';
+    }
+
     // ============================================================
     // 🔍 BÚSQUEDA DE CANCIONES
     // ============================================================
@@ -496,4 +530,164 @@ window.VV_VOCES = {
         }
         this.currentVideoId = null;
     }
+    // ============================================================
+    // NAVEGACIÓN Y UTILIDADES
+    // ============================================================
+    
+    switchTab: function(tabName) {
+        const crear = document.getElementById('vv-tab-crear');
+        const ensayo = document.getElementById('vv-tab-ensayo');
+        if (tabName === 'ensayo') {
+            crear.style.display = 'none';
+            ensayo.style.display = 'block';
+        } else {
+            ensayo.style.display = 'none';
+            crear.style.display = 'block';
+        }
+    },
+    
+    onAudioSelected: function() {
+        const file = document.getElementById('vv-upload-audio').files[0];
+        document.getElementById('vv-audio-name').textContent = file ? `🎵 ${file.name}` : '';
+        this.checkCanLoad();
+    },
+    
+    onLyricSelected: function() {
+        const file = document.getElementById('vv-upload-letra').files[0];
+        document.getElementById('vv-letra-name').textContent = file ? `📄 ${file.name}` : '';
+    },
+    
+    checkCanLoad: function() {
+        const hasAudio = document.getElementById('vv-upload-audio').files.length > 0;
+        const btn = document.getElementById('vv-btn-cargar-estudio');
+        btn.disabled = !hasAudio;
+    },
+    
+    loadLocalTrackFromInputs: function() {
+        const audioFile = document.getElementById('vv-upload-audio').files[0];
+        const lrcFile = document.getElementById('vv-upload-letra').files[0];
+        if (!audioFile) return;
+        this.loadLocalTrack(audioFile, lrcFile);
+    },
+    
+    toggleRecording: function() {
+        if (!this.mediaRecorder || this.mediaRecorder.state === "inactive") {
+            this.startRecording();
+        } else {
+            this.stopRecording();
+        }
+    },
+    
+    // ============================================================
+    // MODO ENSAYO (YouTube)
+    // ============================================================
+    
+    searchYouTube: async function(query) {
+        if (!query) return;
+        const container = document.getElementById('vv-resultados-ensayo');
+        if (!container) return;
+        
+        container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;"><i class="fas fa-spinner fa-spin"></i> Buscando...</p>';
+        
+        try {
+            const res = await fetch(`https://youtube-proxy.cibernico01.workers.dev/youtube/search?q=${encodeURIComponent(query)}&maxResults=8`);
+            const data = await res.json();
+            
+            if (data.items && data.items.length > 0) {
+                container.innerHTML = data.items.map(item => `
+                    <div class="vv-result-item" onclick="VV_VOCES.loadYouTubeTrack('${item.id.videoId}', '${item.snippet.title.replace(/'/g, "\\'")}')">
+                        <div class="vv-result-thumb">🎵</div>
+                        <div class="vv-result-info">
+                            <p class="vv-result-title">${item.snippet.title}</p>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">Sin resultados</p>';
+            }
+        } catch(e) {
+            container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">Error en búsqueda</p>';
+        }
+    },
+    
+    loadYouTubeTrack: function(videoId, title) {
+        const container = document.getElementById('vv-youtube-embed');
+        if (!container) return;
+        
+        container.style.display = 'block';
+        container.innerHTML = `
+            <h3><i class="fas fa-play-circle"></i> ${title}</h3>
+            <iframe width="100%" height="200" 
+                src="https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&modestbranding=1&rel=0" 
+                frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen style="border-radius:0.75rem;">
+            </iframe>
+            <p style="color:#94a3b8;font-size:0.8rem;margin-top:0.5rem;"><i class="fas fa-headphones"></i> Usá auriculares y cantá mientras suena la pista.</p>
+            <button class="vv-btn-primary" onclick="VV_VOCES.startPracticeRecording('${title.replace(/'/g, "\\'")}', '${videoId}')" style="margin-top:0.75rem;">
+                <i class="fas fa-circle"></i> Grabar Mi Ensayo
+            </button>
+        `;
+    },
+    
+    startPracticeRecording: async function(title, videoId) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            this.streamCamaraMicro = stream;
+            
+            const options = { mimeType: 'video/webm;codecs=vp8,opus' };
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options.mimeType = 'video/mp4';
+            }
+            
+            this.fragmentosVideo = [];
+            this.mediaRecorder = new MediaRecorder(stream, options);
+            
+            this.mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) this.fragmentosVideo.push(e.data);
+            };
+            
+            this.mediaRecorder.onstop = () => {
+                this.videoGrabadoBlob = new Blob(this.fragmentosVideo, { type: options.mimeType });
+                const confirmar = confirm('¿Querés guardar este ensayo?');
+                if (confirmar) {
+                    this.savePracticeRecording(title, videoId);
+                }
+                stream.getTracks().forEach(t => t.stop());
+            };
+            
+            this.mediaRecorder.start();
+            alert('🎤 Grabando ensayo...\n\nCantá mientras suena la pista.\nTocá Aceptar para detener.');
+            
+            // El usuario toca Aceptar en el alert para detener
+            setTimeout(() => {
+                if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                    this.mediaRecorder.stop();
+                }
+            }, 100); // El alert bloquea, así que esto corre después
+            
+        } catch(err) {
+            alert('Error: ' + err.message);
+        }
+    },
+    
+    savePracticeRecording: function(title, videoId) {
+        if (!this.videoGrabadoBlob) return;
+        
+        const perms = VV_ROLES ? VV_ROLES.getPermissions() : {};
+        if (!perms.canFullKaraoke) {
+            alert('Necesitás ser vecino verificado para guardar ensayos.');
+            return;
+        }
+        
+        if (this.uploadVideo) {
+            this.uploadVideo(this.videoGrabadoBlob, {
+                title: `Ensayo: ${title}`,
+                is_original: false,
+                track_id: videoId
+            });
+        } else {
+            alert('Sistema de subida no disponible.');
+        }
+    }
+
 };
