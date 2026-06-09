@@ -189,7 +189,61 @@ window.VV_VOCES = {
             container.innerHTML = `<span class="linea-activa">${lineaActiva.texto}</span>`;
         }
     },
+        // ============================================================
+    // MODO ACÚSTICO (sin pista subida)
+    // ============================================================
     
+    irAGrabarSinPista: function() {
+        this.modoAcustico = true;
+        this.currentTrack = null;
+        this.audioTrackBlobURL = null;
+        
+        const zonaSubida = document.getElementById('vv-zona-subida');
+        const zonaGrabacion = document.getElementById('vv-zona-grabacion');
+        const letraContainer = document.getElementById('vv-letra-container');
+        const audioEl = document.getElementById('vv-pista-audio');
+        
+        if (zonaSubida) zonaSubida.style.display = 'none';
+        if (zonaGrabacion) zonaGrabacion.style.display = 'block';
+        
+        // Ocultar reproductor de pista (no hay pista)
+        if (audioEl) audioEl.style.display = 'none';
+        
+        // Mostrar mensaje de modo acústico
+        if (letraContainer) {
+            letraContainer.innerHTML = `
+                <div style="text-align: center;">
+                    <span style="font-size: 3rem; display: block; margin-bottom: 0.5rem;">🎸</span>
+                    <p style="font-size: 1.2rem; color: #fbbf24; font-weight: 700;">Modo Acústico en Vivo</p>
+                    <p style="font-size: 0.9rem; color: #94a3b8;">Tocá tu instrumento y cantá.<br>La grabación captura todo.</p>
+                </div>
+            `;
+        }
+        
+        // Iniciar cámara de inmediato para que se vea
+        this.prepararCamara();
+    },
+    
+    prepararCamara: async function() {
+        try {
+            this.streamCamaraMicro = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 640 }, height: { ideal: 480 } },
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            });
+            
+            const camaraPreview = document.getElementById('vv-camara-preview');
+            if (camaraPreview) {
+                camaraPreview.srcObject = this.streamCamaraMicro;
+            }
+        } catch (err) {
+            console.error('Error preparando cámara:', err);
+        }
+    },
+
     // ============================================================
     // GRABACIÓN (Modo Artista)
     // ============================================================
@@ -201,8 +255,7 @@ window.VV_VOCES = {
             this.stopRecording();
         }
     },
-    
-    startRecording: async function() {
+        startRecording: async function() {
         const btnRec = document.getElementById('vv-btn-rec-action');
         const audioComponent = document.getElementById('vv-pista-audio');
 
@@ -245,7 +298,8 @@ window.VV_VOCES = {
             if (btnRec) btnRec.classList.add('grabando');
             this.mediaRecorder.start();
             
-            if (audioComponent) {
+            // Si hay pista de audio, reproducirla (si no, no pasa nada)
+            if (audioComponent && audioComponent.src && !this.modoAcustico) {
                 audioComponent.currentTime = 0;
                 audioComponent.play();
             }
@@ -254,7 +308,7 @@ window.VV_VOCES = {
             alert("Fallo de hardware de cámara/micrófono: " + err.message);
         }
     },
-    
+        
     stopRecording: function() {
         const btnRec = document.getElementById('vv-btn-rec-action');
         if (btnRec) btnRec.classList.remove('grabando');
@@ -303,7 +357,7 @@ window.VV_VOCES = {
     // PUBLICACIÓN Y SUBIDA A SUPABASE
     // ============================================================
     
-    publishOriginal: function() {
+        publishOriginal: function() {
         const titleInput = document.getElementById('vv-input-titulo-obra');
         const checkDerechos = document.getElementById('vv-check-derechos');
         
@@ -331,10 +385,11 @@ window.VV_VOCES = {
         }
         
         this.uploadVideo(this.videoGrabadoBlob, {
-            title: title,
+            title: title + (this.modoAcustico ? ' (Acústico en Vivo)' : ''),
             is_original: true,
             track_id: this.currentTrack ? this.currentTrack.id : null,
-            track_title: this.currentTrack ? this.currentTrack.title : null
+            track_title: this.currentTrack ? this.currentTrack.title : null,
+            is_acoustic: this.modoAcustico || false
         });
     },
     
