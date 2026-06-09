@@ -1244,6 +1244,7 @@
     <script src="js/admin.js"></script>
     <script src="js/banner.js"></script>
     <script src="js/roles.js"></script>
+    <script src="js/voces-virtuales.js"></script>
     <script src="js/onboarding.js"></script>
     <script src="js/app.js"></script>
     
@@ -1310,82 +1311,8 @@
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
-    <script>
-// Conmutador de vistas - Voces Virtuales vs Dashboard
-function conmutarVistasPro(destino) {
-    try {
-        var capaKaraoke = document.getElementById('modulo-karaoke-container');
-        var capaVoces = document.getElementById('modulo-voces-virtuales');
-        var mainApp = document.getElementById('main-app');
-        var loadingScreen = document.getElementById('loading-screen');
-        
-        if (loadingScreen) loadingScreen.style.display = 'none';
-        
-        if (destino === '#voces') {
-            // Mostrar Voces Virtuales
-            if (capaVoces) capaVoces.style.display = 'block';
-            if (capaKaraoke) capaKaraoke.style.display = 'none';
-            if (mainApp) mainApp.style.display = 'none';
-            
-            window.location.hash = '#voces';
-            console.log("🎤 Voces Virtuales activado");
-            
-            if (window.VV_VOCES && typeof VV_VOCES.init === 'function') {
-                setTimeout(function() { VV_VOCES.init(); }, 100);
-            }
-            
-        } else if (destino === '#karaoke') {
-            // Mostrar Karaoke (viejo, si todavía existe)
-            if (capaKaraoke) capaKaraoke.style.display = 'block';
-            if (capaVoces) capaVoces.style.display = 'none';
-            if (mainApp) mainApp.style.display = 'none';
-            
-            window.location.hash = '#karaoke';
-            console.log("🎤 Karaoke activado");
-            
-            if (window.VV_KARAOKE && typeof VV_KARAOKE.init === 'function') {
-                setTimeout(function() { VV_KARAOKE.init(); }, 100);
-            }
-            
-        } else {
-            // Mostrar Dashboard (default)
-            if (capaKaraoke) capaKaraoke.style.display = 'none';
-            if (capaVoces) capaVoces.style.display = 'none';
-            if (mainApp) mainApp.style.display = 'flex';
-            
-            var secciones = document.querySelectorAll('.content-section');
-            secciones.forEach(function(s) { s.classList.remove('active'); });
-            
-            var dashboard = document.getElementById('dashboard');
-            if (dashboard) dashboard.classList.add('active');
-            
-            window.location.hash = '#dashboard';
-            console.log("📊 Dashboard activado");
-        }
-    } catch (err) {
-        console.error("Error en conmutador:", err);
-    }
-}
-
-window.addEventListener('hashchange', function() {
-    if (window.location.hash === '#voces') {
-        conmutarVistasPro('#voces');
-    } else if (window.location.hash === '#karaoke') {
-        conmutarVistasPro('#karaoke');
-    } else if (window.location.hash === '#dashboard') {
-        conmutarVistasPro('#dashboard');
-    }
-});
-
-window.addEventListener('load', function() {
-    if (window.location.hash === '#voces') {
-        setTimeout(function() { conmutarVistasPro('#voces'); }, 1000);
-    } else if (window.location.hash === '#karaoke') {
-        setTimeout(function() { conmutarVistasPro('#karaoke'); }, 1000);
-    }
-});
-</script>
-	<!-- ============================================================
+ });
+<!-- ============================================================
      🎤 VOCES VIRTUALES V2 — Estudio de Creación + Ensayo
      ============================================================ -->
 <div id="modulo-voces-virtuales" style="display: none;">
@@ -1432,19 +1359,11 @@ window.addEventListener('load', function() {
 
         <!-- ZONA 2: Estudio de Grabación -->
         <div id="vv-zona-grabacion" class="vv-estudio-container" style="display: none;">
-            
-            <!-- Cámara del usuario (espejo, esquina superior derecha) -->
             <video id="vv-camara-preview" autoplay muted playsinline></video>
-            
-            <!-- Letra / Info -->
             <div id="vv-letra-container">
                 <p class="vv-letra-placeholder">La letra aparecerá aquí...</p>
             </div>
-            
-            <!-- Reproductor de pista -->
             <audio id="vv-pista-audio" controls></audio>
-            
-            <!-- Controles de grabación -->
             <div class="vv-controls-bar">
                 <button id="vv-btn-rec-action" class="vv-btn-record" onclick="VV_VOCES.toggleRecording()" title="Grabar Mi Tema">
                     <i class="fas fa-circle"></i>
@@ -1456,21 +1375,26 @@ window.addEventListener('load', function() {
         <!-- ZONA 3: Post-Grabación -->
         <div id="vv-zona-post-grabacion" class="vv-card" style="display: none;">
             <h3><i class="fas fa-play-circle"></i> Revisá tu Grabación</h3>
-            
             <video id="vv-preview-grabacion" controls></video>
-            
             <div class="vv-form-group">
                 <label>Título de tu obra *</label>
                 <input type="text" id="vv-input-titulo-obra" placeholder="Ej: Mi Canción de Verano">
             </div>
-            
             <label class="vv-checkbox">
                 <input type="checkbox" id="vv-check-derechos">
                 <span>✅ Confirmo que soy el autor de esta obra y tengo derechos sobre ella.</span>
             </label>
-            
+            <div id="vv-contenedor-progreso" style="display: none; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <span id="vv-texto-progreso" style="font-size: 0.8rem; color: #34d399;">Subiendo video al barrio... 0%</span>
+                    <span id="vv-porcentaje-progreso" style="font-size: 0.8rem; color: #34d399; font-weight: 700;">0%</span>
+                </div>
+                <div style="width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 999px; overflow: hidden;">
+                    <div id="vv-barra-progreso" style="width: 0%; background: linear-gradient(90deg, #10b981, #34d399); height: 100%; transition: width 0.2s ease;"></div>
+                </div>
+            </div>
             <div class="vv-btn-group">
-                <button class="vv-btn-success" onclick="VV_VOCES.publishOriginal()">
+                <button class="vv-btn-success" id="vv-btn-publicar" onclick="VV_VOCES.publishOriginal()">
                     <i class="fas fa-rocket"></i> Publicar en el Barrio
                 </button>
                 <button class="vv-btn-secondary" onclick="VV_VOCES.discardRecording()">
@@ -1482,8 +1406,6 @@ window.addEventListener('load', function() {
 
     <!-- ====== TAB 2: ENSAYO (Modo Karaoke) ====== -->
     <div id="vv-tab-ensayo" style="display: none;">
-        
-        <!-- Header -->
         <div class="vv-header">
             <div>
                 <h1><i class="fas fa-guitar"></i> Ensayo</h1>
@@ -1493,8 +1415,6 @@ window.addEventListener('load', function() {
                 🎵 Volver a Crear
             </button>
         </div>
-
-        <!-- Buscador -->
         <div class="vv-card">
             <div class="vv-search-box">
                 <input type="text" id="vv-search-input" placeholder="🔍 Buscar artista o canción..." onkeypress="if(event.key==='Enter') VV_VOCES.searchYouTube(this.value)">
@@ -1504,8 +1424,6 @@ window.addEventListener('load', function() {
             </div>
             <div id="vv-resultados-ensayo" class="vv-results-list"></div>
         </div>
-
-        <!-- Reproductor YouTube + Grabación -->
         <div id="vv-youtube-embed" class="vv-card" style="display: none;"></div>
     </div>
 
@@ -1513,475 +1431,98 @@ window.addEventListener('load', function() {
 
 <!-- CSS de Voces Virtuales -->
 <style>
-/* ============================================================
-   VOCES VIRTUALES V2 — Estilos Mobile-First
-   ============================================================ */
-#modulo-voces-virtuales {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-    color: #f8fafc;
-    z-index: 9999;
-    overflow-y: auto;
-    font-family: inherit;
-    padding: 1rem;
-}
-
-.vv-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-.vv-header h1 {
-    font-size: 1.25rem;
-    margin: 0;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.vv-header p {
-    font-size: 0.8rem;
-    color: #94a3b8;
-    margin: 0.25rem 0 0 0;
-}
-
-.vv-btn-tab {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: #e2e8f0;
-    padding: 0.5rem 0.75rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s;
-}
-
-.vv-btn-tab:hover {
-    background: rgba(255,255,255,0.2);
-}
-
-.vv-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 1rem;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    backdrop-filter: blur(10px);
-}
-
-.vv-card h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.1rem;
-    color: #e2e8f0;
-}
-
-/* Zona de Subida */
-.vv-file-label {
-    display: block;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    text-align: center;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 0.5rem;
-    transition: transform 0.15s;
-}
-
-.vv-file-label:hover {
-    transform: scale(1.02);
-}
-
-.vv-file-label input {
-    display: none;
-}
-
-.vv-file-name {
-    font-size: 0.8rem;
-    color: #94a3b8;
-    margin: 0 0 0.75rem 0;
-    text-align: center;
-}
-
-.vv-sadaic-box {
-    background: rgba(251, 191, 36, 0.1);
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-    font-size: 0.8rem;
-    color: #fcd34d;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.vv-sadaic-box a {
-    color: #fbbf24;
-    font-weight: 600;
-}
-
-.vv-btn-primary {
-    width: 100%;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    border: none;
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.vv-btn-primary:disabled {
-    background: #374151;
-    color: #6b7280;
-    cursor: not-allowed;
-}
-
-.vv-btn-primary:not(:disabled):hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-/* Estudio de Grabación */
-.vv-estudio-container {
-    position: relative;
-    background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
-    border-radius: 1rem;
-    padding: 1.5rem 1rem 1rem 1rem;
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid rgba(255,255,255,0.1);
-    margin-bottom: 1rem;
-}
-
-#vv-camara-preview {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 120px;
-    height: 90px;
-    object-fit: cover;
-    border-radius: 0.75rem;
-    border: 2px solid rgba(59, 130, 246, 0.5);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    transform: scaleX(-1);
-    z-index: 10;
-    background: #000;
-}
-
-#vv-letra-container {
-    font-size: 1.75rem;
-    font-weight: 700;
-    text-align: center;
-    line-height: 1.4;
-    color: #94a3b8;
-    max-width: 90%;
-    margin: 2rem 0;
-    min-height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#vv-letra-container .linea-activa {
-    color: #f8fafc;
-    text-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
-    transition: all 0.3s ease;
-}
-
-.vv-letra-placeholder {
-    font-size: 1rem;
-    color: #475569;
-    font-weight: 400;
-}
-
-#vv-pista-audio {
-    width: 90%;
-    margin-top: auto;
-    margin-bottom: 1rem;
-}
-
-/* Controles de Grabación */
-.vv-controls-bar {
-    position: absolute;
-    bottom: 1.5rem;
-    left: 0;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.vv-btn-record {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    border: 4px solid rgba(255,255,255,0.2);
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-}
-
-.vv-btn-record:hover {
-    transform: scale(1.05);
-}
-
-.vv-btn-record.grabando {
-    background: #000;
-    border-color: #ef4444;
-    border-radius: 12px;
-    animation: vvPulse 1.5s infinite;
-}
-
-@keyframes vvPulse {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-    70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
-.vv-hint {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    margin: 0;
-}
-
-/* Post-Grabación */
-#vv-preview-grabacion {
-    width: 100%;
-    max-height: 300px;
-    border-radius: 0.75rem;
-    background: #000;
-    margin-bottom: 1rem;
-}
-
-.vv-form-group {
-    margin-bottom: 1rem;
-}
-
-.vv-form-group label {
-    display: block;
-    font-size: 0.85rem;
-    color: #94a3b8;
-    margin-bottom: 0.5rem;
-}
-
-.vv-form-group input {
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(255,255,255,0.05);
-    color: #f8fafc;
-    font-size: 1rem;
-    box-sizing: border-box;
-}
-
-.vv-checkbox {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    color: #cbd5e1;
-    margin-bottom: 1rem;
-    cursor: pointer;
-}
-
-.vv-checkbox input {
-    margin-top: 0.15rem;
-}
-
-.vv-btn-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.vv-btn-success {
-    width: 100%;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    border: none;
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.vv-btn-secondary {
-    width: 100%;
-    padding: 1rem;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(255,255,255,0.05);
-    color: #94a3b8;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-/* Buscador Ensayo */
-.vv-search-box {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.vv-search-box input {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(255,255,255,0.05);
-    color: #f8fafc;
-    font-size: 1rem;
-}
-
-.vv-search-box input::placeholder {
-    color: #64748b;
-}
-
-.vv-search-box button {
-    padding: 0.75rem 1.25rem;
-    border-radius: 0.75rem;
-    border: none;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    color: white;
-    cursor: pointer;
-    font-size: 1rem;
-}
-
-.vv-results-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    max-height: 250px;
-    overflow-y: auto;
-}
-
-.vv-result-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: rgba(255,255,255,0.05);
-    border-radius: 0.5rem;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.vv-result-item:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-.vv-result-thumb {
-    width: 60px;
-    height: 45px;
-    background: #1e293b;
-    border-radius: 0.25rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-}
-
-.vv-result-info {
-    flex: 1;
-}
-
-.vv-result-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin: 0;
-    color: #e2e8f0;
-}
-
-/* Responsive */
-@media (min-width: 768px) {
-    #modulo-voces-virtuales {
-        padding: 2rem;
-    }
-    .vv-btn-group {
-        flex-direction: row;
-    }
-    .vv-btn-group button {
-        flex: 1;
-    }
-}
+#modulo-voces-virtuales { position: fixed; inset: 0; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; z-index: 9999; overflow-y: auto; font-family: inherit; padding: 1rem; }
+.vv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.vv-header h1 { font-size: 1.25rem; margin: 0; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.vv-header p { font-size: 0.8rem; color: #94a3b8; margin: 0.25rem 0 0 0; }
+.vv-btn-tab { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 999px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+.vv-btn-tab:hover { background: rgba(255,255,255,0.2); }
+.vv-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem; backdrop-filter: blur(10px); }
+.vv-card h3 { margin: 0 0 1rem 0; font-size: 1.1rem; color: #e2e8f0; }
+.vv-file-label { display: block; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 1rem; border-radius: 0.75rem; text-align: center; font-weight: 600; cursor: pointer; margin-bottom: 0.5rem; transition: transform 0.15s; }
+.vv-file-label:hover { transform: scale(1.02); }
+.vv-file-label input { display: none; }
+.vv-file-name { font-size: 0.8rem; color: #94a3b8; margin: 0 0 0.75rem 0; text-align: center; }
+.vv-sadaic-box { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 0.75rem; font-size: 0.8rem; color: #fcd34d; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
+.vv-sadaic-box a { color: #fbbf24; font-weight: 600; }
+.vv-btn-primary { width: 100%; padding: 1rem; border-radius: 0.75rem; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; }
+.vv-btn-primary:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
+.vv-btn-primary:not(:disabled):hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+.vv-estudio-container { position: relative; background: linear-gradient(180deg, #020617 0%, #0f172a 100%); border-radius: 1rem; padding: 1.5rem 1rem 1rem 1rem; min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; }
+#vv-camara-preview { position: absolute; top: 1rem; right: 1rem; width: 120px; height: 90px; object-fit: cover; border-radius: 0.75rem; border: 2px solid rgba(59, 130, 246, 0.5); box-shadow: 0 4px 12px rgba(0,0,0,0.5); transform: scaleX(-1); z-index: 10; background: #000; }
+#vv-letra-container { font-size: 1.75rem; font-weight: 700; text-align: center; line-height: 1.4; color: #94a3b8; max-width: 90%; margin: 2rem 0; min-height: 120px; display: flex; align-items: center; justify-content: center; }
+#vv-letra-container .linea-activa { color: #f8fafc; text-shadow: 0 0 20px rgba(139, 92, 246, 0.6); transition: all 0.3s ease; }
+.vv-letra-placeholder { font-size: 1rem; color: #475569; font-weight: 400; }
+#vv-pista-audio { width: 90%; margin-top: auto; margin-bottom: 1rem; }
+.vv-controls-bar { position: absolute; bottom: 1.5rem; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.vv-btn-record { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #ef4444, #dc2626); border: 4px solid rgba(255,255,255,0.2); color: white; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+.vv-btn-record:hover { transform: scale(1.05); }
+.vv-btn-record.grabando { background: #000; border-color: #ef4444; border-radius: 12px; animation: vvPulse 1.5s infinite; }
+@keyframes vvPulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+.vv-hint { font-size: 0.75rem; color: #94a3b8; margin: 0; }
+#vv-preview-grabacion { width: 100%; max-height: 300px; border-radius: 0.75rem; background: #000; margin-bottom: 1rem; }
+.vv-form-group { margin-bottom: 1rem; }
+.vv-form-group label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem; }
+.vv-form-group input { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #f8fafc; font-size: 1rem; box-sizing: border-box; }
+.vv-checkbox { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 1rem; cursor: pointer; }
+.vv-checkbox input { margin-top: 0.15rem; }
+.vv-btn-group { display: flex; flex-direction: column; gap: 0.75rem; }
+.vv-btn-success { width: 100%; padding: 1rem; border-radius: 0.75rem; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 700; font-size: 1rem; cursor: pointer; }
+.vv-btn-secondary { width: 100%; padding: 1rem; border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #94a3b8; font-weight: 600; font-size: 1rem; cursor: pointer; }
+.vv-search-box { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.vv-search-box input { flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #f8fafc; font-size: 1rem; }
+.vv-search-box input::placeholder { color: #64748b; }
+.vv-search-box button { padding: 0.75rem 1.25rem; border-radius: 0.75rem; border: none; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; cursor: pointer; font-size: 1rem; }
+.vv-results-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 250px; overflow-y: auto; }
+.vv-result-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem; cursor: pointer; transition: background 0.2s; }
+.vv-result-item:hover { background: rgba(255,255,255,0.1); }
+.vv-result-thumb { width: 60px; height: 45px; background: #1e293b; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+.vv-result-info { flex: 1; }
+.vv-result-title { font-size: 0.85rem; font-weight: 600; margin: 0; color: #e2e8f0; }
+@media (min-width: 768px) { #modulo-voces-virtuales { padding: 2rem; } .vv-btn-group { flex-direction: row; } .vv-btn-group button { flex: 1; } }
 </style>
-        
-        <!-- Info de pista -->
-        <!-- Buscador de Canciones -->
-<div class="vv-search-section">
-    <div class="vv-search-bar">
-        <input type="text" id="vv-search-input" placeholder="🔍 Busca un artista o canción..." autocomplete="off">
-        <button id="vv-search-btn" onclick="VV_VOCES.searchTracks()">
-            <i class="fas fa-search"></i>
-        </button>
-    </div>
-    <div id="vv-search-results" class="vv-search-results"></div>
-</div>
 
-<!-- Info de pista seleccionada -->
-<div class="vv-track-info">
-    <p id="vv-track-title">Seleccioná una canción arriba para empezar</p>
-</div>
+<!-- Script del conmutador (solo una vez, al final del body) -->
+<script>
+function conmutarVistasPro(destino) {
+    try {
+        var capaVoces = document.getElementById('modulo-voces-virtuales');
+        var mainApp = document.getElementById('main-app');
+        var loadingScreen = document.getElementById('loading-screen');
+        
+        if (loadingScreen) loadingScreen.style.display = 'none';
+        
+        if (destino === '#voces') {
+            if (capaVoces) capaVoces.style.display = 'block';
+            if (mainApp) mainApp.style.display = 'none';
+            window.location.hash = '#voces';
+            console.log("🎤 Voces Virtuales activado");
+            if (window.VV_VOCES && typeof VV_VOCES.init === 'function') {
+                setTimeout(function() { VV_VOCES.init(); }, 100);
+            }
+        } else {
+            if (capaVoces) capaVoces.style.display = 'none';
+            if (mainApp) mainApp.style.display = 'flex';
+            var secciones = document.querySelectorAll('.content-section');
+            secciones.forEach(function(s) { s.classList.remove('active'); });
+            var dashboard = document.getElementById('dashboard');
+            if (dashboard) dashboard.classList.add('active');
+            window.location.hash = '#dashboard';
+            console.log("📊 Dashboard activado");
+        }
+    } catch (err) {
+        console.error("Error en conmutador:", err);
+    }
+}
 
-        
-        <!-- Controles -->
-        <div class="vv-controls">
-            <button id="vv-btn-record" class="vv-btn-record">
-                <i class="fas fa-circle"></i> Iniciar Grabación
-            </button>
-            
-            <button id="vv-btn-upload" class="vv-btn-upload" style="display: none;">
-                🚀 Publicar en el Barrio
-            </button>
-            
-            <!-- Barra de progreso -->
-            <div class="vv-progress-container" style="display: none;">
-                <div class="vv-progress-bar">
-                    <div id="vv-upload-progress" class="vv-progress-fill"></div>
-                </div>
-                <span>Subiendo...</span>
-            </div>
-        </div>
-        
-        <!-- Emoji Pad (solo en reproducción) -->
-        <div id="vv-emojis-pad" class="vv-emojis-pad">
-            <button onclick="VV_VOCES.sendEmoji('❤️')">❤️</button>
-            <button onclick="VV_VOCES.sendEmoji('👏')">👏</button>
-            <button onclick="VV_VOCES.sendEmoji('🌸')">🌸</button>
-            <button onclick="VV_VOCES.sendEmoji('💎')">💎</button>
-            <button onclick="VV_VOCES.sendEmoji('🔥')">🔥</button>
-            <button onclick="VV_VOCES.sendEmoji('🎤')">🎤</button>
-            <button onclick="VV_VOCES.sendEmoji('💪')">💪</button>
-            <button onclick="VV_VOCES.sendEmoji('🌟')">🌟</button>
-        </div>
-    </div>
-</div>
-<script src="https://www.youtube.com/iframe_api"></script>
-<script src="js/voces-virtuales.js"></script>
+window.addEventListener('hashchange', function() {
+    if (window.location.hash === '#voces') {
+        conmutarVistasPro('#voces');
+    } else if (window.location.hash === '#dashboard') {
+        conmutarVistasPro('#dashboard');
+    }
+});
+</script>
+
 </body>
 </html>
