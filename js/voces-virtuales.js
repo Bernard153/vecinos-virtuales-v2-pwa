@@ -443,7 +443,7 @@ window.VV_VOCES = {
     // MODO ENSAYO (YouTube)
     // ============================================================
     
-    searchYouTube: async function(query) {
+        searchYouTube: async function(query) {
         if (!query) return;
         const container = document.getElementById('vv-resultados-ensayo');
         if (!container) return;
@@ -451,7 +451,25 @@ window.VV_VOCES = {
         container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">🔍 Buscando...</p>';
         
         try {
-            const res = await fetch(`https://youtube-proxy.cibernico01.workers.dev/youtube/search?q=${encodeURIComponent(query)}&maxResults=8`);
+            // Usar 'no-cors' como fallback o bypass del service worker
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            
+            const res = await fetch(
+                `https://youtube-proxy.cibernico01.workers.dev/youtube/search?q=${encodeURIComponent(query)}&maxResults=8`,
+                { 
+                    signal: controller.signal,
+                    headers: { 'Accept': 'application/json' }
+                }
+            );
+            
+            clearTimeout(timeoutId);
+            
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error?.message || `HTTP ${res.status}`);
+            }
+            
             const data = await res.json();
             
             if (data.items && data.items.length > 0) {
@@ -467,9 +485,11 @@ window.VV_VOCES = {
                 container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">Sin resultados</p>';
             }
         } catch(e) {
-            container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">Error en búsqueda</p>';
+            console.error('Error búsqueda:', e);
+            container.innerHTML = `<p style="text-align:center;color:#94a3b8;padding:1rem;">❌ Error de conexión.<br><small>${e.message}</small></p>`;
         }
     },
+
     
     loadYouTubeTrack: function(videoId, title) {
         const container = document.getElementById('vv-youtube-embed');
