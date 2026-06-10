@@ -352,7 +352,20 @@ window.VV_VOCES = {
             camaraPreview.srcObject = null;
         }
     },
-    
+        descargarLocal: function() {
+        if (!this.videoGrabadoBlob) return;
+        
+        const url = URL.createObjectURL(this.videoGrabadoBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `VocesVirtuales_${Date.now()}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert('📥 Video guardado en tu celular.');
+    },
     // ============================================================
     // PUBLICACIÓN Y SUBIDA A SUPABASE
     // ============================================================
@@ -723,6 +736,21 @@ window.VV_VOCES = {
                             <i class="fas fa-trash"></i> Descartar
                         </button>
                     </div>
+                    descargarLocal: function() {
+                           if (!this.videoGrabadoBlob) return;
+        
+                           const url = URL.createObjectURL(this.videoGrabadoBlob);
+                           const a = document.createElement('a');
+                           a.href = url;
+                           a.download = `VocesVirtuales_${Date.now()}.webm`;
+                           document.body.appendChild(a);
+                           a.click();
+                           document.body.removeChild(a);
+                           URL.revokeObjectURL(url);
+        
+                           alert('📥 Video guardado en tu celular.');
+    },
+
                 </div>
             `;
             
