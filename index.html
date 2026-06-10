@@ -1326,9 +1326,14 @@
                 <h1><i class="fas fa-microphone-alt"></i> Voces Virtuales</h1>
                 <p>Estudio de Creación — Subí tu canción, grabá tu video, compartí tu arte</p>
             </div>
-            <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('ensayo')">
-                🎤 Modo Ensayo
-            </button>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('ensayo')">
+                    🎤 Modo Ensayo
+                </button>
+                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4);">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+            </div>
         </div>
 
         <!-- ZONA 1: Subida de archivos o Modo Acústico -->
@@ -1421,10 +1426,16 @@
                 <h1><i class="fas fa-guitar"></i> Ensayo</h1>
                 <p>Practicá tus covers con pistas de YouTube</p>
             </div>
-            <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('crear')">
-                🎵 Volver a Crear
-            </button>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('crear')">
+                    🎵 Volver a Crear
+                </button>
+                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4);">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+            </div>
         </div>
+
         <div class="vv-card">
             <div class="vv-search-box">
                 <input type="text" id="vv-search-input" placeholder="🔍 Buscar artista o canción..." onkeypress="if(event.key==='Enter') VV_VOCES.searchYouTube(this.value)">

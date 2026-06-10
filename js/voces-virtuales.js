@@ -564,18 +564,60 @@ window.VV_VOCES = {
             </button>
         `;
     },
+        // ============================================================
+    // MODO ENSAYO — Grabación con Preview (sin alerts bloqueantes)
+    // ============================================================
     
     startPracticeRecording: async function(title, videoId) {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            // 1. Pedir permisos de cámara/micrófono
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: true, 
+                audio: true 
+            });
             this.streamCamaraMicro = stream;
+            this.fragmentosVideo = [];
+            this.currentYouTubeTitle = title;
+            this.currentYouTubeId = videoId;
             
+            // 2. Mostrar cámara del usuario en pantalla (overlay chiquito)
+            const youtubeContainer = document.getElementById('vv-youtube-embed');
+            
+            // Crear overlay de cámara si no existe
+            let camOverlay = document.getElementById('vv-ensayo-camara');
+            if (!camOverlay) {
+                camOverlay = document.createElement('div');
+                camOverlay.id = 'vv-ensayo-camara';
+                camOverlay.style.cssText = 'position:fixed;bottom:80px;right:10px;width:120px;height:90px;z-index:9999;border-radius:12px;overflow:hidden;border:2px solid #ef4444;box-shadow:0 4px 12px rgba(0,0,0,0.5);';
+                
+                const vid = document.createElement('video');
+                vid.id = 'vv-ensayo-video';
+                vid.autoplay = true;
+                vid.muted = true;
+                vid.playsInline = true;
+                vid.style.cssText = 'width:100%;height:100%;object-fit:cover;transform:scaleX(-1);background:#000;';
+                
+                camOverlay.appendChild(vid);
+                document.body.appendChild(camOverlay);
+            }
+            
+            const vidEl = document.getElementById('vv-ensayo-video');
+            if (vidEl) vidEl.srcObject = stream;
+            
+            // 3. Cambiar el botón a "Detener Grabación"
+            const btn = event.target; // El botón que tocó
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-stop"></i> Detener Grabación';
+                btn.style.background = '#dc2626';
+                btn.onclick = () => this.stopPracticeRecording();
+            }
+            
+            // 4. Iniciar MediaRecorder
             const options = { mimeType: 'video/webm;codecs=vp8,opus' };
             if (!MediaRecorder.isTypeSupported(options.mimeType)) {
                 options.mimeType = 'video/mp4';
             }
             
-            this.fragmentosVideo = [];
             this.mediaRecorder = new MediaRecorder(stream, options);
             
             this.mediaRecorder.ondataavailable = (e) => {
@@ -584,24 +626,134 @@ window.VV_VOCES = {
             
             this.mediaRecorder.onstop = () => {
                 this.videoGrabadoBlob = new Blob(this.fragmentosVideo, { type: options.mimeType });
-                const confirmar = confirm('¿Querés guardar este ensayo?');
-                if (confirmar) {
-                    this.savePracticeRecording(title, videoId);
-                }
-                stream.getTracks().forEach(t => t.stop());
+                this.mostrarPreviewEnsayo();
             };
             
-            this.mediaRecorder.start();
-            alert('🎤 Grabando ensayo...\n\nCantá mientras suena la pista.\nTocá Aceptar para detener.');
+            this.mediaRecorder.start(1000); // Guardar cada 1 segundo
             
-            setTimeout(() => {
-                if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-                    this.mediaRecorder.stop();
-                }
-            }, 100);
+            // 5. Mostrar indicador de grabación (pequeño, no bloqueante)
+            this.mostrarIndicadorGrabacion();
             
         } catch(err) {
-            alert('Error: ' + err.message);
+            alert('Error al acceder a cámara/micrófono: ' + err.message);
+        }
+    },
+    
+    mostrarIndicadorGrabacion: function() {
+        // Crear un indicador flotante pequeño arriba
+        let indicador = document.getElementById('vv-indicador-grabando');
+        if (!indicador) {
+            indicador = document.createElement('div');
+            indicador.id = 'vv-indicador-grabando';
+            indicador.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#dc2626;color:white;padding:8px 16px;border-radius:20px;font-size:0.85rem;font-weight:700;z-index:10000;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+            document.body.appendChild(indicador);
+        }
+        indicador.innerHTML = '<span style="width:10px;height:10px;background:white;border-radius:50%;animation:pulse 1s infinite;"></span> 🔴 Grabando ensayo...';
+        indicador.style.display = 'flex';
+    },
+    
+    ocultarIndicadorGrabacion: function() {
+        const indicador = document.getElementById('vv-indicador-grabando');
+        if (indicador) indicador.style.display = 'none';
+    },
+    
+    stopPracticeRecording: function() {
+        // Detener grabación
+        if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+            this.mediaRecorder.stop();
+        }
+        
+        // Ocultar indicador
+        this.ocultarIndicadorGrabacion();
+        
+        // Ocultar cámara overlay
+        const camOverlay = document.getElementById('vv-ensayo-camara');
+        if (camOverlay) camOverlay.style.display = 'none';
+        
+        // Detener stream
+        if (this.streamCamaraMicro) {
+            this.streamCamaraMicro.getTracks().forEach(t => t.stop());
+        }
+        
+        // Restaurar botón (si existe)
+        const youtubeContainer = document.getElementById('vv-youtube-embed');
+        if (youtubeContainer) {
+            const btn = youtubeContainer.querySelector('button');
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-circle"></i> Grabar Mi Ensayo';
+                btn.style.background = '';
+                btn.onclick = () => this.startPracticeRecording(this.currentYouTubeTitle, this.currentYouTubeId);
+            }
+        }
+    },
+    
+    mostrarPreviewEnsayo: function() {
+        if (!this.videoGrabadoBlob) return;
+        
+        // Crear modal de preview
+        let modal = document.getElementById('vv-modal-preview-ensayo');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'vv-modal-preview-ensayo';
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:10001;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:1rem;';
+            
+            modal.innerHTML = `
+                <div style="background:#1e293b;border-radius:1rem;padding:1.5rem;max-width:500px;width:100%;">
+                    <h3 style="margin:0 0 1rem 0;color:#f8fafc;text-align:center;">🎤 Revisá tu Ensayo</h3>
+                    <video id="vv-preview-video-ensayo" controls style="width:100%;border-radius:0.75rem;background:#000;margin-bottom:1rem;"></video>
+                    <p id="vv-preview-titulo-ensayo" style="color:#94a3b8;text-align:center;font-size:0.9rem;margin-bottom:1rem;"></p>
+                    <div style="display:flex;gap:0.75rem;">
+                        <button id="vv-btn-guardar-ensayo" style="flex:1;padding:1rem;border-radius:0.75rem;border:none;background:linear-gradient(135deg,#10b981,#059669);color:white;font-weight:700;cursor:pointer;">
+                            <i class="fas fa-save"></i> Guardar Ensayo
+                        </button>
+                        <button id="vv-btn-descartar-ensayo" style="flex:1;padding:1rem;border-radius:0.75rem;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#94a3b8;font-weight:600;cursor:pointer;">
+                            <i class="fas fa-trash"></i> Descartar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        // Configurar video
+        const videoEl = document.getElementById('vv-preview-video-ensayo');
+        if (videoEl) videoEl.src = URL.createObjectURL(this.videoGrabadoBlob);
+        
+        // Configurar título
+        const tituloEl = document.getElementById('vv-preview-titulo-ensayo');
+        if (tituloEl) tituloEl.textContent = this.currentYouTubeTitle || 'Mi Ensayo';
+        
+        // Configurar botones
+        const btnGuardar = document.getElementById('vv-btn-guardar-ensayo');
+        const btnDescartar = document.getElementById('vv-btn-descartar-ensayo');
+        
+        if (btnGuardar) {
+            btnGuardar.onclick = () => {
+                this.savePracticeRecording(this.currentYouTubeTitle, this.currentYouTubeId);
+                this.cerrarModalEnsayo();
+            };
+        }
+        
+        if (btnDescartar) {
+            btnDescartar.onclick = () => {
+                this.videoGrabadoBlob = null;
+                this.cerrarModalEnsayo();
+            };
+        }
+        
+        modal.style.display = 'flex';
+    },
+    
+    cerrarModalEnsayo: function() {
+        const modal = document.getElementById('vv-modal-preview-ensayo');
+        if (modal) modal.style.display = 'none';
+        
+        // Limpiar video
+        const videoEl = document.getElementById('vv-preview-video-ensayo');
+        if (videoEl) {
+            videoEl.pause();
+            videoEl.src = '';
         }
     },
     
@@ -616,14 +768,16 @@ window.VV_VOCES = {
         
         if (this.uploadVideo) {
             this.uploadVideo(this.videoGrabadoBlob, {
-                title: `Ensayo: ${title}`,
+                title: `Ensayo: ${title || 'Sin título'}`,
                 is_original: false,
-                track_id: videoId
+                track_id: videoId || null,
+                track_title: title || null
             });
         } else {
             alert('Sistema de subida no disponible.');
         }
     }
+
 };
 
 // Inicializar al cargar la PWA
