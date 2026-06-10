@@ -1442,6 +1442,9 @@
                 <button onclick="VV_VOCES.searchYouTube(document.getElementById('vv-search-input').value)">
                     <i class="fas fa-search"></i>
                 </button>
+                <button id="vv-btn-grabar-ensayo" class="vv-btn-primary" onclick="VV_VOCES.startPracticeRecording('${title.replace(/'/g, "\\'")}', '${videoId}')" style="margin-top:0.75rem;">
+                    <i class="fas fa-circle"></i> Grabar Mi Ensayo
+                </button>
             </div>
             <div id="vv-resultados-ensayo" class="vv-results-list"></div>
         </div>

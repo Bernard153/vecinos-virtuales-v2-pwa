@@ -567,10 +567,8 @@ window.VV_VOCES = {
         // ============================================================
     // MODO ENSAYO — Grabación con Preview (sin alerts bloqueantes)
     // ============================================================
-    
-    startPracticeRecording: async function(title, videoId) {
+        startPracticeRecording: async function(title, videoId) {
         try {
-            // 1. Pedir permisos de cámara/micrófono
             const stream = await navigator.mediaDevices.getUserMedia({ 
                 video: true, 
                 audio: true 
@@ -580,10 +578,7 @@ window.VV_VOCES = {
             this.currentYouTubeTitle = title;
             this.currentYouTubeId = videoId;
             
-            // 2. Mostrar cámara del usuario en pantalla (overlay chiquito)
-            const youtubeContainer = document.getElementById('vv-youtube-embed');
-            
-            // Crear overlay de cámara si no existe
+            // Mostrar cámara del usuario en pantalla
             let camOverlay = document.getElementById('vv-ensayo-camara');
             if (!camOverlay) {
                 camOverlay = document.createElement('div');
@@ -603,22 +598,24 @@ window.VV_VOCES = {
             
             const vidEl = document.getElementById('vv-ensayo-video');
             if (vidEl) vidEl.srcObject = stream;
+            if (camOverlay) camOverlay.style.display = 'block';
             
-            // 3. Cambiar el botón a "Detener Grabación"
-            const btn = event.target; // El botón que tocó
+            // CAMBIO CLAVE: Buscar el botón por ID en vez de event.target
+            const btn = document.getElementById('vv-btn-grabar-ensayo');
             if (btn) {
                 btn.innerHTML = '<i class="fas fa-stop"></i> Detener Grabación';
                 btn.style.background = '#dc2626';
                 btn.onclick = () => this.stopPracticeRecording();
             }
             
-            // 4. Iniciar MediaRecorder
+            // Iniciar MediaRecorder
             const options = { mimeType: 'video/webm;codecs=vp8,opus' };
             if (!MediaRecorder.isTypeSupported(options.mimeType)) {
                 options.mimeType = 'video/mp4';
             }
             
             this.mediaRecorder = new MediaRecorder(stream, options);
+            this.fragmentosVideo = [];
             
             this.mediaRecorder.ondataavailable = (e) => {
                 if (e.data && e.data.size > 0) this.fragmentosVideo.push(e.data);
@@ -629,9 +626,7 @@ window.VV_VOCES = {
                 this.mostrarPreviewEnsayo();
             };
             
-            this.mediaRecorder.start(1000); // Guardar cada 1 segundo
-            
-            // 5. Mostrar indicador de grabación (pequeño, no bloqueante)
+            this.mediaRecorder.start(1000);
             this.mostrarIndicadorGrabacion();
             
         } catch(err) {
