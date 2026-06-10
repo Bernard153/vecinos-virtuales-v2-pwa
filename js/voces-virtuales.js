@@ -651,52 +651,70 @@ window.VV_VOCES = {
         const indicador = document.getElementById('vv-indicador-grabando');
         if (indicador) indicador.style.display = 'none';
     },
-    
-    stopPracticeRecording: function() {
-        // Detener grabación
+        stopPracticeRecording: function() {
+        // 1. Detener MediaRecorder
         if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
             this.mediaRecorder.stop();
         }
         
-        // Ocultar indicador
+        // 2. OCULTAR Y DETENER el iframe de YouTube (clave para que no siga sonando)
+        const youtubeContainer = document.getElementById('vv-youtube-embed');
+        if (youtubeContainer) {
+            // Guardar el contenido actual para poder restaurarlo después
+            this.youtubeEmbedHTML = youtubeContainer.innerHTML;
+            youtubeContainer.style.display = 'none';
+            youtubeContainer.innerHTML = ''; // Limpiar para detener el audio
+        }
+        
+        // 3. Ocultar indicador
         this.ocultarIndicadorGrabacion();
         
-        // Ocultar cámara overlay
+        // 4. Ocultar cámara overlay
         const camOverlay = document.getElementById('vv-ensayo-camara');
         if (camOverlay) camOverlay.style.display = 'none';
         
-        // Detener stream
+        // 5. Detener stream de cámara
         if (this.streamCamaraMicro) {
             this.streamCamaraMicro.getTracks().forEach(t => t.stop());
         }
         
-        // Restaurar botón (si existe)
-        const youtubeContainer = document.getElementById('vv-youtube-embed');
-        if (youtubeContainer) {
-            const btn = youtubeContainer.querySelector('button');
-            if (btn) {
-                btn.innerHTML = '<i class="fas fa-circle"></i> Grabar Mi Ensayo';
-                btn.style.background = '';
-                btn.onclick = () => this.startPracticeRecording(this.currentYouTubeTitle, this.currentYouTubeId);
-            }
+        // 6. Restaurar botón
+        const btn = document.getElementById('vv-btn-grabar-ensayo');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-circle"></i> Grabar Mi Ensayo';
+            btn.style.background = '';
+            btn.onclick = () => {
+                // Restaurar YouTube antes de grabar de nuevo
+                if (youtubeContainer && this.youtubeEmbedHTML) {
+                    youtubeContainer.innerHTML = this.youtubeEmbedHTML;
+                    youtubeContainer.style.display = 'block';
+                }
+                this.startPracticeRecording(this.currentYouTubeTitle, this.currentYouTubeId);
+            };
         }
     },
-    
-    mostrarPreviewEnsayo: function() {
+        mostrarPreviewEnsayo: function() {
         if (!this.videoGrabadoBlob) return;
         
-        // Crear modal de preview
         let modal = document.getElementById('vv-modal-preview-ensayo');
         if (!modal) {
             modal = document.createElement('div');
             modal.id = 'vv-modal-preview-ensayo';
-            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:10001;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:1rem;';
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:10001;display:none;flex-direction:column;justify-content:center;align-items:center;padding:1rem;overflow-y:auto;';
             
             modal.innerHTML = `
-                <div style="background:#1e293b;border-radius:1rem;padding:1.5rem;max-width:500px;width:100%;">
-                    <h3 style="margin:0 0 1rem 0;color:#f8fafc;text-align:center;">🎤 Revisá tu Ensayo</h3>
-                    <video id="vv-preview-video-ensayo" controls style="width:100%;border-radius:0.75rem;background:#000;margin-bottom:1rem;"></video>
+                <div style="background:#1e293b;border-radius:1rem;padding:1.5rem;max-width:500px;width:100%;border:1px solid rgba(255,255,255,0.1);">
+                    <h3 style="margin:0 0 0.5rem 0;color:#f8fafc;text-align:center;">🎤 Revisá tu Ensayo</h3>
+                    
+                    <!-- Mensaje educativo -->
+                    <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:0.5rem;padding:0.75rem;margin-bottom:1rem;font-size:0.8rem;color:#fcd34d;">
+                        <i class="fas fa-info-circle"></i> <strong>Nota:</strong> Esta grabación captura solo tu voz. La pista de YouTube no se graba por limitaciones del navegador. Para mejor resultado, usá auriculares.
+                    </div>
+                    
+                    <video id="vv-preview-video-ensayo" controls style="width:100%;border-radius:0.75rem;background:#000;margin-bottom:1rem;max-height:250px;"></video>
+                    
                     <p id="vv-preview-titulo-ensayo" style="color:#94a3b8;text-align:center;font-size:0.9rem;margin-bottom:1rem;"></p>
+                    
                     <div style="display:flex;gap:0.75rem;">
                         <button id="vv-btn-guardar-ensayo" style="flex:1;padding:1rem;border-radius:0.75rem;border:none;background:linear-gradient(135deg,#10b981,#059669);color:white;font-weight:700;cursor:pointer;">
                             <i class="fas fa-save"></i> Guardar Ensayo
@@ -711,15 +729,12 @@ window.VV_VOCES = {
             document.body.appendChild(modal);
         }
         
-        // Configurar video
         const videoEl = document.getElementById('vv-preview-video-ensayo');
         if (videoEl) videoEl.src = URL.createObjectURL(this.videoGrabadoBlob);
         
-        // Configurar título
         const tituloEl = document.getElementById('vv-preview-titulo-ensayo');
         if (tituloEl) tituloEl.textContent = this.currentYouTubeTitle || 'Mi Ensayo';
         
-        // Configurar botones
         const btnGuardar = document.getElementById('vv-btn-guardar-ensayo');
         const btnDescartar = document.getElementById('vv-btn-descartar-ensayo');
         
@@ -727,6 +742,8 @@ window.VV_VOCES = {
             btnGuardar.onclick = () => {
                 this.savePracticeRecording(this.currentYouTubeTitle, this.currentYouTubeId);
                 this.cerrarModalEnsayo();
+                // Restaurar YouTube si quiere grabar de nuevo
+                this.restaurarYouTube();
             };
         }
         
@@ -734,10 +751,20 @@ window.VV_VOCES = {
             btnDescartar.onclick = () => {
                 this.videoGrabadoBlob = null;
                 this.cerrarModalEnsayo();
+                this.restaurarYouTube();
             };
         }
         
         modal.style.display = 'flex';
+    },
+    
+    // Nueva función auxiliar
+    restaurarYouTube: function() {
+        const youtubeContainer = document.getElementById('vv-youtube-embed');
+        if (youtubeContainer && this.youtubeEmbedHTML) {
+            youtubeContainer.innerHTML = this.youtubeEmbedHTML;
+            youtubeContainer.style.display = 'block';
+        }
     },
     
     cerrarModalEnsayo: function() {
