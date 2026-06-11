@@ -33,172 +33,8 @@
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/admin.css">
-    <link rel="stylesheet" href="css/karaoke.css">
-<style>
-<style>
-/* ============================================================
-   ONBOARDING VOCES VIRTUALES
-   ============================================================ */
-.vv-onboarding-container {
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #8b5cf6 100%);
-    color: white;
-    display: none;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 1.5rem;
-    z-index: 9999;
-    font-family: inherit;
-}
+    <!--<link rel="stylesheet" href="css/karaoke.css">-->
 
-.vv-onboarding-slide {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.vv-onboarding-skip {
-    align-self: flex-end;
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.8);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 0.5rem;
-}
-
-.vv-onboarding-skip:hover {
-    color: white;
-}
-
-.vv-onboarding-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    margin: auto 0;
-    animation: vvFadeIn 0.4s ease;
-}
-
-.vv-onboarding-icon {
-    font-size: 5rem;
-    margin-bottom: 2rem;
-    display: block;
-    animation: vvBounce 2s infinite;
-}
-
-.vv-onboarding-title {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-bottom: 1rem;
-    line-height: 1.2;
-}
-
-.vv-onboarding-desc {
-    font-size: 1rem;
-    opacity: 0.9;
-    max-width: 280px;
-    line-height: 1.5;
-}
-
-.vv-onboarding-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    padding-bottom: 2rem;
-}
-
-.vv-onboarding-dots {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.vv-onboarding-dot {
-    height: 8px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.3);
-    transition: all 0.3s ease;
-}
-
-.vv-onboarding-dot.active {
-    width: 24px;
-    background: white;
-}
-
-.vv-onboarding-dot:not(.active) {
-    width: 8px;
-}
-
-.vv-onboarding-btn {
-    width: 100%;
-    background: white;
-    color: #1e3a8a;
-    font-weight: 800;
-    font-size: 1rem;
-    padding: 1rem;
-    border-radius: 1rem;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    transition: transform 0.15s;
-}
-
-.vv-onboarding-btn:active {
-    transform: scale(0.97);
-}
-
-@keyframes vvFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes vvBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-</style>
- <style>
-        /* ESTILOS MOBILE-FIRST (320px - 768px) */
-        :root { --bg-dark: #121212; --bg-card: #1e1e1e; --primary: #ff3b30; --text-bright: #ffffff; --text-dim: #aaaaaa; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-dark); color: var(--text-bright); margin: 0; padding: 15px; display: flex; justify-content: center; }
-        #modulo-voces-virtuales { width: 100%; max-width: 768px; min-width: 320px; box-sizing: border-box; }
-        .vv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .vv-header h1 { font-size: 1.4rem; margin: 0; }
-        .vv-header p { font-size: 0.85rem; color: var(--text-dim); margin: 5px 0 0 0; }
-        .btn-tab { background: #333; color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; }
-        
-        /* ZONAS DE ESTADO */
-        .vv-card { background: var(--bg-card); padding: 20px; border-radius: 16px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .oculto { display: none !important; }
-        
-        /* ESTUDIO DE GRABACIÓN (TAB 1) */
-        .vv-estudio-container { position: relative; width: 100%; min-height: 250px; background: #000; border-radius: 12px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 15px; }
-        #vv-letra-container { font-size: 1.6rem; font-weight: bold; text-align: center; margin: 40px 0; line-height: 1.4; min-height: 80px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); transition: color 0.2s ease; }
-        #vv-letra-container .linea-activa { color: var(--text-bright); text-shadow: 0 0 10px rgba(255,255,255,0.8); }
-        #vv-pista-audio { width: 100%; margin-top: 10px; }
-        
-        /* CÁMARA FLOTANTE EN ESPEJO */
-        #vv-camara-preview { width: 110px; height: 145px; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,255,255,0.2); position: absolute; top: 15px; right: 15px; z-index: 10; transform: scaleX(-1); background: #222; }
-        
-        /* BARRA FIJA INFERIOR */
-        .vv-barra-controles { margin-top: 15px; text-align: center; }
-        .btn-grabar-circular { width: 70px; height: 70px; border-radius: 50%; background: var(--primary); border: 5px solid #fff; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s; }
-        .btn-grabar-circular.grabando { animation: pulse 1.5s infinite; background: #000; border-color: var(--primary); border-radius: 10px; transform: scale(0.9); }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 59, 48, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); } }
-        
-        /* INPUTS Y BOTONES DE ACCIÓN */
-        input[type="file"] { display: none; }
-        .btn-accion { background: #34c759; color: white; border: none; padding: 12px 24px; font-weight: bold; border-radius: 8px; width: 100%; font-size: 1rem; cursor: pointer; margin-top: 10px; }
-        .btn-subir-disfraz { background: #2f80ed; display: block; padding: 12px; text-align: center; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .btn-descartar { background: #555; }
-    </style>
 </head>
 <body>
     <!-- PANTALLA DE CARGA -->
@@ -1313,83 +1149,59 @@
     </script>
  });
 <!-- ============================================================
-     🎤 VOCES VIRTUALES V2 — Estudio de Creación + Ensayo
+     🎤 VOCES VIRTUALES V2
      ============================================================ -->
 <div id="modulo-voces-virtuales" style="display: none;">
     
-    <!-- ====== TAB 1: CREAR (Modo Artista) ====== -->
+    <!-- TAB 1: CREAR -->
     <div id="vv-tab-crear">
-        
-        <!-- Header -->
         <div class="vv-header">
             <div>
                 <h1><i class="fas fa-microphone-alt"></i> Voces Virtuales</h1>
-                <p>Estudio de Creación — Subí tu canción, grabá tu video, compartí tu arte</p>
+                <p>Estudio de Creación</p>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('ensayo')">
-                    🎤 Modo Ensayo
-                </button>
-                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4);">
-                    <i class="fas fa-arrow-left"></i> Volver
-                </button>
+                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('ensayo')">🎤 Ensayo</button>
+                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4);"><i class="fas fa-arrow-left"></i> Volver</button>
             </div>
         </div>
 
-        <!-- ZONA 1: Subida de archivos o Modo Acústico -->
         <div id="vv-zona-subida" class="vv-card">
             <h3><i class="fas fa-cloud-upload-alt"></i> Preparar tu Obra</h3>
-    
-            <div style="display: grid; gap: 0.75rem; margin-bottom: 1rem;">
-                <button class="vv-btn-primary" onclick="VV_VOCES.irAGrabarSinPista()" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                    <i class="fas fa-guitar"></i> 🎸 Modo Acústico — Grabar con mi instrumento
-                </button>
-                <button onclick="VV_VOCES.descargarLocal()">💾 Guardar en mi celular</button>
-
-                <p style="text-align: center; color: #94a3b8; font-size: 0.8rem; margin: 0;">Ideal para guitarra, piano, ukelele, etc.</p>
-        
-                <div style="text-align: center; color: #64748b; font-size: 0.75rem; margin: 0.5rem 0;">— o —</div>
-        
-                <label class="vv-file-label">
-                    <i class="fas fa-music"></i> Subir Pista Instrumental (MP3/WAV)
-                    <input type="file" id="vv-upload-audio" accept="audio/mp3,audio/wav,audio/mpeg" onchange="VV_VOCES.onAudioSelected()">
-                </label>
-                <p id="vv-audio-name" class="vv-file-name"></p>
-        
-                <label class="vv-file-label" style="background: linear-gradient(135deg, #4b5563, #374151);">
-                    <i class="fas fa-align-center"></i> Subir Letra (.LRC o .TXT) — Opcional
-                    <input type="file" id="vv-upload-letra" accept=".lrc,.txt" onchange="VV_VOCES.onLyricSelected()">
-                </label>
-                <p id="vv-letra-name" class="vv-file-name"></p>
-           </div>
-    
-           <div class="vv-sadaic-box">
-               <i class="fas fa-shield-alt"></i>
-               <span>¿Sos autor? <a href="https://sadaic.org.ar" target="_blank">Asociate a SADAIC</a> y protegé tus obras.</span>
-           </div>
-    
-           <button id="vv-btn-cargar-estudio" class="vv-btn-primary" onclick="VV_VOCES.loadLocalTrackFromInputs()" disabled>
-               <i class="fas fa-upload"></i> Cargar Pista y Entrar al Estudio
-           </button>
+            <button class="vv-btn-primary" onclick="VV_VOCES.irAGrabarSinPista()" style="background: linear-gradient(135deg, #f59e0b, #d97706); margin-bottom: 0.5rem;">
+                <i class="fas fa-guitar"></i> 🎸 Modo Acústico — Grabar con mi instrumento
+            </button>
+            <p style="text-align: center; color: #94a3b8; font-size: 0.8rem; margin: 0 0 1rem 0;">Ideal para guitarra, piano, ukelele, etc.</p>
+            <div style="text-align: center; color: #64748b; font-size: 0.75rem; margin: 0.5rem 0;">— o —</div>
+            <label class="vv-file-label">
+                <i class="fas fa-music"></i> Subir Pista Instrumental (MP3/WAV)
+                <input type="file" id="vv-upload-audio" accept="audio/mp3,audio/wav,audio/mpeg" onchange="VV_VOCES.onAudioSelected()">
+            </label>
+            <p id="vv-audio-name" class="vv-file-name"></p>
+            <label class="vv-file-label" style="background: linear-gradient(135deg, #4b5563, #374151);">
+                <i class="fas fa-align-center"></i> Subir Letra (.LRC o .TXT) — Opcional
+                <input type="file" id="vv-upload-letra" accept=".lrc,.txt" onchange="VV_VOCES.onLyricSelected()">
+            </label>
+            <p id="vv-letra-name" class="vv-file-name"></p>
+            <div class="vv-sadaic-box">
+                <i class="fas fa-shield-alt"></i>
+                <span>¿Sos autor? <a href="https://sadaic.org.ar" target="_blank">Asociate a SADAIC</a></span>
+            </div>
+            <button id="vv-btn-cargar-estudio" class="vv-btn-primary" onclick="VV_VOCES.loadLocalTrackFromInputs()" disabled>
+                <i class="fas fa-upload"></i> Cargar Pista y Entrar al Estudio
+            </button>
         </div>
 
-
-        <!-- ZONA 2: Estudio de Grabación -->
         <div id="vv-zona-grabacion" class="vv-estudio-container" style="display: none;">
             <video id="vv-camara-preview" autoplay muted playsinline></video>
-            <div id="vv-letra-container">
-                <p class="vv-letra-placeholder">La letra aparecerá aquí...</p>
-            </div>
+            <div id="vv-letra-container"><p class="vv-letra-placeholder">La letra aparecerá aquí...</p></div>
             <audio id="vv-pista-audio" controls></audio>
             <div class="vv-controls-bar">
-                <button id="vv-btn-rec-action" class="vv-btn-record" onclick="VV_VOCES.toggleRecording()" title="Grabar Mi Tema">
-                    <i class="fas fa-circle"></i>
-                </button>
+                <button id="vv-btn-rec-action" class="vv-btn-record" onclick="VV_VOCES.toggleRecording()" title="Grabar Mi Tema"><i class="fas fa-circle"></i></button>
                 <p class="vv-hint"><i class="fas fa-headphones"></i> Usá auriculares para la mejor calidad</p>
             </div>
         </div>
 
-        <!-- ZONA 3: Post-Grabación -->
         <div id="vv-zona-post-grabacion" class="vv-card" style="display: none;">
             <h3><i class="fas fa-play-circle"></i> Revisá tu Grabación</h3>
             <video id="vv-preview-grabacion" controls></video>
@@ -1403,7 +1215,7 @@
             </label>
             <div id="vv-contenedor-progreso" style="display: none; margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                    <span id="vv-texto-progreso" style="font-size: 0.8rem; color: #34d399;">Subiendo video al barrio... 0%</span>
+                    <span id="vv-texto-progreso" style="font-size: 0.8rem; color: #34d399;">Subiendo... 0%</span>
                     <span id="vv-porcentaje-progreso" style="font-size: 0.8rem; color: #34d399; font-weight: 700;">0%</span>
                 </div>
                 <div style="width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 999px; overflow: hidden;">
@@ -1411,42 +1223,29 @@
                 </div>
             </div>
             <div class="vv-btn-group">
-                <button class="vv-btn-success" id="vv-btn-publicar" onclick="VV_VOCES.publishOriginal()">
-                    <i class="fas fa-rocket"></i> Publicar en el Barrio
-                </button>
-                <button class="vv-btn-secondary" onclick="VV_VOCES.discardRecording()">
-                    <i class="fas fa-trash"></i> Descartar y Volver
-                </button>
+                <button class="vv-btn-success" onclick="VV_VOCES.publishOriginal()"><i class="fas fa-rocket"></i> Publicar en el Barrio</button>
+                <button class="vv-btn-secondary" onclick="VV_VOCES.descargarLocal()"><i class="fas fa-download"></i> Guardar en mi celular</button>
+                <button class="vv-btn-secondary" onclick="VV_VOCES.discardRecording()"><i class="fas fa-trash"></i> Descartar</button>
             </div>
         </div>
     </div>
 
-    <!-- ====== TAB 2: ENSAYO (Modo Karaoke) ====== -->
+    <!-- TAB 2: ENSAYO -->
     <div id="vv-tab-ensayo" style="display: none;">
         <div class="vv-header">
             <div>
                 <h1><i class="fas fa-guitar"></i> Ensayo</h1>
-                <p>Practicá tus covers con pistas de YouTube</p>
+                <p>Practicá tus covers</p>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('crear')">
-                    🎵 Volver a Crear
-                </button>
-                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4);">
-                    <i class="fas fa-arrow-left"></i> Volver
-                </button>
+                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('crear')">🎵 Crear</button>
+                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4);"><i class="fas fa-arrow-left"></i> Volver</button>
             </div>
         </div>
-
         <div class="vv-card">
             <div class="vv-search-box">
                 <input type="text" id="vv-search-input" placeholder="🔍 Buscar artista o canción..." onkeypress="if(event.key==='Enter') VV_VOCES.searchYouTube(this.value)">
-                <button onclick="VV_VOCES.searchYouTube(document.getElementById('vv-search-input').value)">
-                    <i class="fas fa-search"></i>
-                </button>
-                <button id="vv-btn-grabar-ensayo" class="vv-btn-primary" onclick="VV_VOCES.startPracticeRecording('${title.replace(/'/g, "\\'")}', '${videoId}')" style="margin-top:0.75rem;">
-                    <i class="fas fa-circle"></i> Grabar Mi Ensayo
-                </button>
+                <button onclick="VV_VOCES.searchYouTube(document.getElementById('vv-search-input').value)"><i class="fas fa-search"></i></button>
             </div>
             <div id="vv-resultados-ensayo" class="vv-results-list"></div>
         </div>
@@ -1455,7 +1254,6 @@
 
 </div>
 
-<!-- CSS de Voces Virtuales -->
 <style>
 #modulo-voces-virtuales { position: fixed; inset: 0; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; z-index: 9999; overflow-y: auto; font-family: inherit; padding: 1rem; }
 .vv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
@@ -1508,16 +1306,13 @@
 @media (min-width: 768px) { #modulo-voces-virtuales { padding: 2rem; } .vv-btn-group { flex-direction: row; } .vv-btn-group button { flex: 1; } }
 </style>
 
-<!-- Script del conmutador (solo una vez, al final del body) -->
 <script>
 function conmutarVistasPro(destino) {
     try {
         var capaVoces = document.getElementById('modulo-voces-virtuales');
         var mainApp = document.getElementById('main-app');
         var loadingScreen = document.getElementById('loading-screen');
-        
         if (loadingScreen) loadingScreen.style.display = 'none';
-        
         if (destino === '#voces') {
             if (capaVoces) capaVoces.style.display = 'block';
             if (mainApp) mainApp.style.display = 'none';
@@ -1540,15 +1335,10 @@ function conmutarVistasPro(destino) {
         console.error("Error en conmutador:", err);
     }
 }
-
 window.addEventListener('hashchange', function() {
-    if (window.location.hash === '#voces') {
-        conmutarVistasPro('#voces');
-    } else if (window.location.hash === '#dashboard') {
-        conmutarVistasPro('#dashboard');
-    }
+    if (window.location.hash === '#voces') conmutarVistasPro('#voces');
+    else if (window.location.hash === '#dashboard') conmutarVistasPro('#dashboard');
 });
 </script>
-
 </body>
 </html>
