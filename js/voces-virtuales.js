@@ -514,7 +514,151 @@ window.VV_VOCES = {
             youtubeContainer.style.display = 'block';
         }
     },
+        // ============================================================
+    // TAB 3: EXPLORAR — Feed de videos
+    // ============================================================
     
+    cargarFeed: async function() {
+        const container = document.getElementById('vv-feed-container');
+        if (!container) return;
+        
+        container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem;">Cargando obras...</p>';
+        
+        try {
+            const { data, error } = await supabase
+                .from('karaoke_videos')
+                .select('*')
+                .eq('visible', true)
+                .order('created_at', { ascending: false })
+                .limit(20);
+            
+            if (error) throw error;
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem;">Aún no hay obras publicadas.<br>Sé el primero en compartir tu voz 🎤</p>';
+                return;
+            }
+            
+            container.innerHTML = data.map(video => `
+                <div class="vv-video-card" data-video-id="${video.id}">
+                    <video src="${video.video_url}" controls preload="metadata" playsinline></video>
+                    <div class="vv-video-info">
+                        <p class="vv-video-title">${video.title || 'Sin título'}</p>
+                        <p class="vv-video-author">🎤 ${video.user_name || 'Anónimo'} • ${new Date(video.created_at).toLocaleDateString()}</p>
+                        <div class="vv-video-actions">
+                            <button class="btn-like" onclick="VV_VOCES.darLike('${video.id}')">
+                                ❤️ ${video.likes_count || 0}
+                            </button>
+                            <button class="btn-gift" onclick="VV_VOCES.regalarIcono('${video.id}', '${video.user_id}')">
+                                🎁 Regalar
+                            </button>
+                            <button class="btn-report" onclick="VV_VOCES.reportarVideo('${video.id}')">
+                                🚨 Reportar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="vv-comments-section">
+                        <div id="vv-comments-${video.id}" class="vv-comments-list"></div>
+                        <div class="vv-comment-input">
+                            <input type="text" id="vv-comment-input-${video.id}" placeholder="Comentar con emoji..." maxlength="2">
+                            <button onclick="VV_VOCES.enviarComentario('${video.id}')">➤</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+        } catch(e) {
+            container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem;">Error cargando obras</p>';
+        }
+    },
+    
+    darLike: async function(videoId) {
+        try {
+            const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
+            if (!user) { alert('Debes estar logueado'); return; }
+            
+            await supabase.from('karaoke_likes').insert([{
+                video_id: videoId,
+                user_id: user.id
+            }]);
+            
+            await supabase.rpc('increment_likes', { video_uuid: videoId });
+            alert('❤️ ¡Te gustó esta obra!');
+            this.cargarFeed();
+            
+        } catch(e) {
+            alert('Ya le diste like o hubo un error');
+        }
+    },
+    
+    regalarIcono: async function(videoId, receptorId) {
+        // Esto conecta con tu sistema de billeteras existente
+        alert('🎁 Sistema de regalos: próximamente conectado a tu billetera');
+        // Aquí iría la lógica de descontar monedas y enviar regalo
+    },
+    
+    reportarVideo: async function(videoId) {
+        const motivo = prompt('¿Por qué reportás este video?\n1. Contenido inapropiado\n2. No es original\n3. Otro');
+        if (!motivo) return;
+        
+        try {
+            const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
+            await supabase.from('content_reports').insert([{
+                content_type: 'karaoke',
+                content_id: videoId,
+                reason: motivo,
+                reporter_id: user ? user.id : null
+            }]);
+            
+            alert('🚨 Reporte enviado. Gracias por cuidar la comunidad.');
+        } catch(e) {
+            alert('Error enviando reporte');
+        }
+    },
+    
+    enviarComentario: async function(videoId) {
+        const input = document.getElementById('vv-comment-input-' + videoId);
+        const emoji = input ? input.value.trim() : '';
+        if (!emoji) return;
+        
+        try {
+            const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
+            await supabase.from('karaoke_comments').insert([{
+                video_id: videoId,
+                user_id: user ? user.id : null,
+                user_name: user ? user.name || user.nickname : 'Anónimo',
+                emoji: emoji,
+                video_timestamp: 0
+            }]);
+            
+            if (input) input.value = '';
+            this.mostrarComentarios(videoId);
+            
+        } catch(e) {
+            console.error('Error comentario:', e);
+        }
+    },
+    
+    mostrarComentarios: async function(videoId) {
+        const container = document.getElementById('vv-comments-' + videoId);
+        if (!container) return;
+        
+        try {
+            const { data } = await supabase
+                .from('karaoke_comments')
+                .select('*')
+                .eq('video_id', videoId)
+                .order('created_at', { ascending: false })
+                .limit(10);
+            
+            if (data && data.length > 0) {
+                container.innerHTML = data.map(c => `
+                    <span style="font-size:1.2rem;margin-right:0.5rem;" title="${c.user_name || 'Anónimo'}">${c.emoji}</span>
+                `).join('');
+            }
+        } catch(e) {}
+    },
+
     savePracticeRecording: function() {
         if (!this.videoGrabadoBlob) return;
         var perms = VV_ROLES ? VV_ROLES.getPermissions() : {};

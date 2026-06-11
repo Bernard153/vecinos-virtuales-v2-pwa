@@ -1251,6 +1251,25 @@
         </div>
         <div id="vv-youtube-embed" class="vv-card" style="display: none;"></div>
     </div>
+    <!-- ====== TAB 3: EXPLORAR (Feed) ====== -->
+    <div id="vv-tab-explorar" style="display: none;">
+        <div class="vv-header">
+            <div>
+                <h1><i class="fas fa-compass"></i> Explorar</h1>
+                <p>Descubrí las voces de tu barrio</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('crear')">🎵 Crear</button>
+                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239,68,68,0.2);">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </button>
+            </div>
+        </div>
+        
+        <div id="vv-feed-container" class="vv-feed-container">
+            <p style="text-align:center;color:#94a3b8;padding:2rem;">Cargando obras del barrio...</p>
+        </div>
+    </div>
 
 </div>
 
@@ -1304,6 +1323,23 @@
 .vv-result-info { flex: 1; }
 .vv-result-title { font-size: 0.85rem; font-weight: 600; margin: 0; color: #e2e8f0; }
 @media (min-width: 768px) { #modulo-voces-virtuales { padding: 2rem; } .vv-btn-group { flex-direction: row; } .vv-btn-group button { flex: 1; } }
+.vv-feed-container { display: flex; flex-direction: column; gap: 1rem; padding-bottom: 2rem; }
+.vv-video-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; overflow: hidden; }
+.vv-video-card video { width: 100%; max-height: 300px; background: #000; display: block; }
+.vv-video-info { padding: 1rem; }
+.vv-video-title { font-size: 1rem; font-weight: 700; margin: 0 0 0.25rem 0; color: #f8fafc; }
+.vv-video-author { font-size: 0.8rem; color: #94a3b8; margin: 0 0 0.75rem 0; }
+.vv-video-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.vv-video-actions button { padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: none; background: rgba(255,255,255,0.1); color: #e2e8f0; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; }
+.vv-video-actions button:hover { background: rgba(255,255,255,0.2); }
+.vv-video-actions .btn-like { background: rgba(239,68,68,0.2); color: #fca5a5; }
+.vv-video-actions .btn-gift { background: rgba(251,191,36,0.2); color: #fcd34d; }
+.vv-video-actions .btn-report { background: rgba(100,116,139,0.2); color: #94a3b8; font-size: 0.7rem; }
+.vv-comments-section { padding: 0 1rem 1rem 1rem; border-top: 1px solid rgba(255,255,255,0.05); }
+.vv-comment-input { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+.vv-comment-input input { flex: 1; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #f8fafc; font-size: 0.85rem; }
+.vv-comment-input button { padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: none; background: #3b82f6; color: white; cursor: pointer; }
+
 </style>
 
 <script>
