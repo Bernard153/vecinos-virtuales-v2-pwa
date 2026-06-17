@@ -2,7 +2,23 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Vecinos Virtuales V2 - Iniciando...');
+    // Al iniciar la app
+async function initApp() {
+    // Ocultar loading
+    document.getElementById('loading-screen')?.classList.remove('active');
     
+    // Verificar sesión existente
+    const hasSession = await VV.auth.checkExistingUser();
+    
+    if (hasSession) {
+        // Usuario logueado → dashboard
+        VV.auth.startApp();
+    } else {
+        // Usuario nuevo → landing vitrina
+        VV.landing.init();
+    }
+}
+ 
     const termsAccepted = JSON.parse(localStorage.getItem('termsAccepted') || 'null');
     
     if (!termsAccepted || !termsAccepted.accepted) {
