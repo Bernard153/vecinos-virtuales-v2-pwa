@@ -902,7 +902,29 @@ VV.geo = {
             VV.marketplace.load();
         }
     },
+    // Dentro de VV.auth.selectNeighborhood, reemplazá la lógica final por:
+selectNeighborhood(neighborhood) {
+    VV.data.neighborhood = neighborhood;
     
+    const neighborhoodElement = document.getElementById('selected-neighborhood');
+    if (neighborhoodElement) {
+        neighborhoodElement.textContent = neighborhood;
+    }
+    
+    // Si viene del flujo de registro nuevo (auth-celular), ir a registro
+    if (document.getElementById('register-phone-screen')?.classList.contains('active')) {
+        VV.authCelular.onNeighborhoodSelected(neighborhood);
+        return;
+    }
+    
+    // Flujo antiguo (compatibilidad)
+    if (neighborhood === 'Administrador') {
+        VV.utils.showScreen('login-screen');
+    } else {
+        VV.auth.showAuthOptions();
+    }
+},
+
     closeNeighborhoodSelector() {
         const overlay = document.getElementById('neighborhood-selector-overlay');
         if (overlay) overlay.classList.remove('active');
