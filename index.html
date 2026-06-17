@@ -47,120 +47,163 @@
             <div class="loading-spinner"></div>
         </div>
     </div>
+   <!-- ========== LANDING VITRINA ========== -->
+<div id="landing-screen" class="screen">
+    <div class="landing-container" style="min-height:100vh; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%); color: white; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+        
+        <!-- Efecto marquesina flúor -->
+        <div style="text-align: center; padding: 3rem 1.5rem 1.5rem; position: relative; z-index: 2;">
+            <h1 style="font-size: 2.2rem; font-weight: 800; margin: 0; letter-spacing: -1px; text-shadow: 0 0 20px rgba(139,92,246,0.6), 0 0 40px rgba(139,92,246,0.3);">
+                Bienvenido a<br>
+                <span style="background: linear-gradient(90deg, #c084fc, #e879f9, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px rgba(192,132,252,0.5));">
+                    Vecinos Virtuales
+                </span>
+            </h1>
+            <p style="opacity: 0.8; margin-top: 0.5rem; font-size: 1rem;">Conectá con tu barrio de forma simple</p>
+        </div>
 
-    <!-- PANTALLA DE UBICACIÓN -->
-    <div id="location-screen" class="screen">
-        <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-map-marker-alt"></i>
+        <!-- Botón Voces Virtuales -->
+        <div style="position: absolute; top: 1rem; right: 1rem; z-index: 10;">
+            <button onclick="VV.landing.goToVocesVirtuales()" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: white; padding: 0.6rem 1rem; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 15px rgba(245,158,11,0.4); display: flex; align-items: center; gap: 0.4rem; animation: pulse 2s infinite;">
+                <i class="fas fa-microphone"></i> Voces Virtuales
+            </button>
+            <div style="font-size: 0.7rem; text-align: center; margin-top: 0.3rem; opacity: 0.9;">Compartí tu Talento</div>
+        </div>
+
+        <!-- Feeds Carrusel -->
+        <div style="flex: 1; padding: 0 1rem 1rem; overflow-y: auto; position: relative; z-index: 2;">
+            
+            <!-- Feed Cultura -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 0.95rem; margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.9;">
+                    <i class="fas fa-palette"></i> Cultura y Eventos
+                </h3>
+                <div id="feed-cultura" class="feed-carousel" style="display: flex; gap: 0.75rem; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                    <div style="min-width: 280px; height: 160px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">Vecinos Virtuales - Cultura y Eventos</div>
+                </div>
             </div>
-            <h1>Vecinos Virtuales</h1>
-            <p class="subtitle">By O'skar</p>
-            <div id="location-content">
-                <!-- Contenido dinámico -->
+
+            <!-- Feed Mejoras -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 0.95rem; margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.9;">
+                    <i class="fas fa-tools"></i> Mejoras
+                </h3>
+                <div id="feed-mejoras" class="feed-carousel" style="display: flex; gap: 0.75rem; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                    <div style="min-width: 280px; height: 160px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">Vecinos Virtuales - Mejoras</div>
+                </div>
+            </div>
+
+            <!-- Feed Comercios -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 0.95rem; margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.9;">
+                    <i class="fas fa-store"></i> Comercios
+                </h3>
+                <div id="feed-comercios" class="feed-carousel" style="display: flex; gap: 0.75rem; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                    <div style="min-width: 280px; height: 160px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">Vecinos Virtuales - Comercios</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- PANTALLA DE REGISTRO -->
-    <div id="registration-screen" class="screen">
-        <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-user-plus"></i>
+        <!-- Botones inferiores -->
+        <div style="padding: 1.5rem; position: relative; z-index: 2; background: linear-gradient(transparent, rgba(0,0,0,0.4));">
+            <button onclick="VV.landing.goToComparador()" style="width: 100%; padding: 1rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-bottom: 0.75rem; box-shadow: 0 4px 15px rgba(16,185,129,0.3);">
+                <i class="fas fa-search-dollar"></i> Buscá y comprá al mejor precio
+            </button>
+            <button onclick="VV.landing.goToRegister()" style="width: 100%; padding: 1rem; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-weight: 600; font-size: 1rem; cursor: pointer; backdrop-filter: blur(10px);">
+                <i class="fas fa-user-plus"></i> Registrate para acceder al dashboard
+            </button>
+        </div>
+
+        <!-- Decoración fondo -->
+        <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 50%, rgba(139,92,246,0.15) 0%, transparent 50%); pointer-events: none;"></div>
+    </div>
+</div>
+
+<!-- ========== TÉRMINOS Y CONDICIONES ========== -->
+<div id="terms-screen" class="screen">
+    <div class="screen-container" style="max-width: 600px; text-align: left;">
+        <div class="logo-large"><i class="fas fa-file-contract"></i></div>
+        <h1>Términos y Condiciones</h1>
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 8px; margin: 1rem 0; max-height: 50vh; overflow-y: auto; font-size: 0.9rem; line-height: 1.5;">
+            <p><strong>1. Responsabilidad:</strong> Al usar esta aplicación, te comprometés a interactuar de forma respetuosa con los demás vecinos.</p>
+            <p><strong>2. Privacidad:</strong> Tu número de celular será usado únicamente para verificación y notificaciones barriales. No compartimos tus datos con terceros.</p>
+            <p><strong>3. Contenido:</strong> El contenido que publiques es tu responsabilidad. Nos reservamos el derecho de moderar contenido inapropiado.</p>
+            <p><strong>4. Geolocalización:</strong> Usamos tu ubicación solo para mostrarte barrios cercanos.</p>
+            <p><strong>5. Comunidad:</strong> Vecinos Virtuales es una plataforma de conexión, no garantiza transacciones entre usuarios.</p>
+            <p>Al aceptar, confirmás que tenés al menos 18 años.</p>
+        </div>
+        <label style="display: flex; align-items: start; gap: 0.5rem; margin: 1rem 0; cursor: pointer;">
+            <input type="checkbox" id="terms-check" style="margin-top: 0.2rem; width: 18px; height: 18px;">
+            <span>He leído y acepto los términos y condiciones y la política de privacidad.</span>
+        </label>
+        <button class="btn-primary" onclick="VV.authCelular.acceptTerms()" style="width: 100%;">
+            <i class="fas fa-check"></i> Aceptar y continuar
+        </button>
+        <button class="btn-secondary" onclick="VV.utils.showScreen('landing-screen')" style="width: 100%; margin-top: 0.5rem;">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    </div>
+</div>
+
+<!-- ========== GEOLOCALIZACIÓN (REUTILIZADA EN FLUJO REGISTRO) ========== -->
+<div id="location-screen" class="screen">
+    <div class="screen-container">
+        <div class="logo-large"><i class="fas fa-map-marker-alt"></i></div>
+        <h1>¿Dónde estás?</h1>
+        <p class="subtitle">Elegí tu barrio para conectarte con vecinos cercanos</p>
+        <div id="location-content">
+            <!-- Se llena con geo.js -->
+        </div>
+    </div>
+</div>
+
+<!-- ========== REGISTRO CON CELULAR ========== -->
+<div id="register-phone-screen" class="screen">
+    <div class="screen-container" style="max-width: 480px;">
+        <div class="logo-large"><i class="fas fa-mobile-alt"></i></div>
+        <h1>Casi listo</h1>
+        <p class="subtitle">Barrio: <strong id="reg-selected-neighborhood"></strong></p>
+        
+        <div class="auth-form">
+            <div class="form-group">
+                <label for="reg-name">¿Cómo te dicen? *</label>
+                <input type="text" id="reg-name" required placeholder="Tu nombre o apodo">
             </div>
-            <h1>Registro</h1>
-            <p class="subtitle">Barrio: <strong id="selected-neighborhood"></strong></p>
-            
-            <form id="registration-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.register();">
-                <div class="form-group">
-                    <label for="register-name">Nombre completo *</label>
-                    <input type="text" id="register-name" required placeholder="Tu nombre">
-                </div>
-                <div class="form-group">
-                    <label for="register-email">Email *</label>
-                    <input type="email" id="register-email" required placeholder="tu@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="register-phone">Teléfono *</label>
-                    <input type="tel" id="register-phone" required placeholder="1234567890">
-                </div>
-                <div class="form-group">
-                    <label for="register-password">Contraseña *</label>
-                    <input type="password" id="register-password" required placeholder="Mínimo 6 caracteres">
-                </div>
-                <div class="form-group">
-                    <label for="register-confirm-password">Confirmar Contraseña *</label>
-                    <input type="password" id="register-confirm-password" required placeholder="Repite tu contraseña">
-                </div>
-                
-                <!-- Consentimientos Legales -->
-                <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #f59e0b;">
-                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
-                        <input type="checkbox" id="consent-age" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
-                        <span style="font-size: 0.9rem; color: #92400e;">
-                            <strong>Declaro que soy mayor de 18 años</strong>
-                        </span>
-                    </label>
-                    
-                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
-                        <input type="checkbox" id="consent-data" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
-                        <span style="font-size: 0.9rem;">
-                            Acepto que mis datos (nombre, teléfono) sean visibles para otros vecinos
-                        </span>
-                    </label>
-                    
-                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="consent-terms" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
-                        <span style="font-size: 0.9rem;">
-                            Acepto los <a href="terminos.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Términos y Condiciones</a> y la <a href="privacidad.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Política de Privacidad</a>
-                        </span>
-                    </label>
-                </div>
-                
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-check"></i> Registrarse
-                </button>
-            </form>
-            
-            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                <i class="fas fa-arrow-left"></i> Volver
+            <div class="form-group">
+                <label for="reg-phone">Número de celular *</label>
+                <input type="tel" id="reg-phone" required placeholder="Ej: 11 2345-6789">
+            </div>
+            <button class="btn-primary" onclick="VV.authCelular.sendCode()" style="width: 100%;">
+                <i class="fas fa-sms"></i> Enviar código de verificación
+            </button>
+        </div>
+        <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();" style="width: 100%; margin-top: 0.5rem;">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    </div>
+</div>
+
+<!-- ========== VERIFICAR CÓDIGO ========== -->
+<div id="verify-code-screen" class="screen">
+    <div class="screen-container" style="max-width: 480px;">
+        <div class="logo-large"><i class="fas fa-shield-alt"></i></div>
+        <h1>Verificá tu celular</h1>
+        <p class="subtitle">Ingresá el código que te enviamos</p>
+        
+        <div class="auth-form">
+            <div class="form-group">
+                <label for="verify-code">Código de 6 dígitos</label>
+                <input type="text" id="verify-code" required placeholder="123456" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;">
+            </div>
+            <button class="btn-primary" onclick="VV.authCelular.verifyAndRegister()" style="width: 100%;">
+                <i class="fas fa-check-circle"></i> Verificar y crear cuenta
+            </button>
+            <button class="btn-secondary" onclick="VV.authCelular.sendCode()" style="width: 100%; margin-top: 0.5rem;">
+                <i class="fas fa-redo"></i> Reenviar código
             </button>
         </div>
     </div>
-
-    <!-- PANTALLA DE LOGIN -->
-    <div id="login-screen" class="screen">
-        <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-sign-in-alt"></i>
-            </div>
-            <h1>Iniciar Sesión</h1>
-            <p class="subtitle">Ingresa con tu cuenta</p>
-            
-            <form id="login-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.login();">
-                <div class="form-group">
-                    <label for="login-email">Email *</label>
-                    <input type="email" id="login-email" required placeholder="tu@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Contraseña *</label>
-                    <input type="password" id="login-password" required placeholder="Tu contraseña">
-                </div>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> Ingresar
-                </button>
-                <div id="login-error" class="error-message" style="display: none;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span id="login-error-text"></span>
-                </div>
-            </form>
-            
-            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                <i class="fas fa-arrow-left"></i> Volver
-            </button>
-        </div>
-    </div>
-
+</div>
     <!-- APLICACIÓN PRINCIPAL -->
     <div id="main-app" class="screen">
         <!-- Header -->
@@ -1076,7 +1119,9 @@
     <script src="js/admin.js"></script>
     <script src="js/banner.js"></script>
     <script src="js/app.js"></script>
-    
+    <script src="js/landing.js"></script>
+    <script src="js/auth-celular.js"></script>
+
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
