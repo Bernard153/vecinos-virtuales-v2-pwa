@@ -177,6 +177,11 @@ selectNeighborhood(neighborhood) {
     if (neighborhoodElement) {
         neighborhoodElement.textContent = neighborhood;
     }
+    // ===== ADMIN: Siempre login tradicional, sin excepciones =====
+    if (neighborhood === 'Administrador') {
+        VV.utils.showScreen('login-screen');
+        return;
+    }
     
     // ===== FLUJO NUEVO: Si viene del registro por celular, ir directo =====
     if (VV.data.pendingRegistration) {
