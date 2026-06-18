@@ -12,6 +12,7 @@
             alert('Debés aceptar los términos para continuar');
             return;
         }
+        VV.data.pendingRegistration = true; // <-- AGREGAR ESTA LÍNEA
         // Ir a geolocalización (reutilizamos geo.js)
         VV.utils.showScreen('location-screen');
         VV.auth.requestGeolocation();
