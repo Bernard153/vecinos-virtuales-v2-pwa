@@ -204,6 +204,32 @@
         </div>
     </div>
 </div>
+	<!-- PANTALLA DE LOGIN -->
+<div id="login-screen" class="screen">
+    <div class="screen-container">
+        <div class="logo-large"><i class="fas fa-sign-in-alt"></i></div>
+        <h1>Iniciar Sesión</h1>
+        <p class="subtitle">Ingresa con tu cuenta</p>
+        
+        <form id="login-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.login();">
+            <div class="form-group">
+                <label for="login-email">Email *</label>
+                <input type="email" id="login-email" required placeholder="tu@email.com">
+            </div>
+            <div class="form-group">
+                <label for="login-password">Contraseña *</label>
+                <input type="password" id="login-password" required placeholder="Tu contraseña">
+            </div>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-sign-in-alt"></i> Ingresar
+            </button>
+        </form>
+        
+        <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    </div>
+</div>
     <!-- APLICACIÓN PRINCIPAL -->
     <div id="main-app" class="screen">
         <!-- Header -->
