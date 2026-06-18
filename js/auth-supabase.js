@@ -172,31 +172,26 @@ VV.auth = {
 selectNeighborhood(neighborhood) {
     VV.data.neighborhood = neighborhood;
     
-    // Actualizar el texto del barrio seleccionado
     const neighborhoodElement = document.getElementById('selected-neighborhood');
     if (neighborhoodElement) {
         neighborhoodElement.textContent = neighborhood;
     }
-    // ===== ADMIN: Siempre login tradicional, sin excepciones =====
+    
+    // ADMIN: Login tradicional siempre
     if (neighborhood === 'Administrador') {
         VV.utils.showScreen('login-screen');
         return;
     }
     
-    // ===== FLUJO NUEVO: Si viene del registro por celular, ir directo =====
+    // FLUJO NUEVO: Registro celular
     if (VV.data.pendingRegistration) {
         delete VV.data.pendingRegistration;
         VV.authCelular.onNeighborhoodSelected(neighborhood);
         return;
     }
     
-    // ===== FLUJO VIEJO (compatibilidad) =====
-    if (neighborhood === 'Administrador') {
-        VV.utils.showScreen('login-screen');
-    } else {
-        // Mostrar opciones: Registrarse o Ya tengo cuenta
-        VV.auth.showAuthOptions();
-    }
+    // FLUJO VIEJO (compatibilidad)
+    VV.auth.showAuthOptions();
 },
    
     // Mostrar opciones de autenticación
