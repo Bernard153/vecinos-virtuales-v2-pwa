@@ -1,23 +1,26 @@
 ﻿// ========== INICIALIZACIÓN DE LA APLICACIÓN ==========
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('🚀 Vecinos Virtuales V2 - Iniciando...');
-    // Al iniciar la app
-async function initApp() {
-    // Ocultar loading
-    document.getElementById('loading-screen')?.classList.remove('active');
+    
+    VV.utils.showScreen('loading-screen');
+    
+    // Pequeña pausa para que se vea el logo
+    await new Promise(r => setTimeout(r, 800));
     
     // Verificar sesión existente
     const hasSession = await VV.auth.checkExistingUser();
     
     if (hasSession) {
-        // Usuario logueado → dashboard
+        // Usuario logueado → dashboard directo
+        console.log('👤 Sesión activa, iniciando app...');
         VV.auth.startApp();
     } else {
         // Usuario nuevo → landing vitrina
+        console.log('👋 Nuevo usuario, mostrando landing...');
         VV.landing.init();
     }
-}
+});
  
     const termsAccepted = JSON.parse(localStorage.getItem('termsAccepted') || 'null');
     
