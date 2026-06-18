@@ -15,43 +15,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Usuario logueado → dashboard directo
         console.log('👤 Sesión activa, iniciando app...');
         VV.auth.startApp();
+        
+        // ACTIVAR MÓDULO FOLLETO
+        if (VV.utils.activarFolleto) {
+            VV.utils.activarFolleto();
+        }
+        
+        // Inicializar geolocalización
+        await VV.geo.init();
+        VV.geo.updateLocationUI();
+        
     } else {
         // Usuario nuevo → landing vitrina
         console.log('👋 Nuevo usuario, mostrando landing...');
         VV.landing.init();
     }
-});
- 
-    const termsAccepted = JSON.parse(localStorage.getItem('termsAccepted') || 'null');
     
-    if (!termsAccepted || !termsAccepted.accepted) {
-        console.log('⚠️ Términos no aceptados. Redirigiendo...');
-        window.location.href = 'terminos.html';
-        return;
-    }
-    
-    VV.utils.showScreen('loading-screen');
-    
-    setTimeout(async () => {
-        const hasSession = await VV.auth.checkExistingUser();
-        if (hasSession) {
-            // LOGIN EXITOSO
-            VV.auth.startApp();
-            
-            // ACTIVAR MÓDULO FOLLETO SOLO AQUÍ
-            if (VV.utils.activarFolleto) {
-                VV.utils.activarFolleto();
-            }
-            
-            await VV.geo.init();
-            VV.geo.updateLocationUI();
-        } else {
-            VV.utils.showScreen('location-screen');
-            VV.auth.requestGeolocation();
-        }
-    }, 1500);
-    
-    // Setup navegación del menú
+    // Setup navegación del menú (siempre, para cuando esté en dashboard)
     document.addEventListener('click', (e) => {
         const menuItem = e.target.closest('.menu-item');
         if (menuItem) {
