@@ -906,20 +906,19 @@ VV.geo = {
 selectNeighborhood(neighborhood) {
     VV.data.neighborhood = neighborhood;
     
-    // Actualizar el texto del barrio seleccionado (si existe)
     const neighborhoodElement = document.getElementById('selected-neighborhood');
     if (neighborhoodElement) {
         neighborhoodElement.textContent = neighborhood;
     }
     
-    // ===== FLUJO NUEVO: Registro con celular =====
+    // FLUJO NUEVO: Si viene del registro por celular, saltar directo
     if (VV.data.pendingRegistration) {
-        delete VV.data.pendingRegistration; // Limpiar bandera
+        delete VV.data.pendingRegistration;
         VV.authCelular.onNeighborhoodSelected(neighborhood);
         return;
     }
     
-    // ===== FLUJO VIEJO: Compatibilidad para usuarios existentes =====
+    // FLUJO VIEJO (compatibilidad para usuarios ya registrados)
     if (neighborhood === 'Administrador') {
         VV.utils.showScreen('login-screen');
     } else {
