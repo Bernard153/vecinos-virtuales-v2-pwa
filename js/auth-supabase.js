@@ -167,26 +167,33 @@ VV.auth = {
             </button>
         `;
     },
+   
+   // Seleccionar barrio
+selectNeighborhood(neighborhood) {
+    VV.data.neighborhood = neighborhood;
     
-    // Seleccionar barrio
-    selectNeighborhood(neighborhood) {
-        VV.data.neighborhood = neighborhood;
-        
-        // Actualizar el texto del barrio seleccionado
-        const neighborhoodElement = document.getElementById('selected-neighborhood');
-        if (neighborhoodElement) {
-            neighborhoodElement.textContent = neighborhood;
-        }
-        
-        // Si es Administrador, mostrar login directamente
-        if (neighborhood === 'Administrador') {
-            VV.utils.showScreen('login-screen');
-        } else {
-            // Mostrar opciones: Registrarse o Ya tengo cuenta
-            VV.auth.showAuthOptions();
-        }
-    },
+    // Actualizar el texto del barrio seleccionado
+    const neighborhoodElement = document.getElementById('selected-neighborhood');
+    if (neighborhoodElement) {
+        neighborhoodElement.textContent = neighborhood;
+    }
     
+    // ===== FLUJO NUEVO: Si viene del registro por celular, ir directo =====
+    if (VV.data.pendingRegistration) {
+        delete VV.data.pendingRegistration;
+        VV.authCelular.onNeighborhoodSelected(neighborhood);
+        return;
+    }
+    
+    // ===== FLUJO VIEJO (compatibilidad) =====
+    if (neighborhood === 'Administrador') {
+        VV.utils.showScreen('login-screen');
+    } else {
+        // Mostrar opciones: Registrarse o Ya tengo cuenta
+        VV.auth.showAuthOptions();
+    }
+},
+   
     // Mostrar opciones de autenticación
     showAuthOptions() {
         const content = document.getElementById('location-content');
