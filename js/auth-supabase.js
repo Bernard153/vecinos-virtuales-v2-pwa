@@ -538,6 +538,20 @@ selectNeighborhood(neighborhood) {
         document.getElementById('welcome-name').textContent = VV.data.user.name;
         document.getElementById('welcome-neighborhood').textContent = `Bienvenido a ${VV.data.neighborhood}`;
         document.getElementById('welcome-number').textContent = VV.data.user.unique_number;
+                // Mostrar banner de invitado si aplica
+        const guestBanner = document.getElementById('guest-banner');
+        if (guestBanner) guestBanner.style.display = 'none';
+        
+        // Mostrar créditos
+        const creditsBar = document.getElementById('user-credits-bar');
+        if (creditsBar) {
+            creditsBar.style.display = 'flex';
+            const folletoEl = document.getElementById('credit-folleto');
+            const featuredEl = document.getElementById('credit-featured');
+            if (folletoEl) folletoEl.textContent = VV.data.user.folleto_credits || 0;
+            if (featuredEl) featuredEl.textContent = VV.data.user.featured_credits || 0;
+        }
+
         
         // Cargar datos desde Supabase
         VV.data.loadFromSupabase();
