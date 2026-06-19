@@ -71,6 +71,20 @@
         }
         
         try {
+            async verifyAndRegister() {
+    const inputCode = document.getElementById('verify-code')?.value.trim();
+    if (!inputCode || inputCode.length !== 6) return alert('Ingresá el código de 6 dígitos');
+    
+    if (this.devCode && inputCode !== this.devCode) {
+        alert('Código incorrecto');
+        return;
+    }
+    
+    // ===== BLOQUEO ADMINISTRADOR =====
+    if (this.tempData.neighborhood === 'Administrador') {
+        alert('El barrio Administrador no está disponible para registro público.');
+        return;
+    }
             // Generar email ficticio (Supabase Auth requiere email)
             const fakeEmail = `u${this.tempData.phone.replace(/\D/g,'')}@vv.app`;
             const fakePassword = crypto.randomUUID();
