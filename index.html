@@ -407,195 +407,135 @@
 
             <!-- Contenido Principal -->
             <main class="main-content">
-                <!-- DASHBOARD -->
-                <section id="dashboard" class="content-section active">
-                    <div class="welcome-banner" id="welcome-banner">
-                        <div class="welcome-content">
-                            <h2>¡Bienvenido, <span id="welcome-name"></span>!</h2>
-                            <div class="user-details">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span id="welcome-neighborhood"></span>
-                                <span class="user-badge">#<span id="welcome-number"></span></span>
-                            </div>
-                            <button class="btn-edit-banner" id="edit-banner-btn" style="display: none;" onclick="VV.admin.editBannerImage()">
-                                <i class="fas fa-image"></i> Cambiar Imagen de Portada
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Visor de Ofertas Destacadas -->
-                    <div id="featured-offers-section" style="margin: 2rem 0;">
-                        <div class="featured-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-star" style="color: var(--warning-orange);"></i>
-                                <span id="featured-title">Ofertas Destacadas</span>
-                            </h3>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button id="admin-announcement-btn" class="btn-primary" onclick="VV.featured.createAnnouncement()" style="font-size: 0.85rem; padding: 0.5rem 1rem; display: none; white-space: nowrap;">
-                                    <i class="fas fa-megaphone"></i> <span class="btn-text">Publicar Anuncio</span>
-                                </button>
-                                <button id="featured-request-btn" class="btn-secondary" onclick="VV.featured.requestFeatured()" style="font-size: 0.85rem; padding: 0.5rem 1rem; white-space: nowrap;">
-                                    <i class="fas fa-bullhorn"></i> <span class="btn-text">Destacar mi Oferta</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="featured-offers-carousel" style="position: relative; overflow: hidden;">
-                            <!-- Carrusel de ofertas destacadas -->
-                        </div>
-                    </div>
-                    <!-- REEMPLAZA TU BLOQUE ANTERIOR POR ESTE (CONTENEDOR DE LA GALERÍA MEJORADO) -->
-                    <div id="galeria-vendedor-seccion" style="display:none; margin: 1.5rem 0; padding: 1.5rem; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); position: relative;">
+              <!-- DASHBOARD NUEVO -->
+<section id="dashboard" class="content-section active">
     
-                        <!-- Botón Cerrar (X) mejorado -->
-                        <button onclick="document.getElementById('galeria-vendedor-seccion').style.display='none'" 
-                                style="position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f1f5f9; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
-                                onmouseover="this.style.background='#fee2e2'; this.style.color='#ef4444';"
-                                onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';">
-                            <i class="fas fa-times"></i>
-                        </button>
+    <!-- HEADER VIVO -->
+    <div class="welcome-banner" id="welcome-banner" style="position: relative; overflow: hidden;">
+        <div class="welcome-content" style="position: relative; z-index: 2;">
+            <h2 style="margin-bottom: 0.25rem;">¡Hola, <span id="welcome-name">Invitado</span>!</h2>
+            <div class="user-details" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                <span id="welcome-neighborhood" style="opacity: 0.9;">Explorá Vecinos Virtuales</span>
+                <span class="user-badge" id="welcome-number" style="background: rgba(255,255,255,0.2); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.85rem;">#---</span>
+            </div>
+            <div id="guest-banner" style="display: none; background: rgba(245,158,11,0.9); color: white; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 600;">
+                <i class="fas fa-eye"></i> Estás en modo invitado. <button onclick="VV.landing.goToRegister()" style="background: white; color: #d97706; border: none; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-left: 0.5rem;">Registrate gratis</button>
+            </div>
+        </div>
+    </div>
 
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3 id="titulo-galeria" style="margin:0; font-size: 1.2rem; color: #1e293b; display: flex; align-items: center; gap: 0.75rem;">
-                                <i class="fas fa-store" style="color: #3b82f6;"></i>
-                                <span>Catálogo del Vecino</span>
-                            </h3>
-                            <p style="margin: 4px 0 0 40px; font-size: 0.85rem; color: #64748b;">Explora todos los productos de este comercio</p>
-                        </div>
+    <!-- CRÉDITOS DEL USUARIO (solo si está logueado) -->
+    <div id="user-credits-bar" style="display: none; margin: 1rem 0; padding: 0.75rem 1rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <span style="font-weight: 600; color: var(--gray-700);"><i class="fas fa-wallet"></i> Tus créditos:</span>
+        <span style="background: #e0f2fe; color: #0369a1; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+            📷 Folleto: <span id="credit-folleto">0</span>
+        </span>
+        <span style="background: #fef3c7; color: #92400e; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+            ⭐ Destacados: <span id="credit-featured">0</span>
+        </span>
+        <button onclick="VV.landing.goToRegister()" style="margin-left: auto; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple)); color: white; border: none; padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-plus"></i> Cargar más
+        </button>
+    </div>
 
-                        <!-- Rejilla de productos donde la función inyectará el contenido -->
-                        <div id="lista-productos-vendedor" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.25rem;">
-                            <!-- Se llena automáticamente por la función verTiendaVecino -->
-                        </div>
-                    </div>
+    <!-- FEED DE ACTIVIDAD RECIENTE -->
+    <div style="margin: 1.5rem 0;">
+        <h3 style="margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem; color: var(--gray-800);">
+            <i class="fas fa-bolt" style="color: var(--warning-orange);"></i>
+            ¿Qué pasó hoy en tu barrio?
+        </h3>
+        <div id="activity-feed" style="background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); min-height: 120px;">
+            <div style="text-align: center; color: var(--gray-500); padding: 2rem 0;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                Cargando actividad reciente...
+            </div>
+        </div>
+    </div>
 
+    <!-- ACCESO RÁPIDO (GRID) -->
+    <div class="main-modules-grid">
+        <button class="module-card" onclick="VV.utils.showSection('shopping')">
+            <div class="module-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h3>Comprar</h3>
+            <p>Ver productos del barrio</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.utils.showSection('marketplace')">
+            <div class="module-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                <i class="fas fa-store"></i>
+            </div>
+            <h3>Vender</h3>
+            <p>Publicá tus productos</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.utils.showSection('cultural')">
+            <div class="module-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                <i class="fas fa-palette"></i>
+            </div>
+            <h3>Cultura y Trueque</h3>
+            <p>Eventos y actividades</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.utils.showSection('improvements')">
+            <div class="module-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                <i class="fas fa-tools"></i>
+            </div>
+            <h3>Mejoras</h3>
+            <p>Propuestas del barrio</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.utils.showSection('map-section'); VV.map.init();">
+            <div class="module-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <h3>Mapa</h3>
+            <p>Comercios y alertas</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.raffle.showActiveRaffles()">
+            <div class="module-icon" style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);">
+                <i class="fas fa-dice"></i>
+            </div>
+            <h3>Sorteos</h3>
+            <p>Ganá premios</p>
+        </button>
+    </div>
 
-                    <!-- Estado de Geolocalización -->
-                    <div id="geo-status" style="margin: 1.5rem 0;">
-                        <!-- Se llenará dinámicamente -->
-                    </div>
+    <!-- FOLLETO VECINAL PREVIEW -->
+    <div style="margin: 2rem 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-images" style="color: var(--primary-blue);"></i>
+                Folleto Vecinal
+            </h3>
+            <button class="btn-secondary" onclick="VV.utils.showSection('folleto')" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                Ver todo
+            </button>
+        </div>
+        <div id="dashboard-folleto-preview" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center;">
+            <p style="color: var(--gray-500); margin: 0;">
+                <i class="fas fa-images" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
+                Acá aparecerán las imágenes del folleto vecinal.
+            </p>
+        </div>
+    </div>
 
-                    <div class="main-modules-grid">
-                        <button class="module-card" onclick="VV.utils.showSection('marketplace')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-                                <i class="fas fa-store"></i>
-                            </div>
-                            <h3>Voy a Vender</h3>
-                            <p>Publica tus productos</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('shopping')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                            <h3>Voy a Comprar</h3>
-                            <p>Encuentra lo que necesitas</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('improvements')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                                <i class="fas fa-tools"></i>
-                            </div>
-                            <h3>Mejoras</h3>
-                            <p>Propón ideas para el barrio</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('cultural')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-                                <i class="fas fa-palette"></i>
-                            </div>
-                            <h3>Cultura, Deportes y Trueque</h3>
-                            <p>Arte, deportes, eventos y trueques</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('services')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <h3>Servicios</h3>
-                            <p>Ofrece o busca servicios</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.raffle.showActiveRaffles()" style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: white;">
-                            <div class="module-icon" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-dice"></i>
-                            </div>
-                            <h3>Sorteos</h3>
-                            <p>Participa y gana premios</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('map-section'); VV.map.init();" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white;">
-                            <div class="module-icon" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-map-marked-alt"></i>
-                            </div>
-                            <h3>Mapa del Barrio</h3>
-                            <p>Vendedores, alertas y más</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="requestSponsorStatus()" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white;">
-                            <div class="module-icon" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-bullhorn"></i>
-                            </div>
-                            <h3>Ser Anunciante</h3>
-                            <p>Promociona tu negocio</p>
-                        </button>
-                    </div>
-
-                    <!-- Banner de Anunciantes para Desktop -->
-                    <div style="margin: 2rem 0;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-bullhorn" style="color: var(--warning-orange);"></i>
-                                Anunciantes del Barrio
-                            </h3>
-                            <button class="btn-secondary" onclick="VV.banner.showAllSponsors()" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
-                                <i class="fas fa-th"></i> Ver Todos
-                            </button>
-                        </div>
-                        <div id="desktop-sponsors-banner" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
-                            <!-- Banners de anunciantes -->
-                        </div>
-                    </div>
-
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon blue">
-                                <i class="fas fa-shopping-bag"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>Productos</h3>
-                                <p class="stat-number">15</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon green">
-                                <i class="fas fa-tools"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>Mejoras</h3>
-                                <p class="stat-number">8</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon purple">
-                                <i class="fas fa-palette"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>Arte</h3>
-                                <p class="stat-number">12</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon orange">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>Vecinos</h3>
-                                <p class="stat-number">247</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
+    <!-- ANUNCIANTES -->
+    <div style="margin: 2rem 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-bullhorn" style="color: var(--warning-orange);"></i>
+                Anunciantes del Barrio
+            </h3>
+        </div>
+        <div id="desktop-sponsors-banner" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+            <!-- Se llena automáticamente -->
+        </div>
+    </div>
+</section>
+  
                 <!-- MARKETPLACE (MIS PRODUCTOS) -->
                 <section id="marketplace" class="content-section">
                     <div class="section-header">
