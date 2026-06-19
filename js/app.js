@@ -9,6 +9,17 @@ document.addEventListener('DOMContentLoaded', async function() {
         return;
     }
     
+    // ===== MODO INVITADO GUARDADO =====
+    if (localStorage.getItem('vv_guest_mode') === 'true') {
+        VV.data.isGuest = true;
+        VV.data.neighborhood = 'Mi Barrio';
+        VV.utils.showScreen('main-app');
+        VV.utils.showSection('dashboard');
+        VV.guest.init();
+        setupNavigation();
+        return;
+    }
+    
     VV.utils.showScreen('loading-screen');
     await new Promise(r => setTimeout(r, 800));
     
@@ -25,7 +36,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         VV.landing.init();
     }
     
-    // Setup navegación del menú
+    setupNavigation();
+});
+
+function setupNavigation() {
     document.addEventListener('click', (e) => {
         const menuItem = e.target.closest('.menu-item');
         if (menuItem) {
@@ -36,6 +50,57 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
     });
-});
+}
+
+// ========== MÓDULO INVITADO ==========
+VV.guest = {
+    init() {
+        console.log('👀 Modo invitado activado');
+        
+        // Header genérico
+        const headerNeighborhood = document.getElementById('header-neighborhood');
+        const headerUserNumber = document.getElementById('header-user-number');
+        if (headerNeighborhood) headerNeighborhood.textContent = 'Modo Invitado';
+        if (headerUserNumber) headerUserNumber.textContent = '---';
+        
+        // Banner de invitado
+        const welcomeName = document.getElementById('welcome-name');
+        const welcomeNeighborhood = document.getElementById('welcome-neighborhood');
+        const welcomeNumber = document.getElementById('welcome-number');
+        if (welcomeName) welcomeName.textContent = 'Invitado';
+        if (welcomeNeighborhood) welcomeNeighborhood.textContent = 'Explorá Vecinos Virtuales';
+        if (welcomeNumber) welcomeNumber.textContent = '---';
+        
+        // Ocultar botones que no puede usar
+        this.restrictActions();
+        
+        // Cargar contenido público
+        this.loadPublicContent();
+    },
+    
+    restrictActions() {
+        // Agregar clase a botones que requieren auth
+        document.querySelectorAll('.module-card, .btn-primary').forEach(btn => {
+            const onclick = btn.getAttribute('onclick') || '';
+            if (onclick.includes('showForm') || onclick.includes('create') || onclick.includes('publish')) {
+                btn.setAttribute('data-requires-auth', 'true');
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (confirm('🔒 Esta acción requiere una cuenta gratuita.\n\n¿Querés registrarte ahora?')) {
+                        VV.landing.goToRegister();
+                    }
+                };
+            }
+        });
+    },
+    
+    async loadPublicContent() {
+        // Cargar productos públicos
+        if (typeof VV.marketplace !== 'undefined') {
+            VV.marketplace.loadShopping();
+        }
+    }
+};
 
 console.log('✅ Módulo APP cargado correctamente');
