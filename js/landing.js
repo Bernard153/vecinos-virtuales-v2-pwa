@@ -98,6 +98,14 @@ VV.landing = {
         } else {
             console.error('Módulo auth-celular no cargado');
         }
+    },
+        enterAsGuest() {
+        VV.data.isGuest = true;
+        VV.data.neighborhood = 'Mi Barrio';
+        localStorage.setItem('vv_guest_mode', 'true');
+        VV.utils.showScreen('main-app');
+        VV.utils.showSection('dashboard');
+        VV.guest.init();
     }
 };
 
