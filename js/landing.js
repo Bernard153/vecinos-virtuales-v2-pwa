@@ -5,8 +5,17 @@
         VV.utils.showScreen('landing-screen');
         await this.loadFeeds();
         this.startAutoScroll();
+        // Dentro de VV.landing.init(), donde armás los botones inferiores, agregá:
+        const footerButtons = document.querySelector('.landing-container > div:last-child');
+        if (footerButtons) {
+            const loginBtn = document.createElement('button');
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Ya tengo cuenta';
+            loginBtn.style.cssText = 'width: 100%; padding: 1rem; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-weight: 600; font-size: 1rem; cursor: pointer; backdrop-filter: blur(10px); margin-bottom: 0.75rem;';
+            loginBtn.onclick = () => VV.authCelular.showLogin();
+            footerButtons.insertBefore(loginBtn, footerButtons.firstChild);
+        }
     },
-    
+   
     async loadFeeds() {
         const categories = [
             { id: 'cultura', icon: 'fa-palette', defaultTitle: 'Cultura y Eventos' },
