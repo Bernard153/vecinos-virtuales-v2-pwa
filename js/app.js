@@ -24,7 +24,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         const creditsBar = document.getElementById('user-credits-bar');
         if (creditsBar) creditsBar.style.display = 'none';
         setupNavigation();
-        return;
+                // Cargar feed público
+        if (typeof VV.dashboard !== 'undefined') {
+            VV.dashboard.loadActivityFeed();
+        }
+        return;  
     }
     
     VV.utils.showScreen('loading-screen');
