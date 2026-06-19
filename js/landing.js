@@ -91,15 +91,11 @@ VV.landing = {
     goToRegister() {
         VV.utils.showScreen('terms-screen');
     },
-    
     goToLogin() {
-        if (typeof VV.authCelular !== 'undefined' && VV.authCelular.showLogin) {
-            VV.authCelular.showLogin();
-        } else {
-            console.error('Módulo auth-celular no cargado');
-        }
+        VV.authCelular.showLogin();
     },
-        enterAsGuest() {
+
+     enterAsGuest() {
         VV.data.isGuest = true;
         VV.data.neighborhood = 'Mi Barrio';
         localStorage.setItem('vv_guest_mode', 'true');
