@@ -575,7 +575,10 @@ selectNeighborhood(neighborhood) {
         // Mostrar app
         VV.utils.showScreen('main-app');
         VV.utils.showSection('dashboard', false); // false = no agregar al historial (es la primera vez)
-        
+                // Cargar feed de actividad
+        if (typeof VV.dashboard !== 'undefined') {
+            VV.dashboard.loadActivityFeed();
+        }
         // Inicializar navegación con historial
         VV.utils.initNavigation();
         
