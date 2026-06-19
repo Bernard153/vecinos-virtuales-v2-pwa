@@ -230,6 +230,52 @@
         </button>
     </div>
 </div>
+	<!-- ========== LOGIN CON CELULAR ========== -->
+<div id="login-phone-screen" class="screen">
+    <div class="screen-container" style="max-width: 480px;">
+        <div class="logo-large"><i class="fas fa-mobile-alt"></i></div>
+        <h1>¡Hola de nuevo!</h1>
+        <p class="subtitle">Ingresá con tu celular</p>
+        
+        <div class="auth-form">
+            <div class="form-group">
+                <label for="login-phone">Número de celular *</label>
+                <input type="tel" id="login-phone" required placeholder="Ej: 11 2345-6789">
+            </div>
+            <button class="btn-primary" onclick="VV.authCelular.sendLoginCode()" style="width: 100%;">
+                <i class="fas fa-sms"></i> Enviar código
+            </button>
+        </div>
+        <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem;">
+            <span style="color: var(--gray-600);">¿No tenés cuenta? </span>
+            <button class="btn-text" onclick="VV.landing.goToRegister()" style="background: none; border: none; color: var(--primary-blue); font-weight: 600; cursor: pointer;">
+                Registrate
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========== VERIFICAR LOGIN ========== -->
+<div id="verify-login-code-screen" class="screen">
+    <div class="screen-container" style="max-width: 480px;">
+        <div class="logo-large"><i class="fas fa-shield-alt"></i></div>
+        <h1>Código de acceso</h1>
+        <p class="subtitle">Ingresá el código que recibiste</p>
+        
+        <div class="auth-form">
+            <div class="form-group">
+                <label for="verify-login-code">Código de 6 dígitos</label>
+                <input type="text" id="verify-login-code" required placeholder="123456" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;">
+            </div>
+            <button class="btn-primary" onclick="VV.authCelular.verifyLoginCode()" style="width: 100%;">
+                <i class="fas fa-check-circle"></i> Ingresar
+            </button>
+            <button class="btn-secondary" onclick="VV.authCelular.sendLoginCode()" style="width: 100%; margin-top: 0.5rem;">
+                <i class="fas fa-redo"></i> Reenviar código
+            </button>
+        </div>
+    </div>
+</div>
     <!-- APLICACIÓN PRINCIPAL -->
     <div id="main-app" class="screen">
         <!-- Header -->
