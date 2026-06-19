@@ -16,6 +16,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         VV.utils.showScreen('main-app');
         VV.utils.showSection('dashboard');
         VV.guest.init();
+                // Mostrar banner de invitado
+        const guestBanner = document.getElementById('guest-banner');
+        if (guestBanner) guestBanner.style.display = 'block';
+        
+        // Ocultar créditos
+        const creditsBar = document.getElementById('user-credits-bar');
+        if (creditsBar) creditsBar.style.display = 'none';
         setupNavigation();
         return;
     }
