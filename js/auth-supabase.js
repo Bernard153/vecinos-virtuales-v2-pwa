@@ -9,6 +9,21 @@ VV.auth = {
     // Verificar sesión existente en Supabase
     async checkExistingUser() {
         try {
+            // ===== LOGIN POR CELULAR =====
+        const phoneAuthId = localStorage.getItem('vv_phone_auth');
+        if (phoneAuthId) {
+            const { data: userData, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', phoneAuthId)
+                .single();
+            
+            if (!error && userData) {
+                VV.data.user = userData;
+                VV.data.neighborhood = userData.neighborhood;
+                return true;
+            }
+        }
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session) {
@@ -426,6 +441,7 @@ selectNeighborhood(neighborhood) {
     // Cerrar sesión
     async logout() {
         if (confirm('¿Cerrar sesión?')) {
+            localStorage.removeItem('vv_phone_auth'); // <-- AGREGAR ESTA LÍNEA
             try {
                 await supabase.auth.signOut();
                 VV.data.user = null;
