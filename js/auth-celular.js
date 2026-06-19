@@ -102,7 +102,9 @@
                     role: 'user',
                     avatar: 'basic-1',
                     unlocked_avatars: [],
-                    featured_credits: 0,
+                    folleto_credits: 3,
+                    featured_credits: 1,
+
                     blocked: false
                 })
                 .select()
