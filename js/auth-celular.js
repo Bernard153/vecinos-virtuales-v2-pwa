@@ -123,6 +123,89 @@
             alert('Error al crear la cuenta: ' + error.message);
         }
     },
+     showLogin() {
+    VV.utils.showScreen('login-phone-screen');
+    document.getElementById('login-phone')?.focus();
+},
+
+async sendLoginCode() {
+    const phone = document.getElementById('login-phone')?.value.trim();
+    
+    if (!phone || phone.length < 8) return alert('Ingresá un número de celular válido');
+    
+    // Verificar que el usuario exista
+    const { data: user, error } = await supabase
+        .from('users')
+        .select('id, name, phone')
+        .eq('phone', phone)
+        .maybeSingle();
+        
+    if (!user) {
+        alert('No encontramos una cuenta con ese número. ¿Querés registrarte?');
+        return;
+    }
+    
+    // Generar código
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Guardar en tabla temporal
+    await supabase.from('phone_login_codes').upsert({
+        phone: phone,
+        code: code,
+        expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+    });
+    
+    console.log('🔑 CÓDIGO LOGIN:', code);
+    alert('Modo dev — Tu código es: ' + code);
+    
+    VV.utils.showScreen('verify-login-code-screen');
+    setTimeout(() => document.getElementById('verify-login-code')?.focus(), 100);
+},
+
+async verifyLoginCode() {
+    const phone = document.getElementById('login-phone')?.value.trim();
+    const inputCode = document.getElementById('verify-login-code')?.value.trim();
+    
+    if (!inputCode || inputCode.length !== 6) return alert('Ingresá el código de 6 dígitos');
+    
+    // Validar código
+    const { data: codeRow } = await supabase
+        .from('phone_login_codes')
+        .select('*')
+        .eq('phone', phone)
+        .eq('code', inputCode)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+        
+    if (!codeRow) {
+        alert('Código incorrecto o vencido. Solicitá uno nuevo.');
+        return;
+    }
+    
+    // Obtener datos del usuario
+    const { data: userData } = await supabase
+        .from('users')
+        .select('*')
+        .eq('phone', phone)
+        .single();
+        
+    if (!userData) {
+        alert('Error al recuperar la cuenta');
+        return;
+    }
+    
+    // Limpiar código usado
+    await supabase.from('phone_login_codes').delete().eq('phone', phone);
+    
+    // Crear sesión local
+    localStorage.setItem('vv_phone_auth', userData.id);
+    VV.data.user = userData;
+    VV.data.neighborhood = userData.neighborhood;
+    
+    VV.utils.showSuccess(`¡Bienvenido de nuevo, ${userData.name}!`);
+    setTimeout(() => VV.auth.startApp(), 1000);
+}
+
     
     // Login rápido para usuarios con celular (futuro)
     async loginWithPhone() {
