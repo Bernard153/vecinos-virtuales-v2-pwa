@@ -518,6 +518,23 @@ selectNeighborhood(neighborhood) {
         // Cargar datos del usuario
         document.getElementById('header-neighborhood').textContent = VV.data.neighborhood;
         document.getElementById('header-user-number').textContent = VV.data.user.unique_number;
+                // Mostrar créditos si existen
+        const headerInfo = document.querySelector('.header-info');
+        if (headerInfo && VV.data.user.folleto_credits !== undefined) {
+            const creditsDiv = document.createElement('div');
+            creditsDiv.id = 'header-credits';
+            creditsDiv.style.cssText = 'display: flex; gap: 0.5rem; margin-top: 0.25rem; font-size: 0.75rem;';
+            creditsDiv.innerHTML = `
+                <span style="background: rgba(255,255,255,0.2); padding: 0.15rem 0.5rem; border-radius: 10px;">
+                    📷 Folleto: ${VV.data.user.folleto_credits}
+                </span>
+                <span style="background: rgba(255,255,255,0.2); padding: 0.15rem 0.5rem; border-radius: 10px;">
+                    ⭐ Destacados: ${VV.data.user.featured_credits}
+                </span>
+            `;
+            headerInfo.appendChild(creditsDiv);
+        }
+
         document.getElementById('welcome-name').textContent = VV.data.user.name;
         document.getElementById('welcome-neighborhood').textContent = `Bienvenido a ${VV.data.neighborhood}`;
         document.getElementById('welcome-number').textContent = VV.data.user.unique_number;
