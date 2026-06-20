@@ -27,23 +27,19 @@
         const pin = document.getElementById('reg-pin')?.value.trim();
         const pinConfirm = document.getElementById('reg-pin-confirm')?.value.trim();
         
-        // Normalizar celular
         phone = phone.replace(/\D/g, '');
         
-        // Validaciones
         if (!name || name.length < 2) return alert('Ingresá un nombre válido');
         if (!phone || phone.length < 8) return alert('Ingresá un número de celular válido');
         if (!pin || pin.length < 4) return alert('La clave debe tener al menos 4 dígitos');
         if (pin !== pinConfirm) return alert('Las claves no coinciden');
         
-        // Bloquear Admin
         if (VV.data.neighborhood === 'Administrador') {
             alert('El barrio Administrador no está disponible para registro público.');
             return;
         }
         
         try {
-            // Verificar celular duplicado
             const { data: existing } = await supabase
                 .from('users')
                 .select('id')
@@ -55,10 +51,8 @@
                 return;
             }
             
-            // Crear email falso único
             const fakeEmail = `u${phone}@vv.app`;
             
-            // 1. Crear usuario en Supabase Auth con el PIN como contraseña
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: fakeEmail,
                 password: pin
@@ -66,10 +60,8 @@
             
             if (authError) throw authError;
             
-            // 2. Generar número único
             const uniqueNumber = await VV.auth.generateUniqueNumber(VV.data.neighborhood);
             
-            // 3. Insertar en tabla users
             const { data: userData, error: userError } = await supabase
                 .from('users')
                 .insert({
@@ -91,7 +83,6 @@
             
             if (userError) throw userError;
             
-            // 4. Iniciar sesión local
             VV.data.user = userData;
             VV.data.neighborhood = userData.neighborhood;
             
@@ -103,56 +94,52 @@
             alert('Error al crear la cuenta: ' + error.message);
         }
     },
+    
     async loginWithPin() {
-    let phone = document.getElementById('login-phone')?.value.trim();
-    const pin = document.getElementById('login-pin')?.value.trim();
-    
-    phone = phone.replace(/\D/g, '');
-    
-    if (!phone || !pin) return alert('Completá todos los campos');
-    
-    // Construir el email falso que se usó en el registro
-    const fakeEmail = `u${phone}@vv.app`;
-    
-    console.log('🔍 Intentando login con:', fakeEmail);
-    
-    try {
-        // Login directo con Supabase Auth
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-            email: fakeEmail,
-            password: pin
-        });
+        let phone = document.getElementById('login-phone')?.value.trim();
+        const pin = document.getElementById('login-pin')?.value.trim();
         
-        if (authError) {
-            console.error('Error auth:', authError);
-            alert('Celular o clave incorrectos.');
-            return;
+        phone = phone.replace(/\D/g, '');
+        
+        if (!phone || !pin) return alert('Completá todos los campos');
+        
+        const fakeEmail = `u${phone}@vv.app`;
+        
+        console.log('🔍 Intentando login con:', fakeEmail);
+        
+        try {
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+                email: fakeEmail,
+                password: pin
+            });
+            
+            if (authError) {
+                console.error('Error auth:', authError);
+                alert('Celular o clave incorrectos.');
+                return;
+            }
+            
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', authData.user.id)
+                .single();
+            
+            if (userError || !userData) {
+                alert('Error al cargar tu cuenta. Contactá al administrador.');
+                return;
+            }
+            
+            VV.data.user = userData;
+            VV.data.neighborhood = userData.neighborhood;
+            
+            VV.utils.showSuccess(`¡Bienvenido de nuevo, ${userData.name}!`);
+            setTimeout(() => VV.auth.startApp(), 1000);
+            
+        } catch (error) {
+            console.error('Error en login:', error);
+            alert('Error al ingresar: ' + error.message);
         }
-        
-        // Ahora que estamos autenticados, buscar datos del usuario
-        const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', authData.user.id)
-            .single();
-        
-        if (userError || !userData) {
-            alert('Error al cargar tu cuenta. Contactá al administrador.');
-            return;
-        }
-        
-        VV.data.user = userData;
-        VV.data.neighborhood = userData.neighborhood;
-        
-        VV.utils.showSuccess(`¡Bienvenido de nuevo, ${userData.name}!`);
-        setTimeout(() => VV.auth.startApp(), 1000);
-        
-    } catch (error) {
-        console.error('Error en login:', error);
-        alert('Error al ingresar: ' + error.message);
-    }
-}
-   
     },
     
     showLogin() {
