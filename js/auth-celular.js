@@ -84,7 +84,6 @@
                     role: 'user',
                     avatar: 'basic-1',
                     unlocked_avatars: [],
-                    featured_credits: 0,
                     blocked: false
                 })
                 .select()
