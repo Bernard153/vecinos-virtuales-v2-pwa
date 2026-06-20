@@ -195,27 +195,6 @@
         </button>
     </div>
 </div>
-<!-- ========== VERIFICAR CÓDIGO ========== -->
-<div id="verify-code-screen" class="screen">
-    <div class="screen-container" style="max-width: 480px;">
-        <div class="logo-large"><i class="fas fa-shield-alt"></i></div>
-        <h1>Verificá tu celular</h1>
-        <p class="subtitle">Ingresá el código que te enviamos</p>
-        
-        <div class="auth-form">
-            <div class="form-group">
-                <label for="verify-code">Código de 6 dígitos</label>
-                <input type="text" id="verify-code" required placeholder="123456" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;">
-            </div>
-            <button class="btn-primary" onclick="VV.authCelular.verifyAndRegister()" style="width: 100%;">
-                <i class="fas fa-check-circle"></i> Verificar y crear cuenta
-            </button>
-            <button class="btn-secondary" onclick="VV.authCelular.sendCode()" style="width: 100%; margin-top: 0.5rem;">
-                <i class="fas fa-redo"></i> Reenviar código
-            </button>
-        </div>
-    </div>
-</div>
 	<!-- PANTALLA DE LOGIN -->
 <div id="login-screen" class="screen">
     <div class="screen-container">
@@ -262,28 +241,6 @@
             <span style="color: var(--gray-600);">¿No tenés cuenta? </span>
             <button class="btn-text" onclick="VV.landing.goToRegister()" style="background: none; border: none; color: var(--primary-blue); font-weight: 600; cursor: pointer;">
                 Registrate
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ========== VERIFICAR LOGIN ========== -->
-<div id="verify-login-code-screen" class="screen">
-    <div class="screen-container" style="max-width: 480px;">
-        <div class="logo-large"><i class="fas fa-shield-alt"></i></div>
-        <h1>Código de acceso</h1>
-        <p class="subtitle">Ingresá el código que recibiste</p>
-        
-        <div class="auth-form">
-            <div class="form-group">
-                <label for="verify-login-code">Código de 6 dígitos</label>
-                <input type="text" id="verify-login-code" required placeholder="123456" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;">
-            </div>
-            <button class="btn-primary" onclick="VV.authCelular.verifyLoginCode()" style="width: 100%;">
-                <i class="fas fa-check-circle"></i> Ingresar
-            </button>
-            <button class="btn-secondary" onclick="VV.authCelular.sendLoginCode()" style="width: 100%; margin-top: 0.5rem;">
-                <i class="fas fa-redo"></i> Reenviar código
             </button>
         </div>
     </div>
