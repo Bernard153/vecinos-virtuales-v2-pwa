@@ -110,7 +110,9 @@
         const pin = document.getElementById('login-pin')?.value.trim();
         
         phone = phone.replace(/\D/g, '');
-        
+         // ===== AGREGAR ESTO =====
+        console.log('🔍 Buscando celular limpio:', phone);
+         // ========================
         if (!phone || !pin) return alert('Completá todos los campos');
         
         try {
@@ -120,7 +122,9 @@
                 .select('email, phone')
                 .eq('phone', phone)
                 .maybeSingle();
-            
+                 // ===== AGREGAR ESTO =====
+            console.log('👤 Resultado de búsqueda:', userRow);
+                // ========================
             if (!userRow) {
                 alert('No encontramos una cuenta con ese número.');
                 return;
