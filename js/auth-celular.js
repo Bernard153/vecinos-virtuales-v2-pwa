@@ -103,60 +103,56 @@
             alert('Error al crear la cuenta: ' + error.message);
         }
     },
-    
     async loginWithPin() {
-        let phone = document.getElementById('login-phone')?.value.trim();
-        const pin = document.getElementById('login-pin')?.value.trim();
+    let phone = document.getElementById('login-phone')?.value.trim();
+    const pin = document.getElementById('login-pin')?.value.trim();
+    
+    phone = phone.replace(/\D/g, '');
+    
+    if (!phone || !pin) return alert('Completá todos los campos');
+    
+    // Construir el email falso que se usó en el registro
+    const fakeEmail = `u${phone}@vv.app`;
+    
+    console.log('🔍 Intentando login con:', fakeEmail);
+    
+    try {
+        // Login directo con Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email: fakeEmail,
+            password: pin
+        });
         
-        phone = phone.replace(/\D/g, '');
-         // ===== AGREGAR ESTO =====
-        console.log('🔍 Buscando celular limpio:', phone);
-         // ========================
-        if (!phone || !pin) return alert('Completá todos los campos');
-        
-        try {
-            // Buscar email falso asociado a este celular
-            const { data: userRow, error: findError } = await supabase
-                .from('users')
-                .select('email, phone')
-                .eq('phone', phone)
-                .maybeSingle();
-                 // ===== AGREGAR ESTO =====
-            console.log('👤 Resultado de búsqueda:', userRow);
-                // ========================
-            if (!userRow) {
-                alert('No encontramos una cuenta con ese número.');
-                return;
-            }
-            
-            // Login con Supabase Auth usando el email falso + PIN
-            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-                email: userRow.email,
-                password: pin
-            });
-            
-            if (authError) {
-                alert('Celular o clave incorrectos.');
-                return;
-            }
-            
-            // Obtener datos completos del usuario
-            const { data: userData } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', authData.user.id)
-                .single();
-            
-            VV.data.user = userData;
-            VV.data.neighborhood = userData.neighborhood;
-            
-            VV.utils.showSuccess(`¡Bienvenido de nuevo, ${userData.name}!`);
-            setTimeout(() => VV.auth.startApp(), 1000);
-            
-        } catch (error) {
-            console.error('Error en login:', error);
-            alert('Error al ingresar: ' + error.message);
+        if (authError) {
+            console.error('Error auth:', authError);
+            alert('Celular o clave incorrectos.');
+            return;
         }
+        
+        // Ahora que estamos autenticados, buscar datos del usuario
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', authData.user.id)
+            .single();
+        
+        if (userError || !userData) {
+            alert('Error al cargar tu cuenta. Contactá al administrador.');
+            return;
+        }
+        
+        VV.data.user = userData;
+        VV.data.neighborhood = userData.neighborhood;
+        
+        VV.utils.showSuccess(`¡Bienvenido de nuevo, ${userData.name}!`);
+        setTimeout(() => VV.auth.startApp(), 1000);
+        
+    } catch (error) {
+        console.error('Error en login:', error);
+        alert('Error al ingresar: ' + error.message);
+    }
+}
+   
     },
     
     showLogin() {
