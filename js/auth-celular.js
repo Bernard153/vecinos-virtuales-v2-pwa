@@ -13,8 +13,20 @@
         VV.data.pendingRegistration = true;
         VV.utils.showScreen('location-screen');
         VV.auth.requestGeolocation();
+                // Normalizar barrio antes de guardar
+        VV.data.neighborhood = VV.geo.formatNeighborhoodName(VV.data.neighborhood);
+
     },
-    
+     formatNeighborhoodName(name) {
+    if (!name) return '';
+    return name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // quita tildes
+        .replace(/[^a-zA-Z0-9\s]/g, '')  // quita caracteres raros
+        .toUpperCase()
+        .trim();
+    },
+   
     onNeighborhoodSelected(neighborhood) {
         const el = document.getElementById('reg-selected-neighborhood');
         if (el) el.textContent = neighborhood;
