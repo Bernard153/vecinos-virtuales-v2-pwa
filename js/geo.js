@@ -228,19 +228,15 @@ VV.geo = {
     
     // Formatear nombre de barrio (normalizado sin tildes)
     formatNeighborhoodName(name) {
-        // Normalizar: quitar tildes, capitalizar
-        const normalized = name
-            .normalize('NFD') // Descomponer caracteres con tildes
-            .replace(/[\u0300-\u036f]/g, '') // Eliminar marcas diacríticas (tildes)
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ')
-            .trim();
-        
-        console.log(`📝 Normalizando barrio: "${name}" → "${normalized}"`);
-        return normalized;
-    },
-    
+    if (!name) return '';
+    return name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // quita tildes
+        .replace(/[^a-zA-Z0-9\s]/g, '')  // quita caracteres raros
+        .toUpperCase()
+        .trim();
+},
+   
     // Verificar si un punto está dentro de un polígono (Ray Casting Algorithm)
     isPointInPolygon(lat, lng, polygon) {
         let inside = false;
