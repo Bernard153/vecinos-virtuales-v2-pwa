@@ -56,9 +56,33 @@ function setupNavigation() {
         if (menuItem) {
             e.preventDefault();
             const section = menuItem.dataset.section;
-            if (section) {
-                VV.utils.showSection(section);
-            }
+            if (!section) return;
+            
+            VV.utils.showSection(section);
+            
+            // ===== CARGAR DATOS SEGÚN SECCIÓN =====
+            setTimeout(() => {
+                switch(section) {
+                    case 'users-management':
+                        if (VV.admin?.loadAllUsers) VV.admin.loadAllUsers();
+                        break;
+                    case 'admin-products':
+                        if (VV.admin?.loadAllProducts) VV.admin.loadAllProducts();
+                        break;
+                    case 'admin-improvements':
+                        if (VV.admin?.loadAllImprovements) VV.admin.loadAllImprovements();
+                        break;
+                    case 'admin-neighborhoods':
+                        if (VV.admin?.loadAllNeighborhoods) VV.admin.loadAllNeighborhoods();
+                        break;
+                    case 'admin':
+                        if (VV.admin?.loadSponsors) VV.admin.loadSponsors();
+                        break;
+                    case 'dashboard':
+                        if (VV.dashboard?.loadActivityFeed) VV.dashboard.loadActivityFeed();
+                        break;
+                }
+            }, 100);
         }
     });
 }
@@ -124,7 +148,7 @@ VV.dashboard = {
         try {
             // Traer últimas cosas de todas las tablas relevantes
             const [products, improvements, cultural, alerts] = await Promise.all([
-                supabase.from('products').select('id, name, price, created_at, seller_name').eq('neighborhood', neighborhood).order('created_at', { ascending: false }).limit(3),
+                supabase.from('products').select('id, name, price, created_at, user_id').eq('neighborhood', neighborhood).order('created_at', { ascending: false }).limit(3),
                 supabase.from('improvements').select('id, title, status, created_at').eq('neighborhood', neighborhood).order('created_at', { ascending: false }).limit(3),
                 supabase.from('cultural_posts').select('id, title, type, created_at').eq('neighborhood', neighborhood).order('created_at', { ascending: false }).limit(3),
                 supabase.from('community_alerts').select('id, type, description, created_at').eq('neighborhood', neighborhood).order('created_at', { ascending: false }).limit(2)
