@@ -829,6 +829,42 @@
                             </div>
                         </div>
                     </div>
+					<!-- NUEVA PESTAÑA: CONTENIDO LANDING -->
+<div class="admin-tabs" style="margin-top: 2rem;">
+    <button class="tab-btn" onclick="VV.admin.showTab('landing-content')">
+        <i class="fas fa-images"></i> Contenido Landing
+    </button>
+</div>
+
+<div id="admin-landing-content" class="admin-tab-content" style="display:none;">
+    <h3><i class="fas fa-upload"></i> Subir contenido al Feed Principal</h3>
+    <p style="color: var(--gray-600); margin-bottom: 1rem;">Estas imágenes aparecen en la landing page para usuarios no registrados.</p>
+    
+    <form onsubmit="event.preventDefault(); VV.admin.uploadLandingContent();" style="background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+        <div class="form-group">
+            <label>Categoría</label>
+            <select id="landing-cat" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300);">
+                <option value="cultura">🎨 Cultura y Eventos</option>
+                <option value="mejoras">🔧 Mejoras</option>
+                <option value="comercios">🛒 Comercios</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Título (opcional)</label>
+            <input type="text" id="landing-title" placeholder="Ej: Feria de artesanos" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300);">
+        </div>
+        <div class="form-group">
+            <label>Imagen</label>
+            <input type="file" id="landing-file" accept="image/*,video/*" required style="width: 100%; padding: 0.5rem;">
+        </div>
+        <button type="submit" class="btn-primary">
+            <i class="fas fa-upload"></i> Publicar en Landing
+        </button>
+    </form>
+    
+    <h4>Contenido actual</h4>
+    <div id="landing-content-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;"></div>
+</div>
 
                 </section>
 
