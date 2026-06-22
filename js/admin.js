@@ -2190,6 +2190,38 @@ async function gestionarSolicitud(id, aprobar) {
         console.error('Error cargando usuarios:', err);
         container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
     }
+        VV.admin.uploadLandingContent = async function() {
+    const cat = document.getElementById('landing-cat').value;
+    const title = document.getElementById('landing-title').value.trim();
+    const fileInput = document.getElementById('landing-file');
+    
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Seleccioná una imagen');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `landing-${Date.now()}.${fileExt}`;
+    
+    try {
+        // Subir a Supabase Storage (necesitás un bucket "landing")
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('landing')
+            .upload(fileName, file);
+            
+        if (uploadError) throw uploadError;
+        
+        // Obtener URL pública
+        const { data: { publicUrl } } = supabase.storage
+            .from('landing')
+            .getPublicUrl(fileName);
+            
+        // Guardar en tabla
+        const { error: dbError } = await supabase
+            .from('landing_content')
+            .insert({
+                category: cat
 
 };
 
