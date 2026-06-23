@@ -2127,103 +2127,47 @@ async function cargarSolicitudesPendientes() {
 }
 
 // 2. Función para Aprobar o Eliminar
-async function gestionarSolicitud(id, aprobar) {
-    try {
-        if (aprobar) {
-            // Cambiamos el estado a aprobado: true
-            const { error } = await supabase
-                .from('folleto_imagenes')
-                .update({ aprobado: true })
-                .eq('id', id);
-            if (error) throw error;
-            alert("✅ Publicado en el folleto");
-        } else {
-            // Si rechaza, borramos el registro
-            const { error } = await supabase
-                .from('folleto_imagenes')
-                .delete()
-                .eq('id', id);
-            if (error) throw error;
-            alert("🗑️ Solicitud eliminada");
-        }
-        // Recargar la lista para limpiar la vista
-        cargarSolicitudesPendientes();
-    } catch (err) {
-        alert("Error al procesar: " + err.message);
-    }
-}
     VV.admin.loadAllUsers = async function() {
-    const container = document.getElementById('users-management-list');
-    if (!container) return;
-    
-    container.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
-    
-    try {
-        const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(100);
+        const container = document.getElementById('users-management-list');
+        if (!container) return;
+        
+        container.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+        
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(100);
+                
+            if (error) throw error;
             
-        if (error) throw error;
-        
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:var(--gray-500);">No hay usuarios registrados.</p>';
-            return;
-        }
-        
-        container.innerHTML = data.map(u => `
-            <div style="background:white;padding:1rem;border-radius:8px;margin-bottom:0.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;">
-                <div>
-                    <strong>${u.name || 'Sin nombre'}</strong>
-                    <div style="font-size:0.85rem;color:var(--gray-600);">
-                        📍 ${u.neighborhood || 'Sin barrio'} | 📱 ${u.phone || 'Sin celular'} | #${u.unique_number || '---'}
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:var(--gray-500);">No hay usuarios registrados.</p>';
+                return;
+            }
+            
+            container.innerHTML = data.map(u => `
+                <div style="background:white;padding:1rem;border-radius:8px;margin-bottom:0.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <strong>${u.name || 'Sin nombre'}</strong>
+                        <div style="font-size:0.85rem;color:var(--gray-600);">
+                            📍 ${u.neighborhood || 'Sin barrio'} | 📱 ${u.phone || 'Sin celular'} | #${u.unique_number || '---'}
+                        </div>
                     </div>
+                    <span style="background:${u.role === 'admin' ? '#ef4444' : u.role === 'moderator' ? '#f59e0b' : '#10b981'};color:white;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.75rem;text-transform:uppercase;">
+                        ${u.role || 'user'}
+                    </span>
                 </div>
-                <span style="background:${u.role === 'admin' ? '#ef4444' : u.role === 'moderator' ? '#f59e0b' : '#10b981'};color:white;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.75rem;text-transform:uppercase;">
-                    ${u.role || 'user'}
-                </span>
-            </div>
-        `).join('');
-   
-    } catch (err) {
-        console.error('Error cargando usuarios:', err);
-        container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
-    }
- };
-        VV.admin.uploadLandingContent = async function() {
-    const cat = document.getElementById('landing-cat').value;
-    const title = document.getElementById('landing-title').value.trim();
-    const fileInput = document.getElementById('landing-file');
-    
-    if (!fileInput.files || fileInput.files.length === 0) {
-        alert('Seleccioná una imagen');
-        return;
-    }
-    
-    const file = fileInput.files[0];
-    const fileExt = file.name.split('.').pop();
-    const fileName = `landing-${Date.now()}.${fileExt}`;
-    
-    try {
-        // Subir a Supabase Storage (necesitás un bucket "landing")
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('landing')
-            .upload(fileName, file);
+            `).join('');
             
-        if (uploadError) throw uploadError;
-        
-        // Obtener URL pública
-        const { data: { publicUrl } } = supabase.storage
-            .from('landing')
-            .getPublicUrl(fileName);
-            
-        // Guardar en tabla
-        const { error: dbError } = await supabase
-            .from('landing_content')
-            .insert({
-                category: cat
+        } catch (err) {
+            console.error('Error cargando usuarios:', err);
+            container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
+        }
+    };
 
-};
+}; // <-- ESTO CIERRA VV.admin = {
 
 console.log('✅ Módulo ADMIN cargado');
+
