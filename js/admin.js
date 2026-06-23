@@ -2165,7 +2165,7 @@ async function cargarSolicitudesPendientes() {
             console.error('Error cargando usuarios:', err);
             container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
         }
-    };
+    }
     // ... última función existente (ej: loadFeaturedRequests) ...
 
     },  // <-- cierra la última función
