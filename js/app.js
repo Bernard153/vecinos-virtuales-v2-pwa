@@ -75,12 +75,16 @@ function setupNavigation() {
                     case 'admin-neighborhoods':
                         if (VV.admin?.loadAllNeighborhoods) VV.admin.loadAllNeighborhoods();
                         break;
-                    case 'admin':
-                        if (VV.admin?.loadSponsors) VV.admin.loadSponsors();
-                        break;
                     case 'dashboard':
                         if (VV.dashboard?.loadActivityFeed) VV.dashboard.loadActivityFeed();
                         break;
+                    case 'admin':
+                        if (VV.admin?.loadSponsorRequestsFixed) VV.admin.loadSponsorRequestsFixed();
+                        break;
+                    case 'admin-featured':  // o como se llame la sección de destacados
+                        if (VV.admin?.loadFeaturedRequestsFixed) VV.admin.loadFeaturedRequestsFixed();
+                        break;
+
                 }
             }, 100);
         }
