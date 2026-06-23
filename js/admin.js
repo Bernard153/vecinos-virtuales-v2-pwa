@@ -2171,8 +2171,7 @@ async function cargarSolicitudesPendientes() {
 
 console.log('✅ Módulo ADMIN cargado');
 // ========== SOLICITUDES DE DESTACADOS ==========//
-
-    loadFeaturedRequestsFixed: async function() {
+    loadFeaturedRequests: async function() {
         const container = document.getElementById('featured-requests-list');
         if (!container) return;
         
@@ -2216,18 +2215,6 @@ console.log('✅ Módulo ADMIN cargado');
             container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar solicitudes.</p>';
         }
     },
-
-VV.admin.approveFeatured = async function(id) {
-    await supabase.from('featured_requests').update({ status: 'approved', reviewed_at: new Date().toISOString() }).eq('id', id);
-    VV.admin.loadFeaturedRequestsFixed();
-    VV.utils.showSuccess('Destacado aprobado');
-};
-
-VV.admin.rejectFeatured = async function(id) {
-    await supabase.from('featured_requests').update({ status: 'rejected', reviewed_at: new Date().toISOString() }).eq('id', id);
-    VV.admin.loadFeaturedRequestsFixed();
-    VV.utils.showSuccess('Destacado rechazado');
-};
 
 console.log('✅ Módulo ADMIN-SOLICITUDES cargado');
 
