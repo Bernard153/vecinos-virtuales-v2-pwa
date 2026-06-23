@@ -2185,11 +2185,12 @@ async function gestionarSolicitud(id, aprobar) {
                 </span>
             </div>
         `).join('');
-    };    
+   
     } catch (err) {
         console.error('Error cargando usuarios:', err);
         container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
     }
+ };
         VV.admin.uploadLandingContent = async function() {
     const cat = document.getElementById('landing-cat').value;
     const title = document.getElementById('landing-title').value.trim();
