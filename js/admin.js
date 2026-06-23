@@ -2185,7 +2185,7 @@ async function gestionarSolicitud(id, aprobar) {
                 </span>
             </div>
         `).join('');
-        
+    };    
     } catch (err) {
         console.error('Error cargando usuarios:', err);
         container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
