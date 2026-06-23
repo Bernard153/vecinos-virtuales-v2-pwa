@@ -2166,6 +2166,49 @@ async function cargarSolicitudesPendientes() {
             container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
         }
     };
+    // ... última función existente (ej: loadFeaturedRequests) ...
+
+    },  // <-- cierra la última función
+
+    loadAllUsers: async function() {
+        const container = document.getElementById('users-management-list');
+        if (!container) return;
+        
+        container.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+        
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(100);
+                
+            if (error) throw error;
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:var(--gray-500);">No hay usuarios registrados.</p>';
+                return;
+            }
+            
+            container.innerHTML = data.map(u => `
+                <div style="background:white;padding:1rem;border-radius:8px;margin-bottom:0.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <strong>${u.name || 'Sin nombre'}</strong>
+                        <div style="font-size:0.85rem;color:var(--gray-600);">
+                            📍 ${u.neighborhood || 'Sin barrio'} | 📱 ${u.phone || 'Sin celular'} | #${u.unique_number || '---'}
+                        </div>
+                    </div>
+                    <span style="background:${u.role === 'admin' ? '#ef4444' : u.role === 'moderator' ? '#f59e0b' : '#10b981'};color:white;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.75rem;text-transform:uppercase;">
+                        ${u.role || 'user'}
+                    </span>
+                </div>
+            `).join('');
+            
+        } catch (err) {
+            console.error('Error cargando usuarios:', err);
+            container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
+        }
+    }
 
 }; // <-- ESTO CIERRA VV.admin = {
 
