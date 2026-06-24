@@ -2084,90 +2084,9 @@ VV.admin.previewImage = function (input) {
 
         reader.readAsDataURL(input.files[0]);
     }
-    /**
- * MODULO: ADMINISTRACIÓN DE FOLLETO
- * Ubicación: Final de admin.js
- */
+};  // <-- ESTE CIERRE FALTABA EN TU MAIN
 
-// 1. Cargar solicitudes al abrir el panel de admin
-async function cargarSolicitudesPendientes() {
-    const lista = document.getElementById('lista-solicitudes-pendientes');
-    if(!lista) return;
-
-    try {
-        const { data, error } = await supabase
-            .from('folleto_imagenes')
-            .select('*')
-            .eq('aprobado', false)
-            .order('created_at', { ascending: true });
-
-        if (error) throw error;
-
-        lista.innerHTML = data.length === 0 ? '<p>No hay solicitudes nuevas.</p>' : '';
-
-        data.forEach(sol => {
-            const card = document.createElement('div');
-            card.className = 'admin-card-solicitud';
-            card.innerHTML = `
-                <img src="${sol.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
-                <div class="info">
-                    <strong>${sol.titulo}</strong>
-                    <p>${sol.nombre_vecino}: ${sol.descripcion}</p>
-                </div>
-                <div class="acciones">
-                    <button onclick="gestionarSolicitud('${sol.id}', true)" class="btn-aprobar">Aprobar</button>
-                    <button onclick="gestionarSolicitud('${sol.id}', false)" class="btn-rechazar">Eliminar</button>
-                </div>
-            `;
-            lista.appendChild(card);
-        });
-    } catch (err) {
-        console.error("Error admin folleto:", err.message);
-    }
-}
-// 2. Función para Aprobar o Eliminar
-VV.admin.loadAllUsers = async function() {
-    const container = document.getElementById('users-management-list');
-    if (!container) return;
-    
-    container.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
-    
-    try {
-        const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(100);
-            
-        if (error) throw error;
-        
-        if (!data || data.length === 0) {
-            container.innerHTML = '<p style="text-align:center;color:var(--gray-500);">No hay usuarios registrados.</p>';
-            return;
-        }
-        
-        container.innerHTML = data.map(u => `
-            <div style="background:white;padding:1rem;border-radius:8px;margin-bottom:0.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);display:flex;justify-content:space-between;align-items:center;">
-                <div>
-                    <strong>${u.name || 'Sin nombre'}</strong>
-                    <div style="font-size:0.85rem;color:var(--gray-600);">
-                        📍 ${u.neighborhood || 'Sin barrio'} | 📱 ${u.phone || 'Sin celular'} | #${u.unique_number || '---'}
-                    </div>
-                </div>
-                <span style="background:${u.role === 'admin' ? '#ef4444' : u.role === 'moderator' ? '#f59e0b' : '#10b981'};color:white;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.75rem;text-transform:uppercase;">
-                    ${u.role || 'user'}
-                </span>
-            </div>
-        `).join('');
-        
-    } catch (err) {
-        console.error('Error cargando usuarios:', err);
-        container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
-    }
-};
-console.log('✅ Módulo ADMIN cargado');
-
-// ========== SOLICITUDES DE DESTACADOS ==========
+// ========== SOLICITUDES DE DESTACADOS (TUS NUEVAS FUNCIONES) ==========
 
 VV.admin.loadFeaturedRequestsFixed = async function() {
     const container = document.getElementById('featured-requests-list');
@@ -2199,7 +2118,7 @@ VV.admin.loadFeaturedRequestsFixed = async function() {
                 <div style="font-size:0.9rem;margin-bottom:0.75rem;">${req.message || 'Sin mensaje'}</div>
                 <div style="display:flex;gap:0.5rem;">
                     <button onclick="VV.admin.approveFeatured('${req.id}')" style="background:#10b981;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;">
-                        <i class="fas fa-check"></i> ...Aprobar
+                        <i class="fas fa-check"></i> Aprobar
                     </button>
                     <button onclick="VV.admin.rejectFeatured('${req.id}')" style="background:#ef4444;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;">
                         <i class="fas fa-times"></i> Rechazar
@@ -2236,9 +2155,71 @@ VV.admin.rejectFeatured = async function(id) {
 
 console.log('✅ Módulo ADMIN-SOLICITUDES cargado');
 
-// ========== SOLICITUDES DE INGRESOS (NUEVAS FUNCIONES) ==========
+// ========== SOLICITUDES DE INGRESOS (TUS NUEVAS FUNCIONES) ==========
 
-// 1. ANUNCIANTES (verificar que usa tabla correcta)
-VV.admin.loadSponsorRequestsFixed = async function() {
-    const container = document.getElementById('sponsor-requests-list');
-    // Aquí continúa tu código...
+// PEGA AQUÍ TU CÓDIGO DE loadSponsorRequestsFixed Y LAS DEMÁS FUNCIONES NUEVAS
+// Si no las tienes listas, déjalas para después, pero asegúrate de que el archivo
+// tenga un cierre limpio.
+
+// ========== ADMINISTRACIÓN DE FOLLETO (DESDE MAIN) ==========
+
+async function cargarSolicitudesPendientes() {
+    const lista = document.getElementById('lista-solicitudes-pendientes');
+    if(!lista) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('folleto_imagenes')
+            .select('*')
+            .eq('aprobado', false)
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        lista.innerHTML = data.length === 0 ? '<p>No hay solicitudes nuevas.</p>' : '';
+
+        data.forEach(sol => {
+            const card = document.createElement('div');
+            card.className = 'admin-card-solicitud';
+            card.innerHTML = `
+                <img src="${sol.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
+                <div class="info">
+                    <strong>${sol.titulo}</strong>
+                    <p>${sol.nombre_vecino}: ${sol.descripcion}</p>
+                </div>
+                <div class="acciones">
+                    <button onclick="gestionarSolicitud('${sol.id}', true)" class="btn-aprobar">Aprobar</button>
+                    <button onclick="gestionarSolicitud('${sol.id}', false)" class="btn-rechazar">Eliminar</button>
+                </div>
+            `;
+            lista.appendChild(card);
+        });
+    } catch (err) {
+        console.error("Error admin folleto:", err.message);
+    }
+}
+
+async function gestionarSolicitud(id, aprobar) {
+    try {
+        if (aprobar) {
+            const { error } = await supabase
+                .from('folleto_imagenes')
+                .update({ aprobado: true })
+                .eq('id', id);
+            if (error) throw error;
+            alert("✅ Publicado en el folleto");
+        } else {
+            const { error } = await supabase
+                .from('folleto_imagenes')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
+            alert("🗑️ Solicitud eliminada");
+        }
+        cargarSolicitudesPendientes();
+    } catch (err) {
+        alert("Error al procesar: " + err.message);
+    }
+}
+
+console.log('✅ Módulo ADMIN cargado');
