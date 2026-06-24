@@ -2166,9 +2166,6 @@ async function cargarSolicitudesPendientes() {
             container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar usuarios.</p>';
         }
     };
-
-}; // <-- ESTO CIERRA VV.admin = {
-
 console.log('✅ Módulo ADMIN cargado');
 // ========== SOLICITUDES DE DESTACADOS ==========//
     loadFeaturedRequests: async function() {
