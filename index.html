@@ -1260,13 +1260,20 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <!-- Scripts modulares -->
-    <!-- 1. CDN primero -->
+       <!-- 1. CDN de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- 2. Configuración DESPUÉS del CDN -->
-    <script src="js/supabase-config.js"></script>
-    
-    <!-- 3. El resto de tus módulos -->
+    <!-- 2. Inicialización INLINE (garantizado que corre después del CDN) -->
+    <script>
+        window.SUPABASE_URL = 'https://idakpvwvvjexvalnfooy.supabase.co';
+        window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkYWtwdnd2dmpleHZhbG5mb295Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDE4NDQsImV4cCI6MjA5Nzg3Nzg0NH0.ntp7plvFaVt5EtlF6kEL69dTr9For_Sdn_iszrCiGi8';
+        
+        // Inicializar cliente global
+        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase inicializado:', !!window.supabase);
+    </script>
+    <!-- 3. ELIMINADO: <script src="js/supabase-config.js"></script> -->
+        <!-- 4. Resto de módulos -->
     <script src="js/core.js"></script>
     <script src="js/auth-supabase.js"></script>
     <script src="js/folleto.js"></script>
