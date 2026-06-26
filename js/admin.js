@@ -11,7 +11,7 @@ VV.admin = {
         }
 
         await VV.admin.loadSponsorRequests();
-        await VV.admin.loadFeaturedRequests();
+        await VV.admin.loadFeaturedRequestsFixed(); // ← CORREGIDO: usa la nueva función
         await VV.admin.loadSponsors();
     },
 
@@ -592,14 +592,13 @@ VV.admin = {
 
         if (tabName === 'stats') VV.admin.loadStats();
         if (tabName === 'moderator-logs') VV.admin.loadModeratorLogs();
-        if (tabName === 'featured') VV.admin.loadFeaturedOffers();
+        if (tabName === 'featured') VV.admin.loadFeaturedRequestsFixed(); // ← CORREGIDO: usa la nueva función
         if (tabName === 'avatars') VV.admin.loadAvatarsManagement();
         if (tabName === 'raffles') VV.admin.loadRafflesManagement();
         if (tabName === 'folleto' && typeof window.cargarSolicitudesPendientes === 'function') {
         window.cargarSolicitudesPendientes();
         }
     },
-
     // Cargar estadísticas
     loadStats() {
         const totalViews = VV.data.sponsors.reduce((sum, s) => sum + s.views, 0);
@@ -980,8 +979,8 @@ VV.admin = {
         `;
     }
 };
+// ========== FUNCIONES GLOBALES PARA SOLICITUDES DE ANUNCIANTE ==========
 
-// Solicitar ser anunciante (usuarios comunes)
 window.requestSponsorStatus = function () {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -1048,7 +1047,6 @@ window.requestSponsorStatus = function () {
     };
 }
 
-// Función global para enviar solicitud de anunciante
 window.submitSponsorRequest = async function () {
     console.log('🚀 Enviando solicitud de anunciante...');
 
@@ -1094,7 +1092,7 @@ window.submitSponsorRequest = async function () {
     }
 }
 
-// ========== FUNCIONES GLOBALES PARA ADMIN ==========
+// ========== GESTIÓN DE BARRIOS, PRODUCTOS Y MEJORAS ==========
 
 VV.admin.loadAllNeighborhoods = async function () {
     if (!VV.utils.isAdmin()) return;
@@ -1103,7 +1101,6 @@ VV.admin.loadAllNeighborhoods = async function () {
     container.innerHTML = '<p style="text-align: center; padding: 2rem;">Cargando barrios...</p>';
 
     try {
-        // Obtener todos los usuarios desde Supabase
         const { data: users, error: usersError } = await supabase
             .from('users')
             .select('*')
@@ -1111,7 +1108,6 @@ VV.admin.loadAllNeighborhoods = async function () {
 
         if (usersError) throw usersError;
 
-        // Obtener todos los barrios con usuarios
         const neighborhoods = new Map();
 
         users.forEach(user => {
@@ -1130,7 +1126,6 @@ VV.admin.loadAllNeighborhoods = async function () {
             }
         });
 
-        // Contar productos, mejoras, etc por barrio
         VV.data.products.forEach(p => {
             if (neighborhoods.has(p.neighborhood)) {
                 neighborhoods.get(p.neighborhood).products++;
@@ -1157,7 +1152,6 @@ VV.admin.loadAllNeighborhoods = async function () {
 
         const neighborhoodsList = Array.from(neighborhoods.values());
 
-        // Estadísticas
         const statsContainer = document.getElementById('admin-neighborhoods-stats');
         statsContainer.innerHTML = `
         <div class="stat-card">
@@ -1198,7 +1192,6 @@ VV.admin.loadAllNeighborhoods = async function () {
         </div>
     `;
 
-        // Lista de barrios
         const listContainer = document.getElementById('admin-neighborhoods-list');
         if (neighborhoodsList.length === 0) {
             listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay barrios registrados</p>';
@@ -1254,21 +1247,18 @@ VV.admin.loadAllProducts = async function () {
     const categoryFilter = document.getElementById('admin-product-category-filter').value;
     const searchTerm = document.getElementById('admin-product-search').value.toLowerCase();
 
-    // Poblar filtro de barrios
     const neighborhoods = [...new Set(VV.data.products.map(p => p.neighborhood))].sort();
     const neighborhoodSelect = document.getElementById('admin-product-neighborhood-filter');
     const currentValue = neighborhoodSelect.value;
     neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
         neighborhoods.map(n => `<option value="${n}" ${n === currentValue ? 'selected' : ''}>${n}</option>`).join('');
 
-    // Poblar filtro de categorías
     const categories = [...new Set(VV.data.products.map(p => p.category))].sort();
     const categorySelect = document.getElementById('admin-product-category-filter');
     const currentCat = categorySelect.value;
     categorySelect.innerHTML = '<option value="">Todas las categorías</option>' +
         categories.map(c => `<option value="${c}" ${c === currentCat ? 'selected' : ''}>${c}</option>`).join('');
 
-    // Filtrar productos
     let filtered = VV.data.products;
     if (neighborhoodFilter) filtered = filtered.filter(p => p.neighborhood === neighborhoodFilter);
     if (categoryFilter) filtered = filtered.filter(p => p.category === categoryFilter);
@@ -1277,7 +1267,6 @@ VV.admin.loadAllProducts = async function () {
         p.description.toLowerCase().includes(searchTerm)
     );
 
-    // Estadísticas
     const statsContainer = document.getElementById('admin-products-stats');
     const totalValue = filtered.reduce((sum, p) => sum + parseFloat(p.price || 0), 0);
     statsContainer.innerHTML = `
@@ -1319,14 +1308,12 @@ VV.admin.loadAllProducts = async function () {
         </div>
     `;
 
-    // Lista de productos
     const listContainer = document.getElementById('admin-products-list');
     if (filtered.length === 0) {
         listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay productos</p>';
         return;
     }
 
-    // Obtener usuarios
     const allUsers = await VV.auth.getAllUsers();
 
     listContainer.innerHTML = filtered.map(product => {
@@ -1366,19 +1353,16 @@ VV.admin.loadAllImprovements = async function () {
     const neighborhoodFilter = document.getElementById('admin-improvement-neighborhood-filter').value;
     const statusFilter = document.getElementById('admin-improvement-status-filter').value;
 
-    // Poblar filtro de barrios
     const neighborhoods = [...new Set(VV.data.improvements.map(i => i.neighborhood))].sort();
     const neighborhoodSelect = document.getElementById('admin-improvement-neighborhood-filter');
     const currentValue = neighborhoodSelect.value;
     neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
         neighborhoods.map(n => `<option value="${n}" ${n === currentValue ? 'selected' : ''}>${n}</option>`).join('');
 
-    // Filtrar mejoras
     let filtered = VV.data.improvements;
     if (neighborhoodFilter) filtered = filtered.filter(i => i.neighborhood === neighborhoodFilter);
     if (statusFilter) filtered = filtered.filter(i => i.status === statusFilter);
 
-    // Estadísticas (basadas en los datos FILTRADOS)
     const statsContainer = document.getElementById('admin-improvements-stats');
     const pending = filtered.filter(i => i.status === 'pending').length;
     const inProgress = filtered.filter(i => i.status === 'in-progress').length;
@@ -1424,14 +1408,12 @@ VV.admin.loadAllImprovements = async function () {
         </div>
     `;
 
-    // Lista de mejoras
     const listContainer = document.getElementById('admin-improvements-list');
     if (filtered.length === 0) {
         listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay mejoras</p>';
         return;
     }
 
-    // Obtener usuarios
     const allUsers = await VV.auth.getAllUsers();
 
     listContainer.innerHTML = filtered.map(improvement => {
@@ -1496,11 +1478,10 @@ VV.admin.deleteImprovement = function (improvementId) {
     VV.utils.showSuccess('Mejora eliminada');
 };
 
-// ========== GESTIÓN DE OFERTAS DESTACADAS ==========
+// ========== GESTIÓN DE OFERTAS DESTACADAS (VIEJO - MANTIENE COMPATIBILIDAD) ==========
 
 VV.admin.loadFeaturedRequests = async function () {
     try {
-        // Cargar solicitudes pendientes desde Supabase
         const { data: requests, error } = await supabase
             .from('featured_offers')
             .select('*')
@@ -1564,7 +1545,6 @@ VV.admin.loadFeaturedRequests = async function () {
 
 VV.admin.approveFeaturedRequest = async function (requestId) {
     try {
-        // Obtener la duración personalizada del input
         const durationInput = document.getElementById(`duration-${requestId}`);
         const customDuration = durationInput ? parseInt(durationInput.value) : null;
 
@@ -1573,11 +1553,9 @@ VV.admin.approveFeaturedRequest = async function (requestId) {
             return;
         }
 
-        // Calcular fecha de expiración
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + customDuration);
 
-        // Actualizar la oferta en Supabase
         const { error } = await supabase
             .from('featured_offers')
             .update({
@@ -1603,7 +1581,6 @@ VV.admin.rejectFeaturedRequest = async function (requestId) {
     if (!confirm('¿Rechazar esta solicitud?')) return;
 
     try {
-        // Actualizar el estado a rechazado en Supabase
         const { error } = await supabase
             .from('featured_offers')
             .update({
@@ -1632,7 +1609,6 @@ VV.admin.loadFeaturedOffers = function () {
         return;
     }
 
-    // Agrupar por estado
     const active = allFeatured.filter(f => f.status === 'active' && !f.blocked && new Date(f.expiresAt) > new Date());
     const expired = allFeatured.filter(f => new Date(f.expiresAt) <= new Date());
     const blocked = allFeatured.filter(f => f.blocked);
@@ -1741,7 +1717,6 @@ VV.admin.loadAvatarsManagement = async function () {
     const container = document.getElementById('avatars-management');
     container.innerHTML = '<p style="text-align: center; padding: 2rem;">Cargando avatares...</p>';
 
-    // Obtener usuarios desde Supabase
     const { data: users, error } = await supabase
         .from('users')
         .select('*')
@@ -1870,7 +1845,6 @@ VV.admin.unlockAvatarForUser = function () {
 };
 
 VV.admin.showUserAvatars = async function (userId) {
-    // Obtener usuario desde Supabase
     const { data: user, error } = await supabase
         .from('users')
         .select('*')
@@ -1881,8 +1855,7 @@ VV.admin.showUserAvatars = async function (userId) {
         console.error('Error obteniendo usuario:', error);
         return;
     }
-
-    const unlockedAvatars = user.unlocked_avatars || [];
+const unlockedAvatars = user.unlocked_avatars || [];
     const premiumAvatars = VV.avatars.defaultAvatars.filter(a => a.premium);
 
     let overlay = document.getElementById('user-avatars-overlay');
@@ -2084,9 +2057,9 @@ VV.admin.previewImage = function (input) {
 
         reader.readAsDataURL(input.files[0]);
     }
-};  // <-- ESTE CIERRE FALTABA EN TU MAIN
+};  // <-- CIERRE CORRECTO
 
-// ========== SOLICITUDES DE DESTACADOS (TUS NUEVAS FUNCIONES) ==========
+// ========== SOLICITUDES DE DESTACADOS (NUEVAS FUNCIONES) ==========
 
 VV.admin.loadFeaturedRequestsFixed = async function() {
     const container = document.getElementById('featured-requests-list');
@@ -2155,13 +2128,9 @@ VV.admin.rejectFeatured = async function(id) {
 
 console.log('✅ Módulo ADMIN-SOLICITUDES cargado');
 
-// ========== SOLICITUDES DE INGRESOS (TUS NUEVAS FUNCIONES) ==========
+// ========== SOLICITUDES DE INGRESOS (RESERVADO PARA FUTURAS FUNCIONES) ==========
 
-// PEGA AQUÍ TU CÓDIGO DE loadSponsorRequestsFixed Y LAS DEMÁS FUNCIONES NUEVAS
-// Si no las tienes listas, déjalas para después, pero asegúrate de que el archivo
-// tenga un cierre limpio.
-
-// ========== ADMINISTRACIÓN DE FOLLETO (DESDE MAIN) ==========
+// ========== ADMINISTRACIÓN DE FOLLETO ==========
 
 async function cargarSolicitudesPendientes() {
     const lista = document.getElementById('lista-solicitudes-pendientes');
