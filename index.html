@@ -1260,19 +1260,23 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <!-- Scripts modulares -->
-    <script src="js/supabase-config.js"></script>
-    <script src="js/core.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-	<script>
+        <!-- 1. PRIMERO: CDN de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 2. SEGUNDO: Inicialización global (antes de cualquier módulo) -->
+    <script>
         window.SUPABASE_URL = 'https://idakpvwvvjexvalnfooy.supabase.co';
         window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkYWtwdnd2dmpleHZhbG5mb295Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDE4NDQsImV4cCI6MjA5Nzg3Nzg0NH0.ntp7plvFaVt5EtlF6kEL69dTr9For_Sdn_iszrCiGi8';
         
-        // Crear cliente global
         window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log('✅ Supabase cliente inicializado');
     </script>
-	<script src="js/auth-supabase.js"></script>
-    <script src="js/folleto.js"></script> <!-- NUEVO ARCHIVO AQUÍ -->
+    
+    <!-- 3. TERCERO: Tus módulos que usan Supabase -->
+    <script src="js/core.js"></script>
+    <script src="js/supabase-config.js"></script> <!-- Si sigue existiendo, déjalo pero después del CDN -->
+    <script src="js/auth-supabase.js"></script>
+    <script src="js/folleto.js"></script>
     <script src="js/marketplace.js"></script>
     <script src="js/reservations.js"></script>
     <script src="js/improvements.js"></script>
@@ -1287,7 +1291,7 @@
     <script src="js/banner.js"></script>
     <script src="js/landing.js"></script>
     <script src="js/auth-celular.js"></script>
-	 <script src="js/app.js"></script>
+    <script src="js/app.js"></script>
 
     <!-- Service Worker Registration -->
     <script>
