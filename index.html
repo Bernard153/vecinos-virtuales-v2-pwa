@@ -1265,12 +1265,15 @@
     
     <!-- 2. SEGUNDO: Inicialización global (antes de cualquier módulo) -->
     <script>
-        window.SUPABASE_URL = 'https://idakpvwvvjexvalnfooy.supabase.co';
-        window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkYWtwdnd2dmpleHZhbG5mb295Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDE4NDQsImV4cCI6MjA5Nzg3Nzg0NH0.ntp7plvFaVt5EtlF6kEL69dTr9For_Sdn_iszrCiGi8';
-        
-        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase cliente inicializado');
-    </script>
+    window.SUPABASE_URL = 'https://idakpvwvvjexvalnfooy.supabase.co';
+    window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkYWtwdnd2dmpleHZhbG5mb295Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDE4NDQsImV4cCI6MjA5Nzg3Nzg0NH0.ntp7plvFaVt5EtlF6kEL69dTr9For_Sdn_iszrCiGi8';
+    
+    // Crear cliente global ACCESIBLE AMBAS FORMAS
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var supabase = window.supabase;  // ← ESTA LÍNEA ES LA CLAVE
+    
+    console.log('✅ Supabase cliente inicializado');
+</script>
     
     <!-- 3. TERCERO: Tus módulos que usan Supabase -->
     <script src="js/core.js"></script>
