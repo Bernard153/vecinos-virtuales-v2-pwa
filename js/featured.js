@@ -830,10 +830,10 @@ async function verTiendaVecino(sellerId, nombre) {
         lista.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">Este vecino no tiene otros productos públicos.</p>`;
     } else {
         lista.innerHTML = productos.map(p => {
-            // CONSTRUCCIÓN DE URL PÚBLICA (Usando tu PROJECT_REF: selkbxqazwxxvinnulpb)
+            // CONSTRUCCIÓN DE URL PÚBLICA (Usando tu PROJECT_REF: idakpvwvvjexvalnfooy)
             // Si el image_path ya trae 'product-images/ID/main.jpg', lo concatenamos directo
             let imgUrl = p.image_path 
-                ? `https://selkbxqazwxxvinnulpb.supabase.co{p.image_path}`
+                ? `https://idakpvwvvjexvalnfooy.supabase.co{p.image_path}`
                 : (p.image || p.image_url || null);
             
             return `
