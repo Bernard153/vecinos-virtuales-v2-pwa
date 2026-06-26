@@ -348,7 +348,7 @@ selectNeighborhood(neighborhood) {
                     blocked: false
                 })
                 .select()
-                .single();
+                .maybeSingle();
             
             if (userError) throw userError;
             
