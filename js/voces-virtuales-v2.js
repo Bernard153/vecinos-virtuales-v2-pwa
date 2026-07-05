@@ -662,7 +662,71 @@ VV_VOCES_V2.switchTab = function(tab) {
 VV_VOCES_V2.cargarFeed = function() {
     console.log('Cargar feed - no implementado aún');
 };
+// ============================================================
+// SUBIDA DE VIDEOS A SUPABASE
+// ============================================================
+VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
+    const user = VV_ROLES.getCurrentUser();
+    if (!user) {
+        throw new Error('Debés iniciar sesión para subir videos');
+    }
 
+    // Generar nombre único para el archivo
+    const ext = videoBlob.type.includes('mp4') ? 'mp4' : 'webm';
+    const fileName = `voces-virtuales/${user.id}_${Date.now()}.${ext}`;
+
+    // 1. Subir el video a Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('barrio-media')
+        .upload(fileName, videoBlob, {
+            contentType: videoBlob.type,
+            cacheControl: '3600'
+        });
+
+    if (uploadError) {
+        console.error('Error subiendo a Storage:', uploadError);
+        throw new Error('No se pudo subir el video: ' + uploadError.message);
+    }
+
+    // 2. Obtener la URL pública
+    const { data: urlData } = supabase.storage
+        .from('barrio-media')
+        .getPublicUrl(fileName);
+
+    const videoUrl = urlData.publicUrl;
+
+    // 3. Insertar el registro en la tabla karaoke_videos
+    const registro = {
+        user_id: user.id,
+        user_name: user.name || user.email || 'Anónimo',
+        title: metadata.title || 'Sin título',
+        video_url: videoUrl,
+        audio_url: this.audioTrackBlobURL || null,
+        track_id: metadata.track_id || null,
+        track_title: metadata.track_title || null,
+        is_original: metadata.is_original || false,
+        is_acoustic: !this.audioTrackBlobURL,
+        is_duet: false,
+        parent_video_id: null,
+        visible: true,
+        estado_moderacion: 'pendiente',
+        reportado: false,
+        likes_count: 0,
+        views_count: 0
+    };
+
+    const { data: insertData, error: insertError } = await supabase
+        .from('karaoke_videos')
+        .insert([registro]);
+
+    if (insertError) {
+        console.error('Error insertando en tabla:', insertError);
+        throw new Error('No se pudo registrar el video: ' + insertError.message);
+    }
+
+    console.log('✅ Video subido:', videoUrl);
+    return { success: true, url: videoUrl, data: insertData };
+};
 // Inicializar al cargar
 window.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('modulo-voces-virtuales')) {
