@@ -518,6 +518,150 @@ window.VV_VOCES_V2 = {
         if (info) info.innerHTML = '<p style="color:#94a3b8;">Buscá una canción arriba para empezar</p>';
     }
 };
+// ============================================================
+// COMPATIBILIDAD: Alias VV_VOCES → VV_VOCES_V2 + métodos faltantes
+// ============================================================
+window.VV_VOCES = window.VV_VOCES_V2;
+
+// Wrapper: cuando se selecciona un archivo de audio
+VV_VOCES_V2.onAudioSelected = function() {
+    const fileAudio = document.getElementById('vv-upload-audio');
+    const btnCargar = document.getElementById('vv-btn-cargar-estudio');
+    const nameDisplay = document.getElementById('vv-audio-name');
+    if (fileAudio && fileAudio.files.length > 0) {
+        if (btnCargar) {
+            btnCargar.disabled = false;
+            btnCargar.style.background = "#34c759";
+        }
+        if (nameDisplay) nameDisplay.textContent = '🎵 ' + fileAudio.files[0].name;
+    }
+};
+
+// Wrapper: cuando se selecciona un archivo de letra
+VV_VOCES_V2.onLyricSelected = function() {
+    const fileLetra = document.getElementById('vv-upload-letra');
+    const nameDisplay = document.getElementById('vv-letra-name');
+    if (fileLetra && fileLetra.files.length > 0 && nameDisplay) {
+        nameDisplay.textContent = '📄 ' + fileLetra.files[0].name;
+    }
+};
+
+// Wrapper: cargar pista desde los inputs del HTML
+VV_VOCES_V2.loadLocalTrackFromInputs = function() {
+    const fileAudio = document.getElementById('vv-upload-audio');
+    const fileLetra = document.getElementById('vv-upload-letra');
+    const audioFile = fileAudio && fileAudio.files[0] ? fileAudio.files[0] : null;
+    const lrcFile = fileLetra && fileLetra.files[0] ? fileLetra.files[0] : null;
+    this.loadLocalTrack(audioFile, lrcFile);
+};
+
+// Wrapper: toggle grabación
+VV_VOCES_V2.toggleRecording = function() {
+    if (!this.mediaRecorder || this.mediaRecorder.state === "inactive") {
+        this.startRecording();
+    } else {
+        this.stopRecording();
+    }
+};
+
+// Wrapper: publicar (lee del DOM como espera el HTML)
+VV_VOCES_V2.publishOriginal = function() {
+    const titulo = document.getElementById('vv-input-titulo-obra').value.trim();
+    const checkbox = document.getElementById('vv-check-derechos').checked;
+    
+    if (!titulo) {
+        alert("Por favor, ingresá el título de tu obra.");
+        return;
+    }
+    if (!checkbox) {
+        alert("Debés confirmar que poseés los derechos de autor de la obra para publicarla.");
+        return;
+    }
+    if (!this.videoGrabadoBlob) {
+        alert("No hay grabación para publicar.");
+        return;
+    }
+
+    const perms = window.VV_ROLES ? VV_ROLES.getPermissions() : {};
+    if (!perms.canFullKaraoke) {
+        alert("Necesitás ser vecino verificado para publicar obras.");
+        return;
+    }
+
+    if (window.VV_VOCES && VV_VOCES.uploadVideo) {
+        VV_VOCES.uploadVideo(this.videoGrabadoBlob, {
+            title: titulo,
+            is_original: true,
+            author_name: perms.displayRole || 'Artista',
+            track_id: null
+        }).then(() => {
+            alert('🎉 ¡Tu obra fue publicada en Voces Virtuales!');
+            this.discardRecording();
+        }).catch(err => {
+            console.error('Error publicando:', err);
+            alert('Error al publicar: ' + err.message);
+        });
+    } else {
+        alert('Sistema de subida no disponible');
+    }
+};
+
+// Descargar grabación localmente
+VV_VOCES_V2.descargarLocal = function() {
+    if (!this.videoGrabadoBlob) {
+        alert("No hay grabación para descargar.");
+        return;
+    }
+    const url = URL.createObjectURL(this.videoGrabadoBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mi-grabacion-' + Date.now() + '.webm';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+// Grabar sin pista (modo acústico)
+VV_VOCES_V2.irAGrabarSinPista = function() {
+    this.audioTrackBlobURL = null;
+    this.isLRC = false;
+    const container = document.getElementById('vv-letra-container');
+    if (container) container.innerHTML = "🎵 Modo Acústico — Tocá grabar y empezá a tocar tu instrumento";
+    
+    document.getElementById('vv-zona-subida').classList.add('oculto');
+    document.getElementById('vv-zona-grabacion').classList.remove('oculto');
+};
+
+// Stubs para explorar (si no existen aún)
+VV_VOCES_V2.switchTab = function(tab) {
+    if (tab === 'ensayo') {
+        const tabCrear = document.getElementById('vv-tab-crear');
+        const tabEnsayo = document.getElementById('vv-tab-ensayo');
+        if (tabCrear) tabCrear.classList.add('oculto');
+        if (tabEnsayo) tabEnsayo.classList.remove('oculto');
+        this.currentMode = 'ensayo';
+    } else if (tab === 'crear') {
+        const tabEnsayo = document.getElementById('vv-tab-ensayo');
+        const tabCrear = document.getElementById('vv-tab-crear');
+        if (tabEnsayo) tabEnsayo.classList.add('oculto');
+        if (tabCrear) tabCrear.classList.remove('oculto');
+        this.currentMode = 'crear';
+    } else if (tab === 'explorar') {
+        // Si existe un tab explorar, mostrarlo; si no, alert
+        const tabExplorar = document.getElementById('vv-tab-explorar');
+        if (tabExplorar) {
+            document.getElementById('vv-tab-crear').classList.add('oculto');
+            tabExplorar.classList.remove('oculto');
+        } else {
+            console.log('Tab explorar no disponible aún');
+        }
+    }
+};
+
+VV_VOCES_V2.cargarFeed = function() {
+    console.log('Cargar feed - no implementado aún');
+};
 
 // Inicializar al cargar
 window.addEventListener('DOMContentLoaded', () => {
