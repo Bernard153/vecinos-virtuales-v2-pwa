@@ -373,4 +373,6 @@
     .karaoke-recording-controls {
         grid-template-columns: 1fr;
     }
+   .oculto { display: none !important; 
+    }
 }
