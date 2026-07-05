@@ -702,7 +702,7 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
         title: metadata.title || 'Sin título',
         video_url: videoUrl,
         audio_url: this.audioTrackBlobURL || null,
-        track_id: metadata.track_id || null,
+        track_id: metadata.track_id || '',
         track_title: metadata.track_title || null,
         is_original: metadata.is_original || false,
         is_acoustic: !this.audioTrackBlobURL,
