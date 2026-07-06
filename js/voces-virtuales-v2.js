@@ -727,6 +727,290 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
     console.log('✅ Video subido:', videoUrl);
     return { success: true, url: videoUrl, data: insertData };
 };
+// ============================================================
+// TAB 3: EXPLORAR — Feed público de videos
+// ============================================================
+VV_VOCES_V2.cargarFeed = async function() {
+    const container = document.getElementById('vv-feed-container');
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem;">Cargando obras del barrio...</p>';
+
+    try {
+        const { data, error } = await supabase
+            .from('karaoke_videos')
+            .select('*')
+            .eq('visible', true)
+            .eq('estado_moderacion', 'aprobado')
+            .order('created_at', { ascending: false })
+            .limit(24);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:3rem;color:#94a3b8;">
+                    <i class="fas fa-microphone-slash" style="font-size:3rem;margin-bottom:1rem;"></i>
+                    <p>Todavía no hay obras publicadas.</p>
+                    <p style="font-size:0.85rem;">¡Sé el primero en compartir tu voz!</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = data.map(video => this.renderVideoCard(video)).join('');
+
+    } catch (err) {
+        console.error('Error cargando feed:', err);
+        container.innerHTML = '<p style="text-align:center;color:#ef4444;padding:2rem;">Error al cargar. Intentá de nuevo.</p>';
+    }
+};
+
+VV_VOCES_V2.renderVideoCard = function(video) {
+    const fecha = new Date(video.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+    const tipo = video.is_original ? '✨ Original' : '🎵 Cover';
+    const acustico = video.is_acoustic ? '🎸 Acústico' : '';
+
+    return `
+        <div class="vv-video-card" onclick="VV_VOCES_V2.openVideoPlayer('${video.id}')">
+            <div class="vv-video-thumb">
+                <video preload="metadata" muted>
+                    <source src="${video.video_url}" type="video/webm">
+                </video>
+                <div class="vv-play-overlay"><i class="fas fa-play"></i></div>
+            </div>
+            <div class="vv-video-info">
+                <h4>${video.title || 'Sin título'}</h4>
+                <p class="vv-video-author">${video.user_name || 'Anónimo'}</p>
+                <div class="vv-video-meta">
+                    <span>${tipo} ${acustico}</span>
+                    <span>👍 ${video.likes_count || 0}</span>
+                    <span>👁 ${video.views_count || 0}</span>
+                    <span>${fecha}</span>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+VV_VOCES_V2.openVideoPlayer = async function(videoId) {
+    let video = null;
+
+    try {
+        const { data, error } = await supabase
+            .from('karaoke_videos')
+            .select('*')
+            .eq('id', videoId)
+            .single();
+
+        if (error) throw error;
+        video = data;
+
+        await supabase
+            .from('karaoke_videos')
+            .update({ views_count: (video.views_count || 0) + 1 })
+            .eq('id', videoId);
+
+    } catch (err) {
+        console.error('Error abriendo video:', err);
+        alert('No se pudo cargar el video');
+        return;
+    }
+
+    const user = VV_ROLES.getCurrentUser();
+    const canInteract = user && VV_ROLES.getPermissions().canFullKaraoke;
+
+    const modal = document.createElement('div');
+    modal.id = 'vv-video-modal';
+    modal.className = 'vv-modal-overlay';
+    modal.innerHTML = `
+        <div class="vv-modal-content">
+            <button class="vv-modal-close" onclick="VV_VOCES_V2.closeVideoPlayer()">✕</button>
+            <video controls autoplay class="vv-modal-video">
+                <source src="${video.video_url}" type="video/webm">
+            </video>
+            <div class="vv-modal-info">
+                <h3>${video.title}</h3>
+                <p class="vv-modal-author">${video.user_name || 'Anónimo'}</p>
+                <div class="vv-modal-stats">
+                    <span>👍 ${video.likes_count || 0}</span>
+                    <span>👁 ${(video.views_count || 0) + 1}</span>
+                    <span>${video.is_original ? '✨ Original' : '🎵 Cover'}</span>
+                </div>
+                <div class="vv-modal-actions">
+                    ${canInteract ? `
+                        <button class="vv-btn-like" onclick="VV_VOCES_V2.toggleLike('${video.id}')">
+                            👍 Me gusta
+                        </button>
+                        <button class="vv-btn-comment" onclick="VV_VOCES_V2.showComments('${video.id}')">
+                            💬 Comentar
+                        </button>
+                    ` : '<p style="color:#94a3b8;font-size:0.85rem;">Iniciá sesión para interactuar</p>'}
+                </div>
+                <div id="vv-comments-section" style="display:none;margin-top:1rem;"></div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+};
+
+VV_VOCES_V2.closeVideoPlayer = function() {
+    const modal = document.getElementById('vv-video-modal');
+    if (modal) {
+        const video = modal.querySelector('video');
+        if (video) video.pause();
+        modal.remove();
+    }
+};
+
+VV_VOCES_V2.toggleLike = async function(videoId) {
+    const user = VV_ROLES.getCurrentUser();
+    if (!user) {
+        alert('Iniciá sesión para dar like');
+        return;
+    }
+
+    try {
+        const { data: existing } = await supabase
+            .from('video_likes')
+            .select('id')
+            .eq('video_id', videoId)
+            .eq('user_id', user.id)
+            .single();
+
+        if (existing) {
+            await supabase.from('video_likes').delete().eq('id', existing.id);
+            const { data: video } = await supabase.from('karaoke_videos').select('likes_count').eq('id', videoId).single();
+            await supabase.from('karaoke_videos').update({ likes_count: Math.max(0, (video.likes_count || 0) - 1) }).eq('id', videoId);
+            const btn = document.querySelector('.vv-btn-like');
+            if (btn) btn.style.background = '';
+        } else {
+            await supabase.from('video_likes').insert([{ video_id: videoId, user_id: user.id }]);
+            const { data: video } = await supabase.from('karaoke_videos').select('likes_count').eq('id', videoId).single();
+            await supabase.from('karaoke_videos').update({ likes_count: (video.likes_count || 0) + 1 }).eq('id', videoId);
+            const btn = document.querySelector('.vv-btn-like');
+            if (btn) btn.style.background = 'rgba(52, 199, 89, 0.3)';
+        }
+
+        this.cargarFeed();
+    } catch (err) {
+        console.error('Error en like:', err);
+    }
+};
+
+VV_VOCES_V2.COMENTARIOS = {
+    musical: ['¡Qué linda melodía!', 'La letra me llegó al corazón', 'Gran interpretación', 'Se nota el talento'],
+    energia: ['¡A full!', 'Me hiciste bailar', 'Pura energía positiva', 'Esto levanta el ánimo'],
+    emocional: ['Me emocionaste', 'Se siente de verdad', 'Tiene alma', 'Directo al corazón'],
+    reconocimiento: ['Felicitaciones vecino!', 'El barrio te aplaude', 'Seguí así', 'Orgullo del barrio'],
+    especial: ['Candidato al certamen', 'Esto merece un regalo', 'No paro de escucharlo', 'Lo compartí con todos']
+};
+
+VV_VOCES_V2.showComments = async function(videoId) {
+    const section = document.getElementById('vv-comments-section');
+    if (!section) return;
+
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        section.innerHTML = '<p style="color:#94a3b8;">Cargando comentarios...</p>';
+
+        try {
+            const { data: comments } = await supabase
+                .from('video_comments')
+                .select('*')
+                .eq('video_id', videoId)
+                .order('created_at', { ascending: false });
+
+            const user = VV_ROLES.getCurrentUser();
+
+            let html = '<div class="vv-comments-list">';
+
+            if (comments && comments.length > 0) {
+                html += comments.map(c => `
+                    <div class="vv-comment-badge">
+                        <span class="vv-comment-cat">${this.categoryEmoji(c.category)}</span>
+                        <span>${c.comment_text}</span>
+                    </div>
+                `).join('');
+            } else {
+                html += '<p style="color:#94a3b8;font-size:0.85rem;">Sin comentarios aún</p>';
+            }
+
+            html += '</div>';
+
+            if (user) {
+                html += '<div class="vv-comment-picker">';
+                html += '<p style="font-size:0.8rem;color:#94a3b8;margin-bottom:0.5rem;">Elegí un comentario:</p>';
+
+                for (const [cat, textos] of Object.entries(this.COMENTARIOS)) {
+                    html += `<div class="vv-comment-category">`;
+                    html += `<span class="vv-comment-cat-label">${this.categoryEmoji(cat)} ${cat}</span>`;
+                    textos.forEach((texto, i) => {
+                        html += `<button class="vv-comment-btn" onclick="VV_VOCES_V2.postComment('${videoId}', '${cat}', '${texto.replace(/'/g, "\\'")}')">${texto}</button>`;
+                    });
+                    html += `</div>`;
+                }
+                html += '</div>';
+            }
+
+            section.innerHTML = html;
+
+        } catch (err) {
+            console.error('Error cargando comentarios:', err);
+            section.innerHTML = '<p style="color:#ef4444;">Error al cargar comentarios</p>';
+        }
+    } else {
+        section.style.display = 'none';
+    }
+};
+
+VV_VOCES_V2.categoryEmoji = function(category) {
+    const emojis = { musical: '🎵', energia: '🔥', emocional: '❤️', reconocimiento: '👏', especial: '🌟' };
+    return emojis[category] || '💬';
+};
+
+VV_VOCES_V2.postComment = async function(videoId, category, text) {
+    const user = VV_ROLES.getCurrentUser();
+    if (!user) {
+        alert('Iniciá sesión para comentar');
+        return;
+    }
+
+    try {
+        const { data: existing } = await supabase
+            .from('video_comments')
+            .select('id')
+            .eq('video_id', videoId)
+            .eq('user_id', user.id)
+            .single();
+
+        if (existing) {
+            await supabase
+                .from('video_comments')
+                .update({ comment_code: category, comment_text: text, category: category })
+                .eq('id', existing.id);
+        } else {
+            await supabase
+                .from('video_comments')
+                .insert([{
+                    video_id: videoId,
+                    user_id: user.id,
+                    comment_code: category,
+                    comment_text: text,
+                    category: category
+                }]);
+        }
+
+        document.getElementById('vv-comments-section').style.display = 'none';
+        this.showComments(videoId);
+
+    } catch (err) {
+        console.error('Error posteando comentario:', err);
+        alert('No se pudo enviar el comentario');
+    }
+};
+
 // Inicializar al cargar
 // ============================================================
 // WIDGET DASHBOARD — Preview de 3 videos
