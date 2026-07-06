@@ -351,7 +351,21 @@
                             <!-- Se llena automáticamente por la función verTiendaVecino -->
                         </div>
                     </div>
-
+					                    <!-- ===== WIDGET VOCES VIRTUALES EN DASHBOARD ===== -->
+                    <div id="widget-voces-virtuales" class="dashboard-widget" style="margin: 2rem 0; background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.05)); border-radius: 16px; padding: 1.5rem; border: 1px solid rgba(139,92,246,0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem; color: #f1f5f9;">
+                                <i class="fas fa-microphone-alt" style="color: #a78bfa;"></i>
+                                Voces Virtuales
+                            </h3>
+                            <button class="btn-primary" onclick="conmutarVistasPro('#modulo-voces-virtuales'); VV_VOCES_V2.switchTab('explorar'); VV_VOCES_V2.cargarFeed();" style="font-size: 0.85rem; padding: 0.5rem 1rem; white-space: nowrap;">
+                                <i class="fas fa-compass"></i> <span class="btn-text">Ver todo</span>
+                            </button>
+                        </div>
+                        <div id="widget-vv-feed" class="widget-vv-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+                            <p style="text-align:center;color:#94a3b8;grid-column:1/-1;padding:1rem;">Cargando obras del barrio...</p>
+                        </div>
+                    </div>
 
                     <!-- Estado de Geolocalización -->
                     <div id="geo-status" style="margin: 1.5rem 0;">
@@ -1306,7 +1320,7 @@ window.addEventListener('hashchange', function() {
         <div id="vv-youtube-embed" class="vv-card oculto"></div>
     </div>
     <!-- ====== TAB 3: EXPLORAR (Feed) ====== -->
-    <div id="vv-tab-explorar oculto">
+	<div id="vv-tab-explorar" class="oculto">
         <div class="vv-header">
             <div>
                 <h1><i class="fas fa-compass"></i> Explorar</h1>
