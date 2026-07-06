@@ -728,8 +728,66 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
     return { success: true, url: videoUrl, data: insertData };
 };
 // Inicializar al cargar
+// ============================================================
+// WIDGET DASHBOARD — Preview de 3 videos
+// ============================================================
+VV_VOCES_V2.cargarWidgetDashboard = async function() {
+    const container = document.getElementById('widget-vv-feed');
+    if (!container) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('karaoke_videos')
+            .select('*')
+            .eq('visible', true)
+            .eq('estado_moderacion', 'aprobado')
+            .order('created_at', { ascending: false })
+            .limit(3);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center;color:#94a3b8;grid-column:1/-1;padding:0.5rem;">
+                    <p style="margin:0;font-size:0.85rem;">🎤 Sin obras aún</p>
+                    <p style="margin:0;font-size:0.75rem;">¡Sé el primero en compartir tu voz!</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = data.map(video => `
+            <div class="widget-vv-card" onclick="conmutarVistasPro('#modulo-voces-virtuales'); VV_VOCES_V2.switchTab('explorar'); VV_VOCES_V2.cargarFeed(); setTimeout(() => VV_VOCES_V2.openVideoPlayer('${video.id}'), 300);" 
+                 style="background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid rgba(255,255,255,0.08);"
+                 onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)'"
+                 onmouseout="this.style.transform='';this.style.boxShadow=''">
+                <div style="position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;">
+                    <video preload="metadata" muted style="width:100%;height:100%;object-fit:cover;">
+                        <source src="${video.video_url}" type="video/webm">
+                    </video>
+                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:rgba(0,0,0,0.6);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div style="padding:0.6rem;">
+                    <p style="margin:0;font-size:0.85rem;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${video.title || 'Sin título'}</p>
+                    <p style="margin:0.15rem 0 0;font-size:0.75rem;color:#94a3b8;">${video.user_name || 'Anónimo'} · 👍 ${video.likes_count || 0}</p>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (err) {
+        console.error('Error cargando widget:', err);
+        if (container) container.innerHTML = '<p style="text-align:center;color:#94a3b8;grid-column:1/-1;font-size:0.85rem;">Error al cargar</p>';
+    }
+};
+
 window.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('modulo-voces-virtuales')) {
         VV_VOCES_V2.init();
     }
+    if (document.getElementById('widget-vv-feed')) {
+        VV_VOCES_V2.cargarWidgetDashboard();
+    }
 });
+
