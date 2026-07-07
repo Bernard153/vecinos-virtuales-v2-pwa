@@ -351,6 +351,18 @@
                             <!-- Se llena automáticamente por la función verTiendaVecino -->
                         </div>
                     </div>
+					                    <!-- ===== WIDGET BILLETERA ===== -->
+                    <div id="widget-wallet" style="margin: 1rem 0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(30,41,59,0.98), rgba(15,23,42,0.95)); border-radius: 16px; padding: 0.75rem 1rem; border: 1px solid rgba(251,191,36,0.3); flex-wrap: wrap; gap: 0.5rem;">
+                        <div id="wallet-balance-display" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 1.2rem;">🪙</span>
+                            <span style="color: #fbbf24; font-weight: 700; font-size: 1rem;">Cargando...</span>
+                            <span style="font-size: 0.7rem; color: #94a3b8; margin-left: 0.3rem;" id="wallet-xp-display"></span>
+                        </div>
+                        <button onclick="VV_WALLET.openShop()" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1e293b; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
+                            🛒 Tienda
+                        </button>
+                    </div>
+
 					                    <!-- ===== WIDGET VOCES VIRTUALES EN DASHBOARD ===== -->
                     <div id="widget-voces-virtuales" class="dashboard-widget" style="margin: 1rem 0; background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.9)); border-radius: 16px; padding: 1rem; border: 1px solid rgba(139,92,246,0.3);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
