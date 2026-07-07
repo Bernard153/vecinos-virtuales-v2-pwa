@@ -375,4 +375,19 @@
     }
    .oculto { display: none !important; 
     }
+   .vv-btn-gift {
+    background: rgba(251,191,36,0.15);
+    border: 1px solid rgba(251,191,36,0.3);
+    color: #fbbf24;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+   }
+
+   .vv-btn-gift:hover {
+    background: rgba(251,191,36,0.3);
+   }
+
 }
