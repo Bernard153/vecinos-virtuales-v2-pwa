@@ -500,5 +500,118 @@
     border-radius: 20px;
     font-weight: bold;
 }
+/* ===== BOTÓN FLOTANTE CERRAR FOLLETO ===== */
+.folleto-overlay .btn-close-style {
+    position: fixed !important;
+    top: 15px !important;
+    right: 15px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.5rem !important;
+    z-index: 10007 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+    background: #ff4757 !important;
+    color: white !important;
+    border: 2px solid white !important;
+}
+/* ===== FIXES RESPONSIVE DASHBOARD ===== */
+@media (max-width: 768px) {
+    /* Welcome banner - alinear a la izquierda */
+    .welcome-banner .welcome-content {
+        text-align: left !important;
+        padding: 1rem !important;
+    }
+    
+    .welcome-banner h2 {
+        font-size: 1.2rem !important;
+        text-align: left !important;
+    }
+    
+    .user-details {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        gap: 0.5rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* Headers de sección - alinear a la izquierda */
+    .featured-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    
+    .featured-header h3 {
+        font-size: 1.1rem !important;
+        text-align: left !important;
+    }
+    
+    /* Botones de acción - que se vean sin scroll horizontal */
+    .featured-header > div {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .featured-header button {
+        flex: 1 !important;
+        min-width: 140px !important;
+        font-size: 0.8rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    /* Widget Voces Virtuales */
+    #widget-voces-virtuales {
+        margin: 1rem 0 !important;
+        padding: 1rem !important;
+    }
+    
+    #widget-voces-virtuales > div:first-child {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+    
+    #widget-voces-virtuales h3 {
+        font-size: 1rem !important;
+    }
+    
+    .widget-vv-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+    
+    /* Contenido principal sin scroll horizontal */
+    .main-content {
+        padding: 0.5rem !important;
+        overflow-x: hidden !important;
+    }
+    
+    .content-section {
+        padding: 0.5rem !important;
+    }
+    
+    /* Botones de módulos - que no se centren fuera de pantalla */
+    .vv-btn-tab {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.8rem !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .vv-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+    
+    .vv-header > div:last-child {
+        flex-wrap: wrap !important;
+        width: 100% !important;
+    }
+}
 
 }

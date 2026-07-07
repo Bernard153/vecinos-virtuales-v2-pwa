@@ -641,4 +641,276 @@
     .modal-form {
         padding: 1.5rem;
     }
+    /* ============================================================
+   FIXES RESPONSIVE — Dashboard y Módulos
+   ============================================================ */
+
+/* 1. WELCOME BANNER — Texto alineado a la izquierda en móvil */
+@media (max-width: 768px) {
+    .welcome-banner {
+        min-height: 200px !important;
+    }
+    
+    .welcome-content {
+        padding: 1rem !important;
+        text-align: left !important;
+    }
+    
+    .welcome-banner h2 {
+        font-size: 1.3rem !important;
+        text-align: left !important;
+    }
+    
+    .user-details {
+        font-size: 0.85rem !important;
+        justify-content: flex-start !important;
+        flex-wrap: wrap !important;
+        gap: 0.4rem !important;
+    }
+    
+    .btn-edit-banner {
+        font-size: 0.75rem !important;
+        padding: 0.35rem 0.75rem !important;
+    }
+}
+
+/* 2. HEADER SUPERIOR — Avatar, carrito, logout visibles en móvil */
+@media (max-width: 768px) {
+    /* Ajustar el header principal para que los iconos se vean */
+    .main-header, 
+    header,
+    [class*="header"] {
+        padding: 0.5rem !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Iconos de usuario (avatar, carrito, logout) */
+    .user-menu,
+    .header-actions,
+    [class*="user-actions"],
+    [class*="header-icons"] {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 0.5rem !important;
+        flex-shrink: 0 !important;
+        margin-left: auto !important;
+    }
+    
+    /* Botones de iconos */
+    .user-menu button,
+    .header-actions button,
+    [class*="user-actions"] button,
+    [class*="header-icons"] button,
+    .btn-avatar,
+    .btn-cart,
+    .btn-logout {
+        padding: 0.4rem !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        font-size: 1rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+}
+
+/* 3. WIDGET VOCES VIRTUALES — Contraste y layout */
+@media (max-width: 768px) {
+    #widget-voces-virtuales {
+        margin: 1rem 0 !important;
+        padding: 1rem !important;
+        background: linear-gradient(135deg, rgba(30,41,59,0.98), rgba(15,23,42,0.95)) !important;
+    }
+    
+    #widget-voces-virtuales h3 {
+        font-size: 1rem !important;
+        color: #f1f5f9 !important;
+    }
+    
+    #widget-voces-virtuales .btn-primary {
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.8rem !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+    }
+    
+    .widget-vv-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+    }
+}
+
+/* 4. CONTENIDO PRINCIPAL — Sin scroll horizontal */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 0.5rem !important;
+        overflow-x: hidden !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    .content-section {
+        padding: 0.5rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Todos los contenedores dentro del dashboard */
+    #dashboard > div,
+    .dashboard-widget,
+    [id^="widget-"] {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}
+
+/* 5. BOTÓN CERRAR FOLLETO — Flotante siempre visible */
+.folleto-overlay .btn-close-style {
+    position: fixed !important;
+    top: 15px !important;
+    right: 15px !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.5rem !important;
+    z-index: 10007 !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4) !important;
+    background: #ff4757 !important;
+    color: white !important;
+    border: 2px solid white !important;
+    cursor: pointer !important;
+    line-height: 1 !important;
+}
+
+/* 6. HEADERS DE SECCIÓN — Alineados a la izquierda en móvil */
+@media (max-width: 768px) {
+    .featured-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+    
+    .featured-header h3 {
+        font-size: 1.1rem !important;
+        text-align: left !important;
+        width: 100% !important;
+    }
+    
+    .featured-header > div {
+        width: 100% !important;
+        justify-content: flex-start !important;
+    }
+    
+    .featured-header button {
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.75rem !important;
+    }
+}
+
+/* 7. MÓDULO VOCES VIRTUALES — Tabs responsive */
+@media (max-width: 768px) {
+    .vv-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+        padding: 0.75rem !important;
+    }
+    
+    .vv-header h1 {
+        font-size: 1.2rem !important;
+    }
+    
+    .vv-header > div:last-child {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+        gap: 0.4rem !important;
+    }
+    
+    .vv-btn-tab {
+        font-size: 0.8rem !important;
+        padding: 0.4rem 0.7rem !important;
+        flex: 1 !important;
+        min-width: 80px !important;
+        justify-content: center !important;
+    }
+    
+    /* Feed explorar en móvil */
+    .vv-feed-container {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.5rem !important;
+        padding: 0.5rem !important;
+    }
+    
+    .vv-video-card h4 {
+        font-size: 0.8rem !important;
+    }
+    
+    .vv-video-meta {
+        font-size: 0.7rem !important;
+        flex-wrap: wrap !important;
+    }
+}
+
+/* 8. MODAL REPRODUCTOR — Responsive */
+@media (max-width: 768px) {
+    .vv-modal-content {
+        max-width: 100% !important;
+        border-radius: 12px !important;
+        margin: 0.5rem !important;
+        max-height: 85vh !important;
+    }
+    
+    .vv-modal-info {
+        padding: 0.75rem !important;
+    }
+    
+    .vv-modal-info h3 {
+        font-size: 1rem !important;
+    }
+    
+    .vv-modal-actions {
+        flex-direction: column !important;
+    }
+    
+    .vv-btn-like,
+    .vv-btn-comment {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+/* 9. GALERÍA VENDEDOR — Responsive */
+@media (max-width: 768px) {
+    #galeria-vendedor-seccion {
+        padding: 1rem !important;
+        margin: 1rem 0 !important;
+    }
+    
+    #lista-productos-vendedor {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.75rem !important;
+    }
+}
+
+/* 10. BANNER INFERIOR — Mejorar en móvil */
+@media (max-width: 768px) {
+    .banner-container {
+        height: auto !important;
+        padding: 0.5rem !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.25rem !important;
+    }
+    
+    .banner-slide {
+        padding: 0.5rem !important;
+        font-size: 0.8rem !important;
+    }
+}
+
 }

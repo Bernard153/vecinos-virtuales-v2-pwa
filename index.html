@@ -351,7 +351,21 @@
                             <!-- Se llena automáticamente por la función verTiendaVecino -->
                         </div>
                     </div>
-
+					                    <!-- ===== WIDGET VOCES VIRTUALES EN DASHBOARD ===== -->
+                    <div id="widget-voces-virtuales" class="dashboard-widget" style="margin: 1rem 0; background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.9)); border-radius: 16px; padding: 1rem; border: 1px solid rgba(139,92,246,0.3);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem; color: #f1f5f9; font-size: 1.1rem;">
+                                <i class="fas fa-microphone-alt" style="color: #a78bfa;"></i>
+                                Voces Virtuales
+                            </h3>
+                            <button class="btn-primary" onclick="conmutarVistasPro('#modulo-voces-virtuales'); VV_VOCES_V2.switchTab('explorar'); VV_VOCES_V2.cargarFeed();" style="font-size: 0.8rem; padding: 0.4rem 0.8rem; white-space: nowrap; flex-shrink: 0;">
+                                Ver todo →
+                            </button>
+                        </div>
+                        <div id="widget-vv-feed" class="widget-vv-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;">
+                            <p style="text-align:center;color:#94a3b8;grid-column:1/-1;padding:1rem;">Cargando obras del barrio...</p>
+                        </div>
+                    </div>
 
                     <!-- Estado de Geolocalización -->
                     <div id="geo-status" style="margin: 1.5rem 0;">
@@ -1307,7 +1321,7 @@ window.addEventListener('hashchange', function() {
         <div id="vv-youtube-embed" class="vv-card oculto"></div>
     </div>
     <!-- ====== TAB 3: EXPLORAR (Feed) ====== -->
-    <div id="vv-tab-explorar oculto">
+	<div id="vv-tab-explorar" class="oculto">
         <div class="vv-header">
             <div>
                 <h1><i class="fas fa-compass"></i> Explorar</h1>
