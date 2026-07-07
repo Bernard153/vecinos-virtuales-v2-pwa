@@ -276,12 +276,11 @@ window.VV_WALLET = {
     // ============================================================
     // OBTENER CATÁLOGO DE LA TIENDA
     // ============================================================
-    getShopItems: async function(category = null) {
+        getShopItems: async function(category = null) {
         try {
             let query = supabase
                 .from('catalogo_regalos')
                 .select('*')
-                .eq('is_active', true)
                 .order('sort_order', { ascending: true });
 
             if (category) {
@@ -289,13 +288,18 @@ window.VV_WALLET = {
             }
 
             const { data, error } = await query;
-            if (error) throw error;
-            return data || [];
+            if (error) {
+                console.error('Error obteniendo catálogo:', error);
+                return [];
+            }
+            // Filtrar activos en JS por si la columna no existe
+            return (data || []).filter(i => i.is_active !== false);
         } catch (err) {
             console.error('Error obteniendo catálogo:', err);
             return [];
         }
     },
+
 
     // ============================================================
     // DESBLOQUEAR ITEM (avatar, filtro, etc.)
@@ -423,13 +427,18 @@ window.VV_WALLET = {
     // ============================================================
     // UI: MOSTRAR SALDO EN PANTALLA
     // ============================================================
-        renderBalanceWidget: function(containerId) {
+            renderBalanceWidget: function(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
         const user = VV_ROLES.getCurrentUser();
         if (!user) {
-            container.innerHTML = '';
+            container.innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Iniciá sesión</span>';
+            // Reintentar en 2 segundos (esperar login)
+            setTimeout(() => {
+                const u = VV_ROLES.getCurrentUser();
+                if (u) this.renderBalanceWidget(containerId);
+            }, 2000);
             return;
         }
 
@@ -439,8 +448,11 @@ window.VV_WALLET = {
                 <span style="color:#fbbf24;font-weight:700;font-size:1rem;">${balance}</span>
                 <span style="font-size:0.7rem;color:#94a3b8;margin-left:0.3rem;">XP: ${puntos_xp}</span>
             `;
+        }).catch(() => {
+            container.innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Error</span>';
         });
     },
+
 
 
     // ============================================================
