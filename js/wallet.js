@@ -7,7 +7,7 @@ window.VV_WALLET = {
     // ============================================================
     // CONSULTAR SALDO
     // ============================================================
-    getBalance: async function(userId) {
+        getBalance: async function(userId) {
         if (!userId) {
             const user = VV_ROLES.getCurrentUser();
             if (!user) return { balance: 0, puntos_xp: 0 };
@@ -18,18 +18,17 @@ window.VV_WALLET = {
             const { data, error } = await supabase
                 .from('billeteras')
                 .select('saldo_monedas, puntos_xp')
-                .eq('user_id', userId)
-                .single();
+                .eq('user_id', userId);
 
-            if (error && error.code !== 'PGRST116') throw error;
+            if (error) throw error;
 
-            if (!data) {
+            if (!data || data.length === 0) {
                 // Crear billetera si no existe
                 await this.initWallet(userId);
-                return { balance: 0, puntos_xp: 0 };
+                return { balance: 10, puntos_xp: 0 };
             }
 
-            return { balance: data.saldo_monedas || 0, puntos_xp: data.puntos_xp || 0 };
+            return { balance: data[0].saldo_monedas || 0, puntos_xp: data[0].puntos_xp || 0 };
         } catch (err) {
             console.error('Error obteniendo saldo:', err);
             return { balance: 0, puntos_xp: 0 };
