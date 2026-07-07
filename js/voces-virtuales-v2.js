@@ -873,20 +873,20 @@ VV_VOCES_V2.toggleLike = async function(videoId) {
 
     try {
         const { data: existing } = await supabase
-            .from('video_likes')
+            .from('karaoke_likes')
             .select('id')
             .eq('video_id', videoId)
             .eq('user_id', user.id)
             .single();
 
         if (existing) {
-            await supabase.from('video_likes').delete().eq('id', existing.id);
+            await supabase.from('karaoke_likes').delete().eq('id', existing.id);
             const { data: video } = await supabase.from('karaoke_videos').select('likes_count').eq('id', videoId).single();
             await supabase.from('karaoke_videos').update({ likes_count: Math.max(0, (video.likes_count || 0) - 1) }).eq('id', videoId);
             const btn = document.querySelector('.vv-btn-like');
             if (btn) btn.style.background = '';
         } else {
-            await supabase.from('video_likes').insert([{ video_id: videoId, user_id: user.id }]);
+            await supabase.from('karaoke_likes').insert([{ video_id: videoId, user_id: user.id }]);
             const { data: video } = await supabase.from('karaoke_videos').select('likes_count').eq('id', videoId).single();
             await supabase.from('karaoke_videos').update({ likes_count: (video.likes_count || 0) + 1 }).eq('id', videoId);
             const btn = document.querySelector('.vv-btn-like');
@@ -979,7 +979,7 @@ VV_VOCES_V2.postComment = async function(videoId, category, text) {
 
     try {
         const { data: existing } = await supabase
-            .from('video_comments')
+            .from('karaoke_comments')
             .select('id')
             .eq('video_id', videoId)
             .eq('user_id', user.id)
@@ -987,19 +987,22 @@ VV_VOCES_V2.postComment = async function(videoId, category, text) {
 
         if (existing) {
             await supabase
-                .from('video_comments')
+                .from('karaoke_comments')
                 .update({ comment_code: category, comment_text: text, category: category })
                 .eq('id', existing.id);
         } else {
             await supabase
-                .from('video_comments')
+                .from('karaoke_comments')
                 .insert([{
                     video_id: videoId,
                     user_id: user.id,
-                    comment_code: category,
+                    user_name: user.name || user.email || 'Anónimo',
+                    emoji: VV_VOCES_V2.categoryEmoji(category),
+                    video_timestamp: 0,
                     comment_text: text,
                     category: category
                 }]);
+
         }
 
         document.getElementById('vv-comments-section').style.display = 'none';
