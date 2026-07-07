@@ -724,8 +724,15 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
         throw new Error('No se pudo registrar el video: ' + insertError.message);
     }
 
-    console.log('✅ Video subido:', videoUrl);
+        console.log('✅ Video subido:', videoUrl);
+    
+    // Recompensa por subir video
+    if (window.VV_WALLET) {
+        VV_WALLET.rewardVideoUpload(user.id);
+    }
+    
     return { success: true, url: videoUrl, data: insertData };
+
 };
 // ============================================================
 // TAB 3: EXPLORAR — Feed público de videos
