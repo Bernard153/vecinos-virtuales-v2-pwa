@@ -423,7 +423,7 @@ window.VV_WALLET = {
     // ============================================================
     // UI: MOSTRAR SALDO EN PANTALLA
     // ============================================================
-    renderBalanceWidget: function(containerId) {
+        renderBalanceWidget: function(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -435,14 +435,13 @@ window.VV_WALLET = {
 
         this.getBalance(user.id).then(({ balance, puntos_xp }) => {
             container.innerHTML = `
-                <div style="display:flex;align-items:center;gap:0.5rem;background:rgba(251,191,36,0.15);padding:0.4rem 0.8rem;border-radius:20px;border:1px solid rgba(251,191,36,0.3);">
-                    <span style="font-size:1.1rem;">🪙</span>
-                    <span style="font-weight:700;color:#fbbf24;font-size:0.9rem;">${balance}</span>
-                    <span style="font-size:0.7rem;color:#94a3b8;margin-left:0.3rem;">XP: ${puntos_xp}</span>
-                </div>
+                <span style="font-size:1.2rem;">🪙</span>
+                <span style="color:#fbbf24;font-weight:700;font-size:1rem;">${balance}</span>
+                <span style="font-size:0.7rem;color:#94a3b8;margin-left:0.3rem;">XP: ${puntos_xp}</span>
             `;
         });
     },
+
 
     // ============================================================
     // UI: ABRIR TIENDA
