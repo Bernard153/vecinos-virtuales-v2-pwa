@@ -1134,7 +1134,7 @@ VV_VOCES_V2.cargarWidgetDashboard = async function() {
         }
 
         container.innerHTML = data.map(video => `
-            <div class="widget-vv-card" onclick="conmutarVistasPro('#modulo-voces-virtuales'); VV_VOCES_V2.switchTab('explorar'); VV_VOCES_V2.cargarFeed(); setTimeout(() => VV_VOCES_V2.openVideoPlayer('${video.id}'), 300);" 
+            <div class="widget-vv-card" onclick="conmutarVistasPro('#voces'); VV_VOCES_V2.switchTab('explorar'); VV_VOCES_V2.cargarFeed(); setTimeout(() => VV_VOCES_V2.openVideoPlayer('${video.id}'), 300);" 
                  style="background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid rgba(255,255,255,0.08);"
                  onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)'"
                  onmouseout="this.style.transform='';this.style.boxShadow=''">
