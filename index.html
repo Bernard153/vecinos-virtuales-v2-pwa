@@ -1172,61 +1172,7 @@
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
-    <script>
-// Conmutador de vistas - Karaoke vs Dashboard
-function conmutarVistasPro(destino) {
-    try {
-        var capaKaraoke = document.getElementById('modulo-karaoke-container');
-        var mainApp = document.getElementById('main-app');
-        var loadingScreen = document.getElementById('loading-screen');
-        
-        if (loadingScreen) loadingScreen.style.display = 'none';
-        
-        if (destino === '#karaoke') {
-            if (capaKaraoke) {
-                capaKaraoke.style.setProperty('display', 'block', 'important');
-                capaKaraoke.classList.add('active');
-            }
-            if (mainApp) mainApp.style.setProperty('display', 'none', 'important');
-            
-            window.location.hash = '#karaoke';
-            console.log("🎤 Karaoke activado");
-            
-            if (window.VV_KARAOKE && typeof window.VV_KARAOKE.init === 'function') {
-                setTimeout(function() { VV_KARAOKE.init(); }, 100);
-            }
-        } else {
-            if (capaKaraoke) {
-                capaKaraoke.style.setProperty('display', 'none', 'important');
-                capaKaraoke.classList.remove('active');
-            }
-            if (mainApp) {
-                mainApp.style.setProperty('display', 'flex', 'important');
-                mainApp.classList.add('active');
-            }
-            
-            var secciones = document.querySelectorAll('.content-section');
-            secciones.forEach(function(s) { s.classList.remove('active'); });
-            
-            var dashboard = document.getElementById('dashboard');
-            if (dashboard) dashboard.classList.add('active');
-            
-            window.location.hash = '#dashboard';
-            console.log("📊 Dashboard activado");
-        }
-    } catch (err) {
-        console.error("Error en conmutador:", err);
-    }
-}
-
-window.addEventListener('hashchange', function() {
-    if (window.location.hash === '#karaoke') {
-        conmutarVistasPro('#karaoke');
-    } else if (window.location.hash === '#dashboard') {
-        conmutarVistasPro('#dashboard');
-    }
-});
-</script>
+    
 	<!-- ============================================================
      🎤 VOCES VIRTUALES V2
      ============================================================ -->
@@ -1423,24 +1369,30 @@ window.addEventListener('hashchange', function() {
 .vv-comment-input button { padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: none; background: #3b82f6; color: white; cursor: pointer; }
 
 </style>
-
 <script>
 function conmutarVistasPro(destino) {
     try {
         var capaVoces = document.getElementById('modulo-voces-virtuales');
+        var capaKaraoke = document.getElementById('modulo-karaoke-container');
         var mainApp = document.getElementById('main-app');
         var loadingScreen = document.getElementById('loading-screen');
         if (loadingScreen) loadingScreen.style.display = 'none';
-        if (destino === '#voces') {
+
+        if (destino === '#voces' || destino === '#modulo-voces-virtuales') {
             if (capaVoces) capaVoces.style.display = 'block';
+            if (capaKaraoke) capaKaraoke.style.display = 'none';
             if (mainApp) mainApp.style.display = 'none';
             window.location.hash = '#voces';
             console.log("🎤 Voces Virtuales activado");
-            if (window.VV_VOCES && typeof VV_VOCES.init === 'function') {
-                setTimeout(function() { VV_VOCES.init(); }, 100);
-            }
+        } else if (destino === '#karaoke') {
+            if (capaKaraoke) capaKaraoke.style.display = 'block';
+            if (capaVoces) capaVoces.style.display = 'none';
+            if (mainApp) mainApp.style.display = 'none';
+            window.location.hash = '#karaoke';
+            console.log("🎤 Karaoke activado");
         } else {
             if (capaVoces) capaVoces.style.display = 'none';
+            if (capaKaraoke) capaKaraoke.style.display = 'none';
             if (mainApp) mainApp.style.display = 'flex';
             var secciones = document.querySelectorAll('.content-section');
             secciones.forEach(function(s) { s.classList.remove('active'); });
@@ -1453,8 +1405,10 @@ function conmutarVistasPro(destino) {
         console.error("Error en conmutador:", err);
     }
 }
+
 window.addEventListener('hashchange', function() {
     if (window.location.hash === '#voces') conmutarVistasPro('#voces');
+    else if (window.location.hash === '#karaoke') conmutarVistasPro('#karaoke');
     else if (window.location.hash === '#dashboard') conmutarVistasPro('#dashboard');
 });
 </script>
