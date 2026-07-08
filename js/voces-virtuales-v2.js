@@ -801,6 +801,8 @@ VV_VOCES_V2.renderVideoCard = function(video) {
 };
 
 VV_VOCES_V2.openVideoPlayer = async function(videoId) {
+    const existingModal = document.getElementById('vv-video-modal');
+    if (existingModal) existingModal.remove();
     let video = null;
 
     try {
