@@ -1331,40 +1331,8 @@ VV.admin.loadAllProducts = async function () {
         </div>
     `).join('');
 };
-
     // Obtener usuarios
-    const allUsers = await VV.auth.getAllUsers();
-
-    listContainer.innerHTML = filtered.map(product => {
-        const seller = allUsers.find(u => u.id === product.sellerId);
-        return `
-            <div class="product-card">
-                <div class="product-image">
-                    ${product.image ? `<img src="${product.image}" alt="${product.name}">` : '<i class="fas fa-box"></i>'}
-                </div>
-                <div class="product-info">
-                    <div class="product-category">${product.category}</div>
-                    <h3 class="product-name">${product.name}</h3>
-                    <p class="product-description">${product.description}</p>
-                    <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px; font-size: 0.85rem;">
-                        <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${product.neighborhood}</strong></p>
-                        <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${seller ? seller.name : 'Usuario desconocido'}</p>
-                        <button onclick="mostrarGaleriaVendedor('${product.sellerId}')" 
-                                style="margin-left: 10px; background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.8rem; text-decoration: underline;">
-                            Ver tienda
-                        </button>
-                    </div>
-                    <div class="product-footer">
-                        <span class="product-price">$${product.price}</span>
-                        <button class="btn-delete" onclick="VV.admin.deleteProduct('${product.id}')" title="Eliminar producto">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-};
+   
 VV.admin.loadAllImprovements = async function () {
     if (!VV.utils.isAdmin()) return;
 
@@ -1497,7 +1465,7 @@ VV.admin.loadAllImprovements = async function () {
     }).join('');
 };
 
-VV.admin.viewNeighborhoodDetails = function (neighborhood) {
+VV.admin.viewNeighborhoodDetails = async function (neighborhood) {
     alert(`Detalles de ${neighborhood}\n\nEsta funcionalidad mostrará información detallada del barrio.`);
 };
 
