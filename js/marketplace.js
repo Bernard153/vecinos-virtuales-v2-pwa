@@ -53,9 +53,10 @@ VV.marketplace = {
                         <i class="fas fa-edit"></i> Editar
                     </button>
                     ${!p.featured ? `
-                        <button class="btn-primary" onclick="VV.marketplace.requestFeatured('${p.id}')" style="background: var(--warning-yellow); color: var(--gray-800);">
-                            <i class="fas fa-star"></i> Solicitar Destacar
-                        </button>
+                    <button class="btn-primary" onclick="VV.featured.requestFeatured('${p.id}')" style="background: var(--warning-yellow); color: var(--gray-800);">
+                        <i class="fas fa-star"></i> Solicitar Destacar
+                    </button>
+
                     ` : `
                         <span class="badge" style="background: var(--warning-yellow); color: var(--gray-800); padding: 0.5rem 1rem;">
                             <i class="fas fa-star"></i> Destacado
