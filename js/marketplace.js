@@ -270,6 +270,9 @@ VV.marketplace = {
         // Verificar si el usuario ya tiene un nombre de negocio registrado
         const userBusinessName = VV.data.user.business_name || '';
         const hasBusinessName = userBusinessName !== '';
+        const userBusinessAddress = VV.data.user.business_address || '';
+        const hasBusinessAddress = userBusinessAddress !== '';
+
 
         let overlay = document.getElementById('product-form-overlay');
         if (!overlay) {
@@ -297,6 +300,13 @@ VV.marketplace = {
                         <p style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;">
                             <i class="fas fa-lightbulb"></i> Escribe y verás sugerencias de productos existentes
                         </p>
+                    </div>
+                    <div class="form-group">
+                            <label>Dirección del negocio *</label>
+                            ${hasBusinessAddress ?
+                `           <input type="text" id="product-business-address" value="${userBusinessAddress}" readonly style="background: var(--gray-100); cursor: not-allowed;" title="La dirección del negocio no se puede cambiar">` :
+                `           <input type="text" id="product-business-address" value="${product?.business_address || ''}" required placeholder="Ej: Calle 123, Lomas de Tafí">`
+                            }
                     </div>
                     <div class="form-row">
                         <div class="form-group">
@@ -393,10 +403,11 @@ VV.marketplace = {
 
     // Guardar producto (MIGRADO A SUPABASE)
     async saveProduct(existingProduct) {
-        const formData = {
+         const formData = {
             product: document.getElementById('product-name').value.trim(),
             category: document.getElementById('product-category').value,
             business: document.getElementById('product-business').value.trim(),
+            business_address: document.getElementById('product-business-address').value.trim(),
             price: parseFloat(document.getElementById('product-price').value),
             unit: document.getElementById('product-unit').value,
             quality: document.getElementById('product-quality').value,
@@ -412,14 +423,23 @@ VV.marketplace = {
 
         try {
             // Guardar nombre del negocio en el perfil del usuario (solo la primera vez)
+                        // Guardar nombre y dirección del negocio en el perfil del usuario (solo la primera vez)
+            const userUpdate = {};
             if (!VV.data.user.business_name) {
+                userUpdate.business_name = formData.business;
+            }
+            if (!VV.data.user.business_address) {
+                userUpdate.business_address = formData.business_address;
+            }
+            if (Object.keys(userUpdate).length > 0) {
                 const { error: userError } = await supabase
                     .from('users')
-                    .update({ business_name: formData.business })
+                    .update(userUpdate)
                     .eq('id', VV.data.user.id);
 
                 if (userError) throw userError;
-                VV.data.user.business_name = formData.business;
+                VV.data.user.business_name = userUpdate.business_name || VV.data.user.business_name;
+                VV.data.user.business_address = userUpdate.business_address || VV.data.user.business_address;
             }
 
             if (existingProduct) {
