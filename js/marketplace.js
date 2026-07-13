@@ -450,6 +450,7 @@ VV.marketplace = {
                         product: formData.product,
                         category: formData.category,
                         business: formData.business,
+                        business_address: formData.business_address,
                         price: formData.price,
                         unit: formData.unit,
                         quality: formData.quality,
@@ -476,6 +477,7 @@ VV.marketplace = {
                         product: formData.product,
                         category: formData.category,
                         business: formData.business,
+                        business_address: formData.business_address,
                         price: formData.price,
                         unit: formData.unit,
                         quality: formData.quality,
@@ -485,6 +487,7 @@ VV.marketplace = {
                     })
                     .select()
                     .single();
+
 
                 if (error) throw error;
 
