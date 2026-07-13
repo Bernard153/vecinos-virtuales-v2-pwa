@@ -227,6 +227,10 @@ VV.improvements = {
                         <input type="text" id="improvement-title" value="${improvement?.title || ''}" required>
                     </div>
                     <div class="form-group">
+                        <label>Nombre o Apodo (visible en la publicación) *</label>
+                        <input type="text" id="improvement-author-alias" value="${improvement?.author_alias || ''}" required placeholder="Ej: Don José, La Tía María, El Loco Carlos...">
+                    </div>
+                    <div class="form-group">
                         <label>Descripción *</label>
                         <textarea id="improvement-description" rows="4" required>${improvement?.description || ''}</textarea>
                     </div>
@@ -289,13 +293,14 @@ VV.improvements = {
     save(existing) {
         const formData = {
             title: document.getElementById('improvement-title').value.trim(),
+            author_alias: document.getElementById('improvement-author-alias').value.trim(),
             description: document.getElementById('improvement-description').value.trim(),
             category: document.getElementById('improvement-category').value,
             priority: document.getElementById('improvement-priority').value
         };
         
-        if (!formData.title || !formData.description || !formData.category || !formData.priority) {
-            alert('Completa todos los campos');
+        if (!formData.title || !formData.author_alias || !formData.description || !formData.category || !formData.priority) {
+            alert('Completa todos los campos obligatorios');
             return;
         }
         
@@ -326,6 +331,7 @@ VV.improvements = {
                     .from('improvements')
                     .update({
                         title: formData.title,
+                        author_alias: formData.author_alias,
                         description: formData.description,
                         category: formData.category,
                         priority: formData.priority,
@@ -343,6 +349,7 @@ VV.improvements = {
                     .from('improvements')
                     .insert({
                         title: formData.title,
+                        author_alias: formData.author_alias,
                         description: formData.description,
                         category: formData.category,
                         priority: formData.priority,
@@ -350,7 +357,7 @@ VV.improvements = {
                         status: 'pending',
                         votes: 0,
                         author_id: VV.data.user.id,
-                        author_name: VV.data.user.name,
+                        author_name: formData.author_alias,
                         author_number: VV.data.user.unique_number,
                         neighborhood: VV.data.neighborhood
                     })
