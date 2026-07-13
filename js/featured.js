@@ -2,9 +2,10 @@
 
 VV.featured = {
     // Solicitar destacar oferta
-    requestFeatured() {
+    requestFeatured(preselectProductId = null) {
         // Verificar si el usuario tiene productos
         const userProducts = VV.data.products.filter(p => p.seller_id === VV.data.user.id);
+
 
         if (userProducts.length === 0) {
             alert('Primero debes publicar al menos un producto para poder destacarlo.');
@@ -33,7 +34,7 @@ VV.featured = {
                         <select id="featured-product" required>
                             <option value="">Seleccionar producto</option>
                             ${userProducts.map(p => `
-                                <option value="${p.id}">${p.product} - $${p.price}/${p.unit}</option>
+                                <option value="${p.id}" ${preselectProductId === p.id ? 'selected' : ''}>${p.product} - $${p.price}/${p.unit}</option>
                             `).join('')}
                         </select>
                     </div>
