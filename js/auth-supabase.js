@@ -318,6 +318,7 @@ VV.auth = {
                     name: name,
                     phone: phone,
                     neighborhood: VV.data.neighborhood,
+                    home_neighborhood: VV.data.neighborhood,
                     unique_number: uniqueNumber,
                     role: 'user',
                     avatar: 'basic-1',
@@ -325,6 +326,7 @@ VV.auth = {
                     featured_credits: 0,
                     blocked: false
                 })
+
                 .select()
                 .single();
             
