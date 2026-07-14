@@ -1207,6 +1207,95 @@ VV.admin.loadAllNeighborhoods = async function () {
         container.innerHTML = '<p style="text-align: center; padding: 2rem; color: red;">Error cargando barrios</p>';
     }
 };
+VV.admin.loadAllUsers = async function () {
+    if (!VV.utils.isAdmin()) return;
+
+    const searchTerm = document.getElementById('admin-user-search').value.toLowerCase();
+    const neighborhoodFilter = document.getElementById('admin-user-neighborhood-filter').value;
+
+    try {
+        const { data: users, error } = await supabase
+            .from('users')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Poblar filtro de barrios
+        const neighborhoods = [...new Set(users.map(u => u.neighborhood).filter(Boolean))].sort();
+        const neighborhoodSelect = document.getElementById('admin-user-neighborhood-filter');
+        const currentValue = neighborhoodSelect.value;
+        neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
+            neighborhoods.map(n => `<option value="${n}" ${n === currentValue ? 'selected' : ''}>${n}</option>`).join('');
+
+        // Filtrar
+        let filtered = users;
+        if (neighborhoodFilter) filtered = filtered.filter(u => u.neighborhood === neighborhoodFilter);
+        if (searchTerm) filtered = filtered.filter(u =>
+            (u.name || '').toLowerCase().includes(searchTerm) ||
+            (u.email || '').toLowerCase().includes(searchTerm)
+        );
+
+        // Estadísticas
+        const statsContainer = document.getElementById('admin-users-stats');
+        const totalUsers = filtered.length;
+        const admins = filtered.filter(u => u.role === 'admin').length;
+        const totalBarrios = [...new Set(filtered.map(u => u.neighborhood).filter(Boolean))].length;
+        const withBusiness = filtered.filter(u => u.business_name).length;
+
+        statsContainer.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                <div class="stat-info"><h3>Total Usuarios</h3><p class="stat-number">${totalUsers}</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-map-marked-alt"></i></div>
+                <div class="stat-info"><h3>Barrios</h3><p class="stat-number">${totalBarrios}</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-user-shield"></i></div>
+                <div class="stat-info"><h3>Admins</h3><p class="stat-number">${admins}</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon orange"><i class="fas fa-store"></i></div>
+                <div class="stat-info"><h3>Con Negocio</h3><p class="stat-number">${withBusiness}</p></div>
+            </div>
+        `;
+
+        // Lista de usuarios
+        const listContainer = document.getElementById('admin-users-list');
+        if (filtered.length === 0) {
+            listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay usuarios</p>';
+            return;
+        }
+
+        listContainer.innerHTML = filtered.map(user => `
+            <div class="user-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid ${user.role === 'admin' ? 'var(--error-red)' : 'var(--primary-blue)'};">
+                <div class="user-info">
+                    <h4 style="color: var(--gray-900); margin-bottom: 0.25rem;">${user.name || 'Sin nombre'}</h4>
+                    <p style="color: var(--gray-600); font-size: 0.9rem;">${user.email || ''}</p>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-700);">
+                        <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${user.neighborhood || 'Sin barrio'}</strong></p>
+                        <p style="margin: 0.25rem 0;"><i class="fas fa-hashtag"></i> #${user.unique_number || 'N/A'}</p>
+                        <p style="margin: 0.25rem 0;"><i class="fas fa-phone"></i> ${user.phone || 'N/A'}</p>
+                        <p style="margin: 0.25rem 0;"><i class="fas fa-user-tag"></i> Rol: <strong>${user.role || 'user'}</strong></p>
+                        ${user.business_name ? `<p style="margin: 0.25rem 0;"><i class="fas fa-store"></i> ${user.business_name}</p>` : ''}
+                        ${user.business_address ? `<p style="margin: 0.25rem 0;"><i class="fas fa-location-dot"></i> ${user.business_address}</p>` : ''}
+                    </div>
+                </div>
+                <div class="user-actions" style="margin-top: 0.75rem;">
+                    <span class="user-role-badge ${user.role === 'admin' ? 'admin' : 'user'}" style="padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.75rem; font-weight: 700; background: ${user.role === 'admin' ? 'linear-gradient(135deg, var(--primary-blue), var(--primary-purple))' : 'var(--gray-200)'}; color: ${user.role === 'admin' ? 'white' : 'var(--gray-700)'};">
+                        ${user.role === 'admin' ? '👑 Admin' : '🏠 Vecino'}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error cargando usuarios:', error);
+        document.getElementById('admin-users-list').innerHTML = '<p style="text-align: center; padding: 2rem; color: red;">Error cargando usuarios</p>';
+    }
+};
 
 VV.admin.loadAllProducts = async function () {
     if (!VV.utils.isAdmin()) return;
