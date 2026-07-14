@@ -1733,6 +1733,253 @@ VV.admin.deleteFeatured = function (offerId) {
     VV.admin.loadFeaturedOffers();
     VV.utils.showSuccess('Oferta eliminada');
 };
+// ============================================================
+// ADMIN: GESTIÓN DE BILLETERAS
+// ============================================================
+VV.admin.loadAllWallets = async function () {
+    if (!VV.utils.isAdmin()) return;
+
+    const searchTerm = document.getElementById('admin-wallet-search').value.toLowerCase();
+
+    try {
+        // Cargar todas las billeteras
+        const { data: wallets, error: walletError } = await supabase
+            .from('billeteras')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (walletError) throw walletError;
+
+        // Cargar todos los usuarios
+        const { data: users, error: usersError } = await supabase
+            .from('users')
+            .select('*');
+
+        if (usersError) throw usersError;
+
+        // Combinar billeteras con usuarios
+        let combined = wallets.map(w => {
+            const user = users.find(u => u.id === w.user_id);
+            return {
+                ...w,
+                user_name: user?.name || 'Desconocido',
+                user_email: user?.email || '',
+                neighborhood: user?.neighborhood || ''
+            };
+        });
+
+        // Filtrar por búsqueda
+        if (searchTerm) {
+            combined = combined.filter(w =>
+                (w.user_name || '').toLowerCase().includes(searchTerm) ||
+                (w.user_email || '').toLowerCase().includes(searchTerm)
+            );
+        }
+
+        // Estadísticas
+        const totalBalance = combined.reduce((sum, w) => sum + (w.saldo_monedas || 0), 0);
+        const totalXP = combined.reduce((sum, w) => sum + (w.puntos_xp || 0), 0);
+        const statsContainer = document.getElementById('admin-wallet-stats');
+        statsContainer.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-wallet"></i></div>
+                <div class="stat-info"><h3>Billeteras</h3><p class="stat-number">${combined.length}</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-coins"></i></div>
+                <div class="stat-info"><h3>Créditos en circulación</h3><p class="stat-number">${totalBalance}</p></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-star"></i></div>
+                <div class="stat-info"><h3>XP total</h3><p class="stat-number">${totalXP}</p></div>
+            </div>
+        `;
+
+        // Lista de billeteras
+        const listContainer = document.getElementById('admin-wallets-list');
+        if (combined.length === 0) {
+            listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay billeteras</p>';
+        } else {
+            listContainer.innerHTML = combined.map(w => `
+                <div class="user-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #fbbf24;">
+                    <div class="user-info">
+                        <h4 style="color: var(--gray-900); margin-bottom: 0.25rem;">${w.user_name}</h4>
+                        <p style="color: var(--gray-600); font-size: 0.9rem;">${w.user_email}</p>
+                        <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-700);">
+                            <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> ${w.neighborhood || 'Sin barrio'}</p>
+                            <p style="margin: 0.25rem 0;"><i class="fas fa-coins"></i> Saldo: <strong style="color: #fbbf24;">${w.saldo_monedas || 0}</strong></p>
+                            <p style="margin: 0.25rem 0;"><i class="fas fa-star"></i> XP: <strong>${w.puntos_xp || 0}</strong></p>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                        <button class="btn-approve" style="flex: 1; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: var(--success-green); color: white;" onclick="VV.admin.showAdjustWalletForm('${w.user_id}', '${w.user_name}', ${w.saldo_monedas || 0}, 'add')">
+                            <i class="fas fa-plus"></i> Acreditar
+                        </button>
+                        <button class="btn-reject" style="flex: 1; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: var(--error-red); color: white;" onclick="VV.admin.showAdjustWalletForm('${w.user_id}', '${w.user_name}', ${w.saldo_monedas || 0}, 'subtract')">
+                            <i class="fas fa-minus"></i> Descontar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Cargar solicitudes pendientes
+        VV.admin.loadCreditRequests();
+
+    } catch (error) {
+        console.error('Error cargando billeteras:', error);
+        document.getElementById('admin-wallets-list').innerHTML = '<p style="text-align: center; padding: 2rem; color: red;">Error cargando billeteras</p>';
+    }
+};
+
+VV.admin.loadCreditRequests = async function () {
+    try {
+        const { data: requests, error } = await supabase
+            .from('credit_requests')
+            .select('*')
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const container = document.getElementById('admin-credit-requests-list');
+
+        if (!requests || requests.length === 0) {
+            container.innerHTML = '<p style="color: var(--gray-600); padding: 1rem; background: var(--gray-50); border-radius: 8px;">No hay solicitudes pendientes</p>';
+            return;
+        }
+
+        container.innerHTML = requests.map(req => `
+            <div style="background: #fef3c7; border: 2px solid var(--warning-orange); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                    <p style="margin: 0; font-weight: 600;">${req.user_name || 'Usuario'} (${req.neighborhood || ''})</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-700);">Solicita: <strong>${req.amount} 🪙</strong></p>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">Motivo: ${req.reason || 'No especificado'}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.75rem; color: var(--gray-500);">${new Date(req.created_at).toLocaleString('es-AR')}</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn-approve" style="padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: var(--success-green); color: white;" onclick="VV.admin.approveCreditRequest('${req.id}', '${req.user_id}', ${req.amount})">
+                        <i class="fas fa-check"></i> Aprobar
+                    </button>
+                    <button class="btn-reject" style="padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: var(--error-red); color: white;" onclick="VV.admin.rejectCreditRequest('${req.id}')">
+                        <i class="fas fa-times"></i> Rechazar
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        console.error('Error cargando solicitudes:', error);
+    }
+};
+
+VV.admin.showAdjustWalletForm = function (userId, userName, currentBalance, action) {
+    let overlay = document.getElementById('wallet-adjust-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'wallet-adjust-overlay';
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
+    }
+
+    const title = action === 'add' ? 'Acreditar Créditos' : 'Descontar Créditos';
+    const color = action === 'add' ? 'var(--success-green)' : 'var(--error-red)';
+
+    overlay.innerHTML = `
+        <div class="modal-form" style="max-width: 400px;">
+            <h3 style="color: ${color};"><i class="fas fa-coins"></i> ${title}</h3>
+            <p style="color: var(--gray-600); margin-bottom: 1rem;">
+                Usuario: <strong>${userName}</strong><br>
+                Saldo actual: <strong style="color: #fbbf24;">${currentBalance} 🪙</strong>
+            </p>
+            <form id="wallet-adjust-form">
+                <div class="form-group">
+                    <label>Cantidad de créditos *</label>
+                    <input type="number" id="wallet-adjust-amount" min="1" required placeholder="Ej: 10">
+                </div>
+                <div class="form-group">
+                    <label>Motivo *</label>
+                    <textarea id="wallet-adjust-reason" rows="2" required placeholder="Ej: Bonus por participación, ajuste manual, etc."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="document.getElementById('wallet-adjust-overlay').classList.remove('active')">Cancelar</button>
+                    <button type="submit" class="btn-save" style="background: ${color};">
+                        <i class="fas fa-check"></i> Confirmar
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+
+    overlay.classList.add('active');
+
+    document.getElementById('wallet-adjust-form').onsubmit = async (e) => {
+        e.preventDefault();
+        const amount = parseInt(document.getElementById('wallet-adjust-amount').value);
+        const reason = document.getElementById('wallet-adjust-reason').value.trim();
+
+        if (!amount || amount <= 0) {
+            alert('La cantidad debe ser mayor a 0');
+            return;
+        }
+
+        try {
+            if (action === 'add') {
+                await VV_WALLET.earnCredits(userId, amount, `Acreditado por admin: ${reason}`, null, 'admin_adjust');
+            } else {
+                const result = await VV_WALLET.spendCredits(userId, amount, `Descontado por admin: ${reason}`, null, 'admin_adjust');
+                if (!result.success) {
+                    alert('Error: ' + result.error);
+                    return;
+                }
+            }
+
+            document.getElementById('wallet-adjust-overlay').classList.remove('active');
+            VV.admin.loadAllWallets();
+            VV.utils.showSuccess(`${action === 'add' ? 'Acreditados' : 'Descontados'} ${amount} créditos a ${userName}`);
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    };
+
+    overlay.onclick = (e) => {
+        if (e.target === overlay) overlay.classList.remove('active');
+    };
+};
+
+VV.admin.approveCreditRequest = async function (requestId, userId, amount) {
+    try {
+        // Acreditar créditos
+        await VV_WALLET.earnCredits(userId, amount, 'Solicitud de créditos aprobada', requestId, 'credit_request');
+
+        // Marcar solicitud como aprobada
+        await supabase
+            .from('credit_requests')
+            .update({ status: 'approved', resolved_at: new Date().toISOString() })
+            .eq('id', requestId);
+
+        VV.admin.loadAllWallets();
+        VV.utils.showSuccess(`Solicitud aprobada: ${amount} créditos acreditados`);
+    } catch (error) {
+        alert('Error al aprobar: ' + error.message);
+    }
+};
+
+VV.admin.rejectCreditRequest = async function (requestId) {
+    const notes = prompt('Motivo del rechazo (opcional):') || '';
+
+    try {
+        await supabase
+            .from('credit_requests')
+            .update({ status: 'rejected', admin_notes: notes, resolved_at: new Date().toISOString() })
+            .eq('id', requestId);
+
+        VV.admin.loadAllWallets();
+        VV.utils.showSuccess('Solicitud rechazada');
+    } catch (error) {
+        alert('Error al rechazar: ' + error.message);
+    }
+};
 
 // ========== GESTIÓN DE AVATARES ==========
 
