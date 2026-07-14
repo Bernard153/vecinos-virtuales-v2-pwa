@@ -474,7 +474,7 @@ window.VV_WALLET = {
 
         const modal = document.createElement('div');
         modal.id = 'vv-shop-modal';
-        modal.className = 'vv-modal-overlay';
+        modal.className = 'modal-overlay active';
         modal.innerHTML = `
             <div class="vv-modal-content" style="max-width:500px;">
                 <button class="vv-modal-close" onclick="document.getElementById('vv-shop-modal').remove()">✕</button>
