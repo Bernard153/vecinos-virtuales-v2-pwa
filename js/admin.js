@@ -1093,8 +1093,7 @@ window.submitSponsorRequest = async function () {
         alert('Error al enviar la solicitud: ' + error.message);
     }
 }
-
-// ========== FUNCIONES GLOBALES PARA ADMIN ==========
+// ========== GESTIÓN DE BARRIOS, PRODUCTOS Y MEJORAS ==========
 
 VV.admin.loadAllNeighborhoods = async function () {
     if (!VV.utils.isAdmin()) return;
@@ -1103,7 +1102,6 @@ VV.admin.loadAllNeighborhoods = async function () {
     container.innerHTML = '<p style="text-align: center; padding: 2rem;">Cargando barrios...</p>';
 
     try {
-        // Obtener todos los usuarios desde Supabase
         const { data: users, error: usersError } = await supabase
             .from('users')
             .select('*')
@@ -1111,7 +1109,6 @@ VV.admin.loadAllNeighborhoods = async function () {
 
         if (usersError) throw usersError;
 
-        // Obtener todos los barrios con usuarios
         const neighborhoods = new Map();
 
         users.forEach(user => {
@@ -1130,7 +1127,6 @@ VV.admin.loadAllNeighborhoods = async function () {
             }
         });
 
-        // Contar productos, mejoras, etc por barrio
         VV.data.products.forEach(p => {
             if (neighborhoods.has(p.neighborhood)) {
                 neighborhoods.get(p.neighborhood).products++;
@@ -1157,7 +1153,6 @@ VV.admin.loadAllNeighborhoods = async function () {
 
         const neighborhoodsList = Array.from(neighborhoods.values());
 
-        // Estadísticas
         const statsContainer = document.getElementById('admin-neighborhoods-stats');
         statsContainer.innerHTML = `
         <div class="stat-card">
@@ -1198,7 +1193,6 @@ VV.admin.loadAllNeighborhoods = async function () {
         </div>
     `;
 
-        // Lista de barrios
         const listContainer = document.getElementById('admin-neighborhoods-list');
         if (neighborhoodsList.length === 0) {
             listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay barrios registrados</p>';
@@ -1254,21 +1248,18 @@ VV.admin.loadAllProducts = async function () {
     const categoryFilter = document.getElementById('admin-product-category-filter').value;
     const searchTerm = document.getElementById('admin-product-search').value.toLowerCase();
 
-    // Poblar filtro de barrios
     const neighborhoods = [...new Set(VV.data.products.map(p => p.neighborhood))].sort();
     const neighborhoodSelect = document.getElementById('admin-product-neighborhood-filter');
     const currentValue = neighborhoodSelect.value;
     neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
         neighborhoods.map(n => `<option value="${n}" ${n === currentValue ? 'selected' : ''}>${n}</option>`).join('');
 
-    // Poblar filtro de categorías
     const categories = [...new Set(VV.data.products.map(p => p.category))].sort();
     const categorySelect = document.getElementById('admin-product-category-filter');
     const currentCat = categorySelect.value;
     categorySelect.innerHTML = '<option value="">Todas las categorías</option>' +
         categories.map(c => `<option value="${c}" ${c === currentCat ? 'selected' : ''}>${c}</option>`).join('');
 
-    // Filtrar productos
     let filtered = VV.data.products;
     if (neighborhoodFilter) filtered = filtered.filter(p => p.neighborhood === neighborhoodFilter);
     if (categoryFilter) filtered = filtered.filter(p => p.category === categoryFilter);
@@ -1277,7 +1268,6 @@ VV.admin.loadAllProducts = async function () {
         p.description.toLowerCase().includes(searchTerm)
     );
 
-    // Estadísticas
     const statsContainer = document.getElementById('admin-products-stats');
     const totalValue = filtered.reduce((sum, p) => sum + parseFloat(p.price || 0), 0);
     statsContainer.innerHTML = `
@@ -1319,14 +1309,12 @@ VV.admin.loadAllProducts = async function () {
         </div>
     `;
 
-    // Lista de productos
     const listContainer = document.getElementById('admin-products-list');
     if (filtered.length === 0) {
         listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay productos</p>';
         return;
     }
 
-    // Obtener usuarios
     const allUsers = await VV.auth.getAllUsers();
 
     listContainer.innerHTML = filtered.map(product => {
@@ -1366,19 +1354,16 @@ VV.admin.loadAllImprovements = async function () {
     const neighborhoodFilter = document.getElementById('admin-improvement-neighborhood-filter').value;
     const statusFilter = document.getElementById('admin-improvement-status-filter').value;
 
-    // Poblar filtro de barrios
     const neighborhoods = [...new Set(VV.data.improvements.map(i => i.neighborhood))].sort();
     const neighborhoodSelect = document.getElementById('admin-improvement-neighborhood-filter');
     const currentValue = neighborhoodSelect.value;
     neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
         neighborhoods.map(n => `<option value="${n}" ${n === currentValue ? 'selected' : ''}>${n}</option>`).join('');
 
-    // Filtrar mejoras
     let filtered = VV.data.improvements;
     if (neighborhoodFilter) filtered = filtered.filter(i => i.neighborhood === neighborhoodFilter);
     if (statusFilter) filtered = filtered.filter(i => i.status === statusFilter);
 
-    // Estadísticas (basadas en los datos FILTRADOS)
     const statsContainer = document.getElementById('admin-improvements-stats');
     const pending = filtered.filter(i => i.status === 'pending').length;
     const inProgress = filtered.filter(i => i.status === 'in-progress').length;
@@ -1424,14 +1409,12 @@ VV.admin.loadAllImprovements = async function () {
         </div>
     `;
 
-    // Lista de mejoras
     const listContainer = document.getElementById('admin-improvements-list');
     if (filtered.length === 0) {
         listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay mejoras</p>';
         return;
     }
 
-    // Obtener usuarios
     const allUsers = await VV.auth.getAllUsers();
 
     listContainer.innerHTML = filtered.map(improvement => {
