@@ -450,9 +450,193 @@ window.VV_WALLET = {
         }).catch(() => {
             container.innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Error</span>';
         });
+     // ============================================================
+    // UI: SOLICITAR CRÉDITOS AL ADMIN
+    // ============================================================
+    showCreditRequestForm: function() {
+        const user = VV_ROLES.getCurrentUser();
+        if (!user) {
+            alert('Iniciá sesión para solicitar créditos');
+            return;
+        }
+
+        let overlay = document.getElementById('credit-request-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'credit-request-overlay';
+            overlay.className = 'modal-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        overlay.innerHTML = `
+            <div class="modal-form" style="max-width: 400px;">
+                <h3><i class="fas fa-coins"></i> Solicitar Créditos</h3>
+                <p style="color: var(--gray-600); margin-bottom: 1rem;">
+                    Tu solicitud será revisada por el administrador.
+                </p>
+                <form id="credit-request-form">
+                    <div class="form-group">
+                        <label>Cantidad de créditos *</label>
+                        <input type="number" id="credit-request-amount" min="1" max="100" required placeholder="Ej: 10">
+                    </div>
+                    <div class="form-group">
+                        <label>Motivo *</label>
+                        <textarea id="credit-request-reason" rows="3" required placeholder="Ej: Para regalar en el certamen, para destacar mi producto, etc."></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="document.getElementById('credit-request-overlay').classList.remove('active')">Cancelar</button>
+                        <button type="submit" class="btn-save">
+                            <i class="fas fa-paper-plane"></i> Enviar Solicitud
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+
+        overlay.classList.add('active');
+
+        document.getElementById('credit-request-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const amount = parseInt(document.getElementById('credit-request-amount').value);
+            const reason = document.getElementById('credit-request-reason').value.trim();
+
+            try {
+                await supabase
+                    .from('credit_requests')
+                    .insert([{
+                        user_id: user.id,
+                        user_name: user.name,
+                        neighborhood: user.neighborhood || '',
+                        amount: amount,
+                        reason: reason,
+                        status: 'pending'
+                    }]);
+
+                overlay.classList.remove('active');
+                alert('✅ Solicitud enviada. El administrador la revisará pronto.');
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        };
+
+        overlay.onclick = (e) => {
+            if (e.target === overlay) overlay.classList.remove('active');
+        };
     },
 
+    // ============================================================
+    // UI: CANJEAR XP POR CRÉDITOS
+    // ============================================================
+    showExchangeForm: async function() {
+        const user = VV_ROLES.getCurrentUser();
+        if (!user) {
+            alert('Iniciá sesión para canjear XP');
+            return;
+        }
 
+        const { balance, puntos_xp } = await this.getBalance(user.id);
+        const exchangeRate = 10; // 10 XP = 1 crédito
+        const maxCredits = Math.floor(puntos_xp / exchangeRate);
+
+        let overlay = document.getElementById('exchange-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'exchange-overlay';
+            overlay.className = 'modal-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        overlay.innerHTML = `
+            <div class="modal-form" style="max-width: 400px;">
+                <h3><i class="fas fa-exchange-alt"></i> Canjear XP por Créditos</h3>
+                <div style="background: var(--gray-50); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <p style="margin: 0.25rem 0;"><i class="fas fa-star"></i> Tu XP: <strong>${puntos_xp}</strong></p>
+                    <p style="margin: 0.25rem 0;"><i class="fas fa-coins"></i> Tu saldo: <strong style="color: #fbbf24;">${balance} 🪙</strong></p>
+                    <p style="margin: 0.5rem 0 0; font-size: 0.85rem; color: var(--gray-600);">
+                        Tasa de cambio: <strong>${exchangeRate} XP = 1 🪙</strong><br>
+                        Podés canjear hasta: <strong>${maxCredits} 🪙</strong>
+                    </p>
+                </div>
+                ${maxCredits > 0 ? `
+                    <form id="exchange-form">
+                        <div class="form-group">
+                            <label>Créditos a canjear *</label>
+                            <input type="number" id="exchange-amount" min="1" max="${maxCredits}" required placeholder="Ej: 5">
+                            <p style="font-size: 0.8rem; color: var(--gray-600); margin-top: 0.25rem;">Se descontarán ${exchangeRate} XP por cada crédito</p>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-cancel" onclick="document.getElementById('exchange-overlay').classList.remove('active')">Cancelar</button>
+                            <button type="submit" class="btn-save">
+                                <i class="fas fa-check"></i> Canjear
+                            </button>
+                        </div>
+                    </form>
+                ` : `
+                    <p style="text-align: center; color: var(--gray-600); padding: 1rem;">No tenés XP suficiente para canjear. Necesitás al menos ${exchangeRate} XP.</p>
+                    <button type="button" class="btn-cancel" style="width: 100%;" onclick="document.getElementById('exchange-overlay').classList.remove('active')">Cerrar</button>
+                `}
+            </div>
+        `;
+
+        overlay.classList.add('active');
+
+        if (maxCredits > 0) {
+            document.getElementById('exchange-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const credits = parseInt(document.getElementById('exchange-amount').value);
+                const xpCost = credits * exchangeRate;
+
+                if (credits > maxCredits) {
+                    alert('No tenés XP suficiente');
+                    return;
+                }
+
+                try {
+                    // Descontar XP
+                    const { data: wallet } = await supabase
+                        .from('billeteras')
+                        .select('puntos_xp, saldo_monedas')
+                        .eq('user_id', user.id);
+
+                    if (!wallet || wallet.length === 0) {
+                        alert('Billetera no encontrada');
+                        return;
+                    }
+
+                    const newXP = (wallet[0].puntos_xp || 0) - xpCost;
+                    const newBalance = (wallet[0].saldo_monedas || 0) + credits;
+
+                    await supabase
+                        .from('billeteras')
+                        .update({
+                            puntos_xp: newXP,
+                            saldo_monedas: newBalance,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('user_id', user.id);
+
+                    // Registrar transacción
+                    await this.addTransaction(user.id, credits, 'reward', `Canje de ${xpCost} XP por ${credits} créditos`, null, 'xp_exchange');
+
+                    overlay.classList.remove('active');
+                    alert(`✅ Canjeaste ${xpCost} XP por ${credits} 🪙`);
+
+                    // Actualizar saldo visible
+                    if (document.getElementById('wallet-balance-display')) {
+                        this.renderBalanceWidget('wallet-balance-display');
+                    }
+                } catch (err) {
+                    alert('Error: ' + err.message);
+                }
+            };
+        }
+
+        overlay.onclick = (e) => {
+            if (e.target === overlay) overlay.classList.remove('active');
+        };
+    }
+
+    },
 
     // ============================================================
     // UI: ABRIR TIENDA
