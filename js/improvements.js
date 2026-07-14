@@ -109,9 +109,11 @@ VV.improvements = {
                     </div>
                 ` : ''}
                 <div style="font-size: 0.85rem; color: var(--gray-600); margin: 0.5rem 0;">
-                    <i class="fas fa-calendar"></i> Propuesta: ${new Date(imp.createdAt || Date.now()).toLocaleDateString('es-AR')}
+                    <i class="fas fa-user"></i> Propuesto por: <strong>${imp.author_alias || imp.author_name || 'Anónimo'}</strong><br>
+                    <i class="fas fa-calendar"></i> Propuesta: ${new Date(imp.createdAt || imp.created_at || Date.now()).toLocaleDateString('es-AR')}
                     ${imp.status === 'Completado' && imp.completedAt ? `<br><i class="fas fa-check-circle"></i> Realizada: ${new Date(imp.completedAt).toLocaleDateString('es-AR')} por ${imp.completedBy}` : ''}
                 </div>
+
                 <div class="card-footer">
                     <span style="color: var(--gray-600);"><i class="fas fa-tag"></i> ${imp.category}</span>
                     ${VV.improvements.renderVoteButton(imp)}
