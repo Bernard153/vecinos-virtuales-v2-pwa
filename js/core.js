@@ -115,6 +115,9 @@ const VV = {
                 if (sectionId === 'admin-users' && VV.admin.loadAllUsers) {
                     VV.admin.loadAllUsers();
                 }
+                if (sectionId === 'admin-wallet' && VV.admin.loadAllWallets) {
+                    VV.admin.loadAllWallets();
+                }
                 if (sectionId === 'folleto') {
                     if (typeof window.abrirFolletoVisual === 'function') {
                         window.abrirFolletoVisual();
