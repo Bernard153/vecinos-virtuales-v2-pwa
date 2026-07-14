@@ -831,7 +831,7 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
 
     const modal = document.createElement('div');
     modal.id = 'vv-video-modal';
-    modal.className = 'vv-modal-overlay';
+    modal.className = 'modal-overlay active';
     modal.innerHTML = `
         <div class="vv-modal-content">
             <button class="vv-modal-close" onclick="VV_VOCES_V2.closeVideoPlayer()">✕</button>
