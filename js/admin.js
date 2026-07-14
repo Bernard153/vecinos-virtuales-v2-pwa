@@ -1104,8 +1104,7 @@ VV.admin.loadAllNeighborhoods = async function () {
     try {
         const { data: users, error: usersError } = await supabase
             .from('users')
-            .select('*')
-            .neq('neighborhood', 'Administrador');
+            .select('*');
 
         if (usersError) throw usersError;
 
@@ -1139,67 +1138,50 @@ VV.admin.loadAllNeighborhoods = async function () {
             }
         });
 
-        VV.data.culturalPosts.forEach(c => {
-            if (neighborhoods.has(c.neighborhood)) {
-                neighborhoods.get(c.neighborhood).cultural++;
-            }
-        });
+        if (VV.data.culturalPosts) {
+            VV.data.culturalPosts.forEach(c => {
+                if (neighborhoods.has(c.neighborhood)) {
+                    neighborhoods.get(c.neighborhood).cultural++;
+                }
+            });
+        }
 
-        VV.data.services.forEach(s => {
-            if (neighborhoods.has(s.neighborhood)) {
-                neighborhoods.get(s.neighborhood).services++;
-            }
-        });
+        if (VV.data.services) {
+            VV.data.services.forEach(s => {
+                if (neighborhoods.has(s.neighborhood)) {
+                    neighborhoods.get(s.neighborhood).services++;
+                }
+            });
+        }
 
         const neighborhoodsList = Array.from(neighborhoods.values());
 
         const statsContainer = document.getElementById('admin-neighborhoods-stats');
         statsContainer.innerHTML = `
         <div class="stat-card">
-            <div class="stat-icon blue">
-                <i class="fas fa-map-marked-alt"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Total Barrios</h3>
-                <p class="stat-number">${neighborhoodsList.length}</p>
-            </div>
+            <div class="stat-icon blue"><i class="fas fa-map-marked-alt"></i></div>
+            <div class="stat-info"><h3>Total Barrios</h3><p class="stat-number">${neighborhoodsList.length}</p></div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon green">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Total Usuarios</h3>
-                <p class="stat-number">${users.filter(u => u.neighborhood !== 'Administrador').length}</p>
-            </div>
+            <div class="stat-icon green"><i class="fas fa-users"></i></div>
+            <div class="stat-info"><h3>Total Usuarios</h3><p class="stat-number">${users.length}</p></div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon purple">
-                <i class="fas fa-shopping-bag"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Total Productos</h3>
-                <p class="stat-number">${VV.data.products.length}</p>
-            </div>
+            <div class="stat-icon purple"><i class="fas fa-shopping-bag"></i></div>
+            <div class="stat-info"><h3>Total Productos</h3><p class="stat-number">${VV.data.products.length}</p></div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon orange">
-                <i class="fas fa-tools"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Total Mejoras</h3>
-                <p class="stat-number">${VV.data.improvements.length}</p>
-            </div>
+            <div class="stat-icon orange"><i class="fas fa-tools"></i></div>
+            <div class="stat-info"><h3>Total Mejoras</h3><p class="stat-number">${VV.data.improvements.length}</p></div>
         </div>
     `;
 
-        const listContainer = document.getElementById('admin-neighborhoods-list');
         if (neighborhoodsList.length === 0) {
-            listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay barrios registrados</p>';
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay barrios registrados</p>';
             return;
         }
 
-        listContainer.innerHTML = `
+        container.innerHTML = `
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
             ${neighborhoodsList.map(n => `
                 <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid var(--primary-blue);">
@@ -1207,26 +1189,11 @@ VV.admin.loadAllNeighborhoods = async function () {
                         <i class="fas fa-map-marker-alt"></i> ${n.name}
                     </h3>
                     <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
-                        <p style="margin: 0; display: flex; justify-content: space-between;">
-                            <span><i class="fas fa-users"></i> Usuarios:</span>
-                            <strong>${n.users.length}</strong>
-                        </p>
-                        <p style="margin: 0; display: flex; justify-content: space-between;">
-                            <span><i class="fas fa-shopping-bag"></i> Productos:</span>
-                            <strong>${n.products}</strong>
-                        </p>
-                        <p style="margin: 0; display: flex; justify-content: space-between;">
-                            <span><i class="fas fa-tools"></i> Mejoras:</span>
-                            <strong>${n.improvements}</strong>
-                        </p>
-                        <p style="margin: 0; display: flex; justify-content: space-between;">
-                            <span><i class="fas fa-palette"></i> Cultura:</span>
-                            <strong>${n.cultural}</strong>
-                        </p>
-                        <p style="margin: 0; display: flex; justify-content: space-between;">
-                            <span><i class="fas fa-briefcase"></i> Servicios:</span>
-                            <strong>${n.services}</strong>
-                        </p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-users"></i> Usuarios:</span><strong>${n.users.length}</strong></p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-shopping-bag"></i> Productos:</span><strong>${n.products}</strong></p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-tools"></i> Mejoras:</span><strong>${n.improvements}</strong></p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-palette"></i> Cultura:</span><strong>${n.cultural}</strong></p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-briefcase"></i> Servicios:</span><strong>${n.services}</strong></p>
                     </div>
                     <button class="btn-primary" style="margin-top: 1rem; width: 100%;" onclick="VV.admin.viewNeighborhoodDetails('${n.name.replace(/'/g, "\\'")}')">
                         <i class="fas fa-eye"></i> Ver Detalles
@@ -1248,13 +1215,13 @@ VV.admin.loadAllProducts = async function () {
     const categoryFilter = document.getElementById('admin-product-category-filter').value;
     const searchTerm = document.getElementById('admin-product-search').value.toLowerCase();
 
-    const neighborhoods = [...new Set(VV.data.products.map(p => p.neighborhood))].sort();
+    const neighborhoods = [...new Set(VV.data.products.map(p => p.neighborhood).filter(Boolean))].sort();
     const neighborhoodSelect = document.getElementById('admin-product-neighborhood-filter');
     const currentValue = neighborhoodSelect.value;
     neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
         neighborhoods.map(n => `<option value="${n}" ${n === currentValue ? 'selected' : ''}>${n}</option>`).join('');
 
-    const categories = [...new Set(VV.data.products.map(p => p.category))].sort();
+    const categories = [...new Set(VV.data.products.map(p => p.category).filter(Boolean))].sort();
     const categorySelect = document.getElementById('admin-product-category-filter');
     const currentCat = categorySelect.value;
     categorySelect.innerHTML = '<option value="">Todas las categorías</option>' +
@@ -1264,48 +1231,28 @@ VV.admin.loadAllProducts = async function () {
     if (neighborhoodFilter) filtered = filtered.filter(p => p.neighborhood === neighborhoodFilter);
     if (categoryFilter) filtered = filtered.filter(p => p.category === categoryFilter);
     if (searchTerm) filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(searchTerm) ||
-        p.description.toLowerCase().includes(searchTerm)
+        (p.product || '').toLowerCase().includes(searchTerm) ||
+        (p.description || '').toLowerCase().includes(searchTerm)
     );
 
     const statsContainer = document.getElementById('admin-products-stats');
     const totalValue = filtered.reduce((sum, p) => sum + parseFloat(p.price || 0), 0);
     statsContainer.innerHTML = `
         <div class="stat-card">
-            <div class="stat-icon blue">
-                <i class="fas fa-boxes"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Productos</h3>
-                <p class="stat-number">${filtered.length}</p>
-            </div>
+            <div class="stat-icon blue"><i class="fas fa-boxes"></i></div>
+            <div class="stat-info"><h3>Productos</h3><p class="stat-number">${filtered.length}</p></div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon green">
-                <i class="fas fa-dollar-sign"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Valor Total</h3>
-                <p class="stat-number">$${totalValue.toFixed(2)}</p>
-            </div>
+            <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-info"><h3>Valor Total</h3><p class="stat-number">$${totalValue.toFixed(2)}</p></div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon purple">
-                <i class="fas fa-tags"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Categorías</h3>
-                <p class="stat-number">${categories.length}</p>
-            </div>
+            <div class="stat-icon purple"><i class="fas fa-tags"></i></div>
+            <div class="stat-info"><h3>Categorías</h3><p class="stat-number">${categories.length}</p></div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon orange">
-                <i class="fas fa-map-marked-alt"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Barrios</h3>
-                <p class="stat-number">${neighborhoods.length}</p>
-            </div>
+            <div class="stat-icon orange"><i class="fas fa-map-marked-alt"></i></div>
+            <div class="stat-info"><h3>Barrios</h3><p class="stat-number">${neighborhoods.length}</p></div>
         </div>
     `;
 
@@ -1315,37 +1262,32 @@ VV.admin.loadAllProducts = async function () {
         return;
     }
 
-    const allUsers = await VV.auth.getAllUsers();
-
-    listContainer.innerHTML = filtered.map(product => {
-        const seller = allUsers.find(u => u.id === product.sellerId);
-        return `
-            <div class="product-card">
-                <div class="product-image">
-                    ${product.image ? `<img src="${product.image}" alt="${product.name}">` : '<i class="fas fa-box"></i>'}
-                </div>
-                <div class="product-info">
-                    <div class="product-category">${product.category}</div>
-                    <h3 class="product-name">${product.name}</h3>
-                    <p class="product-description">${product.description}</p>
-                    <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px; font-size: 0.85rem;">
-                        <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${product.neighborhood}</strong></p>
-                        <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${seller ? seller.name : 'Usuario desconocido'}</p>
-                        <button onclick="mostrarGaleriaVendedor('${product.sellerId}')" 
-                                style="margin-left: 10px; background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.8rem; text-decoration: underline;">
-                            Ver tienda
-                        </button>
-                    </div>
-                    <div class="product-footer">
-                        <span class="product-price">$${product.price}</span>
-                        <button class="btn-delete" onclick="VV.admin.deleteProduct('${product.id}')" title="Eliminar producto">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
+    listContainer.innerHTML = filtered.map(product => `
+        <div class="product-card">
+            <div class="card-header">
+                <h3>${product.product || 'Sin nombre'}</h3>
+                ${product.featured ? '<span class="badge featured">Destacado</span>' : ''}
             </div>
-        `;
-    }).join('');
+            <p><strong>Negocio:</strong> ${product.business || ''}</p>
+            <p><strong>Dirección:</strong> ${product.business_address || 'No especificada'}</p>
+            <p><strong>Categoría:</strong> ${product.category || ''}</p>
+            <p style="color: var(--gray-600); margin: 0.5rem 0;">${product.description || ''}</p>
+            <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px; font-size: 0.85rem;">
+                <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${product.neighborhood || ''}</strong></p>
+                <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${product.seller_name || 'Desconocido'}</p>
+                <p style="margin: 0.25rem 0;"><i class="fas fa-phone"></i> ${product.contact || ''}</p>
+            </div>
+            <div class="card-footer">
+                <div class="price">
+                    <span class="price-amount">$${product.price}</span>
+                    <span class="price-unit">/ ${product.unit || ''}</span>
+                </div>
+                <button class="btn-delete" onclick="VV.admin.deleteProduct('${product.id}')" title="Eliminar producto">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
 };
 
 VV.admin.loadAllImprovements = async function () {
@@ -1354,7 +1296,7 @@ VV.admin.loadAllImprovements = async function () {
     const neighborhoodFilter = document.getElementById('admin-improvement-neighborhood-filter').value;
     const statusFilter = document.getElementById('admin-improvement-status-filter').value;
 
-    const neighborhoods = [...new Set(VV.data.improvements.map(i => i.neighborhood))].sort();
+    const neighborhoods = [...new Set(VV.data.improvements.map(i => i.neighborhood).filter(Boolean))].sort();
     const neighborhoodSelect = document.getElementById('admin-improvement-neighborhood-filter');
     const currentValue = neighborhoodSelect.value;
     neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
@@ -1372,40 +1314,20 @@ VV.admin.loadAllImprovements = async function () {
 
     statsContainer.innerHTML = `
         <div class="stat-card">
-            <div class="stat-icon orange">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Pendientes</h3>
-                <p class="stat-number">${pending}</p>
-            </div>
+            <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+            <div class="stat-info"><h3>Pendientes</h3><p class="stat-number">${pending}</p></div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon blue">
-                <i class="fas fa-spinner"></i>
-            </div>
-            <div class="stat-info">
-                <h3>En Progreso</h3>
-                <p class="stat-number">${inProgress}</p>
-            </div>
+            <div class="stat-icon blue"><i class="fas fa-spinner"></i></div>
+            <div class="stat-info"><h3>En Progreso</h3><p class="stat-number">${inProgress}</p></div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon green">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Completadas</h3>
-                <p class="stat-number">${completed}</p>
-            </div>
+            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info"><h3>Completadas</h3><p class="stat-number">${completed}</p></div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon purple">
-                <i class="fas fa-map-marked-alt"></i>
-            </div>
-            <div class="stat-info">
-                <h3>Barrios</h3>
-                <p class="stat-number">${filteredNeighborhoods}</p>
-            </div>
+            <div class="stat-icon purple"><i class="fas fa-map-marked-alt"></i></div>
+            <div class="stat-info"><h3>Barrios</h3><p class="stat-number">${filteredNeighborhoods}</p></div>
         </div>
     `;
 
@@ -1415,10 +1337,7 @@ VV.admin.loadAllImprovements = async function () {
         return;
     }
 
-    const allUsers = await VV.auth.getAllUsers();
-
     listContainer.innerHTML = filtered.map(improvement => {
-        const author = allUsers.find(u => u.id === improvement.authorId);
         const statusColors = {
             'pending': 'var(--warning-orange)',
             'in-progress': 'var(--primary-blue)',
@@ -1431,18 +1350,18 @@ VV.admin.loadAllImprovements = async function () {
         };
 
         return `
-            <div class="improvement-card" style="border-left: 4px solid ${statusColors[improvement.status]};">
+            <div class="improvement-card" style="border-left: 4px solid ${statusColors[improvement.status] || 'var(--gray-400)'};">
                 <div class="improvement-header">
-                    <h3>${improvement.title}</h3>
-                    <span class="improvement-status" style="background: ${statusColors[improvement.status]};">
-                        ${statusLabels[improvement.status]}
+                    <h3>${improvement.title || 'Sin título'}</h3>
+                    <span class="improvement-status" style="background: ${statusColors[improvement.status] || 'var(--gray-400)'};">
+                        ${statusLabels[improvement.status] || improvement.status}
                     </span>
                 </div>
-                <p class="improvement-description">${improvement.description}</p>
+                <p class="improvement-description">${improvement.description || ''}</p>
                 <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px; font-size: 0.85rem;">
-                    <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${improvement.neighborhood}</strong></p>
-                    <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${author ? author.name : 'Usuario desconocido'}</p>
-                    <p style="margin: 0.25rem 0;"><i class="fas fa-calendar"></i> ${new Date(improvement.createdAt).toLocaleDateString()}</p>
+                    <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${improvement.neighborhood || ''}</strong></p>
+                    <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${improvement.author_alias || improvement.author_name || 'Desconocido'}</p>
+                    <p style="margin: 0.25rem 0;"><i class="fas fa-calendar"></i> ${improvement.created_at ? new Date(improvement.created_at).toLocaleDateString() : 'Sin fecha'}</p>
                 </div>
                 <div class="improvement-footer">
                     <div class="improvement-votes">
@@ -1461,22 +1380,32 @@ VV.admin.viewNeighborhoodDetails = function (neighborhood) {
     alert(`Detalles de ${neighborhood}\n\nEsta funcionalidad mostrará información detallada del barrio.`);
 };
 
-VV.admin.deleteProduct = function (productId) {
+VV.admin.deleteProduct = async function (productId) {
     if (!confirm('¿Eliminar este producto?')) return;
-
-    VV.data.products = VV.data.products.filter(p => p.id !== productId);
-    localStorage.setItem('vecinosVirtuales_products', JSON.stringify(VV.data.products));
-    VV.admin.loadAllProducts();
-    VV.utils.showSuccess('Producto eliminado');
+    try {
+        const { error } = await supabase.from('products').delete().eq('id', productId);
+        if (error) throw error;
+        VV.data.products = VV.data.products.filter(p => p.id !== productId);
+        VV.admin.loadAllProducts();
+        VV.utils.showSuccess('Producto eliminado');
+    } catch (error) {
+        console.error('Error eliminando producto:', error);
+        alert('Error al eliminar: ' + error.message);
+    }
 };
 
-VV.admin.deleteImprovement = function (improvementId) {
+VV.admin.deleteImprovement = async function (improvementId) {
     if (!confirm('¿Eliminar esta mejora?')) return;
-
-    VV.data.improvements = VV.data.improvements.filter(i => i.id !== improvementId);
-    localStorage.setItem('vecinosVirtuales_improvements', JSON.stringify(VV.data.improvements));
-    VV.admin.loadAllImprovements();
-    VV.utils.showSuccess('Mejora eliminada');
+    try {
+        const { error } = await supabase.from('improvements').delete().eq('id', improvementId);
+        if (error) throw error;
+        VV.data.improvements = VV.data.improvements.filter(i => i.id !== improvementId);
+        VV.admin.loadAllImprovements();
+        VV.utils.showSuccess('Mejora eliminada');
+    } catch (error) {
+        console.error('Error eliminando mejora:', error);
+        alert('Error al eliminar: ' + error.message);
+    }
 };
 
 // ========== GESTIÓN DE OFERTAS DESTACADAS ==========
