@@ -95,7 +95,6 @@ const VV = {
                 if (sectionId === 'services' && VV.services) VV.services.load();
                 if (sectionId === 'improvements' && VV.improvements) VV.improvements.load();
                 if (sectionId === 'cultural' && VV.cultural) VV.cultural.load();
-                
                 if (sectionId === 'admin') {
                     if (VV.utils.isAdmin()) {
                         VV.admin.load();
@@ -104,6 +103,16 @@ const VV = {
                         }
                     }
                 }
+                if (sectionId === 'admin-neighborhoods' && VV.admin.loadAllNeighborhoods) {
+                    VV.admin.loadAllNeighborhoods();
+                }
+                if (sectionId === 'admin-products' && VV.admin.loadAllProducts) {
+                    VV.admin.loadAllProducts();
+                }
+                if (sectionId === 'admin-improvements' && VV.admin.loadAllImprovements) {
+                    VV.admin.loadAllImprovements();
+                }
+
                 if (sectionId === 'folleto') {
                     if (typeof window.abrirFolletoVisual === 'function') {
                         window.abrirFolletoVisual();
