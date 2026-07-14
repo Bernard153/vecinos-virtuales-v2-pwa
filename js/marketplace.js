@@ -37,6 +37,7 @@ VV.marketplace = {
                     ${p.featured ? '<span class="badge featured">Destacado</span>' : ''}
                 </div>
                 <p><strong>Negocio:</strong> ${p.business}</p>
+                <p><strong>Dirección:</strong> ${p.business_address || 'No especificada'}</p>
                 <p><strong>Categoría:</strong> ${p.category}</p>
                 <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
                 <div class="card-footer">
@@ -104,6 +105,7 @@ VV.marketplace = {
                 </div>
                 <p><strong>Vendedor:</strong> ${p.seller_name}</p>
                 <p><strong>Negocio:</strong> ${p.business}</p>
+                <p><strong>Dirección:</strong> ${p.business_address || 'No especificada'}</p>
                 <p><strong>Categoría:</strong> ${p.category}</p>
                 <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
                 <div class="card-footer">
