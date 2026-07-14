@@ -112,7 +112,9 @@ const VV = {
                 if (sectionId === 'admin-improvements' && VV.admin.loadAllImprovements) {
                     VV.admin.loadAllImprovements();
                 }
-
+                if (sectionId === 'admin-users' && VV.admin.loadAllUsers) {
+                    VV.admin.loadAllUsers();
+                }
                 if (sectionId === 'folleto') {
                     if (typeof window.abrirFolletoVisual === 'function') {
                         window.abrirFolletoVisual();
