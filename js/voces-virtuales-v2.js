@@ -709,7 +709,7 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
         is_duet: false,
         parent_video_id: null,
         visible: true,
-        estado_moderacion: 'pendiente',
+        estado_moderacion: 'aprobado',
         reportado: false,
         likes_count: 0,
         views_count: 0
@@ -717,14 +717,16 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
 
     const { data: insertData, error: insertError } = await supabase
         .from('karaoke_videos')
-        .insert([registro]);
+        .insert([registro])
+        .select()
+        .single();
 
     if (insertError) {
         console.error('Error insertando en tabla:', insertError);
         throw new Error('No se pudo registrar el video: ' + insertError.message);
     }
 
-        console.log('✅ Video subido:', videoUrl);
+    console.log('✅ Video subido:', videoUrl);
     
     // Recompensa por subir video
     if (window.VV_WALLET) {
@@ -732,7 +734,6 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
     }
     
     return { success: true, url: videoUrl, data: insertData };
-
 };
 // ============================================================
 // TAB 3: EXPLORAR — Feed público de videos
