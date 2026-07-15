@@ -7,7 +7,7 @@ window.VV_WALLET = {
     // ============================================================
     // CONSULTAR SALDO
     // ============================================================
-        getBalance: async function(userId) {
+    getBalance: async function(userId) {
         if (!userId) {
             const user = VV_ROLES.getCurrentUser();
             if (!user) return { balance: 0, puntos_xp: 0 };
@@ -23,7 +23,6 @@ window.VV_WALLET = {
             if (error) throw error;
 
             if (!data || data.length === 0) {
-                // Crear billetera si no existe
                 await this.initWallet(userId);
                 return { balance: 10, puntos_xp: 0 };
             }
@@ -45,13 +44,11 @@ window.VV_WALLET = {
                 .from('billeteras')
                 .insert([{
                     user_id: userId,
-                    saldo_monedas: 10,  // Créditos de bienvenida
+                    saldo_monedas: 10,
                     puntos_xp: 0
                 }]);
 
-            // Registrar transacción de bienvenida
             await this.addTransaction(userId, 10, 'reward', 'Créditos de bienvenida 🎉');
-            
             console.log('💰 Billetera inicializada para usuario:', userId);
         } catch (err) {
             console.error('Error inicializando billetera:', err);
@@ -65,21 +62,19 @@ window.VV_WALLET = {
         if (!userId || amount <= 0) return false;
 
         try {
-            // 1. Obtener saldo actual
             const { data: wallet } = await supabase
                 .from('billeteras')
                 .select('saldo_monedas, puntos_xp')
-                .eq('user_id', userId)
-                .single();
+                .eq('user_id', userId);
 
-            if (!wallet) {
+            if (!wallet || wallet.length === 0) {
                 await this.initWallet(userId);
             }
 
-            const nuevoSaldo = (wallet?.saldo_monedas || 0) + amount;
-            const nuevoXP = (wallet?.puntos_xp || 0) + Math.floor(amount / 2);
+            const w = wallet && wallet[0] ? wallet[0] : { saldo_monedas: 0, puntos_xp: 0 };
+            const nuevoSaldo = (w.saldo_monedas || 0) + amount;
+            const nuevoXP = (w.puntos_xp || 0) + Math.floor(amount / 2);
 
-            // 2. Actualizar saldo
             const { error: updateError } = await supabase
                 .from('billeteras')
                 .update({ 
@@ -91,9 +86,7 @@ window.VV_WALLET = {
 
             if (updateError) throw updateError;
 
-            // 3. Registrar transacción
             await this.addTransaction(userId, amount, 'reward', description, refId, refType);
-
             console.log(`💰 +${amount} créditos para ${userId}: ${description}`);
             return true;
         } catch (err) {
@@ -106,20 +99,24 @@ window.VV_WALLET = {
     // GASTAR CRÉDITOS
     // ============================================================
     spendCredits: async function(userId, amount, description, refId, refType) {
-        if (!userId || amount <= 0) return false;
+        if (!userId || amount <= 0) return { success: false, error: 'Cantidad inválida' };
 
         try {
             const { data: wallet } = await supabase
                 .from('billeteras')
                 .select('saldo_monedas')
-                .eq('user_id', userId)
-                .single();
+                .eq('user_id', userId);
 
-            if (!wallet || wallet.saldo_monedas < amount) {
+            if (!wallet || wallet.length === 0) {
+                return { success: false, error: 'Billetera no encontrada' };
+            }
+
+            const saldo = wallet[0].saldo_monedas || 0;
+            if (saldo < amount) {
                 return { success: false, error: 'Saldo insuficiente' };
             }
 
-            const nuevoSaldo = wallet.saldo_monedas - amount;
+            const nuevoSaldo = saldo - amount;
 
             const { error: updateError } = await supabase
                 .from('billeteras')
@@ -132,7 +129,6 @@ window.VV_WALLET = {
             if (updateError) throw updateError;
 
             await this.addTransaction(userId, -amount, 'purchase', description, refId, refType);
-
             console.log(`💰 -${amount} créditos de ${userId}: ${description}`);
             return { success: true, newBalance: nuevoSaldo };
         } catch (err) {
@@ -197,19 +193,16 @@ window.VV_WALLET = {
         }
 
         try {
-            // 1. Buscar el item en el catálogo
             const { data: item, error: itemError } = await supabase
                 .from('catalogo_regalos')
                 .select('*')
                 .eq('code', itemCode)
-                .eq('is_active', true)
                 .single();
 
             if (itemError || !item) {
                 return { success: false, error: 'Item no encontrado' };
             }
 
-            // 2. Verificar saldo y descontar
             const spend = await this.spendCredits(
                 user.id, 
                 item.precio_monedas, 
@@ -222,7 +215,6 @@ window.VV_WALLET = {
                 return { success: false, error: spend.error };
             }
 
-            // 3. Registrar el regalo
             await supabase
                 .from('regalos_enviados')
                 .insert([{
@@ -231,13 +223,10 @@ window.VV_WALLET = {
                     tipo_regalo: itemCode,
                     costo_monedas: item.precio_monedas,
                     modulo_origen: refType || 'voces-virtuales',
-                    publicacion_id: refId || null,
-                    message: message || null
+                    publicacion_id: refId || null
                 }]);
 
-            // 4. Dar XP al receptor
             await this.addXP(toUserId, 2);
-
             console.log(`🎁 ${item.nombre} enviado a ${toUserId}`);
             return { success: true, item: item };
         } catch (err) {
@@ -256,12 +245,11 @@ window.VV_WALLET = {
             const { data: wallet } = await supabase
                 .from('billeteras')
                 .select('puntos_xp')
-                .eq('user_id', userId)
-                .single();
+                .eq('user_id', userId);
 
-            if (!wallet) return;
+            if (!wallet || wallet.length === 0) return;
 
-            const nuevoXP = (wallet.puntos_xp || 0) + amount;
+            const nuevoXP = (wallet[0].puntos_xp || 0) + amount;
 
             await supabase
                 .from('billeteras')
@@ -275,7 +263,7 @@ window.VV_WALLET = {
     // ============================================================
     // OBTENER CATÁLOGO DE LA TIENDA
     // ============================================================
-        getShopItems: async function(category = null) {
+    getShopItems: async function(category = null) {
         try {
             let query = supabase
                 .from('catalogo_regalos')
@@ -291,14 +279,12 @@ window.VV_WALLET = {
                 console.error('Error obteniendo catálogo:', error);
                 return [];
             }
-            // Filtrar activos en JS por si la columna no existe
             return (data || []).filter(i => i.is_active !== false);
         } catch (err) {
             console.error('Error obteniendo catálogo:', err);
             return [];
         }
     },
-
 
     // ============================================================
     // DESBLOQUEAR ITEM (avatar, filtro, etc.)
@@ -307,7 +293,6 @@ window.VV_WALLET = {
         if (!userId) return false;
 
         try {
-            // Verificar si ya está desbloqueado
             const { data: existing } = await supabase
                 .from('user_unlocks')
                 .select('id')
@@ -318,7 +303,6 @@ window.VV_WALLET = {
 
             if (existing) return true;
 
-            // Insertar desbloqueo
             await supabase
                 .from('user_unlocks')
                 .insert([{
@@ -369,14 +353,12 @@ window.VV_WALLET = {
                 .from('catalogo_regalos')
                 .select('*')
                 .eq('code', itemCode)
-                .eq('is_active', true)
                 .single();
 
             if (itemError || !item) {
                 return { success: false, error: 'Item no encontrado' };
             }
 
-            // Gastar créditos
             const spend = await this.spendCredits(
                 user.id,
                 item.precio_monedas,
@@ -389,7 +371,6 @@ window.VV_WALLET = {
                 return { success: false, error: spend.error };
             }
 
-            // Si es avatar o filtro, desbloquear
             if (item.category === 'avatar' || item.category === 'filtro') {
                 await this.unlockItem(user.id, item.category, itemCode);
             }
@@ -426,14 +407,13 @@ window.VV_WALLET = {
     // ============================================================
     // UI: MOSTRAR SALDO EN PANTALLA
     // ============================================================
-            renderBalanceWidget: function(containerId) {
+    renderBalanceWidget: function(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
         const user = VV_ROLES.getCurrentUser();
         if (!user) {
             container.innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Iniciá sesión</span>';
-            // Reintentar en 2 segundos (esperar login)
             setTimeout(() => {
                 const u = VV_ROLES.getCurrentUser();
                 if (u) this.renderBalanceWidget(containerId);
@@ -450,9 +430,9 @@ window.VV_WALLET = {
         }).catch(() => {
             container.innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Error</span>';
         });
-        document.body.appendChild(modal);
     },
-     // ============================================================
+
+    // ============================================================
     // UI: SOLICITAR CRÉDITOS AL ADMIN
     // ============================================================
     showCreditRequestForm: function() {
@@ -537,7 +517,7 @@ window.VV_WALLET = {
         }
 
         const { balance, puntos_xp } = await this.getBalance(user.id);
-        const exchangeRate = 10; // 10 XP = 1 crédito
+        const exchangeRate = 10;
         const maxCredits = Math.floor(puntos_xp / exchangeRate);
 
         let overlay = document.getElementById('exchange-overlay');
@@ -594,7 +574,6 @@ window.VV_WALLET = {
                 }
 
                 try {
-                    // Descontar XP
                     const { data: wallet } = await supabase
                         .from('billeteras')
                         .select('puntos_xp, saldo_monedas')
@@ -617,13 +596,11 @@ window.VV_WALLET = {
                         })
                         .eq('user_id', user.id);
 
-                    // Registrar transacción
                     await this.addTransaction(user.id, credits, 'reward', `Canje de ${xpCost} XP por ${credits} créditos`, null, 'xp_exchange');
 
                     overlay.classList.remove('active');
                     alert(`✅ Canjeaste ${xpCost} XP por ${credits} 🪙`);
 
-                    // Actualizar saldo visible
                     if (document.getElementById('wallet-balance-display')) {
                         this.renderBalanceWidget('wallet-balance-display');
                     }
@@ -636,9 +613,7 @@ window.VV_WALLET = {
         overlay.onclick = (e) => {
             if (e.target === overlay) overlay.classList.remove('active');
         };
-    }
-
-    }
+    },
 
     // ============================================================
     // UI: ABRIR TIENDA
@@ -648,7 +623,7 @@ window.VV_WALLET = {
         if (!user) {
             alert('Iniciá sesión para acceder a la tienda');
             return;
-        },
+        }
 
         const { balance } = await this.getBalance(user.id);
         const items = await this.getShopItems();
@@ -733,4 +708,6 @@ window.VV_WALLET = {
             </div>
         `;
 
+        document.body.appendChild(modal);
+    }
 };
