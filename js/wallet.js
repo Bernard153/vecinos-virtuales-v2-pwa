@@ -638,7 +638,7 @@ window.VV_WALLET = {
         };
     }
 
-    },
+    }
 
     // ============================================================
     // UI: ABRIR TIENDA
@@ -648,7 +648,7 @@ window.VV_WALLET = {
         if (!user) {
             alert('Iniciá sesión para acceder a la tienda');
             return;
-        }
+        },
 
         const { balance } = await this.getBalance(user.id);
         const items = await this.getShopItems();
