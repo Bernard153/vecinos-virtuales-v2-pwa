@@ -450,6 +450,8 @@ window.VV_WALLET = {
         }).catch(() => {
             container.innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Error</span>';
         });
+        document.body.appendChild(modal);
+    },
      // ============================================================
     // UI: SOLICITAR CRÉDITOS AL ADMIN
     // ============================================================
