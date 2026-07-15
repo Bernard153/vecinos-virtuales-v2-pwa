@@ -423,7 +423,7 @@ window.VV_WALLET = {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        const user = VV_ROLES.getCurrentUser();
+        const user = VV::getCurrentUser();
         if (!user) {
             container.innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Iniciá sesión</span>';
             setTimeout(() => {
@@ -436,11 +436,11 @@ window.VV_WALLET = {
         this.getBalance(user.id).then(({ balance, puntos_xp }) => {
             container.innerHTML = `
                 <span style="font-size:1.2rem;">🪙</span>
-                <span style="color:#fbbf24;font-weight:700;font-size:1rem;">${balance}</span>
+                <span class="wallet-balance-value" style="color:#fbbf24;font-weight:700;font-size:1rem;">${balance}</span>
                 <span style="font-size:0.7rem;color:#94a3b8;margin-left:0.3rem;">XP: ${puntos_xp}</span>
             `;
         }).catch(() => {
-            container.innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Error</span>';
+            container.innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Error</span';
         });
     },
 
