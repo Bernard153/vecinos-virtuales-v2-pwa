@@ -731,6 +731,4 @@ window.VV_WALLET = {
             </div>
         `;
 
-        document.body.appendChild(modal);
-    }
 };
