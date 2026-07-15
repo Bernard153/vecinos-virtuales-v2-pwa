@@ -395,13 +395,25 @@ window.VV_WALLET = {
     },
 
     rewardDailyLogin: async function(userId) {
+        if (!userId) return false;
         const today = new Date().toDateString();
         const lastLogin = localStorage.getItem(`vv_daily_login_${userId}`);
 
-        if (lastLogin === today) return false;
+        if (lastLogin === today) {
+            console.log('💰 Login diario ya reclamado hoy');
+            return false;
+        }
 
         localStorage.setItem(`vv_daily_login_${userId}`, today);
-        return await this.earnCredits(userId, 2, 'Login diario', null, 'login');
+        const result = await this.earnCredits(userId, 2, 'Login diario', null, 'login');
+        if (result) {
+            console.log('💰 +2 créditos por login diario');
+            // Actualizar saldo visible
+            if (document.getElementById('wallet-balance-display')) {
+                this.renderBalanceWidget('wallet-balance-display');
+            }
+        }
+        return result;
     },
 
     // ============================================================
@@ -652,7 +664,8 @@ window.VV_WALLET = {
                         <p style="color:#94a3b8;font-size:0.8rem;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:0.05rem;">🎁 Regalos</p>
                         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:0.5rem;">
                             ${regalos.map(item => `
-                                <div class="vv-shop-item" style="background:rgba(255,255,255,0.05);border-radius:10px;padding:0.6rem;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.08);transition:all 0.2s;" 
+                                <div class="vv-shop-item" onclick="VV_WALLET.purchaseItem('${item.code}').then(r => { if(r.success){alert('✅ ¡${item.nombre} comprado!');document.getElementById('vv-shop-modal').remove();VV_WALLET.openShop();} else {alert('❌ ' + r.error);} })" 
+                                     style="background:rgba(255,255,255,0.05);border-radius:10px;padding:0.6rem;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.08);transition:all 0.2s;" 
                                      onmouseover="this.style.background='rgba(255,255,255,0.1)'"
                                      onmouseout="this.style.background='rgba(255,255,255,0.05)'">
                                     <div style="font-size:1.8rem;margin-bottom:0.25rem;">${item.icono}</div>
