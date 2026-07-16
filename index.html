@@ -1269,34 +1269,34 @@
                 <p>Estudio de Creación</p>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('ensayo')">🎤 Ensayo</button>
+                <button class="vv-btn-tab" onclick="VV_VOCES_V2.switchTab('ensayo')">🎤 Ensayo</button>
                 <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4);"><i class="fas fa-arrow-left"></i> Volver</button>
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('explorar'); VV_VOCES.cargarFeed();">🌎 Explorar</button>
+                <button class="vv-btn-tab" onclick="VV_VOCES_V2.switchTab('explorar'); VV_VOCES_V2.cargarFeed();">🌎 Explorar</button>
             </div>
         </div>
 
         <div id="vv-zona-subida" class="vv-card">
             <h3><i class="fas fa-cloud-upload-alt"></i> Preparar tu Obra</h3>
-            <button class="vv-btn-primary" onclick="VV_VOCES.irAGrabarSinPista()" style="background: linear-gradient(135deg, #f59e0b, #d97706); margin-bottom: 0.5rem;">
+            <button class="vv-btn-primary" onclick="VV_VOCES_V2.irAGrabarSinPista()" style="background: linear-gradient(135deg, #f59e0b, #d97706); margin-bottom: 0.5rem;">
                 <i class="fas fa-guitar"></i> 🎸 Modo Acústico — Grabar con mi instrumento
             </button>
             <p style="text-align: center; color: #94a3b8; font-size: 0.8rem; margin: 0 0 1rem 0;">Ideal para guitarra, piano, ukelele, etc.</p>
             <div style="text-align: center; color: #64748b; font-size: 0.75rem; margin: 0.5rem 0;">— o —</div>
             <label class="vv-file-label">
                 <i class="fas fa-music"></i> Subir Pista Instrumental (MP3/WAV)
-                <input type="file" id="vv-upload-audio" accept="audio/mp3,audio/wav,audio/mpeg" onchange="VV_VOCES.onAudioSelected()">
+                <input type="file" id="vv-upload-audio" accept="audio/mp3,audio/wav,audio/mpeg" onchange="VV_VOCES_V2.onAudioSelected()">
             </label>
             <p id="vv-audio-name" class="vv-file-name"></p>
             <label class="vv-file-label" style="background: linear-gradient(135deg, #4b5563, #374151);">
                 <i class="fas fa-align-center"></i> Subir Letra (.LRC o .TXT) — Opcional
-                <input type="file" id="vv-upload-letra" accept=".lrc,.txt" onchange="VV_VOCES.onLyricSelected()">
+                <input type="file" id="vv-upload-letra" accept=".lrc,.txt" onchange="VV_VOCES_V2.onLyricSelected()">
             </label>
             <p id="vv-letra-name" class="vv-file-name"></p>
             <div class="vv-sadaic-box">
                 <i class="fas fa-shield-alt"></i>
                 <span>¿Sos autor? <a href="https://sadaic.org.ar" target="_blank">Asociate a SADAIC</a></span>
             </div>
-            <button id="vv-btn-cargar-estudio" class="vv-btn-primary" onclick="VV_VOCES.loadLocalTrackFromInputs()" disabled>
+            <button id="vv-btn-cargar-estudio" class="vv-btn-primary" onclick="VV_VOCES_V2.loadLocalTrackFromInputs()" disabled>
                 <i class="fas fa-upload"></i> Cargar Pista y Entrar al Estudio
             </button>
         </div>
@@ -1306,7 +1306,7 @@
             <div id="vv-letra-container"><p class="vv-letra-placeholder">La letra aparecerá aquí...</p></div>
             <audio id="vv-pista-audio" controls></audio>
             <div class="vv-controls-bar">
-                <button id="vv-btn-rec-action" class="vv-btn-record" onclick="VV_VOCES.toggleRecording()" title="Grabar Mi Tema"><i class="fas fa-circle"></i></button>
+                <button id="vv-btn-rec-action" class="vv-btn-record" onclick="VV_VOCES_V2.toggleRecording()" title="Grabar Mi Tema"><i class="fas fa-circle"></i></button>
                 <p class="vv-hint"><i class="fas fa-headphones"></i> Usá auriculares para la mejor calidad</p>
             </div>
         </div>
@@ -1332,9 +1332,9 @@
                 </div>
             </div>
             <div class="vv-btn-group">
-                <button class="vv-btn-success" onclick="VV_VOCES.publishOriginal()"><i class="fas fa-rocket"></i> Publicar en el Barrio</button>
-                <button class="vv-btn-secondary" onclick="VV_VOCES.descargarLocal()"><i class="fas fa-download"></i> Guardar en mi celular</button>
-                <button class="vv-btn-secondary" onclick="VV_VOCES.discardRecording()"><i class="fas fa-trash"></i> Descartar</button>
+                <button class="vv-btn-success" onclick="VV_VOCES_V2.publishOriginal()"><i class="fas fa-rocket"></i> Publicar en el Barrio</button>
+                <button class="vv-btn-secondary" onclick="VV_VOCES_V2.descargarLocal()"><i class="fas fa-download"></i> Guardar en mi celular</button>
+                <button class="vv-btn-secondary" onclick="VV_VOCES_V2.discardRecording()"><i class="fas fa-trash"></i> Descartar</button>
             </div>
         </div>
     </div>
@@ -1347,15 +1347,15 @@
                 <p>Practicá tus covers</p>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('crear')">🎵 Crear</button>
+                <button class="vv-btn-tab" onclick="VV_VOCES_V2.switchTab('crear')">🎵 Crear</button>
                 <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4);"><i class="fas fa-arrow-left"></i> Volver</button>
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('explorar'); VV_VOCES.cargarFeed();">🌎 Explorar</button>
+                <button class="vv-btn-tab" onclick="VV_VOCES_V2.switchTab('explorar'); VV_VOCES_V2.cargarFeed();">🌎 Explorar</button>
             </div>
         </div>
         <div class="vv-card">
             <div class="vv-search-box">
-                <input type="text" id="vv-search-input" placeholder="🔍 Buscar artista o canción..." onkeypress="if(event.key==='Enter') VV_VOCES.searchYouTube(this.value)">
-                <button onclick="VV_VOCES.searchYouTube(document.getElementById('vv-search-input').value)"><i class="fas fa-search"></i></button>
+                <input type="text" id="vv-search-input" placeholder="🔍 Buscar artista o canción..." onkeypress="if(event.key==='Enter') VV_VOCES_V2.searchYouTube(this.value)">
+                <button onclick="VV_VOCES_V2.searchYouTube(document.getElementById('vv-search-input').value)"><i class="fas fa-search"></i></button>
             </div>
             <div id="vv-resultados-ensayo" class="vv-results-list"></div>
         </div>
@@ -1369,11 +1369,11 @@
                 <p>Descubrí las voces de tu barrio</p>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('crear')">🎵 Crear</button>
+                <button class="vv-btn-tab" onclick="VV_VOCES_V2.switchTab('crear')">🎵 Crear</button>
                 <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239,68,68,0.2);">
                     <i class="fas fa-arrow-left"></i> Volver
                 </button>
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('explorar'); VV_VOCES.cargarFeed();">🌎 Explorar</button>
+                <button class="vv-btn-tab" onclick="VV_VOCES_V2.switchTab('explorar'); VV_VOCES_V2.cargarFeed();">🌎 Explorar</button>
             </div>
         </div>
         
