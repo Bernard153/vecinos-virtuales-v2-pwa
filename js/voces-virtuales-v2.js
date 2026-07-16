@@ -804,6 +804,7 @@ VV_VOCES_V2.renderVideoCard = function(video) {
 VV_VOCES_V2.openVideoPlayer = async function(videoId) {
     const existingModal = document.getElementById('vv-video-modal');
     if (existingModal) existingModal.remove();
+
     let video = null;
 
     try {
@@ -833,40 +834,44 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
     const modal = document.createElement('div');
     modal.id = 'vv-video-modal';
     modal.className = 'modal-overlay active';
+    modal.style.zIndex = '9999';
     modal.innerHTML = `
-        <div class="vv-modal-content">
-            <button class="vv-modal-close" onclick="VV_VOCES_V2.closeVideoPlayer()">✕</button>
-            <video controls autoplay class="vv-modal-video">
+        <div class="modal-form" style="max-width:600px;padding:0;">
+            <button class="vv-modal-close" onclick="VV_VOCES_V2.closeVideoPlayer()" style="position:absolute;top:0.5rem;right:0.5rem;background:rgba(0,0,0,0.5);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;z-index:1;">✕</button>
+            <video controls autoplay style="width:100%;border-radius:12px 12px 0 0;background:#000;">
                 <source src="${video.video_url}" type="video/webm">
             </video>
-            <div class="vv-modal-info">
-                <h3>${video.title}</h3>
-                <p class="vv-modal-author">${video.user_name || 'Anónimo'}</p>
-                <div class="vv-modal-stats">
+            <div style="padding:1rem;">
+                <h3 style="margin:0 0 0.25rem;color:#1e293b;">${video.title}</h3>
+                <p style="margin:0 0 0.5rem;color:#64748b;font-size:0.85rem;">${video.user_name || 'Anónimo'}</p>
+                <div style="display:flex;gap:1rem;font-size:0.85rem;color:#64748b;margin-bottom:1rem;">
                     <span>👍 ${video.likes_count || 0}</span>
                     <span>👁 ${(video.views_count || 0) + 1}</span>
                     <span>${video.is_original ? '✨ Original' : '🎵 Cover'}</span>
                 </div>
-                <div class="vv-modal-actions">
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
                     ${canInteract ? `
-                        <button class="vv-btn-like" onclick="VV_VOCES_V2.toggleLike('${video.id}')">
+                        <button class="vv-btn-like" onclick="VV_VOCES_V2.toggleLike('${video.id}')" style="background:#f1f5f9;border:1px solid #e2e8f0;color:#1e293b;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.85rem;">
                             👍 Me gusta
                         </button>
-                        <button class="vv-btn-comment" onclick="VV_VOCES_V2.showComments('${video.id}')">
+                        <button class="vv-btn-comment" onclick="VV_VOCES_V2.showComments('${video.id}')" style="background:#f1f5f9;border:1px solid #e2e8f0;color:#1e293b;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.85rem;">
                             💬 Comentar
                         </button>
-                        <button class="vv-btn-gift" onclick="VV_VOCES_V2.showGiftPicker('${video.id}', '${video.user_id}')">
+                        <button class="vv-btn-gift" onclick="VV_VOCES_V2.showGiftPicker('${video.id}', '${video.user_id}')" style="background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);color:#f59e0b;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.85rem;">
                             🎁 Regalar
                         </button>
                     ` : '<p style="color:#94a3b8;font-size:0.85rem;">Iniciá sesión para interactuar</p>'}
                 </div>
-
                 <div id="vv-comments-section" style="display:none;margin-top:1rem;"></div>
             </div>
         </div>
     `;
 
     document.body.appendChild(modal);
+
+    modal.onclick = function(e) {
+        if (e.target === modal) VV_VOCES_V2.closeVideoPlayer();
+    };
 };
 
 VV_VOCES_V2.closeVideoPlayer = function() {
