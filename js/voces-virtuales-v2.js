@@ -917,11 +917,16 @@ VV_VOCES_V2.toggleLike = async function(videoId) {
 
         }
 
-        this.cargarFeed();
-    } catch (err) {
-        console.error('Error en like:', err);
-    }
-};
+               // Actualizar el contador en el modal
+        const statsEl = document.querySelector('.vv-modal-stats, [style*="👍"]');
+        if (statsEl) {
+            const { data: updated } = await supabase
+                .from('karaoke_videos')
+                .select('likes_count')
+                .eq('id', videoId)
+                .single();
+            if (updated) {
+                const likeSpan = statsEl.querySelector('span');
 
 VV_VOCES_V2.COMENTARIOS = {
     musical: ['¡Qué linda melodía!', 'La letra me llegó al corazón', 'Gran interpretación', 'Se nota el talento'],
@@ -1042,65 +1047,48 @@ VV_VOCES_V2.postComment = async function(videoId, category, text) {
 // ============================================================
 VV_VOCES_V2.showGiftPicker = async function(videoId, toUserId) {
     const user = VV_ROLES.getCurrentUser();
-    if (!user) {
-        alert('Iniciá sesión para regalar');
-        return;
-    }
-
-    if (user.id === toUserId) {
-        alert('No podés regalarte a vos mismo 😄');
-        return;
-    }
-
-    if (!window.VV_WALLET) {
-        alert('Sistema de billetera no disponible');
-        return;
-    }
+    if (!user) { alert('Iniciá sesión para regalar'); return; }
+    if (user.id === toUserId) { alert('No podés regalarte a vos mismo 😄'); return; }
+    if (!window.VV_WALLET) { alert('Sistema de billetera no disponible'); return; }
 
     const { balance } = await VV_WALLET.getBalance(user.id);
     const items = await VV_WALLET.getShopItems('regalo');
 
     const modal = document.createElement('div');
     modal.id = 'vv-gift-modal';
-    modal.className = 'vv-modal-overlay';
-    modal.innerHTML = `
-        <div class="vv-modal-content" style="max-width:400px;">
-            <button class="vv-modal-close" onclick="document.getElementById('vv-gift-modal').remove()">✕</button>
-            <div style="padding:1.25rem;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                    <h3 style="margin:0;color:#f1f5f9;">🎁 Enviar Regalo</h3>
-                    <div style="display:flex;align-items:center;gap:0.4rem;background:rgba(251,191,36,0.15);padding:0.4rem 0.8rem;border-radius:20px;">
-                        <span>🪙</span>
-                        <span style="font-weight:700;color:#fbbf24;">${balance}</span>
-                    </div>
-                </div>
-                <p style="color:#94a3b8;font-size:0.8rem;margin-bottom:0.75rem;">Elegí un regalo para enviar:</p>
-                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;">
-                    ${items.map(item => `
-                        <div onclick="VV_VOCES_V2.sendGiftToVideo('${videoId}', '${toUserId}', '${item.code}', '${item.nombre}', ${item.precio_monedas})" 
-                             style="background:rgba(255,255,255,0.05);border-radius:10px;padding:0.75rem;text-align:center;cursor:pointer;border:1px solid rgba(255,255,255,0.08);transition:all 0.2s;"
-                             onmouseover="this.style.background='rgba(251,191,36,0.1)';this.style.borderColor='rgba(251,191,36,0.3)'"
-                             onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.08)'">
-                            <div style="font-size:2rem;margin-bottom:0.25rem;">${item.icono}</div>
-                            <p style="margin:0;font-size:0.7rem;color:#cbd5e1;">${item.nombre}</p>
-                            <p style="margin:0.2rem 0 0;font-size:0.8rem;color:#fbbf24;font-weight:700;">🪙 ${item.precio_monedas}</p>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        </div>
-    `;
-
+    modal.className = 'modal-overlay active';
+    modal.style.zIndex = '10000';
+    
+    let html = '<div class="modal-form" style="max-width:400px;padding:0;">';
+    html += '<button onclick="document.getElementById(\'vv-gift-modal\').remove()" style="position:absolute;top:0.5rem;right:0.5rem;background:rgba(0,0,0,0.5);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;z-index:1;">✕</button>';
+    html += '<div style="padding:1.25rem;">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">';
+    html += '<h3 style="margin:0;color:#1e293b;">🎁 Enviar Regalo</h3>';
+    html += '<div style="display:flex;align-items:center;gap:0.4rem;background:rgba(251,191,36,0.15);padding:0.4rem 0.8rem;border-radius:20px;">';
+    html += '<span>🪙</span><span style="font-weight:700;color:#f59e0b;">' + balance + '</span></div></div>';
+    html += '<p style="color:#64748b;font-size:0.85rem;margin-bottom:0.75rem;">Elegí un regalo:</p>';
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;">';
+    items.forEach(function(item) {
+        html += '<div onclick="VV_VOCES_V2.sendGiftToVideo(\'' + videoId + '\',\'' + toUserId + '\',\'' + item.code + '\',\'' + item.nombre + '\',' + item.precio_monedas + ')" ';
+        html += 'style="background:#f8fafc;border-radius:10px;padding:0.75rem;text-align:center;cursor:pointer;border:1px solid #e2e8f0;" ';
+        html += 'onmouseover="this.style.background=\'#fef3c7\'" onmouseout="this.style.background=\'#f8fafc\'">';
+        html += '<div style="font-size:2rem;">' + item.icono + '</div>';
+        html += '<p style="margin:0;font-size:0.75rem;color:#475569;">' + item.nombre + '</p>';
+        html += '<p style="margin:0.2rem 0 0;font-size:0.85rem;color:#f59e0b;font-weight:700;">🪙 ' + item.precio_monedas + '</p>';
+        html += '</div>';
+    });
+    html += '</div></div></div>';
+    modal.innerHTML = html;
     document.body.appendChild(modal);
+    
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
 };
 
 VV_VOCES_V2.sendGiftToVideo = async function(videoId, toUserId, itemCode, itemName, price) {
     const result = await VV_WALLET.sendGift(toUserId, itemCode, videoId, 'video');
-    
     if (result.success) {
         document.getElementById('vv-gift-modal').remove();
-        alert(`🎉 ¡${itemName} enviado!`);
-        // Actualizar saldo visible
+        alert('🎉 ¡' + itemName + ' enviado!');
         if (document.getElementById('wallet-balance-display')) {
             VV_WALLET.renderBalanceWidget('wallet-balance-display');
         }
@@ -1108,7 +1096,6 @@ VV_VOCES_V2.sendGiftToVideo = async function(videoId, toUserId, itemCode, itemNa
         alert('❌ ' + result.error);
     }
 };
-
 
 // Inicializar al cargar
 // ============================================================
