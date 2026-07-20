@@ -9,6 +9,21 @@ VV.auth = {
     // Verificar sesión existente en Supabase
     async checkExistingUser() {
         try {
+            // ===== LOGIN POR CELULAR =====
+        const phoneAuthId = localStorage.getItem('vv_phone_auth');
+        if (phoneAuthId) {
+            const { data: userData, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', phoneAuthId)
+                .single();
+            
+            if (!error && userData) {
+                VV.data.user = userData;
+                VV.data.neighborhood = userData.neighborhood;
+                return true;
+            }
+        }
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session) {
@@ -167,26 +182,33 @@ VV.auth = {
             </button>
         `;
     },
+   
+   // Seleccionar barrio
+selectNeighborhood(neighborhood) {
+    VV.data.neighborhood = neighborhood;
     
-    // Seleccionar barrio
-    selectNeighborhood(neighborhood) {
-        VV.data.neighborhood = neighborhood;
-        
-        // Actualizar el texto del barrio seleccionado
-        const neighborhoodElement = document.getElementById('selected-neighborhood');
-        if (neighborhoodElement) {
-            neighborhoodElement.textContent = neighborhood;
-        }
-        
-        // Si es Administrador, mostrar login directamente
-        if (neighborhood === 'Administrador') {
-            VV.utils.showScreen('login-screen');
-        } else {
-            // Mostrar opciones: Registrarse o Ya tengo cuenta
-            VV.auth.showAuthOptions();
-        }
-    },
+    const neighborhoodElement = document.getElementById('selected-neighborhood');
+    if (neighborhoodElement) {
+        neighborhoodElement.textContent = neighborhood;
+    }
     
+    // ADMIN: Login tradicional siempre
+    if (neighborhood === 'Administrador') {
+        VV.utils.showScreen('login-screen');
+        return;
+    }
+    
+    // FLUJO NUEVO: Registro celular
+    if (VV.data.pendingRegistration) {
+        delete VV.data.pendingRegistration;
+        VV.authCelular.onNeighborhoodSelected(neighborhood);
+        return;
+    }
+    
+    // FLUJO VIEJO (compatibilidad)
+    VV.auth.showAuthOptions();
+},
+   
     // Mostrar opciones de autenticación
     showAuthOptions() {
         const content = document.getElementById('location-content');
@@ -328,7 +350,7 @@ VV.auth = {
                 })
 
                 .select()
-                .single();
+                .maybeSingle();
             
             if (userError) throw userError;
             
@@ -421,6 +443,7 @@ VV.auth = {
     // Cerrar sesión
     async logout() {
         if (confirm('¿Cerrar sesión?')) {
+            localStorage.removeItem('vv_phone_auth'); // <-- AGREGAR ESTA LÍNEA
             try {
                 await supabase.auth.signOut();
                 VV.data.user = null;
@@ -497,9 +520,40 @@ VV.auth = {
         // Cargar datos del usuario
         document.getElementById('header-neighborhood').textContent = VV.data.neighborhood;
         document.getElementById('header-user-number').textContent = VV.data.user.unique_number;
+                // Mostrar créditos si existen
+        const headerInfo = document.querySelector('.header-info');
+        if (headerInfo && VV.data.user.folleto_credits !== undefined) {
+            const creditsDiv = document.createElement('div');
+            creditsDiv.id = 'header-credits';
+            creditsDiv.style.cssText = 'display: flex; gap: 0.5rem; margin-top: 0.25rem; font-size: 0.75rem;';
+            creditsDiv.innerHTML = `
+                <span style="background: rgba(255,255,255,0.2); padding: 0.15rem 0.5rem; border-radius: 10px;">
+                    📷 Folleto: ${VV.data.user.folleto_credits}
+                </span>
+                <span style="background: rgba(255,255,255,0.2); padding: 0.15rem 0.5rem; border-radius: 10px;">
+                    ⭐ Destacados: ${VV.data.user.featured_credits}
+                </span>
+            `;
+            headerInfo.appendChild(creditsDiv);
+        }
+
         document.getElementById('welcome-name').textContent = VV.data.user.name;
         document.getElementById('welcome-neighborhood').textContent = `Bienvenido a ${VV.data.neighborhood}`;
         document.getElementById('welcome-number').textContent = VV.data.user.unique_number;
+                // Mostrar banner de invitado si aplica
+        const guestBanner = document.getElementById('guest-banner');
+        if (guestBanner) guestBanner.style.display = 'none';
+        
+        // Mostrar créditos
+        const creditsBar = document.getElementById('user-credits-bar');
+        if (creditsBar) {
+            creditsBar.style.display = 'flex';
+            const folletoEl = document.getElementById('credit-folleto');
+            const featuredEl = document.getElementById('credit-featured');
+            if (folletoEl) folletoEl.textContent = VV.data.user.folleto_credits || 0;
+            if (featuredEl) featuredEl.textContent = VV.data.user.featured_credits || 0;
+        }
+
         
         // Cargar datos desde Supabase
         VV.data.loadFromSupabase();
@@ -523,7 +577,10 @@ VV.auth = {
         // Mostrar app
         VV.utils.showScreen('main-app');
         VV.utils.showSection('dashboard', false); // false = no agregar al historial (es la primera vez)
-        
+                // Cargar feed de actividad
+        if (typeof VV.dashboard !== 'undefined') {
+            VV.dashboard.loadActivityFeed();
+        }
         // Inicializar navegación con historial
         VV.utils.initNavigation();
         

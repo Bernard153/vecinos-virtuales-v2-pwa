@@ -47,120 +47,243 @@
             <div class="loading-spinner"></div>
         </div>
     </div>
+   <!-- ========== LANDING VITRINA ========== -->
+<div id="landing-screen" class="screen">
+    <div class="landing-container" style="min-height:100vh; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%); color: white; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+        
+        <!-- Efecto marquesina flúor -->
+        <div style="text-align: center; padding: 3rem 1.5rem 1.5rem; position: relative; z-index: 2;">
+            <h1 style="font-size: 2.2rem; font-weight: 800; margin: 0; letter-spacing: -1px; text-shadow: 0 0 20px rgba(139,92,246,0.6), 0 0 40px rgba(139,92,246,0.3);">
+                Bienvenido a<br>
+                <span style="background: linear-gradient(90deg, #c084fc, #e879f9, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px rgba(192,132,252,0.5));">
+                    Vecinos Virtuales
+                </span>
+            </h1>
+            <p style="opacity: 0.8; margin-top: 0.5rem; font-size: 1rem;">Conectá con tu barrio de forma simple</p>
+        </div>
 
-    <!-- PANTALLA DE UBICACIÓN -->
-    <div id="location-screen" class="screen">
-        <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-map-marker-alt"></i>
+        <!-- Botón Voces Virtuales -->
+        <div style="position: absolute; top: 1rem; right: 1rem; z-index: 10;">
+            <button onclick="VV.landing.goToVocesVirtuales()" style="background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: white; padding: 0.6rem 1rem; border-radius: 50px; font-weight: 600; font-size: 0.85rem; cursor: pointer; box-shadow: 0 4px 15px rgba(245,158,11,0.4); display: flex; align-items: center; gap: 0.4rem; animation: pulse 2s infinite;">
+                <i class="fas fa-microphone"></i> Voces Virtuales
+            </button>
+            <div style="font-size: 0.7rem; text-align: center; margin-top: 0.3rem; opacity: 0.9;">Compartí tu Talento</div>
+        </div>
+
+        <!-- Feeds Carrusel -->
+        <div style="flex: 1; padding: 0 1rem 1rem; overflow-y: auto; position: relative; z-index: 2;">
+            
+            <!-- Feed Cultura -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 0.95rem; margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.9;">
+                    <i class="fas fa-palette"></i> Cultura y Eventos
+                </h3>
+                <div id="feed-cultura" class="feed-carousel" style="display: flex; gap: 0.75rem; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                    <div style="min-width: 280px; height: 160px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">Vecinos Virtuales - Cultura y Eventos</div>
+                </div>
             </div>
-            <h1>Vecinos Virtuales</h1>
-            <p class="subtitle">By O'skar</p>
-            <div id="location-content">
-                <!-- Contenido dinámico -->
+
+            <!-- Feed Mejoras -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 0.95rem; margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.9;">
+                    <i class="fas fa-tools"></i> Mejoras
+                </h3>
+                <div id="feed-mejoras" class="feed-carousel" style="display: flex; gap: 0.75rem; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                    <div style="min-width: 280px; height: 160px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">Vecinos Virtuales - Mejoras</div>
+                </div>
+            </div>
+
+            <!-- Feed Comercios -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 0.95rem; margin: 0 0 0.5rem; display: flex; align-items: center; gap: 0.5rem; opacity: 0.9;">
+                    <i class="fas fa-store"></i> Comercios
+                </h3>
+                <div id="feed-comercios" class="feed-carousel" style="display: flex; gap: 0.75rem; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                    <div style="min-width: 280px; height: 160px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.2);">Vecinos Virtuales - Comercios</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- PANTALLA DE REGISTRO -->
-    <div id="registration-screen" class="screen">
-        <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-user-plus"></i>
+        <!-- Botones inferiores -->
+        <div style="padding: 1.5rem; position: relative; z-index: 2; background: linear-gradient(transparent, rgba(0,0,0,0.4));">
+            <button onclick="VV.landing.goToComparador()" style="width: 100%; padding: 1rem; border-radius: 12px; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 700; font-size: 1.05rem; cursor: pointer; margin-bottom: 0.75rem; box-shadow: 0 4px 15px rgba(16,185,129,0.3);">
+                <i class="fas fa-search-dollar"></i> Buscá y comprá al mejor precio
+            </button>
+			<button onclick="VV.landing.goToLogin()" 
+                style="width: 100%; padding: 1rem; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-weight: 600; cursor: pointer; backdrop-filter: blur(10px); margin-bottom: 0.75rem;">
+                <i class="fas fa-sign-in-alt"></i> Ya tengo cuenta
+            </button>
+            <button onclick="VV.landing.goToRegister()" style="width: 100%; padding: 1rem; border-radius: 12px; border: 2px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; font-weight: 600; font-size: 1rem; cursor: pointer; backdrop-filter: blur(10px);">
+                <i class="fas fa-user-plus"></i> Registrate para acceder al dashboard
+            </button>
+			<button onclick="VV.landing.enterAsGuest()" 
+               style="width: 100%; padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: white; font-weight: 500; cursor: pointer; margin-top: 0.5rem;">
+               <i class="fas fa-eye"></i> Explorar como invitado
+            </button>
+        </div>
+
+        <!-- Decoración fondo -->
+        <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 50%, rgba(139,92,246,0.15) 0%, transparent 50%); pointer-events: none;"></div>
+    </div>
+</div>
+
+<!-- ========== TÉRMINOS Y CONDICIONES ========== -->
+<div id="terms-screen" class="screen">
+    <div class="screen-container" style="max-width: 600px; text-align: left;">
+        <div class="logo-large"><i class="fas fa-file-contract"></i></div>
+        <h1>Términos y Condiciones</h1>
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 8px; margin: 1rem 0; max-height: 50vh; overflow-y: auto; font-size: 0.9rem; line-height: 1.5;">
+            <p><strong>1. Responsabilidad:</strong> Al usar esta aplicación, te comprometés a interactuar de forma respetuosa con los demás vecinos.</p>
+            <p><strong>2. Privacidad:</strong> Tu número de celular será usado únicamente para verificación y notificaciones barriales. No compartimos tus datos con terceros.</p>
+            <p><strong>3. Contenido:</strong> El contenido que publiques es tu responsabilidad. Nos reservamos el derecho de moderar contenido inapropiado.</p>
+            <p><strong>4. Geolocalización:</strong> Usamos tu ubicación solo para mostrarte barrios cercanos.</p>
+            <p><strong>5. Comunidad:</strong> Vecinos Virtuales es una plataforma de conexión, no garantiza transacciones entre usuarios.</p>
+            <p>Al aceptar, confirmás que tenés al menos 18 años.</p>
+        </div>
+        <label style="display: flex; align-items: start; gap: 0.5rem; margin: 1rem 0; cursor: pointer;">
+            <input type="checkbox" id="terms-check" style="margin-top: 0.2rem; width: 18px; height: 18px;">
+            <span>He leído y acepto los términos y condiciones y la política de privacidad.</span>
+        </label>
+        <button class="btn-primary" onclick="VV.authCelular.acceptTerms()" style="width: 100%;">
+            <i class="fas fa-check"></i> Aceptar y continuar
+        </button>
+        <button class="btn-secondary" onclick="VV.utils.showScreen('landing-screen')" style="width: 100%; margin-top: 0.5rem;">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    </div>
+</div>
+
+<!-- ========== GEOLOCALIZACIÓN (REUTILIZADA EN FLUJO REGISTRO) ========== -->
+<div id="location-screen" class="screen">
+    <div class="screen-container">
+        <div class="logo-large"><i class="fas fa-map-marker-alt"></i></div>
+        <h1>¿Dónde estás?</h1>
+        <p class="subtitle">Elegí tu barrio para conectarte con vecinos cercanos</p>
+        <div id="location-content">
+            <!-- Se llena con geo.js -->
+        </div>
+    </div>
+</div>
+<!-- ========== REGISTRO CON CELULAR ========== -->
+<!-- ========== LOGIN CON PIN ========== -->
+<div id="login-phone-screen" class="screen">
+    <div class="screen-container" style="max-width: 480px;">
+        <div class="logo-large"><i class="fas fa-sign-in-alt"></i></div>
+        <h1>¡Hola de nuevo!</h1>
+        <p class="subtitle">Ingresá con tu celular</p>
+        
+        <div class="auth-form">
+            <div class="form-group">
+                <label for="login-phone">Número de celular</label>
+                <input type="tel" id="login-phone" required placeholder="Ej: 1123456789">
             </div>
-            <h1>Registro</h1>
-            <p class="subtitle">Barrio: <strong id="selected-neighborhood"></strong></p>
-            
-            <form id="registration-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.register();">
-                <div class="form-group">
-                    <label for="register-name">Nombre completo *</label>
-                    <input type="text" id="register-name" required placeholder="Tu nombre">
-                </div>
-                <div class="form-group">
-                    <label for="register-email">Email *</label>
-                    <input type="email" id="register-email" required placeholder="tu@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="register-phone">Teléfono *</label>
-                    <input type="tel" id="register-phone" required placeholder="1234567890">
-                </div>
-                <div class="form-group">
-                    <label for="register-password">Contraseña *</label>
-                    <input type="password" id="register-password" required placeholder="Mínimo 6 caracteres">
-                </div>
-                <div class="form-group">
-                    <label for="register-confirm-password">Confirmar Contraseña *</label>
-                    <input type="password" id="register-confirm-password" required placeholder="Repite tu contraseña">
-                </div>
-                
-                <!-- Consentimientos Legales -->
-                <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #f59e0b;">
-                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
-                        <input type="checkbox" id="consent-age" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
-                        <span style="font-size: 0.9rem; color: #92400e;">
-                            <strong>Declaro que soy mayor de 18 años</strong>
-                        </span>
-                    </label>
-                    
-                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer; margin-bottom: 0.75rem;">
-                        <input type="checkbox" id="consent-data" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
-                        <span style="font-size: 0.9rem;">
-                            Acepto que mis datos (nombre, teléfono) sean visibles para otros vecinos
-                        </span>
-                    </label>
-                    
-                    <label style="display: flex; align-items: start; gap: 0.5rem; cursor: pointer;">
-                        <input type="checkbox" id="consent-terms" required style="margin-top: 0.25rem; width: 18px; height: 18px;">
-                        <span style="font-size: 0.9rem;">
-                            Acepto los <a href="terminos.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Términos y Condiciones</a> y la <a href="privacidad.html" target="_blank" style="color: #2563eb; text-decoration: underline;">Política de Privacidad</a>
-                        </span>
-                    </label>
-                </div>
-                
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-check"></i> Registrarse
-                </button>
-            </form>
-            
-            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                <i class="fas fa-arrow-left"></i> Volver
+            <div class="form-group">
+                <label for="login-pin">Tu clave</label>
+                <input type="password" id="login-pin" required placeholder="Tu clave numérica" maxlength="6" inputmode="numeric">
+            </div>
+            <button class="btn-primary" onclick="VV.authCelular.loginWithPin()" style="width: 100%;">
+                <i class="fas fa-sign-in-alt"></i> Ingresar
+            </button>
+        </div>
+        <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem;">
+            <button class="btn-text" onclick="VV.landing.goToRegister()" style="background: none; border: none; color: var(--primary-blue); font-weight: 600; cursor: pointer;">
+                ¿No tenés cuenta? Registrate
+            </button>
+        </div>
+        <button class="btn-secondary" onclick="VV.utils.showScreen('landing-screen')" style="width: 100%; margin-top: 0.5rem;">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    </div>
+</div>
+	<!-- PANTALLA DE LOGIN -->
+<div id="login-screen" class="screen">
+    <div class="screen-container">
+        <div class="logo-large"><i class="fas fa-sign-in-alt"></i></div>
+        <h1>Iniciar Sesión</h1>
+        <p class="subtitle">Ingresa con tu cuenta</p>
+        
+        <form id="login-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.login();">
+            <div class="form-group">
+                <label for="login-email">Email *</label>
+                <input type="email" id="login-email" required placeholder="tu@email.com">
+            </div>
+            <div class="form-group">
+                <label for="login-password">Contraseña *</label>
+                <input type="password" id="login-password" required placeholder="Tu contraseña">
+            </div>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-sign-in-alt"></i> Ingresar
+            </button>
+        </form>
+        
+        <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    </div>
+</div>
+	<!-- ========== LOGIN CON CELULAR ========== -->
+<div id="login-phone-screen" class="screen">
+    <div class="screen-container" style="max-width: 480px;">
+        <div class="logo-large"><i class="fas fa-mobile-alt"></i></div>
+        <h1>¡Hola de nuevo!</h1>
+        <p class="subtitle">Ingresá con tu celular</p>
+        
+        <div class="auth-form">
+            <div class="form-group">
+                <label for="login-phone">Número de celular *</label>
+                <input type="tel" id="login-phone" required placeholder="Ej: 11 2345-6789">
+            </div>
+            <button class="btn-primary" onclick="VV.authCelular.sendLoginCode()" style="width: 100%;">
+                <i class="fas fa-sms"></i> Enviar código
+            </button>
+        </div>
+        <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem;">
+            <span style="color: var(--gray-600);">¿No tenés cuenta? </span>
+            <button class="btn-text" onclick="VV.landing.goToRegister()" style="background: none; border: none; color: var(--primary-blue); font-weight: 600; cursor: pointer;">
+                Registrate
             </button>
         </div>
     </div>
-
-    <!-- PANTALLA DE LOGIN -->
-    <div id="login-screen" class="screen">
-        <div class="screen-container">
-            <div class="logo-large">
-                <i class="fas fa-sign-in-alt"></i>
+</div>
+	<!-- REGISTRO CON PIN -->
+<div id="register-phone-screen" class="screen">
+    <div class="screen-container" style="max-width: 480px;">
+        <div class="logo-large"><i class="fas fa-user-plus"></i></div>
+        <h1>Creá tu cuenta</h1>
+        <p class="subtitle">Barrio: <strong id="reg-selected-neighborhood"></strong></p>
+        <div class="auth-form">
+            <div class="form-group">
+                <label for="reg-name">Tu Nombre *</label>
+                <input type="text" id="reg-name" required placeholder="Tu nombre o apodo">
             </div>
-            <h1>Iniciar Sesión</h1>
-            <p class="subtitle">Ingresa con tu cuenta</p>
-            
-            <form id="login-form" class="auth-form" onsubmit="event.preventDefault(); VV.auth.login();">
-                <div class="form-group">
-                    <label for="login-email">Email *</label>
-                    <input type="email" id="login-email" required placeholder="tu@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Contraseña *</label>
-                    <input type="password" id="login-password" required placeholder="Tu contraseña">
-                </div>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-sign-in-alt"></i> Ingresar
-                </button>
-                <div id="login-error" class="error-message" style="display: none;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span id="login-error-text"></span>
-                </div>
-            </form>
-            
-            <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                <i class="fas fa-arrow-left"></i> Volver
+            <div class="form-group">
+                <label for="reg-phone">Número de celular *</label>
+                <input type="tel" id="reg-phone" required placeholder="Ej: 1123456789">
+            </div>
+            <div class="form-group">
+                <label for="reg-pin">Creá una clave numérica (4 a 6 dígitos) *</label>
+                <input type="password" id="reg-pin" required placeholder="Ej: 1234" maxlength="6" inputmode="numeric">
+            </div>
+            <div class="form-group">
+                <label for="reg-pin-confirm">Repetí la clave *</label>
+                <input type="password" id="reg-pin-confirm" required placeholder="Repetí la clave" maxlength="6" inputmode="numeric">
+            </div>
+            <button class="btn-primary" onclick="VV.authCelular.registerWithPin()" style="width: 100%;">
+                <i class="fas fa-check"></i> Crear cuenta
             </button>
-        </div>
-    </div>
+			<div style="text-align: center; margin-top: 1rem; font-size: 0.9rem;">
+                 <span style="color: var(--gray-600);">¿Ya tenés cuenta? </span>
+              <button onclick="VV.authCelular.showLogin()" style="background: none; border: none; color: var(--primary-blue); font-weight: 600; cursor: pointer;">
+                Ingresá acá
+              </button>
+            </div>
 
+        </div>
+        <button class="btn-secondary" onclick="VV.utils.showScreen('location-screen')" style="width: 100%; margin-top: 0.5rem;">
+            <i class="fas fa-arrow-left"></i> Volver
+        </button>
+    </div>
+</div>
     <!-- APLICACIÓN PRINCIPAL -->
     <div id="main-app" class="screen">
         <!-- Header -->
@@ -193,7 +316,15 @@
                 </button>
             </div>
         </header>
-
+		<!-- Visor de Ofertas Destacadas -->
+        <div id="featured-offers-section" style="margin: 2rem 0;">
+            <div class="featured-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;"><i class="fas fa-star" style="color: var(--warning-orange);"></i> Ofertas Destacadas</h3>
+            </div>
+            <div id="featured-offers-carousel" style="position: relative; overflow: hidden;">
+                <!-- Se llena automáticamente -->
+            </div>
+        </div>
         <div class="app-container">
             <!-- Sidebar -->
             <nav class="sidebar" id="sidebar">
@@ -227,22 +358,11 @@
                         <i class="fas fa-palette"></i>
                         <span>Cultura, Deportes y Trueque</span>
                     </a>
-					<a href="#" class="menu-item" onclick="VV_WALLET.showCreditRequestForm(); return false;">
-                        <i class="fas fa-coins"></i>
-                        <span>Solicitar Créditos</span>
-                    </a>
-                    <a href="#" class="menu-item" onclick="VV_WALLET.showExchangeForm(); return false;">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span>Canjear XP</span>
-                    </a>
                     <a href="#" class="menu-item" data-section="services">
                         <i class="fas fa-users"></i>
                         <span>Servicios</span>
                     </a>
-					<a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#voces');">
-                       <i class="fas fa-microphone"></i><span>🎤 Voces Virtuales</span>
-                    </a>
-		            <a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#karaoke');"><i class="fas fa-microphone"></i><span>🎤 Karaoke</span></a>
+		    <a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#karaoke');"><i class="fas fa-microphone"></i><span>🎤 Karaoke</span></a>
                     <!-- UBICACIÓN: Justo debajo de Servicios y antes de los menús de Admin -->
                     <a href="#" class="menu-item" data-section="folleto" onclick="event.preventDefault(); VV.utils.showSection('folleto');">
                         <i class="fas fa-images"></i>
@@ -262,11 +382,10 @@
                         <i class="fas fa-hammer"></i>
                         <span>Todas las Mejoras</span>
                     </a>
-                    <a href="#" class="menu-item" data-section="admin-users" id="users-menu-item" style="display: none;" onclick="VV.utils.showSection('admin-users'); return false;">
+                    <a href="#" class="menu-item" data-section="users-management" id="users-menu-item" style="display: none;">
                         <i class="fas fa-users-cog"></i>
                         <span>Todos los Usuarios</span>
                     </a>
-
                     <a href="#" class="menu-item" data-section="admin" id="admin-menu-item" style="display: none;">
                         <i class="fas fa-cog"></i>
                         <span>Anunciantes</span>
@@ -279,7 +398,7 @@
                     </a>
                     
                     <!-- Menú para usuarios comunes -->
-                    <a href="#" class="menu-item" id="sponsor-request-menu-item" style="display: none;" onclick="requestSponsorStatus(); return false;">
+                    <a href="#" class="menu-item" id="sponsor-request-menu-item" style="display: none;" onclick="VV.banner.showSponsorRequestForm(); return false;">
                         <i class="fas fa-bullhorn"></i>
                         <span>Ser Anunciante</span>
                     </a>
@@ -300,221 +419,135 @@
 
             <!-- Contenido Principal -->
             <main class="main-content">
-                <!-- DASHBOARD -->
-                <section id="dashboard" class="content-section active">
-                    <div class="welcome-banner" id="welcome-banner">
-                        <div class="welcome-content">
-                            <h2>¡Bienvenido, <span id="welcome-name"></span>!</h2>
-                            <div class="user-details">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span id="welcome-neighborhood"></span>
-                                <span class="user-badge">#<span id="welcome-number"></span></span>
-                            </div>
-                            <button class="btn-edit-banner" id="edit-banner-btn" style="display: none;" onclick="VV.admin.editBannerImage()">
-                                <i class="fas fa-image"></i> Cambiar Imagen de Portada
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Visor de Ofertas Destacadas -->
-                    <div id="featured-offers-section" style="margin: 2rem 0;">
-                        <div class="featured-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-star" style="color: var(--warning-orange);"></i>
-                                <span id="featured-title">Ofertas Destacadas</span>
-                            </h3>
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button id="admin-announcement-btn" class="btn-primary" onclick="VV.featured.createAnnouncement()" style="font-size: 0.85rem; padding: 0.5rem 1rem; display: none; white-space: nowrap;">
-                                    <i class="fas fa-megaphone"></i> <span class="btn-text">Publicar Anuncio</span>
-                                </button>
-                                <button id="featured-request-btn" class="btn-secondary" onclick="VV.featured.requestFeatured()" style="font-size: 0.85rem; padding: 0.5rem 1rem; white-space: nowrap;">
-                                    <i class="fas fa-bullhorn"></i> <span class="btn-text">Destacar mi Oferta</span>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="featured-offers-carousel" style="position: relative; overflow: hidden;">
-                            <!-- Carrusel de ofertas destacadas -->
-                        </div>
-                    </div>
-                    <!-- REEMPLAZA TU BLOQUE ANTERIOR POR ESTE (CONTENEDOR DE LA GALERÍA MEJORADO) -->
-                    <div id="galeria-vendedor-seccion" style="display:none; margin: 1.5rem 0; padding: 1.5rem; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); position: relative;">
+              <!-- DASHBOARD NUEVO -->
+<section id="dashboard" class="content-section active">
     
-                        <!-- Botón Cerrar (X) mejorado -->
-                        <button onclick="document.getElementById('galeria-vendedor-seccion').style.display='none'" 
-                                style="position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: none; background: #f1f5f9; color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
-                                onmouseover="this.style.background='#fee2e2'; this.style.color='#ef4444';"
-                                onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b';">
-                            <i class="fas fa-times"></i>
-                        </button>
+    <!-- HEADER VIVO -->
+    <div class="welcome-banner" id="welcome-banner" style="position: relative; overflow: hidden;">
+        <div class="welcome-content" style="position: relative; z-index: 2;">
+            <h2 style="margin-bottom: 0.25rem;">¡Hola, <span id="welcome-name">Invitado</span>!</h2>
+            <div class="user-details" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                <span id="welcome-neighborhood" style="opacity: 0.9;">Explorá Vecinos Virtuales</span>
+                <span class="user-badge" id="welcome-number" style="background: rgba(255,255,255,0.2); padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.85rem;">#---</span>
+            </div>
+            <div id="guest-banner" style="display: none; background: rgba(245,158,11,0.9); color: white; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 600;">
+                <i class="fas fa-eye"></i> Estás en modo invitado. <button onclick="VV.landing.goToRegister()" style="background: white; color: #d97706; border: none; padding: 0.2rem 0.6rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-left: 0.5rem;">Registrate gratis</button>
+            </div>
+        </div>
+    </div>
 
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3 id="titulo-galeria" style="margin:0; font-size: 1.2rem; color: #1e293b; display: flex; align-items: center; gap: 0.75rem;">
-                                <i class="fas fa-store" style="color: #3b82f6;"></i>
-                                <span>Catálogo del Vecino</span>
-                            </h3>
-                            <p style="margin: 4px 0 0 40px; font-size: 0.85rem; color: #64748b;">Explora todos los productos de este comercio</p>
-                        </div>
+    <!-- CRÉDITOS DEL USUARIO (solo si está logueado) -->
+    <div id="user-credits-bar" style="display: none; margin: 1rem 0; padding: 0.75rem 1rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <span style="font-weight: 600; color: var(--gray-700);"><i class="fas fa-wallet"></i> Tus créditos:</span>
+        <span style="background: #e0f2fe; color: #0369a1; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+            📷 Folleto: <span id="credit-folleto">0</span>
+        </span>
+        <span style="background: #fef3c7; color: #92400e; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+            ⭐ Destacados: <span id="credit-featured">0</span>
+        </span>
+        <button onclick="VV.landing.goToRegister()" style="margin-left: auto; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple)); color: white; border: none; padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+            <i class="fas fa-plus"></i> Cargar más
+        </button>
+    </div>
 
-                        <!-- Rejilla de productos donde la función inyectará el contenido -->
-                        <div id="lista-productos-vendedor" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.25rem;">
-                            <!-- Se llena automáticamente por la función verTiendaVecino -->
-                        </div>
-                    </div>
-					                    <!-- ===== WIDGET BILLETERA ===== -->
-                    <div id="widget-wallet" style="margin: 1rem 0; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(30,41,59,0.98), rgba(15,23,42,0.95)); border-radius: 16px; padding: 0.75rem 1rem; border: 1px solid rgba(251,191,36,0.3); flex-wrap: wrap; gap: 0.5rem;">
-                        <div id="wallet-balance-display" style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="font-size: 1.2rem;">🪙</span>
-                            <span style="color: #fbbf24; font-weight: 700; font-size: 1rem;">Cargando...</span>
-                            <span style="font-size: 0.7rem; color: #94a3b8; margin-left: 0.3rem;" id="wallet-xp-display"></span>
-                        </div>
-                        <button onclick="VV_WALLET.openShop()" style="background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1e293b; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; position: relative; z-index: 10;">
- 							🛒 Tienda
-                        </button>
-                    </div>
+    <!-- FEED DE ACTIVIDAD RECIENTE -->
+    <div style="margin: 1.5rem 0;">
+        <h3 style="margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem; color: var(--gray-800);">
+            <i class="fas fa-bolt" style="color: var(--warning-orange);"></i>
+            ¿Qué pasó hoy en tu barrio?
+        </h3>
+        <div id="activity-feed" style="background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); min-height: 120px;">
+            <div style="text-align: center; color: var(--gray-500); padding: 2rem 0;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                Cargando actividad reciente...
+            </div>
+        </div>
+    </div>
 
-					                    <!-- ===== WIDGET VOCES VIRTUALES EN DASHBOARD ===== -->
-                    <div id="widget-voces-virtuales" class="dashboard-widget" style="margin: 1rem 0; background: linear-gradient(135deg, rgba(30,41,59,0.95), rgba(15,23,42,0.9)); border-radius: 16px; padding: 1rem; border: 1px solid rgba(139,92,246,0.3);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem; color: #f1f5f9; font-size: 1.1rem;">
-                                <i class="fas fa-microphone-alt" style="color: #a78bfa;"></i>
-                                Voces Virtuales
-                            </h3>
-                            <button class="btn-primary" onclick="conmutarVistasPro('#voces'); VV_VOCES_V2.switchTab('explorar'); VV_VOCES_V2.cargarFeed();" style="font-size: 0.8rem; padding: 0.4rem 0.8rem; white-space: nowrap; flex-shrink: 0;">
-                                Ver todo →
-                            </button>
-                        </div>
-                        <div id="widget-vv-feed" class="widget-vv-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;">
-                            <p style="text-align:center;color:#94a3b8;grid-column:1/-1;padding:1rem;">Cargando obras del barrio...</p>
-                        </div>
-                    </div>
+    <!-- ACCESO RÁPIDO (GRID) -->
+    <div class="main-modules-grid">
+        <button class="module-card" onclick="VV.utils.showSection('shopping')">
+            <div class="module-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h3>Comprar</h3>
+            <p>Ver productos del barrio</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.utils.showSection('marketplace')">
+            <div class="module-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                <i class="fas fa-store"></i>
+            </div>
+            <h3>Vender</h3>
+            <p>Publicá tus productos</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.utils.showSection('cultural')">
+            <div class="module-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                <i class="fas fa-palette"></i>
+            </div>
+            <h3>Cultura y Trueque</h3>
+            <p>Eventos y actividades</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.utils.showSection('improvements')">
+            <div class="module-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                <i class="fas fa-tools"></i>
+            </div>
+            <h3>Mejoras</h3>
+            <p>Propuestas del barrio</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.utils.showSection('map-section'); VV.map.init();">
+            <div class="module-icon" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <h3>Mapa</h3>
+            <p>Comercios y alertas</p>
+        </button>
+        
+        <button class="module-card" onclick="VV.raffle.showActiveRaffles()">
+            <div class="module-icon" style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);">
+                <i class="fas fa-dice"></i>
+            </div>
+            <h3>Sorteos</h3>
+            <p>Ganá premios</p>
+        </button>
+    </div>
 
-                    <!-- Estado de Geolocalización -->
-                    <div id="geo-status" style="margin: 1.5rem 0;">
-                        <!-- Se llenará dinámicamente -->
-                    </div>
+    <!-- FOLLETO VECINAL PREVIEW -->
+    <div style="margin: 2rem 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-images" style="color: var(--primary-blue);"></i>
+                Folleto Vecinal
+            </h3>
+            <button class="btn-secondary" onclick="VV.utils.showSection('folleto')" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+                Ver todo
+            </button>
+        </div>
+        <div id="dashboard-folleto-preview" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center;">
+            <p style="color: var(--gray-500); margin: 0;">
+                <i class="fas fa-images" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
+                Acá aparecerán las imágenes del folleto vecinal.
+            </p>
+        </div>
+    </div>
 
-                    <div class="main-modules-grid">
-                        <button class="module-card" onclick="VV.utils.showSection('marketplace')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-                                <i class="fas fa-store"></i>
-                            </div>
-                            <h3>Voy a Vender</h3>
-                            <p>Publica tus productos</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('shopping')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                                <i class="fas fa-shopping-cart"></i>
-                            </div>
-                            <h3>Voy a Comprar</h3>
-                            <p>Encuentra lo que necesitas</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('improvements')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                                <i class="fas fa-tools"></i>
-                            </div>
-                            <h3>Mejoras</h3>
-                            <p>Propón ideas para el barrio</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('cultural')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-                                <i class="fas fa-palette"></i>
-                            </div>
-                            <h3>Cultura, Deportes y Trueque</h3>
-                            <p>Arte, deportes, eventos y trueques</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('services')">
-                            <div class="module-icon" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <h3>Servicios</h3>
-                            <p>Ofrece o busca servicios</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.raffle.showActiveRaffles()" style="background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%); color: white;">
-                            <div class="module-icon" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-dice"></i>
-                            </div>
-                            <h3>Sorteos</h3>
-                            <p>Participa y gana premios</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="VV.utils.showSection('map-section'); VV.map.init();" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white;">
-                            <div class="module-icon" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-map-marked-alt"></i>
-                            </div>
-                            <h3>Mapa del Barrio</h3>
-                            <p>Vendedores, alertas y más</p>
-                        </button>
-                        
-                        <button class="module-card" onclick="requestSponsorStatus()" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white;">
-                            <div class="module-icon" style="background: rgba(255,255,255,0.2);">
-                                <i class="fas fa-bullhorn"></i>
-                            </div>
-                            <h3>Ser Anunciante</h3>
-                            <p>Promociona tu negocio</p>
-                        </button>
-                    </div>
-
-                    <!-- Banner de Anunciantes para Desktop -->
-                    <div style="margin: 2rem 0;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fas fa-bullhorn" style="color: var(--warning-orange);"></i>
-                                Anunciantes del Barrio
-                            </h3>
-                            <button class="btn-secondary" onclick="VV.banner.showAllSponsors()" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
-                                <i class="fas fa-th"></i> Ver Todos
-                            </button>
-                        </div>
-                        <div id="desktop-sponsors-banner" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
-                            <!-- Banners de anunciantes -->
-                        </div>
-                    </div>
-
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon blue">
-                                <i class="fas fa-shopping-bag"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>Productos</h3>
-                                <p class="stat-number">15</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon green">
-                                <i class="fas fa-tools"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>Mejoras</h3>
-                                <p class="stat-number">8</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon purple">
-                                <i class="fas fa-palette"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>Arte</h3>
-                                <p class="stat-number">12</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon orange">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div class="stat-info">
-                                <h3>Vecinos</h3>
-                                <p class="stat-number">247</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
+    <!-- ANUNCIANTES -->
+    <div style="margin: 2rem 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-bullhorn" style="color: var(--warning-orange);"></i>
+                Anunciantes del Barrio
+            </h3>
+        </div>
+        <div id="desktop-sponsors-banner" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+            <!-- Se llena automáticamente -->
+        </div>
+    </div>
+</section>
+  
                 <!-- MARKETPLACE (MIS PRODUCTOS) -->
                 <section id="marketplace" class="content-section">
                     <div class="section-header">
@@ -728,21 +761,7 @@
                         <button class="tab-btn" onclick="VV.admin.showTab('folleto')">
                             <i class="fas fa-images"></i> Folleto
                         </button>
-						<button class="tab-btn" onclick="VV.utils.showSection('admin-neighborhoods')">
-                            <i class="fas fa-map-marked-alt"></i> Barrios
-                        </button>
-                        <button class="tab-btn" onclick="VV.utils.showSection('admin-products')">
-                            <i class="fas fa-boxes"></i> Productos
-                        </button>
-                        <button class="tab-btn" onclick="VV.utils.showSection('admin-improvements')">
-                            <i class="fas fa-hammer"></i> Mejoras
-                        </button>
-						<button class="tab-btn" onclick="VV.utils.showSection('admin-users')">
-                            <i class="fas fa-users"></i> Usuarios
-                        </button>
-						<button class="tab-btn" onclick="VV.utils.showSection('admin-wallet')">
-                            <i class="fas fa-coins"></i> Billetera
-                        </button>
+
                     </div>
 
                     <div id="admin-sponsors" class="admin-tab-content active">
@@ -810,6 +829,47 @@
                             </div>
                         </div>
                     </div>
+					<!-- NUEVA PESTAÑA: CONTENIDO LANDING -->
+<div class="admin-tabs" style="margin-top: 2rem;">
+    <button class="tab-btn" onclick="VV.admin.showTab('landing-content')">
+        <i class="fas fa-images"></i> Contenido Landing
+    </button>
+</div>
+
+<div id="admin-landing-content" class="admin-tab-content" style="display:none;">
+    <h3><i class="fas fa-upload"></i> Subir contenido al Feed Principal</h3>
+    <p style="color: var(--gray-600); margin-bottom: 1rem;">Estas imágenes aparecen en la landing page para usuarios no registrados.</p>
+    
+    <form onsubmit="event.preventDefault(); VV.admin.uploadLandingContent();" style="background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+        <div class="form-group">
+            <label>Categoría</label>
+            <select id="landing-cat" required style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300);">
+                <option value="cultura">🎨 Cultura y Eventos</option>
+                <option value="mejoras">🔧 Mejoras</option>
+                <option value="comercios">🛒 Comercios</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Título (opcional)</label>
+            <input type="text" id="landing-title" placeholder="Ej: Feria de artesanos" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300);">
+        </div>
+        <div class="form-group">
+            <label>Imagen</label>
+            <input type="file" id="landing-file" accept="image/*,video/*" required style="width: 100%; padding: 0.5rem;">
+        </div>
+        <button type="submit" class="btn-primary">
+            <i class="fas fa-upload"></i> Publicar en Landing
+        </button>
+    </form>
+    
+    <h4>Contenido actual</h4>
+    <div id="landing-content-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;"></div>
+</div>
+					<!-- Solicitudes de Destacados -->
+<div id="featured-requests-container" style="margin-top: 2rem;">
+    <h3><i class="fas fa-star" style="color: var(--warning-orange);"></i> Solicitudes de Ofertas Destacadas</h3>
+    <div id="featured-requests-list"></div>
+</div>
 
                 </section>
 
@@ -907,12 +967,6 @@
                     </div>
                     <div id="admin-neighborhoods-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
                     <div id="admin-neighborhoods-list"></div>
-					<div class="section-header">
-                        <h2><i class="fas fa-map-marked-alt"></i> Vista Global de Barrios</h2>
-                        <button class="btn-primary" onclick="VV.utils.showSection('admin')">
-                            <i class="fas fa-arrow-left"></i> Volver al Panel
-                        </button>
-                    </div>
                 </section>
 
                 <!-- ADMIN: TODOS LOS PRODUCTOS -->
@@ -931,13 +985,6 @@
                     </div>
                     <div id="admin-products-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
                     <div id="admin-products-list" class="products-grid"></div>
-					<div class="section-header">
-                        <h2><i class="fas fa-boxes"></i> Vista Global de Productos</h2>
-                        <button class="btn-primary" onclick="VV.utils.showSection('admin')">
-                            <i class="fas fa-arrow-left"></i> Volver al Panel
-                        </button>
-                    </div>
-
                 </section>
 
                 <!-- ADMIN: TODAS LAS MEJORAS -->
@@ -958,55 +1005,97 @@
                     </div>
                     <div id="admin-improvements-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
                     <div id="admin-improvements-list" class="improvements-grid"></div>
-					<div class="section-header">
-                        <h2><i class="fas fa-hammer"></i> Vista Global de Mejoras</h2>
-                        <button class="btn-primary" onclick="VV.utils.showSection('admin')">
-                            <i class="fas fa-arrow-left"></i> Volver al Panel
-                        </button>
-                    </div>
                 </section>
-				                <!-- ADMIN: TODOS LOS USUARIOS -->
-                <section id="admin-users" class="content-section">
-                    <div class="section-header">
-                        <h2><i class="fas fa-users"></i> Vista Global de Usuarios</h2>
-                        <button class="btn-primary" onclick="VV.utils.showSection('admin')">
-                            <i class="fas fa-arrow-left"></i> Volver al Panel
-                        </button>
-                    </div>
-                    <div class="filters" style="margin-bottom: 1.5rem;">
-                        <input type="text" id="admin-user-search" placeholder="Buscar por nombre o email..." onkeyup="VV.admin.loadAllUsers()" style="flex: 2;">
-                        <select id="admin-user-neighborhood-filter" onchange="VV.admin.loadAllUsers()" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1;">
-                            <option value="">Todos los barrios</option>
-                        </select>
-                    </div>
-                    <div id="admin-users-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
-                    <div id="admin-users-list" class="users-grid"></div>
-                </section>
-				                <!-- ADMIN: BILLETERA -->
-                <section id="admin-wallet" class="content-section">
-                    <div class="section-header">
-                        <h2><i class="fas fa-coins"></i> Gestión de Billeteras</h2>
-                        <button class="btn-primary" onclick="VV.utils.showSection('admin')">
-                            <i class="fas fa-arrow-left"></i> Volver al Panel
-                        </button>
-                    </div>
-                    
-                    <!-- Estadísticas generales -->
-                    <div id="admin-wallet-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
-                    
-                    <!-- Solicitudes de créditos pendientes -->
-                    <div id="admin-credit-requests" style="margin-bottom: 2rem;">
-                        <h3 style="margin-bottom: 1rem;"><i class="fas fa-bell"></i> Solicitudes de Créditos Pendientes</h3>
-                        <div id="admin-credit-requests-list"></div>
-                    </div>
-                    
-                    <!-- Lista de billeteras -->
-                    <h3 style="margin-bottom: 1rem;"><i class="fas fa-wallet"></i> Billeteras de Usuarios</h3>
-                    <div class="filters" style="margin-bottom: 1.5rem;">
-                        <input type="text" id="admin-wallet-search" placeholder="Buscar por nombre..." onkeyup="VV.admin.loadAllWallets()" style="flex: 2;">
-                    </div>
-                    <div id="admin-wallets-list" class="users-grid"></div>
-                </section>
+                <!-- GESTIÓN DE USUARIOS (ADMIN) -->
+<section id="users-management" class="content-section">
+    <div class="section-header">
+        <h2><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
+    </div>
+    <div class="users-grid" id="users-management-list"></div>
+</section>
+
+<!-- ADMIN: TODOS LOS PRODUCTOS -->
+<section id="admin-products" class="content-section">
+    <div class="section-header">
+        <h2><i class="fas fa-boxes"></i> Vista Global de Productos</h2>
+    </div>
+    <div class="filters" style="margin-bottom: 1.5rem;">
+        <select id="admin-product-neighborhood-filter" onchange="VV.admin.loadAllProducts()" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1;">
+            <option value="">Todos los barrios</option>
+        </select>
+        <select id="admin-product-category-filter" onchange="VV.admin.loadAllProducts()" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1;">
+            <option value="">Todas las categorías</option>
+        </select>
+        <input type="text" id="admin-product-search" placeholder="Buscar productos..." onkeyup="VV.admin.loadAllProducts()" style="flex: 2;">
+    </div>
+    <div id="admin-products-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+    <div id="admin-products-list" class="products-grid"></div>
+</section>
+
+<!-- ADMIN: TODAS LAS MEJORAS -->
+<section id="admin-improvements" class="content-section">
+    <div class="section-header">
+        <h2><i class="fas fa-hammer"></i> Vista Global de Mejoras</h2>
+    </div>
+    <div class="filters" style="margin-bottom: 1.5rem;">
+        <select id="admin-improvement-neighborhood-filter" onchange="VV.admin.loadAllImprovements()" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1;">
+            <option value="">Todos los barrios</option>
+        </select>
+        <select id="admin-improvement-status-filter" onchange="VV.admin.loadAllImprovements()" style="padding: 0.75rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1;">
+            <option value="">Todos los estados</option>
+            <option value="pending">Pendientes</option>
+            <option value="in-progress">En Progreso</option>
+            <option value="completed">Completadas</option>
+        </select>
+    </div>
+    <div id="admin-improvements-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+    <div id="admin-improvements-list" class="improvements-grid"></div>
+</section>
+
+<!-- ADMIN: TODOS LOS BARRIOS -->
+<section id="admin-neighborhoods" class="content-section">
+    <div class="section-header">
+        <h2><i class="fas fa-map-marked-alt"></i> Vista Global de Barrios</h2>
+    </div>
+    <div id="admin-neighborhoods-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;"></div>
+    <div id="admin-neighborhoods-list"></div>
+</section>
+				<!-- 1. Gestión de Usuarios -->
+<section id="users-management" class="content-section">
+    <header class="section-header">
+        <i class="fas fa-users-cog"></i>
+        <h2>Gestión de Usuarios</h2>
+    </header>
+    <div id="users-management-list"></div>
+</section>
+
+<!-- 2. Administración de Productos -->
+<section id="admin-products" class="content-section">
+    <header class="section-header">
+        <i class="fas fa-boxes"></i>
+        <h2>Administración de Productos</h2>
+    </header>
+    <div id="admin-products-list" class="products-grid"></div>
+</section>
+
+<!-- 3. Administración de Mejoras -->
+<section id="admin-improvements" class="content-section">
+    <header class="section-header">
+        <i class="fas fa-tools"></i>
+        <h2>Administración de Mejoras</h2>
+    </header>
+    <div id="admin-improvements-list" class="improvements-grid"></div>
+</section>
+
+<!-- 4. Administración de Barrios -->
+<section id="admin-neighborhoods" class="content-section">
+    <header class="section-header">
+        <i class="fas fa-map-marked-alt"></i>
+        <h2>Administración de Barrios</h2>
+    </header>
+    <div id="admin-neighborhoods-list"></div>
+</section>
+
             </main>
         </div>
     </div>
@@ -1171,10 +1260,23 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <!-- Scripts modulares -->
-    <script src="js/supabase-config.js"></script>
+       <!-- 1. CDN de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 2. Inicialización INLINE (garantizado que corre después del CDN) -->
+    <script>
+        window.SUPABASE_URL = 'https://idakpvwvvjexvalnfooy.supabase.co';
+        window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkYWtwdnd2dmpleHZhbG5mb295Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDE4NDQsImV4cCI6MjA5Nzg3Nzg0NH0.ntp7plvFaVt5EtlF6kEL69dTr9For_Sdn_iszrCiGi8';
+        
+        // Inicializar cliente global
+        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase inicializado:', !!window.supabase);
+    </script>
+    <!-- 3. ELIMINADO: <script src="js/supabase-config.js"></script> -->
+        <!-- 4. Resto de módulos -->
     <script src="js/core.js"></script>
     <script src="js/auth-supabase.js"></script>
-    <script src="js/folleto.js"></script> <!-- NUEVO ARCHIVO AQUÍ -->
+    <script src="js/folleto.js"></script>
     <script src="js/marketplace.js"></script>
     <script src="js/reservations.js"></script>
     <script src="js/improvements.js"></script>
@@ -1187,11 +1289,10 @@
     <script src="js/map.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/banner.js"></script>
+    <script src="js/landing.js"></script>
+    <script src="js/auth-celular.js"></script>
     <script src="js/app.js"></script>
-	<script src="js/vv-roles.js"></script>
-	<script src="js/wallet.js"></script>
-	<script src="js/voces-virtuales-v2.js"></script>
-    
+
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -1255,232 +1356,45 @@
         // Ejecutar inmediatamente
         checkMobileMenu();
     </script>
-    
-	<!-- ============================================================
-     🎤 VOCES VIRTUALES V2
-     ============================================================ -->
-<div id="modulo-voces-virtuales" style="display: none;">
-    
-    <!-- TAB 1: CREAR -->
-    <div id="vv-tab-crear">
-        <div class="vv-header">
-            <div>
-                <h1><i class="fas fa-microphone-alt"></i> Voces Virtuales</h1>
-                <p>Estudio de Creación</p>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('ensayo')">🎤 Ensayo</button>
-                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4);"><i class="fas fa-arrow-left"></i> Volver</button>
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('explorar'); VV_VOCES.cargarFeed();">🌎 Explorar</button>
-            </div>
-        </div>
-
-        <div id="vv-zona-subida" class="vv-card">
-            <h3><i class="fas fa-cloud-upload-alt"></i> Preparar tu Obra</h3>
-            <button class="vv-btn-primary" onclick="VV_VOCES.irAGrabarSinPista()" style="background: linear-gradient(135deg, #f59e0b, #d97706); margin-bottom: 0.5rem;">
-                <i class="fas fa-guitar"></i> 🎸 Modo Acústico — Grabar con mi instrumento
-            </button>
-            <p style="text-align: center; color: #94a3b8; font-size: 0.8rem; margin: 0 0 1rem 0;">Ideal para guitarra, piano, ukelele, etc.</p>
-            <div style="text-align: center; color: #64748b; font-size: 0.75rem; margin: 0.5rem 0;">— o —</div>
-            <label class="vv-file-label">
-                <i class="fas fa-music"></i> Subir Pista Instrumental (MP3/WAV)
-                <input type="file" id="vv-upload-audio" accept="audio/mp3,audio/wav,audio/mpeg" onchange="VV_VOCES.onAudioSelected()">
-            </label>
-            <p id="vv-audio-name" class="vv-file-name"></p>
-            <label class="vv-file-label" style="background: linear-gradient(135deg, #4b5563, #374151);">
-                <i class="fas fa-align-center"></i> Subir Letra (.LRC o .TXT) — Opcional
-                <input type="file" id="vv-upload-letra" accept=".lrc,.txt" onchange="VV_VOCES.onLyricSelected()">
-            </label>
-            <p id="vv-letra-name" class="vv-file-name"></p>
-            <div class="vv-sadaic-box">
-                <i class="fas fa-shield-alt"></i>
-                <span>¿Sos autor? <a href="https://sadaic.org.ar" target="_blank">Asociate a SADAIC</a></span>
-            </div>
-            <button id="vv-btn-cargar-estudio" class="vv-btn-primary" onclick="VV_VOCES.loadLocalTrackFromInputs()" disabled>
-                <i class="fas fa-upload"></i> Cargar Pista y Entrar al Estudio
-            </button>
-        </div>
-
-        <div id="vv-zona-grabacion" class="vv-estudio-container oculto">
-            <video id="vv-camara-preview" autoplay muted playsinline></video>
-            <div id="vv-letra-container"><p class="vv-letra-placeholder">La letra aparecerá aquí...</p></div>
-            <audio id="vv-pista-audio" controls></audio>
-            <div class="vv-controls-bar">
-                <button id="vv-btn-rec-action" class="vv-btn-record" onclick="VV_VOCES.toggleRecording()" title="Grabar Mi Tema"><i class="fas fa-circle"></i></button>
-                <p class="vv-hint"><i class="fas fa-headphones"></i> Usá auriculares para la mejor calidad</p>
-            </div>
-        </div>
-
-        <div id="vv-zona-post-grabacion" class="vv-card oculto">
-            <h3><i class="fas fa-play-circle"></i> Revisá tu Grabación</h3>
-            <video id="vv-preview-grabacion" controls></video>
-            <div class="vv-form-group">
-                <label>Título de tu obra *</label>
-                <input type="text" id="vv-input-titulo-obra" placeholder="Ej: Mi Canción de Verano">
-            </div>
-            <label class="vv-checkbox">
-                <input type="checkbox" id="vv-check-derechos">
-                <span>✅ Confirmo que soy el autor de esta obra y tengo derechos sobre ella.</span>
-            </label>
-            <div id="vv-contenedor-progreso" style="display: none; margin-bottom: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-                    <span id="vv-texto-progreso" style="font-size: 0.8rem; color: #34d399;">Subiendo... 0%</span>
-                    <span id="vv-porcentaje-progreso" style="font-size: 0.8rem; color: #34d399; font-weight: 700;">0%</span>
-                </div>
-                <div style="width: 100%; background: rgba(255,255,255,0.1); height: 8px; border-radius: 999px; overflow: hidden;">
-                    <div id="vv-barra-progreso" style="width: 0%; background: linear-gradient(90deg, #10b981, #34d399); height: 100%; transition: width 0.2s ease;"></div>
-                </div>
-            </div>
-            <div class="vv-btn-group">
-                <button class="vv-btn-success" onclick="VV_VOCES.publishOriginal()"><i class="fas fa-rocket"></i> Publicar en el Barrio</button>
-                <button class="vv-btn-secondary" onclick="VV_VOCES.descargarLocal()"><i class="fas fa-download"></i> Guardar en mi celular</button>
-                <button class="vv-btn-secondary" onclick="VV_VOCES.discardRecording()"><i class="fas fa-trash"></i> Descartar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- TAB 2: ENSAYO -->
-    <div id="vv-tab-ensayo oculto">
-        <div class="vv-header">
-            <div>
-                <h1><i class="fas fa-guitar"></i> Ensayo</h1>
-                <p>Practicá tus covers</p>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('crear')">🎵 Crear</button>
-                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4);"><i class="fas fa-arrow-left"></i> Volver</button>
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('explorar'); VV_VOCES.cargarFeed();">🌎 Explorar</button>
-            </div>
-        </div>
-        <div class="vv-card">
-            <div class="vv-search-box">
-                <input type="text" id="vv-search-input" placeholder="🔍 Buscar artista o canción..." onkeypress="if(event.key==='Enter') VV_VOCES.searchYouTube(this.value)">
-                <button onclick="VV_VOCES.searchYouTube(document.getElementById('vv-search-input').value)"><i class="fas fa-search"></i></button>
-            </div>
-            <div id="vv-resultados-ensayo" class="vv-results-list"></div>
-        </div>
-        <div id="vv-youtube-embed" class="vv-card oculto"></div>
-    </div>
-    <!-- ====== TAB 3: EXPLORAR (Feed) ====== -->
-	<div id="vv-tab-explorar" class="oculto">
-        <div class="vv-header">
-            <div>
-                <h1><i class="fas fa-compass"></i> Explorar</h1>
-                <p>Descubrí las voces de tu barrio</p>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('crear')">🎵 Crear</button>
-                <button class="vv-btn-tab" onclick="conmutarVistasPro('#dashboard')" style="background: rgba(239,68,68,0.2);">
-                    <i class="fas fa-arrow-left"></i> Volver
-                </button>
-                <button class="vv-btn-tab" onclick="VV_VOCES.switchTab('explorar'); VV_VOCES.cargarFeed();">🌎 Explorar</button>
-            </div>
-        </div>
-        
-        <div id="vv-feed-container" class="vv-feed-container">
-            <p style="text-align:center;color:#94a3b8;padding:2rem;">Cargando obras del barrio...</p>
-        </div>
-    </div>
-
-</div>
-
-<style>
-#modulo-voces-virtuales { position: fixed; inset: 0; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; z-index: 9999; overflow-y: auto; font-family: inherit; padding: 1rem; }
-.vv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.vv-header h1 { font-size: 1.25rem; margin: 0; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.vv-header p { font-size: 0.8rem; color: #94a3b8; margin: 0.25rem 0 0 0; }
-.vv-btn-tab { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 999px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
-.vv-btn-tab:hover { background: rgba(255,255,255,0.2); }
-.vv-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; padding: 1.25rem; margin-bottom: 1rem; backdrop-filter: blur(10px); }
-.vv-card h3 { margin: 0 0 1rem 0; font-size: 1.1rem; color: #e2e8f0; }
-.vv-file-label { display: block; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 1rem; border-radius: 0.75rem; text-align: center; font-weight: 600; cursor: pointer; margin-bottom: 0.5rem; transition: transform 0.15s; }
-.vv-file-label:hover { transform: scale(1.02); }
-.vv-file-label input { display: none; }
-.vv-file-name { font-size: 0.8rem; color: #94a3b8; margin: 0 0 0.75rem 0; text-align: center; }
-.vv-sadaic-box { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 0.75rem; font-size: 0.8rem; color: #fcd34d; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; }
-.vv-sadaic-box a { color: #fbbf24; font-weight: 600; }
-.vv-btn-primary { width: 100%; padding: 1rem; border-radius: 0.75rem; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; }
-.vv-btn-primary:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
-.vv-btn-primary:not(:disabled):hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
-.vv-estudio-container { position: relative; background: linear-gradient(180deg, #020617 0%, #0f172a 100%); border-radius: 1rem; padding: 1.5rem 1rem 1rem 1rem; min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; }
-#vv-camara-preview { position: absolute; top: 1rem; right: 1rem; width: 120px; height: 90px; object-fit: cover; border-radius: 0.75rem; border: 2px solid rgba(59, 130, 246, 0.5); box-shadow: 0 4px 12px rgba(0,0,0,0.5); transform: scaleX(-1); z-index: 10; background: #000; }
-#vv-letra-container { font-size: 1.75rem; font-weight: 700; text-align: center; line-height: 1.4; color: #94a3b8; max-width: 90%; margin: 2rem 0; min-height: 120px; display: flex; align-items: center; justify-content: center; }
-#vv-letra-container .linea-activa { color: #f8fafc; text-shadow: 0 0 20px rgba(139, 92, 246, 0.6); transition: all 0.3s ease; }
-.vv-letra-placeholder { font-size: 1rem; color: #475569; font-weight: 400; }
-#vv-pista-audio { width: 90%; margin-top: auto; margin-bottom: 1rem; }
-.vv-controls-bar { position: absolute; bottom: 1.5rem; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-.vv-btn-record { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #ef4444, #dc2626); border: 4px solid rgba(255,255,255,0.2); color: white; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
-.vv-btn-record:hover { transform: scale(1.05); }
-.vv-btn-record.grabando { background: #000; border-color: #ef4444; border-radius: 12px; animation: vvPulse 1.5s infinite; }
-@keyframes vvPulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-.vv-hint { font-size: 0.75rem; color: #94a3b8; margin: 0; }
-#vv-preview-grabacion { width: 100%; max-height: 300px; border-radius: 0.75rem; background: #000; margin-bottom: 1rem; }
-.vv-form-group { margin-bottom: 1rem; }
-.vv-form-group label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem; }
-.vv-form-group input { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #f8fafc; font-size: 1rem; box-sizing: border-box; }
-.vv-checkbox { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; color: #cbd5e1; margin-bottom: 1rem; cursor: pointer; }
-.vv-checkbox input { margin-top: 0.15rem; }
-.vv-btn-group { display: flex; flex-direction: column; gap: 0.75rem; }
-.vv-btn-success { width: 100%; padding: 1rem; border-radius: 0.75rem; border: none; background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 700; font-size: 1rem; cursor: pointer; }
-.vv-btn-secondary { width: 100%; padding: 1rem; border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #94a3b8; font-weight: 600; font-size: 1rem; cursor: pointer; }
-.vv-search-box { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-.vv-search-box input { flex: 1; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #f8fafc; font-size: 1rem; }
-.vv-search-box input::placeholder { color: #64748b; }
-.vv-search-box button { padding: 0.75rem 1.25rem; border-radius: 0.75rem; border: none; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; cursor: pointer; font-size: 1rem; }
-.vv-results-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 250px; overflow-y: auto; }
-.vv-result-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 0.5rem; cursor: pointer; transition: background 0.2s; }
-.vv-result-item:hover { background: rgba(255,255,255,0.1); }
-.vv-result-thumb { width: 60px; height: 45px; background: #1e293b; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
-.vv-result-info { flex: 1; }
-.vv-result-title { font-size: 0.85rem; font-weight: 600; margin: 0; color: #e2e8f0; }
-@media (min-width: 768px) { #modulo-voces-virtuales { padding: 2rem; } .vv-btn-group { flex-direction: row; } .vv-btn-group button { flex: 1; } }
-.vv-feed-container { display: flex; flex-direction: column; gap: 1rem; padding-bottom: 2rem; }
-.vv-video-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; overflow: hidden; }
-.vv-video-card video { width: 100%; max-height: 300px; background: #000; display: block; }
-.vv-video-info { padding: 1rem; }
-.vv-video-title { font-size: 1rem; font-weight: 700; margin: 0 0 0.25rem 0; color: #f8fafc; }
-.vv-video-author { font-size: 0.8rem; color: #94a3b8; margin: 0 0 0.75rem 0; }
-.vv-video-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-.vv-video-actions button { padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: none; background: rgba(255,255,255,0.1); color: #e2e8f0; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; }
-.vv-video-actions button:hover { background: rgba(255,255,255,0.2); }
-.vv-video-actions .btn-like { background: rgba(239,68,68,0.2); color: #fca5a5; }
-.vv-video-actions .btn-gift { background: rgba(251,191,36,0.2); color: #fcd34d; }
-.vv-video-actions .btn-report { background: rgba(100,116,139,0.2); color: #94a3b8; font-size: 0.7rem; }
-.vv-comments-section { padding: 0 1rem 1rem 1rem; border-top: 1px solid rgba(255,255,255,0.05); }
-.vv-comment-input { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
-.vv-comment-input input { flex: 1; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: #f8fafc; font-size: 0.85rem; }
-.vv-comment-input button { padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: none; background: #3b82f6; color: white; cursor: pointer; }
-
-</style>
-<script>
+    <script>
+// Conmutador de vistas - Karaoke vs Dashboard
 function conmutarVistasPro(destino) {
     try {
-        var capaVoces = document.getElementById('modulo-voces-virtuales');
         var capaKaraoke = document.getElementById('modulo-karaoke-container');
         var mainApp = document.getElementById('main-app');
         var loadingScreen = document.getElementById('loading-screen');
+        
         if (loadingScreen) loadingScreen.style.display = 'none';
-
-        if (destino === '#voces' || destino === '#modulo-voces-virtuales') {
-            if (capaVoces) capaVoces.style.display = 'block';
-            if (capaKaraoke) capaKaraoke.style.display = 'none';
-            if (mainApp) mainApp.style.display = 'none';
-            window.location.hash = '#voces';
-            console.log("🎤 Voces Virtuales activado");
-        } else if (destino === '#karaoke') {
-            if (capaKaraoke) capaKaraoke.style.display = 'block';
-            if (capaVoces) capaVoces.style.display = 'none';
-            if (mainApp) mainApp.style.display = 'none';
+        
+        if (destino === '#karaoke') {
+            if (capaKaraoke) {
+                capaKaraoke.style.setProperty('display', 'block', 'important');
+                capaKaraoke.classList.add('active');
+            }
+            if (mainApp) mainApp.style.setProperty('display', 'none', 'important');
+            
             window.location.hash = '#karaoke';
             console.log("🎤 Karaoke activado");
+            
+            if (window.VV_KARAOKE && typeof window.VV_KARAOKE.init === 'function') {
+                setTimeout(function() { VV_KARAOKE.init(); }, 100);
+            }
         } else {
-            if (capaVoces) capaVoces.style.display = 'none';
-            if (capaKaraoke) capaKaraoke.style.display = 'none';
-            if (mainApp) mainApp.style.display = 'flex';
+            if (capaKaraoke) {
+                capaKaraoke.style.setProperty('display', 'none', 'important');
+                capaKaraoke.classList.remove('active');
+            }
+            if (mainApp) {
+                mainApp.style.setProperty('display', 'flex', 'important');
+                mainApp.classList.add('active');
+            }
+            
             var secciones = document.querySelectorAll('.content-section');
             secciones.forEach(function(s) { s.classList.remove('active'); });
+            
             var dashboard = document.getElementById('dashboard');
             if (dashboard) dashboard.classList.add('active');
+            
             window.location.hash = '#dashboard';
             console.log("📊 Dashboard activado");
         }
@@ -1490,13 +1404,14 @@ function conmutarVistasPro(destino) {
 }
 
 window.addEventListener('hashchange', function() {
-    if (window.location.hash === '#voces') conmutarVistasPro('#voces');
-    else if (window.location.hash === '#karaoke') conmutarVistasPro('#karaoke');
-    else if (window.location.hash === '#dashboard') conmutarVistasPro('#dashboard');
+    if (window.location.hash === '#karaoke') {
+        conmutarVistasPro('#karaoke');
+    } else if (window.location.hash === '#dashboard') {
+        conmutarVistasPro('#dashboard');
+    }
 });
 </script>
-	
-	//<!-- 🎤 MÓDULO KARAOKE PRO -->
+	<!-- 🎤 MÓDULO KARAOKE PRO -->
 <div id="modulo-karaoke-container" style="display: none;">
     <div class="karaoke-main-container">
         <div class="karaoke-header">
@@ -1538,8 +1453,9 @@ window.addEventListener('hashchange', function() {
             </div>
         </div>
     </div>
-</div>//
+</div>
+
 <script src="https://www.youtube.com/iframe_api"></script>
-//<script src="js/karaoke.js"></script>//
+<script src="js/karaoke.js"></script>
 </body>
 </html>

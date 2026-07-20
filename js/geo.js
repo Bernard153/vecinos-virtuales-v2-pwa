@@ -228,19 +228,15 @@ VV.geo = {
     
     // Formatear nombre de barrio (normalizado sin tildes)
     formatNeighborhoodName(name) {
-        // Normalizar: quitar tildes, capitalizar
-        const normalized = name
-            .normalize('NFD') // Descomponer caracteres con tildes
-            .replace(/[\u0300-\u036f]/g, '') // Eliminar marcas diacríticas (tildes)
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-            .join(' ')
-            .trim();
-        
-        console.log(`📝 Normalizando barrio: "${name}" → "${normalized}"`);
-        return normalized;
-    },
-    
+    if (!name) return '';
+    return name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // quita tildes
+        .replace(/[^a-zA-Z0-9\s]/g, '')  // quita caracteres raros
+        .toUpperCase()
+        .trim();
+},
+   
     // Verificar si un punto está dentro de un polígono (Ray Casting Algorithm)
     isPointInPolygon(lat, lng, polygon) {
         let inside = false;
@@ -902,7 +898,29 @@ VV.geo = {
             VV.marketplace.load();
         }
     },
+    // Dentro de VV.auth.selectNeighborhood, reemplazá la lógica final por:
+selectNeighborhood(neighborhood) {
+    VV.data.neighborhood = neighborhood;
     
+    const neighborhoodElement = document.getElementById('selected-neighborhood');
+    if (neighborhoodElement) {
+        neighborhoodElement.textContent = neighborhood;
+    }
+    
+    // FLUJO NUEVO: Si viene del registro por celular, saltar directo
+    if (VV.data.pendingRegistration) {
+        delete VV.data.pendingRegistration;
+        VV.authCelular.onNeighborhoodSelected(neighborhood);
+        return;
+    }
+    
+    // FLUJO VIEJO (compatibilidad para usuarios ya registrados)
+    if (neighborhood === 'Administrador') {
+        VV.utils.showScreen('login-screen');
+    } else {
+        VV.auth.showAuthOptions();
+    }
+},
     closeNeighborhoodSelector() {
         const overlay = document.getElementById('neighborhood-selector-overlay');
         if (overlay) overlay.classList.remove('active');

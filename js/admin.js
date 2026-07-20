@@ -11,7 +11,7 @@ VV.admin = {
         }
 
         await VV.admin.loadSponsorRequests();
-        await VV.admin.loadFeaturedRequests();
+        await VV.admin.loadFeaturedRequestsFixed(); // ← CORREGIDO: usa la nueva función
         await VV.admin.loadSponsors();
     },
 
@@ -592,14 +592,13 @@ VV.admin = {
 
         if (tabName === 'stats') VV.admin.loadStats();
         if (tabName === 'moderator-logs') VV.admin.loadModeratorLogs();
-        if (tabName === 'featured') VV.admin.loadFeaturedOffers();
+        if (tabName === 'featured') VV.admin.loadFeaturedRequestsFixed(); // ← CORREGIDO: usa la nueva función
         if (tabName === 'avatars') VV.admin.loadAvatarsManagement();
         if (tabName === 'raffles') VV.admin.loadRafflesManagement();
         if (tabName === 'folleto' && typeof window.cargarSolicitudesPendientes === 'function') {
         window.cargarSolicitudesPendientes();
         }
     },
-
     // Cargar estadísticas
     loadStats() {
         const totalViews = VV.data.sponsors.reduce((sum, s) => sum + s.views, 0);
@@ -980,8 +979,8 @@ VV.admin = {
         `;
     }
 };
+// ========== FUNCIONES GLOBALES PARA SOLICITUDES DE ANUNCIANTE ==========
 
-// Solicitar ser anunciante (usuarios comunes)
 window.requestSponsorStatus = function () {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -1048,7 +1047,6 @@ window.requestSponsorStatus = function () {
     };
 }
 
-// Función global para enviar solicitud de anunciante
 window.submitSponsorRequest = async function () {
     console.log('🚀 Enviando solicitud de anunciante...');
 
@@ -1093,6 +1091,7 @@ window.submitSponsorRequest = async function () {
         alert('Error al enviar la solicitud: ' + error.message);
     }
 }
+
 // ========== GESTIÓN DE BARRIOS, PRODUCTOS Y MEJORAS ==========
 
 VV.admin.loadAllNeighborhoods = async function () {
@@ -1104,7 +1103,8 @@ VV.admin.loadAllNeighborhoods = async function () {
     try {
         const { data: users, error: usersError } = await supabase
             .from('users')
-            .select('*');
+            .select('*')
+            .neq('neighborhood', 'Administrador');
 
         if (usersError) throw usersError;
 
@@ -1138,50 +1138,67 @@ VV.admin.loadAllNeighborhoods = async function () {
             }
         });
 
-        if (VV.data.culturalPosts) {
-            VV.data.culturalPosts.forEach(c => {
-                if (neighborhoods.has(c.neighborhood)) {
-                    neighborhoods.get(c.neighborhood).cultural++;
-                }
-            });
-        }
+        VV.data.culturalPosts.forEach(c => {
+            if (neighborhoods.has(c.neighborhood)) {
+                neighborhoods.get(c.neighborhood).cultural++;
+            }
+        });
 
-        if (VV.data.services) {
-            VV.data.services.forEach(s => {
-                if (neighborhoods.has(s.neighborhood)) {
-                    neighborhoods.get(s.neighborhood).services++;
-                }
-            });
-        }
+        VV.data.services.forEach(s => {
+            if (neighborhoods.has(s.neighborhood)) {
+                neighborhoods.get(s.neighborhood).services++;
+            }
+        });
 
         const neighborhoodsList = Array.from(neighborhoods.values());
 
         const statsContainer = document.getElementById('admin-neighborhoods-stats');
         statsContainer.innerHTML = `
         <div class="stat-card">
-            <div class="stat-icon blue"><i class="fas fa-map-marked-alt"></i></div>
-            <div class="stat-info"><h3>Total Barrios</h3><p class="stat-number">${neighborhoodsList.length}</p></div>
+            <div class="stat-icon blue">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Barrios</h3>
+                <p class="stat-number">${neighborhoodsList.length}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon green"><i class="fas fa-users"></i></div>
-            <div class="stat-info"><h3>Total Usuarios</h3><p class="stat-number">${users.length}</p></div>
+            <div class="stat-icon green">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Usuarios</h3>
+                <p class="stat-number">${users.filter(u => u.neighborhood !== 'Administrador').length}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon purple"><i class="fas fa-shopping-bag"></i></div>
-            <div class="stat-info"><h3>Total Productos</h3><p class="stat-number">${VV.data.products.length}</p></div>
+            <div class="stat-icon purple">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Productos</h3>
+                <p class="stat-number">${VV.data.products.length}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon orange"><i class="fas fa-tools"></i></div>
-            <div class="stat-info"><h3>Total Mejoras</h3><p class="stat-number">${VV.data.improvements.length}</p></div>
+            <div class="stat-icon orange">
+                <i class="fas fa-tools"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Total Mejoras</h3>
+                <p class="stat-number">${VV.data.improvements.length}</p>
+            </div>
         </div>
     `;
 
+        const listContainer = document.getElementById('admin-neighborhoods-list');
         if (neighborhoodsList.length === 0) {
-            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay barrios registrados</p>';
+            listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay barrios registrados</p>';
             return;
         }
 
-        container.innerHTML = `
+        listContainer.innerHTML = `
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
             ${neighborhoodsList.map(n => `
                 <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid var(--primary-blue);">
@@ -1189,11 +1206,26 @@ VV.admin.loadAllNeighborhoods = async function () {
                         <i class="fas fa-map-marker-alt"></i> ${n.name}
                     </h3>
                     <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
-                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-users"></i> Usuarios:</span><strong>${n.users.length}</strong></p>
-                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-shopping-bag"></i> Productos:</span><strong>${n.products}</strong></p>
-                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-tools"></i> Mejoras:</span><strong>${n.improvements}</strong></p>
-                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-palette"></i> Cultura:</span><strong>${n.cultural}</strong></p>
-                        <p style="margin: 0; display: flex; justify-content: space-between;"><span><i class="fas fa-briefcase"></i> Servicios:</span><strong>${n.services}</strong></p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-users"></i> Usuarios:</span>
+                            <strong>${n.users.length}</strong>
+                        </p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-shopping-bag"></i> Productos:</span>
+                            <strong>${n.products}</strong>
+                        </p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-tools"></i> Mejoras:</span>
+                            <strong>${n.improvements}</strong>
+                        </p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-palette"></i> Cultura:</span>
+                            <strong>${n.cultural}</strong>
+                        </p>
+                        <p style="margin: 0; display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-briefcase"></i> Servicios:</span>
+                            <strong>${n.services}</strong>
+                        </p>
                     </div>
                     <button class="btn-primary" style="margin-top: 1rem; width: 100%;" onclick="VV.admin.viewNeighborhoodDetails('${n.name.replace(/'/g, "\\'")}')">
                         <i class="fas fa-eye"></i> Ver Detalles
@@ -1207,95 +1239,6 @@ VV.admin.loadAllNeighborhoods = async function () {
         container.innerHTML = '<p style="text-align: center; padding: 2rem; color: red;">Error cargando barrios</p>';
     }
 };
-VV.admin.loadAllUsers = async function () {
-    if (!VV.utils.isAdmin()) return;
-
-    const searchTerm = document.getElementById('admin-user-search').value.toLowerCase();
-    const neighborhoodFilter = document.getElementById('admin-user-neighborhood-filter').value;
-
-    try {
-        const { data: users, error } = await supabase
-            .from('users')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        // Poblar filtro de barrios
-        const neighborhoods = [...new Set(users.map(u => u.neighborhood).filter(Boolean))].sort();
-        const neighborhoodSelect = document.getElementById('admin-user-neighborhood-filter');
-        const currentValue = neighborhoodSelect.value;
-        neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
-            neighborhoods.map(n => `<option value="${n}" ${n === currentValue ? 'selected' : ''}>${n}</option>`).join('');
-
-        // Filtrar
-        let filtered = users;
-        if (neighborhoodFilter) filtered = filtered.filter(u => u.neighborhood === neighborhoodFilter);
-        if (searchTerm) filtered = filtered.filter(u =>
-            (u.name || '').toLowerCase().includes(searchTerm) ||
-            (u.email || '').toLowerCase().includes(searchTerm)
-        );
-
-        // Estadísticas
-        const statsContainer = document.getElementById('admin-users-stats');
-        const totalUsers = filtered.length;
-        const admins = filtered.filter(u => u.role === 'admin').length;
-        const totalBarrios = [...new Set(filtered.map(u => u.neighborhood).filter(Boolean))].length;
-        const withBusiness = filtered.filter(u => u.business_name).length;
-
-        statsContainer.innerHTML = `
-            <div class="stat-card">
-                <div class="stat-icon blue"><i class="fas fa-users"></i></div>
-                <div class="stat-info"><h3>Total Usuarios</h3><p class="stat-number">${totalUsers}</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-map-marked-alt"></i></div>
-                <div class="stat-info"><h3>Barrios</h3><p class="stat-number">${totalBarrios}</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon purple"><i class="fas fa-user-shield"></i></div>
-                <div class="stat-info"><h3>Admins</h3><p class="stat-number">${admins}</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon orange"><i class="fas fa-store"></i></div>
-                <div class="stat-info"><h3>Con Negocio</h3><p class="stat-number">${withBusiness}</p></div>
-            </div>
-        `;
-
-        // Lista de usuarios
-        const listContainer = document.getElementById('admin-users-list');
-        if (filtered.length === 0) {
-            listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay usuarios</p>';
-            return;
-        }
-
-        listContainer.innerHTML = filtered.map(user => `
-            <div class="user-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid ${user.role === 'admin' ? 'var(--error-red)' : 'var(--primary-blue)'};">
-                <div class="user-info">
-                    <h4 style="color: var(--gray-900); margin-bottom: 0.25rem;">${user.name || 'Sin nombre'}</h4>
-                    <p style="color: var(--gray-600); font-size: 0.9rem;">${user.email || ''}</p>
-                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-700);">
-                        <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${user.neighborhood || 'Sin barrio'}</strong></p>
-                        <p style="margin: 0.25rem 0;"><i class="fas fa-hashtag"></i> #${user.unique_number || 'N/A'}</p>
-                        <p style="margin: 0.25rem 0;"><i class="fas fa-phone"></i> ${user.phone || 'N/A'}</p>
-                        <p style="margin: 0.25rem 0;"><i class="fas fa-user-tag"></i> Rol: <strong>${user.role || 'user'}</strong></p>
-                        ${user.business_name ? `<p style="margin: 0.25rem 0;"><i class="fas fa-store"></i> ${user.business_name}</p>` : ''}
-                        ${user.business_address ? `<p style="margin: 0.25rem 0;"><i class="fas fa-location-dot"></i> ${user.business_address}</p>` : ''}
-                    </div>
-                </div>
-                <div class="user-actions" style="margin-top: 0.75rem;">
-                    <span class="user-role-badge ${user.role === 'admin' ? 'admin' : 'user'}" style="padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.75rem; font-weight: 700; background: ${user.role === 'admin' ? 'linear-gradient(135deg, var(--primary-blue), var(--primary-purple))' : 'var(--gray-200)'}; color: ${user.role === 'admin' ? 'white' : 'var(--gray-700)'};">
-                        ${user.role === 'admin' ? '👑 Admin' : '🏠 Vecino'}
-                    </span>
-                </div>
-            </div>
-        `).join('');
-
-    } catch (error) {
-        console.error('Error cargando usuarios:', error);
-        document.getElementById('admin-users-list').innerHTML = '<p style="text-align: center; padding: 2rem; color: red;">Error cargando usuarios</p>';
-    }
-};
 
 VV.admin.loadAllProducts = async function () {
     if (!VV.utils.isAdmin()) return;
@@ -1304,13 +1247,13 @@ VV.admin.loadAllProducts = async function () {
     const categoryFilter = document.getElementById('admin-product-category-filter').value;
     const searchTerm = document.getElementById('admin-product-search').value.toLowerCase();
 
-    const neighborhoods = [...new Set(VV.data.products.map(p => p.neighborhood).filter(Boolean))].sort();
+    const neighborhoods = [...new Set(VV.data.products.map(p => p.neighborhood))].sort();
     const neighborhoodSelect = document.getElementById('admin-product-neighborhood-filter');
     const currentValue = neighborhoodSelect.value;
     neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
         neighborhoods.map(n => `<option value="${n}" ${n === currentValue ? 'selected' : ''}>${n}</option>`).join('');
 
-    const categories = [...new Set(VV.data.products.map(p => p.category).filter(Boolean))].sort();
+    const categories = [...new Set(VV.data.products.map(p => p.category))].sort();
     const categorySelect = document.getElementById('admin-product-category-filter');
     const currentCat = categorySelect.value;
     categorySelect.innerHTML = '<option value="">Todas las categorías</option>' +
@@ -1320,28 +1263,48 @@ VV.admin.loadAllProducts = async function () {
     if (neighborhoodFilter) filtered = filtered.filter(p => p.neighborhood === neighborhoodFilter);
     if (categoryFilter) filtered = filtered.filter(p => p.category === categoryFilter);
     if (searchTerm) filtered = filtered.filter(p =>
-        (p.product || '').toLowerCase().includes(searchTerm) ||
-        (p.description || '').toLowerCase().includes(searchTerm)
+        p.name.toLowerCase().includes(searchTerm) ||
+        p.description.toLowerCase().includes(searchTerm)
     );
 
     const statsContainer = document.getElementById('admin-products-stats');
     const totalValue = filtered.reduce((sum, p) => sum + parseFloat(p.price || 0), 0);
     statsContainer.innerHTML = `
         <div class="stat-card">
-            <div class="stat-icon blue"><i class="fas fa-boxes"></i></div>
-            <div class="stat-info"><h3>Productos</h3><p class="stat-number">${filtered.length}</p></div>
+            <div class="stat-icon blue">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Productos</h3>
+                <p class="stat-number">${filtered.length}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon green"><i class="fas fa-dollar-sign"></i></div>
-            <div class="stat-info"><h3>Valor Total</h3><p class="stat-number">$${totalValue.toFixed(2)}</p></div>
+            <div class="stat-icon green">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Valor Total</h3>
+                <p class="stat-number">$${totalValue.toFixed(2)}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon purple"><i class="fas fa-tags"></i></div>
-            <div class="stat-info"><h3>Categorías</h3><p class="stat-number">${categories.length}</p></div>
+            <div class="stat-icon purple">
+                <i class="fas fa-tags"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Categorías</h3>
+                <p class="stat-number">${categories.length}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon orange"><i class="fas fa-map-marked-alt"></i></div>
-            <div class="stat-info"><h3>Barrios</h3><p class="stat-number">${neighborhoods.length}</p></div>
+            <div class="stat-icon orange">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Barrios</h3>
+                <p class="stat-number">${neighborhoods.length}</p>
+            </div>
         </div>
     `;
 
@@ -1351,32 +1314,37 @@ VV.admin.loadAllProducts = async function () {
         return;
     }
 
-    listContainer.innerHTML = filtered.map(product => `
-        <div class="product-card">
-            <div class="card-header">
-                <h3>${product.product || 'Sin nombre'}</h3>
-                ${product.featured ? '<span class="badge featured">Destacado</span>' : ''}
-            </div>
-            <p><strong>Negocio:</strong> ${product.business || ''}</p>
-            <p><strong>Dirección:</strong> ${product.business_address || 'No especificada'}</p>
-            <p><strong>Categoría:</strong> ${product.category || ''}</p>
-            <p style="color: var(--gray-600); margin: 0.5rem 0;">${product.description || ''}</p>
-            <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px; font-size: 0.85rem;">
-                <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${product.neighborhood || ''}</strong></p>
-                <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${product.seller_name || 'Desconocido'}</p>
-                <p style="margin: 0.25rem 0;"><i class="fas fa-phone"></i> ${product.contact || ''}</p>
-            </div>
-            <div class="card-footer">
-                <div class="price">
-                    <span class="price-amount">$${product.price}</span>
-                    <span class="price-unit">/ ${product.unit || ''}</span>
+    const allUsers = await VV.auth.getAllUsers();
+
+    listContainer.innerHTML = filtered.map(product => {
+        const seller = allUsers.find(u => u.id === product.sellerId);
+        return `
+            <div class="product-card">
+                <div class="product-image">
+                    ${product.image ? `<img src="${product.image}" alt="${product.name}">` : '<i class="fas fa-box"></i>'}
                 </div>
-                <button class="btn-delete" onclick="VV.admin.deleteProduct('${product.id}')" title="Eliminar producto">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="product-info">
+                    <div class="product-category">${product.category}</div>
+                    <h3 class="product-name">${product.name}</h3>
+                    <p class="product-description">${product.description}</p>
+                    <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px; font-size: 0.85rem;">
+                        <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${product.neighborhood}</strong></p>
+                        <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${seller ? seller.name : 'Usuario desconocido'}</p>
+                        <button onclick="mostrarGaleriaVendedor('${product.sellerId}')" 
+                                style="margin-left: 10px; background: none; border: none; color: #007bff; cursor: pointer; font-size: 0.8rem; text-decoration: underline;">
+                            Ver tienda
+                        </button>
+                    </div>
+                    <div class="product-footer">
+                        <span class="product-price">$${product.price}</span>
+                        <button class="btn-delete" onclick="VV.admin.deleteProduct('${product.id}')" title="Eliminar producto">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 };
 
 VV.admin.loadAllImprovements = async function () {
@@ -1385,7 +1353,7 @@ VV.admin.loadAllImprovements = async function () {
     const neighborhoodFilter = document.getElementById('admin-improvement-neighborhood-filter').value;
     const statusFilter = document.getElementById('admin-improvement-status-filter').value;
 
-    const neighborhoods = [...new Set(VV.data.improvements.map(i => i.neighborhood).filter(Boolean))].sort();
+    const neighborhoods = [...new Set(VV.data.improvements.map(i => i.neighborhood))].sort();
     const neighborhoodSelect = document.getElementById('admin-improvement-neighborhood-filter');
     const currentValue = neighborhoodSelect.value;
     neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
@@ -1403,20 +1371,40 @@ VV.admin.loadAllImprovements = async function () {
 
     statsContainer.innerHTML = `
         <div class="stat-card">
-            <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
-            <div class="stat-info"><h3>Pendientes</h3><p class="stat-number">${pending}</p></div>
+            <div class="stat-icon orange">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Pendientes</h3>
+                <p class="stat-number">${pending}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon blue"><i class="fas fa-spinner"></i></div>
-            <div class="stat-info"><h3>En Progreso</h3><p class="stat-number">${inProgress}</p></div>
+            <div class="stat-icon blue">
+                <i class="fas fa-spinner"></i>
+            </div>
+            <div class="stat-info">
+                <h3>En Progreso</h3>
+                <p class="stat-number">${inProgress}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-            <div class="stat-info"><h3>Completadas</h3><p class="stat-number">${completed}</p></div>
+            <div class="stat-icon green">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Completadas</h3>
+                <p class="stat-number">${completed}</p>
+            </div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon purple"><i class="fas fa-map-marked-alt"></i></div>
-            <div class="stat-info"><h3>Barrios</h3><p class="stat-number">${filteredNeighborhoods}</p></div>
+            <div class="stat-icon purple">
+                <i class="fas fa-map-marked-alt"></i>
+            </div>
+            <div class="stat-info">
+                <h3>Barrios</h3>
+                <p class="stat-number">${filteredNeighborhoods}</p>
+            </div>
         </div>
     `;
 
@@ -1426,7 +1414,10 @@ VV.admin.loadAllImprovements = async function () {
         return;
     }
 
+    const allUsers = await VV.auth.getAllUsers();
+
     listContainer.innerHTML = filtered.map(improvement => {
+        const author = allUsers.find(u => u.id === improvement.authorId);
         const statusColors = {
             'pending': 'var(--warning-orange)',
             'in-progress': 'var(--primary-blue)',
@@ -1439,18 +1430,18 @@ VV.admin.loadAllImprovements = async function () {
         };
 
         return `
-            <div class="improvement-card" style="border-left: 4px solid ${statusColors[improvement.status] || 'var(--gray-400)'};">
+            <div class="improvement-card" style="border-left: 4px solid ${statusColors[improvement.status]};">
                 <div class="improvement-header">
-                    <h3>${improvement.title || 'Sin título'}</h3>
-                    <span class="improvement-status" style="background: ${statusColors[improvement.status] || 'var(--gray-400)'};">
-                        ${statusLabels[improvement.status] || improvement.status}
+                    <h3>${improvement.title}</h3>
+                    <span class="improvement-status" style="background: ${statusColors[improvement.status]};">
+                        ${statusLabels[improvement.status]}
                     </span>
                 </div>
-                <p class="improvement-description">${improvement.description || ''}</p>
+                <p class="improvement-description">${improvement.description}</p>
                 <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px; font-size: 0.85rem;">
-                    <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${improvement.neighborhood || ''}</strong></p>
-                    <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${improvement.author_alias || improvement.author_name || 'Desconocido'}</p>
-                    <p style="margin: 0.25rem 0;"><i class="fas fa-calendar"></i> ${improvement.created_at ? new Date(improvement.created_at).toLocaleDateString() : 'Sin fecha'}</p>
+                    <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> <strong>${improvement.neighborhood}</strong></p>
+                    <p style="margin: 0.25rem 0;"><i class="fas fa-user"></i> ${author ? author.name : 'Usuario desconocido'}</p>
+                    <p style="margin: 0.25rem 0;"><i class="fas fa-calendar"></i> ${new Date(improvement.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div class="improvement-footer">
                     <div class="improvement-votes">
@@ -1469,39 +1460,28 @@ VV.admin.viewNeighborhoodDetails = function (neighborhood) {
     alert(`Detalles de ${neighborhood}\n\nEsta funcionalidad mostrará información detallada del barrio.`);
 };
 
-VV.admin.deleteProduct = async function (productId) {
+VV.admin.deleteProduct = function (productId) {
     if (!confirm('¿Eliminar este producto?')) return;
-    try {
-        const { error } = await supabase.from('products').delete().eq('id', productId);
-        if (error) throw error;
-        VV.data.products = VV.data.products.filter(p => p.id !== productId);
-        VV.admin.loadAllProducts();
-        VV.utils.showSuccess('Producto eliminado');
-    } catch (error) {
-        console.error('Error eliminando producto:', error);
-        alert('Error al eliminar: ' + error.message);
-    }
+
+    VV.data.products = VV.data.products.filter(p => p.id !== productId);
+    localStorage.setItem('vecinosVirtuales_products', JSON.stringify(VV.data.products));
+    VV.admin.loadAllProducts();
+    VV.utils.showSuccess('Producto eliminado');
 };
 
-VV.admin.deleteImprovement = async function (improvementId) {
+VV.admin.deleteImprovement = function (improvementId) {
     if (!confirm('¿Eliminar esta mejora?')) return;
-    try {
-        const { error } = await supabase.from('improvements').delete().eq('id', improvementId);
-        if (error) throw error;
-        VV.data.improvements = VV.data.improvements.filter(i => i.id !== improvementId);
-        VV.admin.loadAllImprovements();
-        VV.utils.showSuccess('Mejora eliminada');
-    } catch (error) {
-        console.error('Error eliminando mejora:', error);
-        alert('Error al eliminar: ' + error.message);
-    }
+
+    VV.data.improvements = VV.data.improvements.filter(i => i.id !== improvementId);
+    localStorage.setItem('vecinosVirtuales_improvements', JSON.stringify(VV.data.improvements));
+    VV.admin.loadAllImprovements();
+    VV.utils.showSuccess('Mejora eliminada');
 };
 
-// ========== GESTIÓN DE OFERTAS DESTACADAS ==========
+// ========== GESTIÓN DE OFERTAS DESTACADAS (VIEJO - MANTIENE COMPATIBILIDAD) ==========
 
 VV.admin.loadFeaturedRequests = async function () {
     try {
-        // Cargar solicitudes pendientes desde Supabase
         const { data: requests, error } = await supabase
             .from('featured_offers')
             .select('*')
@@ -1565,7 +1545,6 @@ VV.admin.loadFeaturedRequests = async function () {
 
 VV.admin.approveFeaturedRequest = async function (requestId) {
     try {
-        // Obtener la duración personalizada del input
         const durationInput = document.getElementById(`duration-${requestId}`);
         const customDuration = durationInput ? parseInt(durationInput.value) : null;
 
@@ -1574,11 +1553,9 @@ VV.admin.approveFeaturedRequest = async function (requestId) {
             return;
         }
 
-        // Calcular fecha de expiración
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + customDuration);
 
-        // Actualizar la oferta en Supabase
         const { error } = await supabase
             .from('featured_offers')
             .update({
@@ -1604,7 +1581,6 @@ VV.admin.rejectFeaturedRequest = async function (requestId) {
     if (!confirm('¿Rechazar esta solicitud?')) return;
 
     try {
-        // Actualizar el estado a rechazado en Supabase
         const { error } = await supabase
             .from('featured_offers')
             .update({
@@ -1633,7 +1609,6 @@ VV.admin.loadFeaturedOffers = function () {
         return;
     }
 
-    // Agrupar por estado
     const active = allFeatured.filter(f => f.status === 'active' && !f.blocked && new Date(f.expiresAt) > new Date());
     const expired = allFeatured.filter(f => new Date(f.expiresAt) <= new Date());
     const blocked = allFeatured.filter(f => f.blocked);
@@ -1733,253 +1708,6 @@ VV.admin.deleteFeatured = function (offerId) {
     VV.admin.loadFeaturedOffers();
     VV.utils.showSuccess('Oferta eliminada');
 };
-// ============================================================
-// ADMIN: GESTIÓN DE BILLETERAS
-// ============================================================
-VV.admin.loadAllWallets = async function () {
-    if (!VV.utils.isAdmin()) return;
-
-    const searchTerm = document.getElementById('admin-wallet-search').value.toLowerCase();
-
-    try {
-        // Cargar todas las billeteras
-        const { data: wallets, error: walletError } = await supabase
-            .from('billeteras')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (walletError) throw walletError;
-
-        // Cargar todos los usuarios
-        const { data: users, error: usersError } = await supabase
-            .from('users')
-            .select('*');
-
-        if (usersError) throw usersError;
-
-        // Combinar billeteras con usuarios
-        let combined = wallets.map(w => {
-            const user = users.find(u => u.id === w.user_id);
-            return {
-                ...w,
-                user_name: user?.name || 'Desconocido',
-                user_email: user?.email || '',
-                neighborhood: user?.neighborhood || ''
-            };
-        });
-
-        // Filtrar por búsqueda
-        if (searchTerm) {
-            combined = combined.filter(w =>
-                (w.user_name || '').toLowerCase().includes(searchTerm) ||
-                (w.user_email || '').toLowerCase().includes(searchTerm)
-            );
-        }
-
-        // Estadísticas
-        const totalBalance = combined.reduce((sum, w) => sum + (w.saldo_monedas || 0), 0);
-        const totalXP = combined.reduce((sum, w) => sum + (w.puntos_xp || 0), 0);
-        const statsContainer = document.getElementById('admin-wallet-stats');
-        statsContainer.innerHTML = `
-            <div class="stat-card">
-                <div class="stat-icon blue"><i class="fas fa-wallet"></i></div>
-                <div class="stat-info"><h3>Billeteras</h3><p class="stat-number">${combined.length}</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-coins"></i></div>
-                <div class="stat-info"><h3>Créditos en circulación</h3><p class="stat-number">${totalBalance}</p></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon purple"><i class="fas fa-star"></i></div>
-                <div class="stat-info"><h3>XP total</h3><p class="stat-number">${totalXP}</p></div>
-            </div>
-        `;
-
-        // Lista de billeteras
-        const listContainer = document.getElementById('admin-wallets-list');
-        if (combined.length === 0) {
-            listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay billeteras</p>';
-        } else {
-            listContainer.innerHTML = combined.map(w => `
-                <div class="user-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid #fbbf24;">
-                    <div class="user-info">
-                        <h4 style="color: var(--gray-900); margin-bottom: 0.25rem;">${w.user_name}</h4>
-                        <p style="color: var(--gray-600); font-size: 0.9rem;">${w.user_email}</p>
-                        <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray-700);">
-                            <p style="margin: 0.25rem 0;"><i class="fas fa-map-marker-alt"></i> ${w.neighborhood || 'Sin barrio'}</p>
-                            <p style="margin: 0.25rem 0;"><i class="fas fa-coins"></i> Saldo: <strong style="color: #fbbf24;">${w.saldo_monedas || 0}</strong></p>
-                            <p style="margin: 0.25rem 0;"><i class="fas fa-star"></i> XP: <strong>${w.puntos_xp || 0}</strong></p>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-                        <button class="btn-approve" style="flex: 1; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: var(--success-green); color: white;" onclick="VV.admin.showAdjustWalletForm('${w.user_id}', '${w.user_name}', ${w.saldo_monedas || 0}, 'add')">
-                            <i class="fas fa-plus"></i> Acreditar
-                        </button>
-                        <button class="btn-reject" style="flex: 1; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: var(--error-red); color: white;" onclick="VV.admin.showAdjustWalletForm('${w.user_id}', '${w.user_name}', ${w.saldo_monedas || 0}, 'subtract')">
-                            <i class="fas fa-minus"></i> Descontar
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Cargar solicitudes pendientes
-        VV.admin.loadCreditRequests();
-
-    } catch (error) {
-        console.error('Error cargando billeteras:', error);
-        document.getElementById('admin-wallets-list').innerHTML = '<p style="text-align: center; padding: 2rem; color: red;">Error cargando billeteras</p>';
-    }
-};
-
-VV.admin.loadCreditRequests = async function () {
-    try {
-        const { data: requests, error } = await supabase
-            .from('credit_requests')
-            .select('*')
-            .eq('status', 'pending')
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        const container = document.getElementById('admin-credit-requests-list');
-
-        if (!requests || requests.length === 0) {
-            container.innerHTML = '<p style="color: var(--gray-600); padding: 1rem; background: var(--gray-50); border-radius: 8px;">No hay solicitudes pendientes</p>';
-            return;
-        }
-
-        container.innerHTML = requests.map(req => `
-            <div style="background: #fef3c7; border: 2px solid var(--warning-orange); border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                <div>
-                    <p style="margin: 0; font-weight: 600;">${req.user_name || 'Usuario'} (${req.neighborhood || ''})</p>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-700);">Solicita: <strong>${req.amount} 🪙</strong></p>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">Motivo: ${req.reason || 'No especificado'}</p>
-                    <p style="margin: 0.25rem 0; font-size: 0.75rem; color: var(--gray-500);">${new Date(req.created_at).toLocaleString('es-AR')}</p>
-                </div>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn-approve" style="padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: var(--success-green); color: white;" onclick="VV.admin.approveCreditRequest('${req.id}', '${req.user_id}', ${req.amount})">
-                        <i class="fas fa-check"></i> Aprobar
-                    </button>
-                    <button class="btn-reject" style="padding: 0.5rem 1rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; background: var(--error-red); color: white;" onclick="VV.admin.rejectCreditRequest('${req.id}')">
-                        <i class="fas fa-times"></i> Rechazar
-                    </button>
-                </div>
-            </div>
-        `).join('');
-
-    } catch (error) {
-        console.error('Error cargando solicitudes:', error);
-    }
-};
-
-VV.admin.showAdjustWalletForm = function (userId, userName, currentBalance, action) {
-    let overlay = document.getElementById('wallet-adjust-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'wallet-adjust-overlay';
-        overlay.className = 'modal-overlay';
-        document.body.appendChild(overlay);
-    }
-
-    const title = action === 'add' ? 'Acreditar Créditos' : 'Descontar Créditos';
-    const color = action === 'add' ? 'var(--success-green)' : 'var(--error-red)';
-
-    overlay.innerHTML = `
-        <div class="modal-form" style="max-width: 400px;">
-            <h3 style="color: ${color};"><i class="fas fa-coins"></i> ${title}</h3>
-            <p style="color: var(--gray-600); margin-bottom: 1rem;">
-                Usuario: <strong>${userName}</strong><br>
-                Saldo actual: <strong style="color: #fbbf24;">${currentBalance} 🪙</strong>
-            </p>
-            <form id="wallet-adjust-form">
-                <div class="form-group">
-                    <label>Cantidad de créditos *</label>
-                    <input type="number" id="wallet-adjust-amount" min="1" required placeholder="Ej: 10">
-                </div>
-                <div class="form-group">
-                    <label>Motivo *</label>
-                    <textarea id="wallet-adjust-reason" rows="2" required placeholder="Ej: Bonus por participación, ajuste manual, etc."></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" onclick="document.getElementById('wallet-adjust-overlay').classList.remove('active')">Cancelar</button>
-                    <button type="submit" class="btn-save" style="background: ${color};">
-                        <i class="fas fa-check"></i> Confirmar
-                    </button>
-                </div>
-            </form>
-        </div>
-    `;
-
-    overlay.classList.add('active');
-
-    document.getElementById('wallet-adjust-form').onsubmit = async (e) => {
-        e.preventDefault();
-        const amount = parseInt(document.getElementById('wallet-adjust-amount').value);
-        const reason = document.getElementById('wallet-adjust-reason').value.trim();
-
-        if (!amount || amount <= 0) {
-            alert('La cantidad debe ser mayor a 0');
-            return;
-        }
-
-        try {
-            if (action === 'add') {
-                await VV_WALLET.earnCredits(userId, amount, `Acreditado por admin: ${reason}`, null, 'admin_adjust');
-            } else {
-                const result = await VV_WALLET.spendCredits(userId, amount, `Descontado por admin: ${reason}`, null, 'admin_adjust');
-                if (!result.success) {
-                    alert('Error: ' + result.error);
-                    return;
-                }
-            }
-
-            document.getElementById('wallet-adjust-overlay').classList.remove('active');
-            VV.admin.loadAllWallets();
-            VV.utils.showSuccess(`${action === 'add' ? 'Acreditados' : 'Descontados'} ${amount} créditos a ${userName}`);
-        } catch (err) {
-            alert('Error: ' + err.message);
-        }
-    };
-
-    overlay.onclick = (e) => {
-        if (e.target === overlay) overlay.classList.remove('active');
-    };
-};
-
-VV.admin.approveCreditRequest = async function (requestId, userId, amount) {
-    try {
-        // Acreditar créditos
-        await VV_WALLET.earnCredits(userId, amount, 'Solicitud de créditos aprobada', requestId, 'credit_request');
-
-        // Marcar solicitud como aprobada
-        await supabase
-            .from('credit_requests')
-            .update({ status: 'approved', resolved_at: new Date().toISOString() })
-            .eq('id', requestId);
-
-        VV.admin.loadAllWallets();
-        VV.utils.showSuccess(`Solicitud aprobada: ${amount} créditos acreditados`);
-    } catch (error) {
-        alert('Error al aprobar: ' + error.message);
-    }
-};
-
-VV.admin.rejectCreditRequest = async function (requestId) {
-    const notes = prompt('Motivo del rechazo (opcional):') || '';
-
-    try {
-        await supabase
-            .from('credit_requests')
-            .update({ status: 'rejected', admin_notes: notes, resolved_at: new Date().toISOString() })
-            .eq('id', requestId);
-
-        VV.admin.loadAllWallets();
-        VV.utils.showSuccess('Solicitud rechazada');
-    } catch (error) {
-        alert('Error al rechazar: ' + error.message);
-    }
-};
 
 // ========== GESTIÓN DE AVATARES ==========
 
@@ -1989,7 +1717,6 @@ VV.admin.loadAvatarsManagement = async function () {
     const container = document.getElementById('avatars-management');
     container.innerHTML = '<p style="text-align: center; padding: 2rem;">Cargando avatares...</p>';
 
-    // Obtener usuarios desde Supabase
     const { data: users, error } = await supabase
         .from('users')
         .select('*')
@@ -2118,7 +1845,6 @@ VV.admin.unlockAvatarForUser = function () {
 };
 
 VV.admin.showUserAvatars = async function (userId) {
-    // Obtener usuario desde Supabase
     const { data: user, error } = await supabase
         .from('users')
         .select('*')
@@ -2129,8 +1855,7 @@ VV.admin.showUserAvatars = async function (userId) {
         console.error('Error obteniendo usuario:', error);
         return;
     }
-
-    const unlockedAvatars = user.unlocked_avatars || [];
+const unlockedAvatars = user.unlocked_avatars || [];
     const premiumAvatars = VV.avatars.defaultAvatars.filter(a => a.premium);
 
     let overlay = document.getElementById('user-avatars-overlay');
@@ -2332,12 +2057,81 @@ VV.admin.previewImage = function (input) {
 
         reader.readAsDataURL(input.files[0]);
     }
-    /**
- * MODULO: ADMINISTRACIÓN DE FOLLETO
- * Ubicación: Final de admin.js
- */
+};  // <-- CIERRE CORRECTO
 
-// 1. Cargar solicitudes al abrir el panel de admin
+// ========== SOLICITUDES DE DESTACADOS (NUEVAS FUNCIONES) ==========
+
+VV.admin.loadFeaturedRequestsFixed = async function() {
+    const container = document.getElementById('featured-requests-list');
+    if (!container) return;
+    
+    try {
+        const { data, error } = await supabase
+            .from('featured_requests')
+            .select('*')
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="text-align:center;color:var(--gray-500);padding:2rem;">No hay solicitudes de destacados pendientes.</p>';
+            return;
+        }
+        
+        container.innerHTML = data.map(req => `
+            <div style="background:white;padding:1rem;border-radius:8px;margin-bottom:0.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                    <strong>${req.product_name || 'Sin nombre'}</strong>
+                    <span style="background:#f59e0b;color:white;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.75rem;">PENDIENTE</span>
+                </div>
+                <div style="font-size:0.85rem;color:var(--gray-600);margin-bottom:0.5rem;">
+                    📍 ${req.neighborhood || 'Sin barrio'} | 👤 ${req.user_name || 'Sin nombre'} | 💰 $${req.product_price || '0'}
+                </div>
+                <div style="font-size:0.9rem;margin-bottom:0.75rem;">${req.message || 'Sin mensaje'}</div>
+                <div style="display:flex;gap:0.5rem;">
+                    <button onclick="VV.admin.approveFeatured('${req.id}')" style="background:#10b981;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;">
+                        <i class="fas fa-check"></i> Aprobar
+                    </button>
+                    <button onclick="VV.admin.rejectFeatured('${req.id}')" style="background:#ef4444;color:white;border:none;padding:0.5rem 1rem;border-radius:6px;cursor:pointer;">
+                        <i class="fas fa-times"></i> Rechazar
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (err) {
+        console.error('Error cargando destacados:', err);
+        container.innerHTML = '<p style="text-align:center;color:#ef4444;">Error al cargar solicitudes.</p>';
+    }
+};
+
+VV.admin.approveFeatured = async function(id) {
+    try {
+        await supabase.from('featured_requests').update({ status: 'approved', reviewed_at: new Date().toISOString() }).eq('id', id);
+        VV.admin.loadFeaturedRequestsFixed();
+        if (VV.utils && VV.utils.showSuccess) VV.utils.showSuccess('Destacado aprobado');
+    } catch (err) {
+        console.error('Error al aprobar:', err);
+    }
+};
+
+VV.admin.rejectFeatured = async function(id) {
+    try {
+        await supabase.from('featured_requests').update({ status: 'rejected', reviewed_at: new Date().toISOString() }).eq('id', id);
+        VV.admin.loadFeaturedRequestsFixed();
+        if (VV.utils && VV.utils.showSuccess) VV.utils.showSuccess('Destacado rechazado');
+    } catch (err) {
+        console.error('Error al rechazar:', err);
+    }
+};
+
+console.log('✅ Módulo ADMIN-SOLICITUDES cargado');
+
+// ========== SOLICITUDES DE INGRESOS (RESERVADO PARA FUTURAS FUNCIONES) ==========
+
+// ========== ADMINISTRACIÓN DE FOLLETO ==========
+
 async function cargarSolicitudesPendientes() {
     const lista = document.getElementById('lista-solicitudes-pendientes');
     if(!lista) return;
@@ -2374,11 +2168,9 @@ async function cargarSolicitudesPendientes() {
     }
 }
 
-// 2. Función para Aprobar o Eliminar
 async function gestionarSolicitud(id, aprobar) {
     try {
         if (aprobar) {
-            // Cambiamos el estado a aprobado: true
             const { error } = await supabase
                 .from('folleto_imagenes')
                 .update({ aprobado: true })
@@ -2386,7 +2178,6 @@ async function gestionarSolicitud(id, aprobar) {
             if (error) throw error;
             alert("✅ Publicado en el folleto");
         } else {
-            // Si rechaza, borramos el registro
             const { error } = await supabase
                 .from('folleto_imagenes')
                 .delete()
@@ -2394,13 +2185,10 @@ async function gestionarSolicitud(id, aprobar) {
             if (error) throw error;
             alert("🗑️ Solicitud eliminada");
         }
-        // Recargar la lista para limpiar la vista
         cargarSolicitudesPendientes();
     } catch (err) {
         alert("Error al procesar: " + err.message);
     }
 }
-
-};
 
 console.log('✅ Módulo ADMIN cargado');
