@@ -1,4 +1,4 @@
-// ========== MÓDULO DE AUTENTICACIÓN CON SUPABASE ==========
+﻿// ========== MÓDULO DE AUTENTICACIÓN CON SUPABASE ==========
 // Versión migrada de localStorage a Supabase
 // Mantiene TODAS las funcionalidades originales
 
@@ -7,27 +7,11 @@ VV.auth = {
     neighborhoods: [],
     
     // Verificar sesión existente en Supabase
-    async checkExistingUser() {
+        async checkExistingUser() {
         try {
-            // ===== LOGIN POR CELULAR =====
-        const phoneAuthId = localStorage.getItem('vv_phone_auth');
-        if (phoneAuthId) {
-            const { data: userData, error } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', phoneAuthId)
-                .single();
-            
-            if (!error && userData) {
-                VV.data.user = userData;
-                VV.data.neighborhood = userData.neighborhood;
-                return true;
-            }
-        }
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session) {
-                // Obtener datos completos del usuario desde la tabla users
                 const { data: userData, error } = await supabase
                     .from('users')
                     .select('*')
@@ -39,6 +23,7 @@ VV.auth = {
                 if (userData) {
                     VV.data.user = userData;
                     VV.data.neighborhood = userData.neighborhood;
+                    localStorage.setItem('vv_phone_auth', userData.id);
                     return true;
                 }
             }
@@ -48,6 +33,7 @@ VV.auth = {
             return false;
         }
     },
+
     
     // Solicitar geolocalización
     requestGeolocation() {
@@ -263,26 +249,23 @@ selectNeighborhood(neighborhood) {
     },
     
     // Generar número único para el barrio
-    async generateUniqueNumber(neighborhood) {
+        async generateUniqueNumber(neighborhood) {
         try {
-            // Intentar hasta 10 veces encontrar un número único
             for (let i = 0; i < 10; i++) {
                 const randomNumber = Math.floor(Math.random() * 999999) + 1;
                 
-                // Verificar si el número ya existe
                 const { data, error } = await supabase
                     .from('users')
                     .select('unique_number')
+                    .eq('neighborhood', neighborhood)
                     .eq('unique_number', randomNumber)
-                    .single();
+                    .maybeSingle();
                 
-                // Si no existe (error porque no encontró), usar ese número
-                if (error && error.code === 'PGRST116') {
+                if (!data) {
                     return randomNumber;
                 }
             }
             
-            // Si después de 10 intentos no encontró, usar timestamp
             return Date.now() % 999999;
         } catch (error) {
             console.error('Error generando número único:', error);
@@ -441,9 +424,9 @@ selectNeighborhood(neighborhood) {
     },
     
     // Cerrar sesión
-    async logout() {
+        async logout() {
         if (confirm('¿Cerrar sesión?')) {
-            localStorage.removeItem('vv_phone_auth'); // <-- AGREGAR ESTA LÍNEA
+            localStorage.removeItem('vv_phone_auth');
             try {
                 await supabase.auth.signOut();
                 VV.data.user = null;
