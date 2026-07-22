@@ -1229,59 +1229,45 @@
     </div>
 
     <!-- Supabase Client Library -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
-    
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Scripts modulares -->
-       <!-- 1. CDN de Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- 2. Inicialización INLINE (garantizado que corre después del CDN) -->
-    <script>
-        window.SUPABASE_URL = 'https://idakpvwvvjexvalnfooy.supabase.co';
-        window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlkYWtwdnd2dmpleHZhbG5mb295Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDE4NDQsImV4cCI6MjA5Nzg3Nzg0NH0.ntp7plvFaVt5EtlF6kEL69dTr9For_Sdn_iszrCiGi8';
-        
-        // Inicializar cliente global
-        window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase inicializado:', !!window.supabase);
-    </script>
-    <!-- 3. ELIMINADO: <script src="js/supabase-config.js"></script> -->
-        <!-- 4. Resto de módulos -->
-    <script src="js/core.js"></script>
-    <script src="js/auth-supabase.js"></script>
-    <script src="js/folleto.js"></script>
-    <script src="js/marketplace.js"></script>
-    <script src="js/reservations.js"></script>
-    <script src="js/improvements.js"></script>
-    <script src="js/cultural.js"></script>
-    <script src="js/services.js"></script>
-    <script src="js/avatars.js"></script>
-    <script src="js/raffle.js"></script>
-    <script src="js/featured.js"></script>
-    <script src="js/geo.js"></script>
-    <script src="js/map.js"></script>
-    <script src="js/admin.js"></script>
-    <script src="js/banner.js"></script>
-    <script src="js/landing.js"></script>
-    <script src="js/auth-celular.js"></script>
-    <script src="js/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
 
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('✅ Service Worker registrado:', registration.scope);
-                        
-                        // Mostrar botón de instalación
-                        let deferredPrompt;
-                        window.addEventListener('beforeinstallprompt', (e) => {
-                            e.preventDefault();
-                            deferredPrompt = e;
-                            
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Scripts modulares -->
+<script src="js/supabase-config.js"></script>
+<script src="js/core.js"></script>
+<script src="js/auth-supabase.js"></script>
+<script src="js/folleto.js"></script>
+<script src="js/marketplace.js"></script>
+<script src="js/reservations.js"></script>
+<script src="js/improvements.js"></script>
+<script src="js/cultural.js"></script>
+<script src="js/services.js"></script>
+<script src="js/avatars.js"></script>
+<script src="js/raffle.js"></script>
+<script src="js/featured.js"></script>
+<script src="js/geo.js"></script>
+<script src="js/map.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/banner.js"></script>
+<script src="js/landing.js"></script>
+<script src="js/auth-celular.js"></script>
+<script src="js/app.js"></script>
+
+<!-- Service Worker Registration -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registrado:', registration.scope);
+                    
+                    let deferredPrompt;
+                    window.addEventListener('beforeinstallprompt', (e) => {
+                        e.preventDefault();
+                        deferredPrompt = e;
+                           
                             // Crear botón de instalación si no existe
                             if (!document.getElementById('install-button')) {
                                 const installBtn = document.createElement('button');
