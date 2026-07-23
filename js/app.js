@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
             await VV.geo.init();
             VV.geo.updateLocationUI();
         } else {
+            VV.data.pendingRegistration = true;
             VV.utils.showScreen('location-screen');
             VV.auth.requestGeolocation();
         }
