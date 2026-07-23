@@ -1,4 +1,4 @@
-// ========== MÓDULO DE AUTENTICACIÓN CON SUPABASE ==========
+﻿// ========== MÓDULO DE AUTENTICACIÓN CON SUPABASE ==========
 // Versión migrada de localStorage a Supabase
 // Mantiene TODAS las funcionalidades originales
 
@@ -7,12 +7,11 @@ VV.auth = {
     neighborhoods: [],
     
     // Verificar sesión existente en Supabase
-    async checkExistingUser() {
+        async checkExistingUser() {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session) {
-                // Obtener datos completos del usuario desde la tabla users
                 const { data: userData, error } = await supabase
                     .from('users')
                     .select('*')
@@ -24,6 +23,7 @@ VV.auth = {
                 if (userData) {
                     VV.data.user = userData;
                     VV.data.neighborhood = userData.neighborhood;
+                    localStorage.setItem('vv_phone_auth', userData.id);
                     return true;
                 }
             }
@@ -169,34 +169,40 @@ VV.auth = {
     },
     
     // Seleccionar barrio
-    selectNeighborhood(neighborhood) {
+            selectNeighborhood(neighborhood) {
         VV.data.neighborhood = neighborhood;
         
-        // Actualizar el texto del barrio seleccionado
         const neighborhoodElement = document.getElementById('selected-neighborhood');
         if (neighborhoodElement) {
             neighborhoodElement.textContent = neighborhood;
         }
         
-        // Si es Administrador, mostrar login directamente
+        // ADMIN: Login tradicional siempre
         if (neighborhood === 'Administrador') {
             VV.utils.showScreen('login-screen');
-        } else {
-            // Mostrar opciones: Registrarse o Ya tengo cuenta
-            VV.auth.showAuthOptions();
+            return;
         }
+        
+        // FLUJO NUEVO: Registro celular
+        if (VV.data.pendingRegistration) {
+            delete VV.data.pendingRegistration;
+            VV.authCelular.onNeighborhoodSelected(neighborhood);
+            return;
+        }
+        
+        // Mostrar opciones: registrar o login
+        VV.auth.showAuthOptions();
     },
     
-    // Mostrar opciones de autenticación
     showAuthOptions() {
         const content = document.getElementById('location-content');
         content.innerHTML = `
             <div style="text-align: center;">
-                <h2 style="margin-bottom: 2rem;">¿Ya tienes cuenta?</h2>
-                <button class="btn-primary" onclick="VV.utils.showScreen('registration-screen')" style="width: 100%; margin-bottom: 1rem;">
+                <h2 style="margin-bottom: 2rem;">¿Ya tenés cuenta?</h2>
+                <button class="btn-primary" onclick="VV.authCelular.startRegistration()" style="width: 100%; margin-bottom: 1rem;">
                     <i class="fas fa-user-plus"></i> Crear Nueva Cuenta
                 </button>
-                <button class="btn-secondary" onclick="VV.utils.showScreen('login-screen')" style="width: 100%;">
+                <button class="btn-secondary" onclick="VV.authCelular.showLogin()" style="width: 100%;">
                     <i class="fas fa-sign-in-alt"></i> Ya Tengo Cuenta
                 </button>
                 <button class="btn-secondary" onclick="VV.auth.requestGeolocation()" style="width: 100%; margin-top: 1rem;">
@@ -241,26 +247,23 @@ VV.auth = {
     },
     
     // Generar número único para el barrio
-    async generateUniqueNumber(neighborhood) {
+        async generateUniqueNumber(neighborhood) {
         try {
-            // Intentar hasta 10 veces encontrar un número único
             for (let i = 0; i < 10; i++) {
                 const randomNumber = Math.floor(Math.random() * 999999) + 1;
                 
-                // Verificar si el número ya existe
                 const { data, error } = await supabase
                     .from('users')
                     .select('unique_number')
+                    .eq('neighborhood', neighborhood)
                     .eq('unique_number', randomNumber)
-                    .single();
+                    .maybeSingle();
                 
-                // Si no existe (error porque no encontró), usar ese número
-                if (error && error.code === 'PGRST116') {
+                if (!data) {
                     return randomNumber;
                 }
             }
             
-            // Si después de 10 intentos no encontró, usar timestamp
             return Date.now() % 999999;
         } catch (error) {
             console.error('Error generando número único:', error);
@@ -419,8 +422,9 @@ VV.auth = {
     },
     
     // Cerrar sesión
-    async logout() {
+        async logout() {
         if (confirm('¿Cerrar sesión?')) {
+            localStorage.removeItem('vv_phone_auth');
             try {
                 await supabase.auth.signOut();
                 VV.data.user = null;
