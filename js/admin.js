@@ -616,7 +616,7 @@ VV.admin = {
             return;
         }
 
-        const container = document.getElementById('users-management-list');
+        const container = document.getElementById('admin-users-list') || document.getElementById('users-management-list');
         container.innerHTML = '<p style="text-align: center; padding: 2rem;">Cargando usuarios...</p>';
 
         // Obtener usuarios desde Supabase
