@@ -1,4 +1,4 @@
-// ========== MÓDULO ADMINISTRACIÓN ==========
+﻿// ========== MÓDULO ADMINISTRACIÓN ==========
 
 VV.admin = {
     sponsorRequests: [],
@@ -1565,7 +1565,6 @@ VV.admin.loadFeaturedRequests = async function () {
 
 VV.admin.approveFeaturedRequest = async function (requestId) {
     try {
-        // Obtener la duración personalizada del input
         const durationInput = document.getElementById(`duration-${requestId}`);
         const customDuration = durationInput ? parseInt(durationInput.value) : null;
 
@@ -1574,17 +1573,36 @@ VV.admin.approveFeaturedRequest = async function (requestId) {
             return;
         }
 
-        // Calcular fecha de expiración
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + customDuration);
 
-        // Actualizar la oferta en Supabase
+        // Obtener la solicitud para saber el barrio
+        const { data: requestData, error: fetchError } = await supabase
+            .from('featured_offers')
+            .select('neighborhood, user_id')
+            .eq('id', requestId)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        // Si el barrio es null, buscarlo desde el usuario
+        let neighborhood = requestData.neighborhood;
+        if (!neighborhood && requestData.user_id) {
+            const { data: userData } = await supabase
+                .from('users')
+                .select('neighborhood')
+                .eq('id', requestData.user_id)
+                .single();
+            if (userData) neighborhood = userData.neighborhood;
+        }
+
         const { error } = await supabase
             .from('featured_offers')
             .update({
                 status: 'active',
                 duration: customDuration,
                 expires_at: expiresAt.toISOString(),
+                neighborhood: neighborhood,
                 updated_at: new Date().toISOString()
             })
             .eq('id', requestId);
@@ -1592,6 +1610,9 @@ VV.admin.approveFeaturedRequest = async function (requestId) {
         if (error) throw error;
 
         VV.admin.load();
+        if (VV.featured && VV.featured.loadFeaturedOffers) {
+            VV.featured.loadFeaturedOffers();
+        }
         VV.utils.showSuccess(`Oferta destacada aprobada por ${customDuration} días`);
 
     } catch (error) {
