@@ -550,8 +550,8 @@ VV.cultural = {
             console.error('Error eliminando publicación:', error);
             alert('Error al eliminar la publicación: ' + error.message);
         }
-    },
-};
+     },
+
     // Comprimir imagen usando Canvas API
     compressImage(file, maxWidth, quality, callback) {
         const reader = new FileReader();
@@ -579,7 +579,8 @@ VV.cultural = {
             img.src = e.target.result;
         };
         reader.readAsDataURL(file);
-      }
-    },
+    }
+};
 
 console.log('✅ Módulo CULTURAL cargado');
+
