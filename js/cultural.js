@@ -1,4 +1,4 @@
-// ========== MÓDULO CULTURAL ==========
+﻿// ========== MÓDULO CULTURAL ==========
 
 VV.cultural = {
     // SOLUCIÓN TEMPORAL: Intentar con diferentes valores de tipo
@@ -296,8 +296,9 @@ VV.cultural = {
                         <label>Subir archivo</label>
                         <input type="file" id="cultural-media-file" accept="image/*,video/*">
                         <p style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;">
-                            <i class="fas fa-info-circle"></i> Soporta imágenes (JPG, PNG) y videos (MP4)
+                            <i class="fas fa-info-circle"></i> Imágenes: JPG/PNG/WebP máx 2MB (se comprimen automáticamente) · Videos: MP4/WebM máx 5MB
                         </p>
+
                         ${post?.mediaUrl ? `<p style="font-size: 0.85rem; color: var(--success-green); margin-top: 0.5rem;"><i class="fas fa-check"></i> Archivo actual cargado</p>` : ''}
                     </div>
                     <div class="form-actions">
@@ -350,6 +351,7 @@ VV.cultural = {
             return;
         }
         
+        // 
         // Procesar archivo multimedia si existe
         const fileInput = document.getElementById('cultural-media-file');
         if (fileInput.files && fileInput.files[0]) {
@@ -357,19 +359,56 @@ VV.cultural = {
             
             console.log('📸 Procesando archivo:', file.name, file.type, file.size);
             
-            // Convertir a base64
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                formData.mediaUrl = e.target.result;
-                console.log('✅ Archivo convertido a base64, tamaño:', e.target.result.length);
-                VV.cultural.savePost(existing, formData);
-            };
-            reader.onerror = function(error) {
-                console.error('❌ Error leyendo archivo:', error);
-                alert('Error al procesar el archivo');
-            };
-            reader.readAsDataURL(file);
+            // === RESTRICCIONES DE AUSTERIDAD ===
+            const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+            const MAX_VIDEO_SIZE = 5 * 1024 * 1024;  // 5MB
+            const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+            const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm'];
+            
+            // Validar tipo de archivo
+            if (formData.mediaType === 'image') {
+                if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+                    alert('Solo se permiten imágenes JPG, PNG o WebP');
+                    return;
+                }
+                if (file.size > MAX_IMAGE_SIZE) {
+                    alert(`La imagen es demasiado grande (${(file.size/1024/1024).toFixed(1)}MB). Máximo 2MB.`);
+                    return;
+                }
+            } else if (formData.mediaType === 'video') {
+                if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
+                    alert('Solo se permiten videos MP4 o WebM');
+                    return;
+                }
+                if (file.size > MAX_VIDEO_SIZE) {
+                    alert(`El video es demasiado grande (${(file.size/1024/1024).toFixed(1)}MB). Máximo 5MB.`);
+                    return;
+                }
+            }
+            
+            // Comprimir imagen antes de convertir a base64
+            if (formData.mediaType === 'image') {
+                VV.cultural.compressImage(file, 1080, 0.7, (compressedDataUrl) => {
+                    formData.mediaUrl = compressedDataUrl;
+                    console.log('✅ Imagen comprimida, tamaño:', compressedDataUrl.length);
+                    VV.cultural.savePost(existing, formData);
+                });
+            } else {
+                // Video: convertir a base64 sin compresión
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    formData.mediaUrl = e.target.result;
+                    console.log('✅ Video convertido a base64, tamaño:', e.target.result.length);
+                    VV.cultural.savePost(existing, formData);
+                };
+                reader.onerror = function(error) {
+                    console.error('❌ Error leyendo archivo:', error);
+                    alert('Error al procesar el archivo');
+                };
+                reader.readAsDataURL(file);
+            }
         } else {
+
             // Si no hay archivo nuevo, mantener el existente
             if (existing && (existing.media_url || existing.mediaUrl)) {
                 formData.mediaUrl = existing.media_url || existing.mediaUrl;
@@ -513,5 +552,33 @@ VV.cultural = {
         }
     }
 };
+    // Comprimir imagen usando Canvas API
+    compressImage(file, maxWidth, quality, callback) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width;
+                let height = img.height;
+                
+                // Redimensionar si excede maxWidth
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                const compressed = canvas.toDataURL('image/jpeg', quality);
+                callback(compressed);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    },
 
 console.log('✅ Módulo CULTURAL cargado');
