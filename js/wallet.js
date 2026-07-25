@@ -1,4 +1,4 @@
-window.VV_WALLET = {
+﻿window.VV_WALLET = {
     getBalance: async function(userId) {
         if (!userId) {
             const user = VV_ROLES.getCurrentUser();

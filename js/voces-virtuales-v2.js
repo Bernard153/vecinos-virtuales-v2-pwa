@@ -845,7 +845,7 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
                 <h3 style="margin:0 0 0.25rem;color:#1e293b;">${video.title}</h3>
                 <p style="margin:0 0 0.5rem;color:#64748b;font-size:0.85rem;">${video.user_name || 'Anónimo'}</p>
                 <div style="display:flex;gap:1rem;font-size:0.85rem;color:#64748b;margin-bottom:1rem;">
-                    <span>👍 ${video.likes_count || 0}</span>
+                    <span id="vv-likes-count">👍 ${video.likes_count || 0}</span>
                     <span>👁 ${(video.views_count || 0) + 1}</span>
                     <span>${video.is_original ? '✨ Original' : '🎵 Cover'}</span>
                 </div>
@@ -914,6 +914,11 @@ VV_VOCES_V2.toggleLike = async function(videoId) {
             if (window.VV_WALLET && video.user_id) {
                 VV_WALLET.rewardReceiveLike(video.user_id, videoId);
             }
+        }
+	        // Actualizar también el contador en las estadísticas
+        const countSpan = document.getElementById('vv-likes-count');
+        if (countSpan) {
+            countSpan.textContent = `👍 ${updated.likes_count || 0}`;
         }
 
         // Actualizar el contador del botón sin recargar el feed
@@ -1067,6 +1072,7 @@ VV_VOCES_V2.showGiftPicker = async function(videoId, toUserId) {
     const modal = document.createElement('div');
     modal.id = 'vv-gift-modal';
     modal.className = 'vv-modal-overlay';
+    modal.style.zIndex = '10000';
     modal.innerHTML = `
         <div class="vv-modal-content" style="max-width:400px;">
             <button class="vv-modal-close" onclick="document.getElementById('vv-gift-modal').remove()">✕</button>
