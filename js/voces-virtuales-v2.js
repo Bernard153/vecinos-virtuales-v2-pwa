@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // 🎤 VOCES VIRTUALES V2 — Estudio de Creación + Ensayo
 // Integración: Código IA Frontend + Correcciones Cloudflare
 // ============================================================
@@ -896,7 +896,7 @@ VV_VOCES_V2.toggleLike = async function(videoId) {
             .select('id')
             .eq('video_id', videoId)
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
 
         if (existing) {
             await supabase.from('karaoke_likes').delete().eq('id', existing.id);
@@ -910,14 +910,18 @@ VV_VOCES_V2.toggleLike = async function(videoId) {
             await supabase.from('karaoke_videos').update({ likes_count: (video.likes_count || 0) + 1 }).eq('id', videoId);
             const btn = document.querySelector('.vv-btn-like');
             if (btn) btn.style.background = 'rgba(52, 199, 89, 0.3)';
-                        // Recompensa al dueño del video
+            // Recompensa al dueño del video
             if (window.VV_WALLET && video.user_id) {
                 VV_WALLET.rewardReceiveLike(video.user_id, videoId);
             }
-
         }
 
-        this.cargarFeed();
+        // Actualizar el contador del botón sin recargar el feed
+        const { data: updated } = await supabase.from('karaoke_videos').select('likes_count').eq('id', videoId).single();
+        const btn = document.querySelector('.vv-btn-like');
+        if (btn) {
+            btn.innerHTML = `<i class="fas fa-heart"></i> ${updated.likes_count || 0}`;
+        }
     } catch (err) {
         console.error('Error en like:', err);
     }
@@ -941,10 +945,10 @@ VV_VOCES_V2.showComments = async function(videoId) {
 
         try {
             const { data: comments } = await supabase
-                .from('video_comments')
-                .select('*')
-                .eq('video_id', videoId)
-                .order('created_at', { ascending: false });
+    		.from('karaoke_comments')
+    		.select('*')
+    		.eq('video_id', videoId)
+    		.order('created_at', { ascending: false });
 
             const user = VV_ROLES.getCurrentUser();
 
@@ -1012,7 +1016,7 @@ VV_VOCES_V2.postComment = async function(videoId, category, text) {
         if (existing) {
             await supabase
                 .from('karaoke_comments')
-                .update({ comment_code: category, comment_text: text, category: category })
+                .update({ comment_text: text, category: category })
                 .eq('id', existing.id);
         } else {
             await supabase
