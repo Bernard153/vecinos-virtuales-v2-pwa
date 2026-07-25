@@ -915,17 +915,18 @@ VV_VOCES_V2.toggleLike = async function(videoId) {
                 VV_WALLET.rewardReceiveLike(video.user_id, videoId);
             }
         }
-	        // Actualizar también el contador en las estadísticas
-        const countSpan = document.getElementById('vv-likes-count');
-        if (countSpan) {
-            countSpan.textContent = `👍 ${updated.likes_count || 0}`;
-        }
 
         // Actualizar el contador del botón sin recargar el feed
         const { data: updated } = await supabase.from('karaoke_videos').select('likes_count').eq('id', videoId).single();
         const btn = document.querySelector('.vv-btn-like');
         if (btn) {
-            btn.innerHTML = `<i class="fas fa-heart"></i> ${updated.likes_count || 0}`;
+            btn.innerHTML = `👍 ${updated.likes_count || 0}`;
+        }
+
+        // Actualizar también el contador en las estadísticas
+        const countSpan = document.getElementById('vv-likes-count');
+        if (countSpan) {
+            countSpan.textContent = `👍 ${updated.likes_count || 0}`;
         }
     } catch (err) {
         console.error('Error en like:', err);
