@@ -1073,7 +1073,7 @@ VV_VOCES_V2.showGiftPicker = async function(videoId, toUserId) {
     const modal = document.createElement('div');
     modal.id = 'vv-gift-modal';
     modal.className = 'vv-modal-overlay';
-    modal.style.zIndex = '10000';
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;';
     modal.innerHTML = `
         <div class="vv-modal-content" style="max-width:400px;">
             <button class="vv-modal-close" onclick="document.getElementById('vv-gift-modal').remove()">✕</button>
