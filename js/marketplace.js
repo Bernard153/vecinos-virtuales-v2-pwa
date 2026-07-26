@@ -866,7 +866,7 @@ VV.marketplace = {
 
     // Seleccionar producto desde comparación con cantidad
     selectFromComparisonWithQty(productId) {
-        const qtyInput = document.getElementById(`compare - qty - ${productId}`);
+        const qtyInput = document.getElementById(`compare-qty-${productId}`);
         const quantity = parseFloat(qtyInput.value) || 1;
 
         document.getElementById('compare-overlay').classList.remove('active');
@@ -909,7 +909,7 @@ VV.marketplace = {
         }
 
         cartItems.innerHTML = VV.data.cart.map(item => `
-            < div class="cart-item" >
+            <div class="cart-item">
                 <div class="cart-item-info">
                     <h4>${item.product.product}</h4>
                     <p>${item.product.sellerName}</p>
@@ -979,7 +979,7 @@ VV.marketplace = {
         }
 
         overlay.innerHTML = `
-              <div class="modal-form" style = "max-width: 500px;" >
+              <div class="modal-form" style="max-width: 500px;" >
                 <h3><i class="fas fa-star"></i> Solicitar Producto Destacado</h3>
                 <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
                     Tu producto aparecerá en el carrusel de ofertas destacadas del barrio.
@@ -1091,7 +1091,7 @@ VV.marketplace = {
         // Mostrar resultados
         const container = document.getElementById('all-products');
         container.innerHTML = `
-             <div style = "grid-column: 1/-1; padding: 1rem; background: var(--gray-100); border-radius: 8px; margin-bottom: 1rem;" >
+             <div style="grid-column: 1/-1; padding: 1rem; background: var(--gray-100); border-radius: 8px; margin-bottom: 1rem;" >
                 <h3 style="margin: 0 0 0.5rem 0;">
                     <i class="fas fa-search"></i> Resultados para "${searchTerm}"
                 </h3>
@@ -1123,7 +1123,7 @@ VV.marketplace = {
     // Renderizar tarjeta de producto (helper)
     renderProductCard(p) {
         return `
-                <div class="product-card" >
+                <div class="product-card">
                 <div class="card-header">
                     <h3>${p.product}</h3>
                     ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
@@ -1176,10 +1176,10 @@ VV.marketplace = {
         // Renderizar botones
         const container = document.getElementById('popular-products-list');
         container.innerHTML = combined.map(product => `
-                <button onclick = "document.getElementById('compare-search').value='${product}'; VV.marketplace.quickCompare();"
-            style = "padding: 0.5rem 1rem; background: var(--gray-100); border: 1px solid var(--gray-300); border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;"
-            onmouseover = "this.style.background='var(--primary-blue)'; this.style.color='white'; this.style.borderColor='var(--primary-blue)';"
-            onmouseout = "this.style.background='var(--gray-100)'; this.style.color='inherit'; this.style.borderColor='var(--gray-300)';" >
+                <button onclick="document.getElementById('compare-search').value='${product}'; VV.marketplace.quickCompare();"
+            style="padding: 0.5rem 1rem; background: var(--gray-100); border: 1px solid var(--gray-300); border-radius: 20px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;"
+            onmouseover="this.style.background='var(--primary-blue)'; this.style.color='white'; this.style.borderColor='var(--primary-blue)';"
+            onmouseout="this.style.background='var(--gray-100)'; this.style.color='inherit'; this.style.borderColor='var(--gray-300)';" >
                 ${product.charAt(0).toUpperCase() + product.slice(1)}
             </button>
                 `).join('');
