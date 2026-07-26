@@ -863,12 +863,13 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
                     ` : '<p style="color:#94a3b8;font-size:0.85rem;">Iniciá sesión para interactuar</p>'}
                 </div>
                 <div id="vv-comments-section" style="display:none;margin-top:1rem;"></div>
+                <div id="vv-gifts-section" style="margin-top:1rem;"></div>
             </div>
         </div>
     `;
 
     document.body.appendChild(modal);
-
+    this.loadVideoGifts(videoId);
     modal.onclick = function(e) {
         if (e.target === modal) VV_VOCES_V2.closeVideoPlayer();
     };
@@ -1117,6 +1118,67 @@ VV_VOCES_V2.sendGiftToVideo = async function(videoId, toUserId, itemCode, itemNa
         }
     } else {
         alert('❌ ' + result.error);
+    }
+};
+VV_VOCES_V2.loadVideoGifts = async function(videoId) {
+    const section = document.getElementById('vv-gifts-section');
+    if (!section) return;
+
+    try {
+        const { data: gifts, error } = await supabase
+            .from('regalos_enviados')
+            .select('*')
+            .eq('publicacion_id', videoId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!gifts || gifts.length === 0) {
+            section.innerHTML = '<p style="color:#94a3b8;font-size:0.8rem;">🎁 Sin regalos aún</p>';
+            return;
+        }
+
+        // Obtener info del catálogo
+        const codes = [...new Set(gifts.map(g => g.tipo_regalo))];
+        const { data: items } = await supabase
+            .from('catalogo_regalos')
+            .select('*')
+            .in('code', codes);
+
+        // Obtener nombres de emisores
+        const senderIds = [...new Set(gifts.map(g => g.emisor_id))];
+        const { data: users } = await supabase
+            .from('users')
+            .select('id, name')
+            .in('id', senderIds);
+
+        const itemMap = {};
+        items.forEach(i => itemMap[i.code] = i);
+        const userMap = {};
+        users.forEach(u => userMap[u.id] = u.name || 'Anónimo');
+
+        let html = '<div style="margin-top:0.5rem;">';
+        html += '<p style="font-size:0.8rem;color:#94a3b8;margin-bottom:0.5rem;">🎁 Regalos recibidos:</p>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:0.4rem;">';
+
+        gifts.forEach(g => {
+            const item = itemMap[g.tipo_regalo] || {};
+            const senderName = userMap[g.emisor_id] || 'Anónimo';
+            html += `
+                <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:20px;padding:0.3rem 0.7rem;display:flex;align-items:center;gap:0.3rem;font-size:0.75rem;" title="De: ${senderName}">
+                    <span style="font-size:1.1rem;">${item.icono || '🎁'}</span>
+                    <span style="color:#fbbf24;font-weight:600;">${item.nombre || g.tipo_regalo}</span>
+                    <span style="color:#94a3b8;">· ${senderName}</span>
+                </div>
+            `;
+        });
+
+        html += '</div></div>';
+        section.innerHTML = html;
+
+    } catch (err) {
+        console.error('Error cargando regalos del video:', err);
+        section.innerHTML = '';
     }
 };
 

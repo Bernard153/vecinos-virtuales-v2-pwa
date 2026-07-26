@@ -229,6 +229,69 @@
         }
     },
 
+    loadReceivedGifts: async function(containerId) {
+        const user = VV_ROLES.getCurrentUser();
+        if (!user) return;
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.innerHTML = '<p style="color:#94a3b8;">Cargando regalos...</p>';
+
+        try {
+            const { data: gifts, error } = await supabase
+                .from('regalos_enviados')
+                .select('*')
+                .eq('receptor_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (error) throw error;
+
+            if (!gifts || gifts.length === 0) {
+                container.innerHTML = '<p style="color:#94a3b8;font-size:0.85rem;">Todavía no recibiste regalos</p>';
+                return;
+            }
+
+            const codes = [...new Set(gifts.map(g => g.tipo_regalo))];
+            const { data: items } = await supabase
+                .from('catalogo_regalos')
+                .select('*')
+                .in('code', codes);
+
+            const senderIds = [...new Set(gifts.map(g => g.emisor_id))];
+            const { data: users } = await supabase
+                .from('users')
+                .select('id, name')
+                .in('id', senderIds);
+
+            const itemMap = {};
+            items.forEach(i => itemMap[i.code] = i);
+            const userMap = {};
+            users.forEach(u => userMap[u.id] = u.name || 'Anónimo');
+
+            container.innerHTML = gifts.map(g => {
+                const item = itemMap[g.tipo_regalo] || {};
+                const senderName = userMap[g.emisor_id] || 'Anónimo';
+                const fecha = new Date(g.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+                return `
+                    <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem;background:rgba(251,191,36,0.08);border-radius:10px;margin-bottom:0.5rem;">
+                        <span style="font-size:1.8rem;">${item.icono || '🎁'}</span>
+                        <div style="flex:1;">
+                            <p style="margin:0;font-weight:600;color:#fbbf24;">${item.nombre || g.tipo_regalo}</p>
+                            <p style="margin:0;font-size:0.75rem;color:#94a3b8;">De ${senderName} · ${fecha}</p>
+                        </div>
+                        <span style="font-size:0.8rem;color:#fbbf24;">🪙 ${g.costo_monedas}</span>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error('Error cargando regalos:', err);
+            container.innerHTML = '<p style="color:#ef4444;">Error al cargar regalos</p>';
+        }
+    },
+
+
     rewardVideoUpload: async function(userId) {
         return await this.earnCredits(userId, 5, 'Subida de video', null, 'video');
     },
