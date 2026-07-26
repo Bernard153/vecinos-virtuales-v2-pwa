@@ -489,5 +489,125 @@
         html += '</div></div></div></div>';
         modal.innerHTML = html;
         document.body.appendChild(modal);
+    },
+    getLevel: function(xp) {
+        const levels = [
+            { level: 1, name: 'Vecino Nuevo', minXP: 0, icon: '🌱' },
+            { level: 2, name: 'Vecino Activo', minXP: 20, icon: '🌿' },
+            { level: 3, name: 'Vecino Destacado', minXP: 50, icon: '⭐' },
+            { level: 4, name: 'Vecino Referente', minXP: 100, icon: '🏆' },
+            { level: 5, name: 'Leyenda del Barrio', minXP: 200, icon: '👑' }
+        ];
+        let current = levels[0];
+        let next = null;
+        for (let i = 0; i < levels.length; i++) {
+            if (xp >= levels[i].minXP) {
+                current = levels[i];
+                next = levels[i + 1] || null;
+            }
+        }
+        const progress = next ? Math.round(((xp - current.minXP) / (next.minXP - current.minXP)) * 100) : 100;
+        return { current, next, progress };
+    },
+
+    openWallet: async function() {
+        const user = VV_ROLES.getCurrentUser();
+        if (!user) { alert('Iniciá sesión para ver tu billetera'); return; }
+
+        const { balance, puntos_xp } = await this.getBalance(user.id);
+        const { current, next, progress } = this.getLevel(puntos_xp);
+        const history = await this.getHistory(user.id, 15);
+
+        const modal = document.createElement('div');
+        modal.id = 'vv-wallet-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10001;overflow-y:auto;';
+
+        let historyHtml = '';
+        if (history.length === 0) {
+            historyHtml = '<p style="color:#94a3b8;text-align:center;padding:1rem;">Sin movimientos aún</p>';
+        } else {
+            historyHtml = history.map(function(t) {
+                const isIncome = t.amount > 0;
+                const date = new Date(t.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+                return '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.05);">' +
+                    '<div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;' +
+                    (isIncome ? 'background:rgba(16,185,129,0.15);color:#10b981;' : 'background:rgba(239,68,68,0.15);color:#ef4444;') +
+                    '">' + (isIncome ? '↗' : '↘') + '</div>' +
+                    '<div style="flex:1;"><p style="margin:0;font-size:0.85rem;color:#e2e8f0;">' + t.description + '</p>' +
+                    '<p style="margin:0;font-size:0.7rem;color:#64748b;">' + date + '</p></div>' +
+                    '<span style="font-weight:700;font-size:0.9rem;' + (isIncome ? 'color:#10b981;' : 'color:#ef4444;') + '">' +
+                    (isIncome ? '+' : '') + t.amount + ' 🪙</span></div>';
+            }).join('');
+        }
+
+        modal.innerHTML = '<div style="background:#1e293b;border-radius:16px;max-width:480px;width:90%;margin:auto;color:#e2e8f0;box-shadow:0 25px 50px rgba(0,0,0,0.5);">' +
+            '<div style="position:sticky;top:0;background:#1e293b;border-radius:16px 16px 0 0;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.08);z-index:1;">' +
+            '<h3 style="margin:0;font-size:1.1rem;">💰 Mi Billetera</h3>' +
+            '<button onclick="document.getElementById(\'vv-wallet-modal\').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#e2e8f0;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;">✕</button></div>' +
+            
+            '<div style="padding:1.25rem;">' +
+            
+            '<!-- SALDO Y NIVEL -->' +
+            '<div style="background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(124,58,237,0.1));border-radius:12px;padding:1.25rem;margin-bottom:1rem;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">' +
+            '<div><p style="margin:0;font-size:0.75rem;color:#94a3b8;text-transform:uppercase;">Saldo</p>' +
+            '<p style="margin:0.25rem 0 0;font-size:2rem;font-weight:800;color:#fbbf24;">🪙 ' + balance + '</p></div>' +
+            '<div style="text-align:right;"><p style="margin:0;font-size:0.75rem;color:#94a3b8;text-transform:uppercase;">Nivel</p>' +
+            '<p style="margin:0.25rem 0 0;font-size:1.5rem;">' + current.icon + '</p>' +
+            '<p style="margin:0;font-size:0.75rem;color:#cbd5e1;font-weight:600;">' + current.name + '</p></div></div>' +
+            
+            '<div style="margin-top:0.75rem;">' +
+            '<div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94a3b8;margin-bottom:0.25rem;">' +
+            '<span>XP: ' + puntos_xp + '</span>' +
+            (next ? '<span>Siguiente: ' + next.name + ' (' + next.minXP + ' XP)</span>' : '<span>¡Nivel máximo!</span>') + '</div>' +
+            '<div style="background:rgba(255,255,255,0.08);border-radius:20px;height:8px;overflow:hidden;">' +
+            '<div style="background:linear-gradient(90deg,#fbbf24,#8b5cf6);height:100%;border-radius:20px;width:' + progress + '%;transition:width 0.5s;"></div></div></div></div>' +
+            
+            '<!-- ACCIONES RÁPIDAS -->' +
+            '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin-bottom:1rem;">' +
+            '<button onclick="VV_WALLET.openShop()" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);color:#fbbf24;padding:0.6rem;border-radius:10px;cursor:pointer;font-size:0.75rem;font-weight:600;">🛒 Tienda</button>' +
+            '<button onclick="VV_WALLET.showExchangeForm()" style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:#a78bfa;padding:0.6rem;border-radius:10px;cursor:pointer;font-size:0.75rem;font-weight:600;">🔄 Canjear XP</button>' +
+            '<button onclick="VV_WALLET.showCreditRequestForm()" style="background:rgba(52,199,89,0.1);border:1px solid rgba(52,199,89,0.2);color:#34c759;padding:0.6rem;border-radius:10px;cursor:pointer;font-size:0.75rem;font-weight:600;">✉️ Pedir</button>' +
+            '</div>' +
+            
+            '<!-- TABS -->' +
+            '<div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">' +
+            '<button id="wallet-tab-history" onclick="document.getElementById(\'wallet-history\').style.display=\'block\';document.getElementById(\'wallet-gifts\').style.display=\'none\';document.getElementById(\'wallet-guide\').style.display=\'none\';this.style.borderBottom=\'2px solid #fbbf24\';document.getElementById(\'wallet-tab-gifts\').style.borderBottom=\'none\';document.getElementById(\'wallet-tab-guide\').style.borderBottom=\'none\';" style="flex:1;background:none;border:none;border-bottom:2px solid #fbbf24;color:#e2e8f0;padding:0.5rem;cursor:pointer;font-size:0.8rem;font-weight:600;">📋 Movimientos</button>' +
+            '<button id="wallet-tab-gifts" onclick="document.getElementById(\'wallet-history\').style.display=\'none\';document.getElementById(\'wallet-gifts\').style.display=\'block\';document.getElementById(\'wallet-guide\').style.display=\'none\';this.style.borderBottom=\'2px solid #fbbf24\';document.getElementById(\'wallet-tab-history\').style.borderBottom=\'none\';document.getElementById(\'wallet-tab-guide\').style.borderBottom=\'none\';VV_WALLET.loadReceivedGifts(\'wallet-gifts\');" style="flex:1;background:none;border:none;border-bottom:none;color:#94a3b8;padding:0.5rem;cursor:pointer;font-size:0.8rem;font-weight:600;">🎁 Regalos</button>' +
+            '<button id="wallet-tab-guide" onclick="document.getElementById(\'wallet-history\').style.display=\'none\';document.getElementById(\'wallet-gifts\').style.display=\'none\';document.getElementById(\'wallet-guide\').style.display=\'block\';this.style.borderBottom=\'2px solid #fbbf24\';document.getElementById(\'wallet-tab-history\').style.borderBottom=\'none\';document.getElementById(\'wallet-tab-gifts\').style.borderBottom=\'none\';" style="flex:1;background:none;border:none;border-bottom:none;color:#94a3b8;padding:0.5rem;cursor:pointer;font-size:0.8rem;font-weight:600;">💡 Cómo ganar</button>' +
+            '</div>' +
+            
+            '<!-- HISTORIAL -->' +
+            '<div id="wallet-history" style="max-height:250px;overflow-y:auto;">' + historyHtml + '</div>' +
+            
+            '<!-- REGALOS -->' +
+            '<div id="wallet-gifts" style="display:none;max-height:250px;overflow-y:auto;"></div>' +
+            
+            '<!-- GUÍA -->' +
+            '<div id="wallet-guide" style="display:none;">' +
+            '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem;background:rgba(16,185,129,0.08);border-radius:10px;margin-bottom:0.5rem;">' +
+            '<span style="font-size:1.5rem;">🎥</span><div><p style="margin:0;font-size:0.85rem;color:#e2e8f0;font-weight:600;">Subir un video</p>' +
+            '<p style="margin:0;font-size:0.75rem;color:#10b981;">+5 🪙 por video</p></div></div>' +
+            '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem;background:rgba(16,185,129,0.08);border-radius:10px;margin-bottom:0.5rem;">' +
+            '<span style="font-size:1.5rem;">❤️</span><div><p style="margin:0;font-size:0.85rem;color:#e2e8f0;font-weight:600;">Recibir un like</p>' +
+            '<p style="margin:0;font-size:0.75rem;color:#10b981;">+1 🪙 por like</p></div></div>' +
+            '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem;background:rgba(16,185,129,0.08);border-radius:10px;margin-bottom:0.5rem;">' +
+            '<span style="font-size:1.5rem;">📅</span><div><p style="margin:0;font-size:0.85rem;color:#e2e8f0;font-weight:600;">Login diario</p>' +
+            '<p style="margin:0;font-size:0.75rem;color:#10b981;">+2 🪙 por día</p></div></div>' +
+            '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem;background:rgba(139,92,246,0.08);border-radius:10px;margin-bottom:0.5rem;">' +
+            '<span style="font-size:1.5rem;">🔄</span><div><p style="margin:0;font-size:0.85rem;color:#e2e8f0;font-weight:600;">Canjear XP por monedas</p>' +
+            '<p style="margin:0;font-size:0.75rem;color:#a78bfa;">10 XP = 1 🪙</p></div></div>' +
+            '<div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem;background:rgba(251,191,36,0.08);border-radius:10px;margin-bottom:0.5rem;">' +
+            '<span style="font-size:1.5rem;">🎁</span><div><p style="margin:0;font-size:0.85rem;color:#e2e8f0;font-weight:600;">Recibir regalos</p>' +
+            '<p style="margin:0;font-size:0.75rem;color:#fbbf24;">+2 XP por regalo</p></div></div>' +
+            '<div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:0.75rem;margin-top:0.75rem;">' +
+            '<p style="margin:0;font-size:0.7rem;color:#64748b;text-align:center;">Las monedas virtuales no tienen valor monetario. Se obtienen gratis por participación en la comunidad.</p></div>' +
+            '</div>' +
+            
+            '</div></div>';
+
+        document.body.appendChild(modal);
+        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
     }
+
 };
