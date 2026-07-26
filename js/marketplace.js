@@ -1,4 +1,4 @@
-// ========== MÓDULO MARKETPLACE ==========
+﻿// ========== MÓDULO MARKETPLACE ==========
 
 // Función helper para normalizar nombres de barrios
 const normalizeNeighborhood = (name) => {
@@ -909,7 +909,7 @@ VV.marketplace = {
         }
 
         cartItems.innerHTML = VV.data.cart.map(item => `
-            < div class= "cart-item" >
+            < div class="cart-item" >
                 <div class="cart-item-info">
                     <h4>${item.product.product}</h4>
                     <p>${item.product.sellerName}</p>
@@ -927,7 +927,7 @@ VV.marketplace = {
                     </button>
                 </div>
             </div >
-                `).join('');
+        `).join('');
 
         const total = VV.data.cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
         const totalItems = VV.data.cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -979,7 +979,7 @@ VV.marketplace = {
         }
 
         overlay.innerHTML = `
-                < div class="modal-form" style = "max-width: 500px;" >
+              <div class="modal-form" style = "max-width: 500px;" >
                 <h3><i class="fas fa-star"></i> Solicitar Producto Destacado</h3>
                 <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
                     Tu producto aparecerá en el carrusel de ofertas destacadas del barrio.
@@ -1018,7 +1018,7 @@ VV.marketplace = {
                         </button>
                     </div>
                 </form>
-            </div >
+            </div>
                 `;
 
         overlay.classList.add('active');
@@ -1091,7 +1091,7 @@ VV.marketplace = {
         // Mostrar resultados
         const container = document.getElementById('all-products');
         container.innerHTML = `
-                < div style = "grid-column: 1/-1; padding: 1rem; background: var(--gray-100); border-radius: 8px; margin-bottom: 1rem;" >
+             <div style = "grid-column: 1/-1; padding: 1rem; background: var(--gray-100); border-radius: 8px; margin-bottom: 1rem;" >
                 <h3 style="margin: 0 0 0.5rem 0;">
                     <i class="fas fa-search"></i> Resultados para "${searchTerm}"
                 </h3>
@@ -1101,7 +1101,7 @@ VV.marketplace = {
                         <i class="fas fa-times"></i> Ver todos
                     </button>
                 </p>
-            </div >
+            </div>
                 ` + results.map(p => this.renderProductCard(p)).join('');
 
         // Scroll a resultados
@@ -1123,7 +1123,7 @@ VV.marketplace = {
     // Renderizar tarjeta de producto (helper)
     renderProductCard(p) {
         return `
-                < div class="product-card" >
+                <div class="product-card" >
                 <div class="card-header">
                     <h3>${p.product}</h3>
                     ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
@@ -1146,7 +1146,7 @@ VV.marketplace = {
                         <i class="fas fa-balance-scale"></i> Comparar
                     </button>
                 </div>
-            </div >
+            </div>
                 `;
     },
 
