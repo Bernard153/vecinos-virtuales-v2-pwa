@@ -342,6 +342,7 @@
             overlay = document.createElement('div');
             overlay.id = 'credit-request-overlay';
             overlay.className = 'modal-overlay';
+            overlay.style.zIndex = '10002';
             document.body.appendChild(overlay);
         }
         overlay.innerHTML = '<div class="modal-form" style="max-width:400px;">' +
@@ -386,6 +387,7 @@
             overlay = document.createElement('div');
             overlay.id = 'exchange-overlay';
             overlay.className = 'modal-overlay';
+            overlay.style.zIndex = '10002';
             document.body.appendChild(overlay);
         }
         let html = '<div class="modal-form" style="max-width:400px;">' +
@@ -519,6 +521,7 @@
         const history = await this.getHistory(user.id, 15);
 
         const modal = document.createElement('div');
+        modal.style.zIndex = '10002';
         modal.id = 'vv-wallet-modal';
         modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10001;overflow-y:auto;';
 
