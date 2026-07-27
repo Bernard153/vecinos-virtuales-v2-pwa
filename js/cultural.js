@@ -743,14 +743,58 @@ VV.cultural = {
         }
     },
 
+      
+    sendGift: async function(postId, toUserId, itemCode, itemName, price) {
+        const result = await VV_WALLET.sendGift(toUserId, itemCode, postId, 'cultural');
+
+        if (result.success) {
+            document.getElementById('cultural-gift-modal').remove();
+            alert('🎉 ¡' + itemName + ' enviado!');
+            this.loadGifts(postId);
+        } else {
+            alert('❌ ' + result.error);
+        }
+    },
+
+    loadGifts: async function(postId) {
+        const section = document.getElementById('cultural-gifts-' + postId);
+        if (!section) return;
+
+        try {
+            const { data: gifts, error } = await supabase
+                .from('regalos_enviados')
+                .select('*')
+                .eq('publicacion_id', postId)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (error || !gifts || gifts.length === 0) {
+                section.innerHTML = '';
+                return;
+            }
+
+            const codes = [...new Set(gifts.map(g => g.tipo_regalo))];
+            const { data: items } = await supabase.from('catalogo_regalos').select('*').in('code', codes);
+            const itemMap = {};
+            (items || []).forEach(i => itemMap[i.code] = i);
+
+            section.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;padding-top:0.5rem;">' +
+                gifts.map(g => {
+                    const item = itemMap[g.tipo_regalo] || {};
+                    return '<span style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:20px;padding:0.2rem 0.6rem;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;">' +
+                        '<span style="font-size:1rem;">' + (item.icono || '🎁') + '</span>' +
+                        '<span style="color:#f59e0b;font-weight:600;">' + (item.nombre || g.tipo_regalo) + '</span>' +
+                        '</span>';
+                }).join('') +
+                '</div>';
+
+        } catch (err) {
+            console.error('Error cargando regalos:', err);
+        }
+    },
     // ========== SISTEMA DE REGALOS ==========
 
     showGiftPicker: async function(postId, toUserId) {
-        const user = VV_ROLES.getCurrentUser();
-        if (!user) { alert('Iniciá sesión para regalar'); return; }
-        if (user.id === toUserId) { alert('No podés regalarte a vos mismo 😄'); return; }
-        if (!window.VV_WALLET) { alert('Sistema de billetera no disponible'); return; }
-	    showGiftPicker: async function(postId, toUserId) {
         const user = VV_ROLES.getCurrentUser();
         if (!user) { alert('Iniciá sesión para regalar'); return; }
         if (user.id === toUserId) { alert('No podés regalarte a vos mismo 😄'); return; }
@@ -761,7 +805,7 @@ VV.cultural = {
 
         const { balance } = await VV_WALLET.getBalance(user.id);
         const items = await VV_WALLET.getShopItems('regalo');
-        // ... resto de la función
+
         const modal = document.createElement('div');
         modal.id = 'cultural-gift-modal';
         modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;';
@@ -784,7 +828,7 @@ VV.cultural = {
                              onmouseout="this.style.background='var(--gray-50)';this.style.borderColor='var(--gray-200)'">
                             <div style="font-size:2rem;margin-bottom:0.25rem;">${item.icono}</div>
                             <p style="margin:0;font-size:0.7rem;color:var(--gray-700);">${item.nombre}</p>
-                            <p style="margin:0.2rem 0 0;font-size:0.8rem;color:#f59e0b;font-weight:700;">🪙 ${item.precio_monedas}</p>
+            <p style="margin:0.2rem 0 0;font-size:0.8rem;color:#f59e0b;font-weight:700;">🪙 ${item.precio_monedas}</p>
                         </div>
                     `).join('')}
                 </div>
@@ -816,7 +860,7 @@ VV.cultural = {
             const { data: gifts, error } = await supabase
                 .from('regalos_enviados')
                 .select('*')
-                .eq('publicacion_id', postId)
+                .function(postId)
                 .order('created_at', { ascending: false })
                 .limit(10);
 
