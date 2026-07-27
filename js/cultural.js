@@ -497,24 +497,41 @@ VV.cultural = {
         }
     },
     
-    // Dar like - MIGRADO A SUPABASE
+        // Dar like - MIGRADO A SUPABASE (un like por usuario)
     async like(postId) {
-        const post = VV.data.culturalPosts.find(p => p.id === postId);
-        if (!post) return;
-        
+        const user = VV_ROLES.getCurrentUser();
+        if (!user) { alert('Iniciá sesión para dar like'); return; }
+
         try {
-            const newLikes = post.likes + 1;
-            
-            const { error } = await supabase
-                .from('cultural_posts')
-                .update({ likes: newLikes })
-                .eq('id', postId);
-            
-            if (error) throw error;
-            
-            post.likes = newLikes;
+            const { data: existing } = await supabase
+                .from('cultural_likes')
+                .select('id')
+                .eq('post_id', postId)
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            const post = VV.data.culturalPosts.find(p => p.id === postId);
+            if (!post) return;
+
+            if (existing) {
+                // Ya dio like → quitarlo
+                await supabase.from('cultural_likes').delete().eq('id', existing.id);
+                const newLikes = Math.max(0, (post.likes || 0) - 1);
+                await supabase.from('cultural_posts').update({ likes: newLikes }).eq('id', postId);
+                post.likes = newLikes;
+            } else {
+                // No dio like → agregarlo
+                await supabase.from('cultural_likes').insert([{
+                    post_id: postId,
+                    user_id: user.id
+                }]);
+                const newLikes = (post.likes || 0) + 1;
+                await supabase.from('cultural_posts').update({ likes: newLikes }).eq('id', postId);
+                post.likes = newLikes;
+            }
+
             VV.cultural.load();
-            
+
         } catch (error) {
             console.error('Error dando like:', error);
         }
@@ -636,7 +653,7 @@ VV.cultural = {
         }
     },
 
-    postComment: async function(postId, category, text) {
+        postComment: async function(postId, category, text) {
         const user = VV_ROLES.getCurrentUser();
         if (!user) { alert('Iniciá sesión para comentar'); return; }
 
@@ -662,13 +679,67 @@ VV.cultural = {
                 }]);
             }
 
-            this.showComments(postId);
-            section = document.getElementById('cultural-comments-' + postId);
-            if (section) section.style.display = 'block';
+            // Forzar recarga sin toggle
+            const section = document.getElementById('cultural-comments-' + postId);
+            if (section) {
+                section.style.display = 'block';
+                // Recargar comentarios forzando el estado visible
+                await this.reloadComments(postId);
+            }
 
         } catch (err) {
             console.error('Error posteando comentario:', err);
             alert('No se pudo enviar el comentario');
+        }
+    },
+
+    reloadComments: async function(postId) {
+        const section = document.getElementById('cultural-comments-' + postId);
+        if (!section) return;
+
+        try {
+            const { data: comments, error } = await supabase
+                .from('cultural_comments')
+                .select('*')
+                .eq('post_id', postId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            const user = VV_ROLES.getCurrentUser();
+            let html = '<div style="border-top: 1px solid var(--gray-200); padding-top: 0.75rem;">';
+
+            if (comments && comments.length > 0) {
+                html += comments.map(c => `
+                    <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
+                        <span style="font-size:1.1rem;">${this.categoryEmoji(c.category)}</span>
+                        <span style="font-size:0.85rem;color:var(--gray-700);">${c.comment_text}</span>
+                        <span style="font-size:0.7rem;color:var(--gray-400);margin-left:auto;">${c.user_name || ''}</span>
+                    </div>
+                `).join('');
+            } else {
+                html += '<p style="color: var(--gray-500); font-size: 0.85rem;">Sin comentarios aún</p>';
+            }
+
+            if (user) {
+                html += '<div style="margin-top: 0.75rem;">';
+                html += '<p style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.4rem;">Elegí un comentario:</p>';
+                for (const [cat, textos] of Object.entries(this.COMENTARIOS)) {
+                    html += `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.3rem;">`;
+                    html += `<span style="font-size:0.75rem;color:var(--gray-500);min-width:90px;">${this.categoryEmoji(cat)} ${cat}</span>`;
+                    textos.forEach(texto => {
+                        html += `<button onclick="VV.cultural.postComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:var(--gray-100);border:1px solid var(--gray-200);border-radius:20px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;color:var(--gray-700);">${texto}</button>`;
+                    });
+                    html += `</div>`;
+                }
+                html += '</div>';
+            }
+
+            html += '</div>';
+            section.innerHTML = html;
+
+        } catch (err) {
+            console.error('Error recargando comentarios:', err);
         }
     },
 
@@ -679,10 +750,18 @@ VV.cultural = {
         if (!user) { alert('Iniciá sesión para regalar'); return; }
         if (user.id === toUserId) { alert('No podés regalarte a vos mismo 😄'); return; }
         if (!window.VV_WALLET) { alert('Sistema de billetera no disponible'); return; }
+	    showGiftPicker: async function(postId, toUserId) {
+        const user = VV_ROLES.getCurrentUser();
+        if (!user) { alert('Iniciá sesión para regalar'); return; }
+        if (user.id === toUserId) { alert('No podés regalarte a vos mismo 😄'); return; }
+        if (!window.VV_WALLET) { alert('Sistema de billetera no disponible'); return; }
+
+        // Cerrar comentarios abiertos
+        document.querySelectorAll('[id^="cultural-comments-"]').forEach(el => el.style.display = 'none');
 
         const { balance } = await VV_WALLET.getBalance(user.id);
         const items = await VV_WALLET.getShopItems('regalo');
-
+        // ... resto de la función
         const modal = document.createElement('div');
         modal.id = 'cultural-gift-modal';
         modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;';
