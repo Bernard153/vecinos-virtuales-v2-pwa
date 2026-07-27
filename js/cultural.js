@@ -396,7 +396,173 @@ VV.cultural = {
                     return;
                 }
             }
-                // ========== SISTEMA DE COMENTARIOS ==========
+                
+            // Comprimir imagen antes de convertir a base64
+            if (formData.mediaType === 'image') {
+                VV.cultural.compressImage(file, 1080, 0.7, (compressedDataUrl) => {
+                    formData.mediaUrl = compressedDataUrl;
+                    console.log('✅ Imagen comprimida, tamaño:', compressedDataUrl.length);
+                    VV.cultural.savePost(existing, formData);
+                });
+            } else {
+                // Video: convertir a base64 sin compresión
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    formData.mediaUrl = e.target.result;
+                    console.log('✅ Video convertido a base64, tamaño:', e.target.result.length);
+                    VV.cultural.savePost(existing, formData);
+                };
+                reader.onerror = function(error) {
+                    console.error('❌ Error leyendo archivo:', error);
+                    alert('Error al procesar el archivo');
+                };
+                reader.readAsDataURL(file);
+            }
+        } else {
+
+            // Si no hay archivo nuevo, mantener el existente
+            if (existing && (existing.media_url || existing.mediaUrl)) {
+                formData.mediaUrl = existing.media_url || existing.mediaUrl;
+                console.log('📎 Manteniendo archivo existente');
+            }
+            VV.cultural.savePost(existing, formData);
+        }
+    },
+    
+    // Guardar post (helper) - MIGRADO A SUPABASE
+    async savePost(existing, formData) {
+        console.log('💾 Guardando post cultural:', {
+            title: formData.title,
+            type: formData.type,
+            mediaType: formData.mediaType,
+            hasMediaUrl: !!formData.mediaUrl,
+            mediaUrlLength: formData.mediaUrl?.length || 0
+        });
+        
+        // TEMPORAL: Verificar qué valores acepta la DB
+        console.warn('⚠️ TIPO ENVIADO:', formData.type);
+        console.warn('⚠️ Si falla, la DB solo acepta ciertos valores específicos');
+        
+        try {
+            if (existing) {
+                // Actualizar post existente
+                console.log('📝 Actualizando post existente:', existing.id);
+                const { error } = await supabase
+                    .from('cultural_posts')
+                    .update({
+                        title: formData.title,
+                        type: formData.type,
+                        description: formData.description,
+                        media_type: formData.mediaType,
+                        media_url: formData.mediaUrl
+                    })
+                    .eq('id', existing.id);
+                
+                if (error) throw error;
+                
+                const index = VV.data.culturalPosts.findIndex(p => p.id === existing.id);
+                VV.data.culturalPosts[index] = { ...existing, ...formData };
+                console.log('✅ Post actualizado');
+            } else {
+                // Crear nuevo post
+                console.log('🆕 Creando nuevo post');
+                const { data, error } = await supabase
+                    .from('cultural_posts')
+                    .insert({
+                        title: formData.title,
+                        type: formData.type,
+                        description: formData.description,
+                        media_type: formData.mediaType,
+                        media_url: formData.mediaUrl,
+                        author_id: VV.data.user.id,
+                        author_name: VV.data.user.name,
+                        author_number: VV.data.user.unique_number,
+                        neighborhood: VV.data.neighborhood
+                    })
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                console.log('✅ Post creado:', data);
+                VV.data.culturalPosts.push(data);
+            }
+            
+            VV.cultural.closeForm();
+            VV.cultural.load();
+            VV.utils.showSuccess(existing ? 'Publicación actualizada' : 'Publicación compartida');
+            
+        } catch (error) {
+            console.error('❌ Error guardando publicación:', error);
+            alert('Error al guardar la publicación: ' + error.message);
+        }
+    },
+    
+    // Dar like - MIGRADO A SUPABASE
+    async like(postId) {
+        const post = VV.data.culturalPosts.find(p => p.id === postId);
+        if (!post) return;
+        
+        try {
+            const newLikes = post.likes + 1;
+            
+            const { error } = await supabase
+                .from('cultural_posts')
+                .update({ likes: newLikes })
+                .eq('id', postId);
+            
+            if (error) throw error;
+            
+            post.likes = newLikes;
+            VV.cultural.load();
+            
+        } catch (error) {
+            console.error('Error dando like:', error);
+        }
+    },
+    
+    // Eliminar post - MIGRADO A SUPABASE
+    async delete(postId) {
+        const post = VV.data.culturalPosts.find(p => p.id === postId);
+        if (!post) return;
+        
+        const isOwner = post.user_id === VV.data.user.id;
+        const canModerate = VV.utils.canModerate();
+        
+        if (!isOwner && !canModerate) {
+            alert('No tienes permisos para eliminar esta publicación');
+            return;
+        }
+        
+        if (!confirm('¿Eliminar esta publicación?')) return;
+        
+        try {
+            const { error } = await supabase
+                .from('cultural_posts')
+                .delete()
+                .eq('id', postId);
+            
+            if (error) throw error;
+            
+            VV.data.culturalPosts = VV.data.culturalPosts.filter(p => p.id !== postId);
+            
+            // Registrar acción de moderador si aplica
+            if (canModerate && !isOwner) {
+                VV.utils.logModeratorAction('ELIMINAR_PUBLICACION', {
+                    postId: postId,
+                    postTitle: post.title,
+                    authorName: post.user_name
+                });
+            }
+            
+            VV.cultural.load();
+            VV.utils.showSuccess('Publicación eliminada');
+            
+        } catch (error) {
+            console.error('Error eliminando publicación:', error);
+            alert('Error al eliminar la publicación: ' + error.message);
+        }
+     },
+// ========== SISTEMA DE COMENTARIOS ==========
 
     COMENTARIOS: {
         felicitaciones: ['¡Felicitaciones!', '¡Qué logro!', '¡Orgullo del barrio!', '¡Te lo merecés!'],
@@ -599,173 +765,6 @@ VV.cultural = {
             console.error('Error cargando regalos:', err);
         }
     },
-
-
-            // Comprimir imagen antes de convertir a base64
-            if (formData.mediaType === 'image') {
-                VV.cultural.compressImage(file, 1080, 0.7, (compressedDataUrl) => {
-                    formData.mediaUrl = compressedDataUrl;
-                    console.log('✅ Imagen comprimida, tamaño:', compressedDataUrl.length);
-                    VV.cultural.savePost(existing, formData);
-                });
-            } else {
-                // Video: convertir a base64 sin compresión
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    formData.mediaUrl = e.target.result;
-                    console.log('✅ Video convertido a base64, tamaño:', e.target.result.length);
-                    VV.cultural.savePost(existing, formData);
-                };
-                reader.onerror = function(error) {
-                    console.error('❌ Error leyendo archivo:', error);
-                    alert('Error al procesar el archivo');
-                };
-                reader.readAsDataURL(file);
-            }
-        } else {
-
-            // Si no hay archivo nuevo, mantener el existente
-            if (existing && (existing.media_url || existing.mediaUrl)) {
-                formData.mediaUrl = existing.media_url || existing.mediaUrl;
-                console.log('📎 Manteniendo archivo existente');
-            }
-            VV.cultural.savePost(existing, formData);
-        }
-    },
-    
-    // Guardar post (helper) - MIGRADO A SUPABASE
-    async savePost(existing, formData) {
-        console.log('💾 Guardando post cultural:', {
-            title: formData.title,
-            type: formData.type,
-            mediaType: formData.mediaType,
-            hasMediaUrl: !!formData.mediaUrl,
-            mediaUrlLength: formData.mediaUrl?.length || 0
-        });
-        
-        // TEMPORAL: Verificar qué valores acepta la DB
-        console.warn('⚠️ TIPO ENVIADO:', formData.type);
-        console.warn('⚠️ Si falla, la DB solo acepta ciertos valores específicos');
-        
-        try {
-            if (existing) {
-                // Actualizar post existente
-                console.log('📝 Actualizando post existente:', existing.id);
-                const { error } = await supabase
-                    .from('cultural_posts')
-                    .update({
-                        title: formData.title,
-                        type: formData.type,
-                        description: formData.description,
-                        media_type: formData.mediaType,
-                        media_url: formData.mediaUrl
-                    })
-                    .eq('id', existing.id);
-                
-                if (error) throw error;
-                
-                const index = VV.data.culturalPosts.findIndex(p => p.id === existing.id);
-                VV.data.culturalPosts[index] = { ...existing, ...formData };
-                console.log('✅ Post actualizado');
-            } else {
-                // Crear nuevo post
-                console.log('🆕 Creando nuevo post');
-                const { data, error } = await supabase
-                    .from('cultural_posts')
-                    .insert({
-                        title: formData.title,
-                        type: formData.type,
-                        description: formData.description,
-                        media_type: formData.mediaType,
-                        media_url: formData.mediaUrl,
-                        author_id: VV.data.user.id,
-                        author_name: VV.data.user.name,
-                        author_number: VV.data.user.unique_number,
-                        neighborhood: VV.data.neighborhood
-                    })
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                console.log('✅ Post creado:', data);
-                VV.data.culturalPosts.push(data);
-            }
-            
-            VV.cultural.closeForm();
-            VV.cultural.load();
-            VV.utils.showSuccess(existing ? 'Publicación actualizada' : 'Publicación compartida');
-            
-        } catch (error) {
-            console.error('❌ Error guardando publicación:', error);
-            alert('Error al guardar la publicación: ' + error.message);
-        }
-    },
-    
-    // Dar like - MIGRADO A SUPABASE
-    async like(postId) {
-        const post = VV.data.culturalPosts.find(p => p.id === postId);
-        if (!post) return;
-        
-        try {
-            const newLikes = post.likes + 1;
-            
-            const { error } = await supabase
-                .from('cultural_posts')
-                .update({ likes: newLikes })
-                .eq('id', postId);
-            
-            if (error) throw error;
-            
-            post.likes = newLikes;
-            VV.cultural.load();
-            
-        } catch (error) {
-            console.error('Error dando like:', error);
-        }
-    },
-    
-    // Eliminar post - MIGRADO A SUPABASE
-    async delete(postId) {
-        const post = VV.data.culturalPosts.find(p => p.id === postId);
-        if (!post) return;
-        
-        const isOwner = post.user_id === VV.data.user.id;
-        const canModerate = VV.utils.canModerate();
-        
-        if (!isOwner && !canModerate) {
-            alert('No tienes permisos para eliminar esta publicación');
-            return;
-        }
-        
-        if (!confirm('¿Eliminar esta publicación?')) return;
-        
-        try {
-            const { error } = await supabase
-                .from('cultural_posts')
-                .delete()
-                .eq('id', postId);
-            
-            if (error) throw error;
-            
-            VV.data.culturalPosts = VV.data.culturalPosts.filter(p => p.id !== postId);
-            
-            // Registrar acción de moderador si aplica
-            if (canModerate && !isOwner) {
-                VV.utils.logModeratorAction('ELIMINAR_PUBLICACION', {
-                    postId: postId,
-                    postTitle: post.title,
-                    authorName: post.user_name
-                });
-            }
-            
-            VV.cultural.load();
-            VV.utils.showSuccess('Publicación eliminada');
-            
-        } catch (error) {
-            console.error('Error eliminando publicación:', error);
-            alert('Error al eliminar la publicación: ' + error.message);
-        }
-     },
 
     // Comprimir imagen usando Canvas API
     compressImage(file, maxWidth, quality, callback) {
