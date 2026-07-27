@@ -215,10 +215,18 @@ VV.cultural = {
                 ` : ''}
                 
                 <p style="color: var(--gray-700); margin: 0.5rem 0; white-space: pre-wrap;">${post.description}</p>
-                <div class="card-footer">
+                                <div class="card-footer">
                     <button class="like-btn" onclick="VV.cultural.like('${post.id}')">
                         <i class="fas fa-heart"></i> ${post.likes}
                     </button>
+                    <button class="like-btn" onclick="VV.cultural.showComments('${post.id}')" style="margin-left: 0.5rem;">
+                        <i class="fas fa-comment"></i> Comentar
+                    </button>
+                    ${!isOwner ? `
+                        <button class="like-btn" onclick="VV.cultural.showGiftPicker('${post.id}', '${post.author_id || post.userId}')" style="margin-left: 0.5rem; background: rgba(251,191,36,0.15); color: #f59e0b;">
+                            <i class="fas fa-gift"></i> Regalar
+                        </button>
+                    ` : ''}
                     ${isOwner ? `
                         <div style="display: flex; gap: 0.5rem; margin-left: auto;">
                             <button class="btn-edit" onclick="VV.cultural.showForm('${post.id}')" title="Editar">
@@ -234,6 +242,9 @@ VV.cultural = {
                         </button>
                     ` : ''}
                 </div>
+                <div id="cultural-comments-${post.id}" style="display:none; margin-top: 1rem;"></div>
+                <div id="cultural-gifts-${post.id}" style="margin-top: 0.5rem;"></div>
+
             </div>
         `;
         }).join('');
@@ -385,7 +396,211 @@ VV.cultural = {
                     return;
                 }
             }
-            
+                // ========== SISTEMA DE COMENTARIOS ==========
+
+    COMENTARIOS: {
+        felicitaciones: ['¡Felicitaciones!', '¡Qué logro!', '¡Orgullo del barrio!', '¡Te lo merecés!'],
+        celebra: ['¡A festejar!', '¡Baila con todos!', '¡Que la pasaste lindo!', '¡A celebrar!'],
+        emocional: ['Me emocionaste', 'Se siente de verdad', 'Tiene alma', 'Directo al corazón'],
+        reconocimiento: ['Felicitaciones vecino!', 'El barrio te aplaude', 'Seguí así', 'Orgullo del barrio'],
+        especial: ['Candidato al destacado', 'Esto merece un regalo', 'No paro de verlo', 'Lo compartí con todos']
+    },
+
+    categoryEmoji: function(category) {
+        const emojis = { felicitaciones: '👏', celebra: '🎉', emocional: '❤️', reconocimiento: '🏆', especial: '🌟' };
+        return emojis[category] || '💬';
+    },
+
+    showComments: async function(postId) {
+        const section = document.getElementById('cultural-comments-' + postId);
+        if (!section) return;
+
+        if (section.style.display === 'block') {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+        section.innerHTML = '<p style="color: var(--gray-500);">Cargando comentarios...</p>';
+
+        try {
+            const { data: comments, error } = await supabase
+                .from('cultural_comments')
+                .select('*')
+                .eq('post_id', postId)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            const user = VV_ROLES.getCurrentUser();
+            let html = '<div style="border-top: 1px solid var(--gray-200); padding-top: 0.75rem;">';
+
+            if (comments && comments.length > 0) {
+                html += comments.map(c => `
+                    <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
+                        <span style="font-size:1.1rem;">${this.categoryEmoji(c.category)}</span>
+                        <span style="font-size:0.85rem;color:var(--gray-700);">${c.comment_text}</span>
+                        <span style="font-size:0.7rem;color:var(--gray-400);margin-left:auto;">${c.user_name || ''}</span>
+                    </div>
+                `).join('');
+            } else {
+                html += '<p style="color: var(--gray-500); font-size: 0.85rem;">Sin comentarios aún</p>';
+            }
+
+            if (user) {
+                html += '<div style="margin-top: 0.75rem;">';
+                html += '<p style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.4rem;">Elegí un comentario:</p>';
+                for (const [cat, textos] of Object.entries(this.COMENTARIOS)) {
+                    html += `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.3rem;">`;
+                    html += `<span style="font-size:0.75rem;color:var(--gray-500);min-width:90px;">${this.categoryEmoji(cat)} ${cat}</span>`;
+                    textos.forEach(texto => {
+                        html += `<button onclick="VV.cultural.postComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:var(--gray-100);border:1px solid var(--gray-200);border-radius:20px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;color:var(--gray-700);">${texto}</button>`;
+                    });
+                    html += `</div>`;
+                }
+                html += '</div>';
+            }
+
+            html += '</div>';
+            section.innerHTML = html;
+
+        } catch (err) {
+            console.error('Error cargando comentarios:', err);
+            section.innerHTML = '<p style="color: var(--error-red); font-size: 0.85rem;">Error al cargar comentarios</p>';
+        }
+    },
+
+    postComment: async function(postId, category, text) {
+        const user = VV_ROLES.getCurrentUser();
+        if (!user) { alert('Iniciá sesión para comentar'); return; }
+
+        try {
+            const { data: existing } = await supabase
+                .from('cultural_comments')
+                .select('id')
+                .eq('post_id', postId)
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (existing) {
+                await supabase.from('cultural_comments')
+                    .update({ comment_text: text, category: category })
+                    .eq('id', existing.id);
+            } else {
+                await supabase.from('cultural_comments').insert([{
+                    post_id: postId,
+                    user_id: user.id,
+                    user_name: user.name || user.email || 'Anónimo',
+                    comment_text: text,
+                    category: category
+                }]);
+            }
+
+            this.showComments(postId);
+            section = document.getElementById('cultural-comments-' + postId);
+            if (section) section.style.display = 'block';
+
+        } catch (err) {
+            console.error('Error posteando comentario:', err);
+            alert('No se pudo enviar el comentario');
+        }
+    },
+
+    // ========== SISTEMA DE REGALOS ==========
+
+    showGiftPicker: async function(postId, toUserId) {
+        const user = VV_ROLES.getCurrentUser();
+        if (!user) { alert('Iniciá sesión para regalar'); return; }
+        if (user.id === toUserId) { alert('No podés regalarte a vos mismo 😄'); return; }
+        if (!window.VV_WALLET) { alert('Sistema de billetera no disponible'); return; }
+
+        const { balance } = await VV_WALLET.getBalance(user.id);
+        const items = await VV_WALLET.getShopItems('regalo');
+
+        const modal = document.createElement('div');
+        modal.id = 'cultural-gift-modal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:10000;';
+
+        modal.innerHTML = `
+            <div style="background:white;border-radius:16px;max-width:400px;width:90%;padding:1.25rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <h3 style="margin:0;color:var(--gray-800);">🎁 Enviar Regalo</h3>
+                    <div style="display:flex;align-items:center;gap:0.4rem;background:rgba(251,191,36,0.15);padding:0.4rem 0.8rem;border-radius:20px;">
+                        <span>🪙</span>
+                        <span style="font-weight:700;color:#f59e0b;">${balance}</span>
+                    </div>
+                </div>
+                <p style="color:var(--gray-500);font-size:0.8rem;margin-bottom:0.75rem;">Elegí un regalo:</p>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;">
+                    ${items.map(item => `
+                        <div onclick="VV.cultural.sendGift('${postId}', '${toUserId}', '${item.code}', '${item.nombre}', ${item.precio_monedas})"
+                             style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:0.75rem;text-align:center;cursor:pointer;transition:all 0.2s;"
+                             onmouseover="this.style.background='rgba(251,191,36,0.1)';this.style.borderColor='rgba(251,191,36,0.3)'"
+                             onmouseout="this.style.background='var(--gray-50)';this.style.borderColor='var(--gray-200)'">
+                            <div style="font-size:2rem;margin-bottom:0.25rem;">${item.icono}</div>
+                            <p style="margin:0;font-size:0.7rem;color:var(--gray-700);">${item.nombre}</p>
+                            <p style="margin:0.2rem 0 0;font-size:0.8rem;color:#f59e0b;font-weight:700;">🪙 ${item.precio_monedas}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <button onclick="document.getElementById('cultural-gift-modal').remove()" style="margin-top:1rem;width:100%;padding:0.6rem;background:var(--gray-100);border:none;border-radius:8px;cursor:pointer;color:var(--gray-600);">Cerrar</button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    },
+
+    sendGift: async function(postId, toUserId, itemCode, itemName, price) {
+        const result = await VV_WALLET.sendGift(toUserId, itemCode, postId, 'cultural');
+
+        if (result.success) {
+            document.getElementById('cultural-gift-modal').remove();
+            alert('🎉 ¡' + itemName + ' enviado!');
+            this.loadGifts(postId);
+        } else {
+            alert('❌ ' + result.error);
+        }
+    },
+
+    loadGifts: async function(postId) {
+        const section = document.getElementById('cultural-gifts-' + postId);
+        if (!section) return;
+
+        try {
+            const { data: gifts, error } = await supabase
+                .from('regalos_enviados')
+                .select('*')
+                .eq('publicacion_id', postId)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (error || !gifts || gifts.length === 0) {
+                section.innerHTML = '';
+                return;
+            }
+
+            const codes = [...new Set(gifts.map(g => g.tipo_regalo))];
+            const { data: items } = await supabase.from('catalogo_regalos').select('*').in('code', codes);
+            const itemMap = {};
+            (items || []).forEach(i => itemMap[i.code] = i);
+
+            section.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;padding-top:0.5rem;">' +
+                gifts.map(g => {
+                    const item = itemMap[g.tipo_regalo] || {};
+                    return '<span style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:20px;padding:0.2rem 0.6rem;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;">' +
+                        '<span style="font-size:1rem;">' + (item.icono || '🎁') + '</span>' +
+                        '<span style="color:#f59e0b;font-weight:600;">' + (item.nombre || g.tipo_regalo) + '</span>' +
+                        '</span>';
+                }).join('') +
+                '</div>';
+
+        } catch (err) {
+            console.error('Error cargando regalos:', err);
+        }
+    },
+
+
             // Comprimir imagen antes de convertir a base64
             if (formData.mediaType === 'image') {
                 VV.cultural.compressImage(file, 1080, 0.7, (compressedDataUrl) => {
