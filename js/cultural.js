@@ -871,7 +871,7 @@ VV.cultural = {
             const { data: gifts, error } = await supabase
                 .from('regalos_enviados')
                 .select('*')
-                .function(postId)
+                .eq('publicacion_id', postId)
                 .order('created_at', { ascending: false })
                 .limit(10);
 
