@@ -2113,7 +2113,7 @@ VV.admin.loadAvatarsManagement = async function () {
     `;
 };
 
-VV.admin.unlockAvatarForUser = function () {
+VV.admin.unlockAvatarForUser = async function () {
     const userId = document.getElementById('unlock-user-select').value;
     const avatarId = document.getElementById('unlock-avatar-select').value;
 
@@ -2122,7 +2122,7 @@ VV.admin.unlockAvatarForUser = function () {
         return;
     }
 
-    const user = VV.auth.getAllUsers().find(u => u.id === userId);
+    const user = VV.data.allUsers.find(u => u.id === userId);
     const avatar = VV.avatars.defaultAvatars.find(a => a.id === avatarId);
 
     if (!user || !avatar) {
@@ -2130,13 +2130,15 @@ VV.admin.unlockAvatarForUser = function () {
         return;
     }
 
-    if (VV.avatars.unlockAvatar(userId, avatarId)) {
+    const result = await VV.avatars.unlockAvatar(userId, avatarId);
+    if (result) {
         VV.utils.showSuccess(`Avatar "${avatar.name}" desbloqueado para ${user.name}`);
         VV.admin.loadAvatarsManagement();
     } else {
         alert('El usuario ya tiene este avatar desbloqueado');
     }
 };
+
 
 VV.admin.showUserAvatars = async function (userId) {
     // Obtener usuario desde Supabase

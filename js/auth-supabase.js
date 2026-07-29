@@ -527,7 +527,9 @@ VV.auth = {
         // Mostrar app
         VV.utils.showScreen('main-app');
         VV.utils.showSection('dashboard', false); // false = no agregar al historial (es la primera vez)
-        
+                // Mostrar folleto flotante
+        setTimeout(() => abrirFolletoVisual(), 500);
+
         // Inicializar navegación con historial
         VV.utils.initNavigation();
         
