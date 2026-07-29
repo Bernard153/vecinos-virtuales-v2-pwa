@@ -658,7 +658,7 @@ VV.cultural = {
         }
     },
 
-        postComment: async function(postId, category, text) {
+            postComment: async function(postId, category, text) {
         const user = VV_ROLES.getCurrentUser();
         if (!user) { alert('Iniciá sesión para comentar'); return; }
 
@@ -684,18 +684,47 @@ VV.cultural = {
                 }]);
             }
 
-            // Forzar recarga sin toggle
+            // Recargar comentarios manteniendo visible
             const section = document.getElementById('cultural-comments-' + postId);
             if (section) {
                 section.style.display = 'block';
-                // Recargar comentarios forzando el estado visible
-                await this.reloadComments(postId);
-		// Cerrar la cortina después de un segundo
-            setTimeout(() => {
-                const sec = document.getElementById('cultural-comments-' + postId);
-                if (sec) sec.style.display = 'none';
-            }, 1500);
 
+                const { data: comments, error: cError } = await supabase
+                    .from('cultural_comments')
+                    .select('*')
+                    .eq('post_id', postId)
+                    .order('created_at', { ascending: false });
+
+                if (cError) throw cError;
+
+                let html = '<div style="border-top: 1px solid var(--gray-200); padding-top: 0.75rem;">';
+
+                if (comments && comments.length > 0) {
+                    html += comments.map(c => `
+                        <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
+                            <span style="font-size:1.1rem;">${VV.cultural.categoryEmoji(c.category)}</span>
+                            <span style="font-size:0.85rem;color:var(--gray-700);">${c.comment_text}</span>
+                            <span style="font-size:0.7rem;color:var(--gray-400);margin-left:auto;">${c.user_name || ''}</span>
+                        </div>
+                    `).join('');
+                }
+
+                if (user) {
+                    html += '<div style="margin-top: 0.75rem;">';
+                    html += '<p style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.4rem;">Elegí otro comentario:</p>';
+                    for (const [cat, textos] of Object.entries(VV.cultural.COMENTARIOS)) {
+                        html += `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.3rem;">`;
+                        html += `<span style="font-size:0.75rem;color:var(--gray-500);min-width:90px;">${VV.cultural.categoryEmoji(cat)} ${cat}</span>`;
+                        textos.forEach(texto => {
+                            html += `<button onclick="VV.cultural.postComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:var(--gray-100);border:1px solid var(--gray-200);border-radius:20px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;color:var(--gray-700);">${texto}</button>`;
+                        });
+                        html += `</div>`;
+                    }
+                    html += '</div>';
+                }
+
+                html += '</div>';
+                section.innerHTML = html;
             }
 
         } catch (err) {
