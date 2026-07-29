@@ -248,6 +248,11 @@ VV.cultural = {
             </div>
         `;
         }).join('');
+	        // Cargar regalos de cada post
+        neighborhoodPosts.forEach(post => {
+            this.loadGifts(post.id);
+        });
+
     },
     
     // Mostrar formulario
@@ -685,6 +690,12 @@ VV.cultural = {
                 section.style.display = 'block';
                 // Recargar comentarios forzando el estado visible
                 await this.reloadComments(postId);
+		// Cerrar la cortina después de un segundo
+            setTimeout(() => {
+                const sec = document.getElementById('cultural-comments-' + postId);
+                if (sec) sec.style.display = 'none';
+            }, 1500);
+
             }
 
         } catch (err) {
