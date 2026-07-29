@@ -1,4 +1,4 @@
-/**
+﻿/**
  * INICIALIZACIÓN DE SEGURIDAD (Añadir esto arriba de todo)
  */
 window.VV = window.VV || {};
@@ -27,9 +27,22 @@ const formSolicitud = document.getElementById('form-solicitud-vecino');
  */
 async function abrirFolletoVisual() {
     if (!folletoEl) return console.error("No se encontró el contenedor del folleto.");
+    
+    // Crear backdrop si no existe
+    let backdrop = document.getElementById('folleto-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'folleto-backdrop';
+        backdrop.className = 'folleto-backdrop';
+        document.body.appendChild(backdrop);
+        backdrop.onclick = minimizarFolleto;
+    }
+    
+    folletoEl.classList.remove('hidden');
     folletoEl.classList.add('active');
-    folletoEl.style.display = 'block'; // Asegura visibilidad
-    document.body.style.overflow = 'hidden'; 
+    folletoEl.style.display = 'flex';
+    backdrop.classList.add('active');
+    document.body.style.overflow = 'hidden';
     gridFolleto.innerHTML = '<p style="color:#666; padding:20px;">Cargando folleto...</p>';
     await cargarContenidoFolleto();
 }
@@ -37,10 +50,14 @@ async function abrirFolletoVisual() {
 function minimizarFolleto() {
     if (folletoEl) {
         folletoEl.classList.remove('active');
+        folletoEl.classList.add('hidden');
         folletoEl.style.display = 'none';
     }
+    const backdrop = document.getElementById('folleto-backdrop');
+    if (backdrop) backdrop.classList.remove('active');
     document.body.style.overflow = 'auto';
 }
+
 
 async function cargarContenidoFolleto() {
     try {

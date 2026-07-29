@@ -1,4 +1,4 @@
-// ========== MÓDULO DE AVATARES ==========
+﻿// ========== MÓDULO DE AVATARES ==========
 
 VV.avatars = {
     // Avatares predefinidos
@@ -158,7 +158,7 @@ VV.avatars = {
     // Mostrar perfil del usuario
     showProfile() {
         const avatar = VV.avatars.getUserAvatar(VV.data.user.id);
-        const unlockedAvatars = VV.data.user.unlockedAvatars || [];
+        const unlockedAvatars = VV.data.user.unlocked_avatars || [];
         const totalAvatars = VV.avatars.defaultAvatars.length;
         const availableAvatars = VV.avatars.defaultAvatars.filter(a => 
             !a.premium || unlockedAvatars.includes(a.id)
@@ -259,7 +259,7 @@ VV.avatars = {
     
     // Mostrar galería de avatares
     showAvatarGallery() {
-        const unlockedAvatars = VV.data.user.unlockedAvatars || [];
+        const unlockedAvatars = VV.data.user.unlocked_avatars || [];
         const currentAvatar = VV.data.user.avatar || 'basic-1';
         
         // Agrupar por categoría
