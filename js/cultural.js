@@ -221,7 +221,9 @@ VV.cultural = {
                     </button>
                     <button class="like-btn" onclick="VV.cultural.showComments('${post.id}')" style="margin-left: 0.5rem;">
                         <i class="fas fa-comment"></i> Comentar
+                        <span id="comment-count-${post.id}" style="background: var(--gray-200); border-radius: 10px; padding: 0.1rem 0.4rem; font-size: 0.7rem; margin-left: 0.2rem; display: none;"></span>
                     </button>
+
                     ${!isOwner ? `
                         <button class="like-btn" onclick="VV.cultural.showGiftPicker('${post.id}', '${post.author_id || post.userId}')" style="margin-left: 0.5rem; background: rgba(251,191,36,0.15); color: #f59e0b;">
                             <i class="fas fa-gift"></i> Regalar
@@ -251,6 +253,10 @@ VV.cultural = {
 	        // Cargar regalos de cada post
         neighborhoodPosts.forEach(post => {
             this.loadGifts(post.id);
+        });
+        // Cargar contador de comentarios de cada post
+        neighborhoodPosts.forEach(post => {
+            this.loadCommentCount(post.id);
         });
 
     },
@@ -599,6 +605,25 @@ VV.cultural = {
         return emojis[category] || '💬';
     },
 
+    loadCommentCount: async function(postId) {
+        try {
+            const { data, error } = await supabase
+                .from('cultural_comments')
+                .select('id')
+                .eq('post_id', postId);
+
+            if (error || !data) return;
+
+            const badge = document.getElementById('comment-count-' + postId);
+            if (badge && data.length > 0) {
+                badge.textContent = data.length;
+                badge.style.display = 'inline';
+            }
+        } catch (err) {
+            console.error('Error cargando contador de comentarios:', err);
+        }
+    },
+
     showComments: async function(postId) {
         const section = document.getElementById('cultural-comments-' + postId);
         if (!section) return;
@@ -658,7 +683,7 @@ VV.cultural = {
         }
     },
 
-            postComment: async function(postId, category, text) {
+                postComment: async function(postId, category, text) {
         const user = VV_ROLES.getCurrentUser();
         if (!user) { alert('Iniciá sesión para comentar'); return; }
 
@@ -684,48 +709,11 @@ VV.cultural = {
                 }]);
             }
 
-            // Recargar comentarios manteniendo visible
-            const section = document.getElementById('cultural-comments-' + postId);
-            if (section) {
-                section.style.display = 'block';
+            // Actualizar contador
+            this.loadCommentCount(postId);
 
-                const { data: comments, error: cError } = await supabase
-                    .from('cultural_comments')
-                    .select('*')
-                    .eq('post_id', postId)
-                    .order('created_at', { ascending: false });
-
-                if (cError) throw cError;
-
-                let html = '<div style="border-top: 1px solid var(--gray-200); padding-top: 0.75rem;">';
-
-                if (comments && comments.length > 0) {
-                    html += comments.map(c => `
-                        <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
-                            <span style="font-size:1.1rem;">${VV.cultural.categoryEmoji(c.category)}</span>
-                            <span style="font-size:0.85rem;color:var(--gray-700);">${c.comment_text}</span>
-                            <span style="font-size:0.7rem;color:var(--gray-400);margin-left:auto;">${c.user_name || ''}</span>
-                        </div>
-                    `).join('');
-                }
-
-                if (user) {
-                    html += '<div style="margin-top: 0.75rem;">';
-                    html += '<p style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.4rem;">Elegí otro comentario:</p>';
-                    for (const [cat, textos] of Object.entries(VV.cultural.COMENTARIOS)) {
-                        html += `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.3rem;">`;
-                        html += `<span style="font-size:0.75rem;color:var(--gray-500);min-width:90px;">${VV.cultural.categoryEmoji(cat)} ${cat}</span>`;
-                        textos.forEach(texto => {
-                            html += `<button onclick="VV.cultural.postComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:var(--gray-100);border:1px solid var(--gray-200);border-radius:20px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;color:var(--gray-700);">${texto}</button>`;
-                        });
-                        html += `</div>`;
-                    }
-                    html += '</div>';
-                }
-
-                html += '</div>';
-                section.innerHTML = html;
-            }
+            // Recargar comentarios en la sección visible
+            await this.reloadComments(postId);
 
         } catch (err) {
             console.error('Error posteando comentario:', err);
@@ -733,7 +721,7 @@ VV.cultural = {
         }
     },
 
-    reloadComments: async function(postId) {
+        reloadComments: async function(postId) {
         const section = document.getElementById('cultural-comments-' + postId);
         if (!section) return;
 
@@ -752,7 +740,7 @@ VV.cultural = {
             if (comments && comments.length > 0) {
                 html += comments.map(c => `
                     <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
-                        <span style="font-size:1.1rem;">${this.categoryEmoji(c.category)}</span>
+                        <span style="font-size:1.1rem;">${VV.cultural.categoryEmoji(c.category)}</span>
                         <span style="font-size:0.85rem;color:var(--gray-700);">${c.comment_text}</span>
                         <span style="font-size:0.7rem;color:var(--gray-400);margin-left:auto;">${c.user_name || ''}</span>
                     </div>
@@ -763,10 +751,10 @@ VV.cultural = {
 
             if (user) {
                 html += '<div style="margin-top: 0.75rem;">';
-                html += '<p style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.4rem;">Elegí un comentario:</p>';
-                for (const [cat, textos] of Object.entries(this.COMENTARIOS)) {
+                html += '<p style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.4rem;">Elegí otro comentario:</p>';
+                for (const [cat, textos] of Object.entries(VV.cultural.COMENTARIOS)) {
                     html += `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.3rem;">`;
-                    html += `<span style="font-size:0.75rem;color:var(--gray-500);min-width:90px;">${this.categoryEmoji(cat)} ${cat}</span>`;
+                    html += `<span style="font-size:0.75rem;color:var(--gray-500);min-width:90px;">${VV.cultural.categoryEmoji(cat)} ${cat}</span>`;
                     textos.forEach(texto => {
                         html += `<button onclick="VV.cultural.postComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:var(--gray-100);border:1px solid var(--gray-200);border-radius:20px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;color:var(--gray-700);">${texto}</button>`;
                     });
