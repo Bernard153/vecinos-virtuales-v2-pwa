@@ -1016,8 +1016,8 @@
 
 .btn-solicitar-plus {
     position: fixed;
-    bottom: 8vh;
-    right: 8vw;
+    bottom: 2rem;
+    right: 2rem;
     width: 56px;
     height: 56px;
     border-radius: 50%;

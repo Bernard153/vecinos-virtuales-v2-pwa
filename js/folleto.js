@@ -36,6 +36,10 @@ async function abrirFolletoVisual() {
         backdrop.className = 'folleto-backdrop';
         document.body.appendChild(backdrop);
         backdrop.onclick = minimizarFolleto;
+	    // Ocultar botón flotante
+    	const btnPlus = document.getElementById('btn-mostrar-form');
+    	if (btnPlus) btnPlus.style.display = 'none';
+
     }
     
     folletoEl.classList.remove('hidden');
@@ -45,6 +49,10 @@ async function abrirFolletoVisual() {
     document.body.style.overflow = 'hidden';
     gridFolleto.innerHTML = '<p style="color:#666; padding:20px;">Cargando folleto...</p>';
     await cargarContenidoFolleto();
+        // Mostrar botón flotante
+    const btnPlus = document.getElementById('btn-mostrar-form');
+    if (btnPlus) btnPlus.style.display = 'block';
+
 }
 
 function minimizarFolleto() {
