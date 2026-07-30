@@ -36,10 +36,6 @@ async function abrirFolletoVisual() {
         backdrop.className = 'folleto-backdrop';
         document.body.appendChild(backdrop);
         backdrop.onclick = minimizarFolleto;
-	    // Ocultar botón flotante
-    	const btnPlus = document.getElementById('btn-mostrar-form');
-    	if (btnPlus) btnPlus.style.display = 'none';
-
     }
     
     folletoEl.classList.remove('hidden');
@@ -49,13 +45,12 @@ async function abrirFolletoVisual() {
     document.body.style.overflow = 'hidden';
     gridFolleto.innerHTML = '<p style="color:#666; padding:20px;">Cargando folleto...</p>';
     await cargarContenidoFolleto();
-        // Mostrar botón flotante
+    
+    // Mostrar botones flotantes
     const btnPlus = document.getElementById('btn-mostrar-form');
     if (btnPlus) btnPlus.style.display = 'block';
-        // Mostrar botón cerrar
     const btnClose = document.getElementById('btn-minimizar');
     if (btnClose) btnClose.style.display = 'flex';
-
 }
 
 function minimizarFolleto() {
@@ -67,12 +62,13 @@ function minimizarFolleto() {
     const backdrop = document.getElementById('folleto-backdrop');
     if (backdrop) backdrop.classList.remove('active');
     document.body.style.overflow = 'auto';
-        // Ocultar botón cerrar
+    
+    // Ocultar botones flotantes
+    const btnPlus = document.getElementById('btn-mostrar-form');
+    if (btnPlus) btnPlus.style.display = 'none';
     const btnClose = document.getElementById('btn-minimizar');
     if (btnClose) btnClose.style.display = 'none';
-
 }
-
 
 async function cargarContenidoFolleto() {
     try {
@@ -231,5 +227,7 @@ window.cargarSolicitudesPendientes = cargarSolicitudesPendientes;
 window.gestionarSolicitud = gestionarSolicitud;
 
 const btnMinimizarNew = document.getElementById('btn-minimizar');
-if (btnMinimizarNew) btnMinimizarNew.addEventListener('click', minimizarFolleto);
+const btnMinimizarFlotante = document.getElementById('btn-minimizar');
+if (btnMinimizarFlotante) btnMinimizarFlotante.addEventListener('click', minimizarFolleto);
+
 
