@@ -52,6 +52,9 @@ async function abrirFolletoVisual() {
         // Mostrar botón flotante
     const btnPlus = document.getElementById('btn-mostrar-form');
     if (btnPlus) btnPlus.style.display = 'block';
+        // Mostrar botón cerrar
+    const btnClose = document.getElementById('btn-minimizar');
+    if (btnClose) btnClose.style.display = 'flex';
 
 }
 
@@ -64,6 +67,10 @@ function minimizarFolleto() {
     const backdrop = document.getElementById('folleto-backdrop');
     if (backdrop) backdrop.classList.remove('active');
     document.body.style.overflow = 'auto';
+        // Ocultar botón cerrar
+    const btnClose = document.getElementById('btn-minimizar');
+    if (btnClose) btnClose.style.display = 'none';
+
 }
 
 
@@ -223,4 +230,6 @@ window.minimizarFolleto = minimizarFolleto;
 window.cargarSolicitudesPendientes = cargarSolicitudesPendientes;
 window.gestionarSolicitud = gestionarSolicitud;
 
-if (btnMinimizar) btnMinimizar.addEventListener('click', minimizarFolleto);
+const btnMinimizarNew = document.getElementById('btn-minimizar');
+if (btnMinimizarNew) btnMinimizarNew.addEventListener('click', minimizarFolleto);
+
