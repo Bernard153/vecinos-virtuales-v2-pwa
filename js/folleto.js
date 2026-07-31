@@ -114,11 +114,21 @@ async function cargarContenidoFolleto() {
  */
 // Reforzado para PC y Móvil
 document.addEventListener('click', function(e) {
-    if (e.target && e.target.id === 'btn-mostrar-form') {
-        if (seccionForm) seccionForm.classList.toggle('active');
+    if (e.target && (e.target.id === 'btn-mostrar-form' || e.target.closest('#btn-mostrar-form'))) {
+        if (seccionForm) {
+            seccionForm.classList.toggle('active');
+            if (seccionForm.classList.contains('active')) {
+                seccionForm.style.display = 'block';
+            } else {
+                seccionForm.style.display = 'none';
+            }
+        }
     }
-    if (e.target && e.target.id === 'btn-cancelar-sol') {
-        if (seccionForm) seccionForm.classList.remove('active');
+    if (e.target && (e.target.id === 'btn-cancelar-sol' || e.target.closest('#btn-cancelar-sol'))) {
+        if (seccionForm) {
+            seccionForm.classList.remove('active');
+            seccionForm.style.display = 'none';
+        }
     }
 });
 
