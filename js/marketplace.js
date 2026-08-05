@@ -97,6 +97,7 @@ VV.marketplace = {
 
             return `
             <div class="product-card">
+		${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
                 <div class="card-header">
                     <h3>${p.product}</h3>
                     ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
@@ -360,6 +361,15 @@ VV.marketplace = {
                         <label>Teléfono *</label>
                         <input type="tel" id="product-contact" value="${product?.contact || VV.data.user?.phone || ''}" required>
                     </div>
+		    <div class="form-group">
+                        <label>Imagen del producto</label>
+                        <input type="file" id="product-image" accept="image/*">
+                        <p style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;">
+                            <i class="fas fa-info-circle"></i> Subí una foto del producto (opcional)
+                        </p>
+                        ${product?.image_url ? `<div style="margin-top:0.5rem;"><img src="${product.image_url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--gray-200);"></div><p style="font-size:0.8rem;color:var(--success-green);margin-top:0.25rem;"><i class="fas fa-check"></i> Imagen actual cargada</p>` : ''}
+                    </div>
+
                     <div class="form-group">
                         <label>Descripción</label>
                         <textarea id="product-description" rows="3">${product?.description || ''}</textarea>
@@ -404,9 +414,9 @@ VV.marketplace = {
         if (overlay) overlay.classList.remove('active');
     },
 
-    // Guardar producto (MIGRADO A SUPABASE)
+        // Guardar producto (MIGRADO A SUPABASE)
     async saveProduct(existingProduct) {
-         const formData = {
+        const formData = {
             product: document.getElementById('product-name').value.trim(),
             category: document.getElementById('product-category').value,
             business: document.getElementById('product-business').value.trim(),
@@ -426,7 +436,6 @@ VV.marketplace = {
 
         try {
             // Guardar nombre del negocio en el perfil del usuario (solo la primera vez)
-                        // Guardar nombre y dirección del negocio en el perfil del usuario (solo la primera vez)
             const userUpdate = {};
             if (!VV.data.user.business_name) {
                 userUpdate.business_name = formData.business;
@@ -445,6 +454,33 @@ VV.marketplace = {
                 VV.data.user.business_address = userUpdate.business_address || VV.data.user.business_address;
             }
 
+                        // Subir imagen si se seleccionó una
+            const imageFile = document.getElementById('product-image')?.files[0];
+            let imageUrl = existingProduct?.image_url || null;
+
+            if (imageFile) {
+                // Validar tamaño (máx 2MB)
+                if (imageFile.size > 2 * 1024 * 1024) {
+                    alert('La imagen es demasiado grande. Máximo 2MB.');
+                    return;
+                }
+
+                const fileExt = imageFile.name.split('.').pop();
+                const fileName = `products/${VV.data.user.id}_${Date.now()}.${fileExt}`;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('product-photos')
+                    .upload(fileName, imageFile);
+
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = supabase.storage
+                    .from('product-photos')
+                    .getPublicUrl(fileName);
+
+                imageUrl = urlData.publicUrl;
+            }
+
             if (existingProduct) {
                 // Actualizar producto existente
                 const { error } = await supabase
@@ -459,15 +495,15 @@ VV.marketplace = {
                         quality: formData.quality,
                         contact: formData.contact,
                         description: formData.description,
-                        featured: formData.featured
+                        featured: formData.featured,
+                        image_url: imageUrl
                     })
                     .eq('id', existingProduct.id);
 
                 if (error) throw error;
 
-                // Actualizar en memoria
                 const index = VV.data.products.findIndex(p => p.id === existingProduct.id);
-                VV.data.products[index] = { ...existingProduct, ...formData };
+                VV.data.products[index] = { ...existingProduct, ...formData, image_url: imageUrl };
             } else {
                 // Crear nuevo producto
                 const { data, error } = await supabase
@@ -486,22 +522,21 @@ VV.marketplace = {
                         quality: formData.quality,
                         contact: formData.contact,
                         description: formData.description,
-                        featured: formData.featured
+                        featured: formData.featured,
+                        image_url: imageUrl
                     })
                     .select()
                     .single();
 
-
                 if (error) throw error;
 
-                // Agregar a memoria
                 VV.data.products.push(data);
             }
 
             VV.marketplace.closeForm();
-            await VV.data.loadFromSupabase(); // Recargar datos
+            await VV.data.loadFromSupabase();
             VV.marketplace.load();
-            VV.marketplace.loadShopping(); // Actualizar vista de compras
+            VV.marketplace.loadShopping();
             VV.utils.showSuccess(existingProduct ? 'Producto actualizado' : 'Producto publicado');
 
         } catch (error) {
@@ -509,6 +544,7 @@ VV.marketplace = {
             alert('Error al guardar el producto: ' + error.message);
         }
     },
+
 
     // Eliminar producto (MIGRADO A SUPABASE)
     async deleteProduct(productId) {
@@ -1124,6 +1160,7 @@ VV.marketplace = {
     renderProductCard(p) {
         return `
                 <div class="product-card">
+		${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
                 <div class="card-header">
                     <h3>${p.product}</h3>
                     ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
