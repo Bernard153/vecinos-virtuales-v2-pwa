@@ -32,6 +32,7 @@ VV.marketplace = {
 
         container.innerHTML = myProducts.map(p => `
             <div class="product-card">
+		${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
                 <div class="card-header">
                     <h3>${p.product}</h3>
                     ${p.featured ? '<span class="badge featured">Destacado</span>' : ''}
@@ -218,6 +219,7 @@ VV.marketplace = {
 
         container.innerHTML = filtered.map(p => `
             <div class="product-card">
+		${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
                 <div class="card-header">
                     <h3>${p.product}</h3>
                     ${p.featured ? '<span class="badge featured">Destacado</span>' : ''}
