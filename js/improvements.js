@@ -1,4 +1,4 @@
-// ========== MÓDULO MEJORAS DEL BARRIO ==========
+﻿// ========== MÓDULO MEJORAS DEL BARRIO ==========
 
 VV.improvements = {
     galleryInterval: null,
@@ -118,6 +118,16 @@ VV.improvements = {
                     <span style="color: var(--gray-600);"><i class="fas fa-tag"></i> ${imp.category}</span>
                     ${VV.improvements.renderVoteButton(imp)}
                 </div>
+                ${(imp.author_id === VV.data.user.id) ? `
+                    <div class="card-actions" style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+                        <button class="btn-edit" onclick="VV.improvements.showForm('${imp.id}')" style="flex: 1;">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        <button class="btn-delete" onclick="VV.improvements.delete('${imp.id}')" style="flex: 1;">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                ` : ''}
                 ${(VV.utils.canModerate() && imp.status !== 'Completado') ? `
                     <button class="btn-primary" onclick="VV.improvements.markAsCompleted('${imp.id}')" style="width: 100%; margin-top: 0.5rem;">
                         <i class="fas fa-check"></i> Marcar como Realizada
@@ -125,6 +135,7 @@ VV.improvements = {
                 ` : ''}
             </div>
         `).join('');
+
         
         // Cargar galería de fotos
         VV.improvements.loadGallery(neighborhoodImprovements);
@@ -528,6 +539,40 @@ VV.improvements = {
         VV.improvements.load();
         VV.utils.showSuccess('Mejora marcada como realizada');
     },
+
+        // Eliminar mejora
+    async delete(improvementId) {
+        const imp = VV.data.improvements.find(i => i.id === improvementId);
+        if (!imp) return;
+        
+        const isOwner = imp.author_id === VV.data.user.id;
+        const canModerate = VV.utils.canModerate();
+        
+        if (!isOwner && !canModerate) {
+            alert('No tienes permisos para eliminar esta mejora');
+            return;
+        }
+        
+        if (!confirm('¿Eliminar esta mejora?')) return;
+        
+        try {
+            const { error } = await supabase
+                .from('improvements')
+                .delete()
+                .eq('id', improvementId);
+            
+            if (error) throw error;
+            
+            VV.data.improvements = VV.data.improvements.filter(i => i.id !== improvementId);
+            VV.improvements.load();
+            VV.utils.showSuccess('Mejora eliminada');
+            
+        } catch (error) {
+            console.error('Error eliminando mejora:', error);
+            alert('Error al eliminar la mejora: ' + error.message);
+        }
+    },
+
     
     // Ver foto en tamaño completo
     viewPhoto(photoUrl) {
