@@ -399,6 +399,34 @@ VV.marketplace = {
         `;
 
         overlay.classList.add('active');
+    // Comprimir imagen antes de subir
+    compressImage(file, maxWidth, quality) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(function(blob) {
+                        resolve(blob);
+                    }, 'image/jpeg', quality);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    },
+
 
         document.getElementById('product-form').onsubmit = (e) => {
             e.preventDefault();
@@ -456,23 +484,20 @@ VV.marketplace = {
                 VV.data.user.business_address = userUpdate.business_address || VV.data.user.business_address;
             }
 
-                        // Subir imagen si se seleccionó una
+                   // Subir imagen si se seleccionó una
             const imageFile = document.getElementById('product-image')?.files[0];
             let imageUrl = existingProduct?.image_url || null;
 
             if (imageFile) {
-                // Validar tamaño (máx 2MB)
-                if (imageFile.size > 2 * 1024 * 1024) {
-                    alert('La imagen es demasiado grande. Máximo 2MB.');
-                    return;
-                }
+                // Comprimir imagen automáticamente (máx 1080px, calidad 0.7)
+                const compressedBlob = await this.compressImage(imageFile, 1080, 0.7);
+                const compressedFile = new File([compressedBlob], 'product.jpg', { type: 'image/jpeg' });
 
-                const fileExt = imageFile.name.split('.').pop();
-                const fileName = `products/${VV.data.user.id}_${Date.now()}.${fileExt}`;
+                const fileName = `products/${VV.data.user.id}_${Date.now()}.jpg`;
 
                 const { error: uploadError } = await supabase.storage
                     .from('product-photos')
-                    .upload(fileName, imageFile);
+                    .upload(fileName, compressedFile);
 
                 if (uploadError) throw uploadError;
 
@@ -482,6 +507,7 @@ VV.marketplace = {
 
                 imageUrl = urlData.publicUrl;
             }
+
 
             if (existingProduct) {
                 // Actualizar producto existente

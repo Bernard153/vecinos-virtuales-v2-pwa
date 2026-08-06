@@ -108,6 +108,33 @@ async function cargarContenidoFolleto() {
         console.error("Error al cargar el folleto:", err.message);
     }
 }
+// Comprimir imagen antes de subir
+function compressImageFolleto(file, maxWidth, quality) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob(function(blob) {
+                    resolve(blob);
+                }, 'image/jpeg', quality);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
 
 /**
  * LOGICA DE USUARIO: ENVÍO DE SOLICITUD
@@ -145,14 +172,17 @@ if (formSolicitud) {
         const nombre = document.getElementById('sol-nombre').value;
 
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+                        // Comprimir imagen automáticamente
+            const compressedBlob = await compressImageFolleto(file, 1080, 0.7);
+            const compressedFile = new File([compressedBlob], 'solicitud.jpg', { type: 'image/jpeg' });
+            const fileName = `${Math.random()}.jpg`;
             const filePath = `solicitudes/${fileName}`;
 
-            let { error: uploadError } = await supabase.storage.from('folleto').upload(filePath, file);
+            let { error: uploadError } = await supabase.storage.from('folleto').upload(filePath, compressedFile);
             if (uploadError) throw uploadError;
 
             const { data: urlData } = supabase.storage.from('folleto').getPublicUrl(filePath);
+
 
             const { error: insertError } = await supabase.from('folleto_imagenes').insert([{
                 titulo: titulo,
