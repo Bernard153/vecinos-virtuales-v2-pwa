@@ -398,8 +398,24 @@ VV.marketplace = {
             </div>
         `;
 
-        overlay.classList.add('active');
+               overlay.classList.add('active');
+
+        document.getElementById('product-form').onsubmit = (e) => {
+            e.preventDefault();
+            VV.marketplace.saveProduct(product);
+        };
+
+        overlay.onclick = (e) => {
+            if (e.target === overlay) VV.marketplace.closeForm();
+        };
     },
+
+    // Cerrar formulario
+    closeForm() {
+        const overlay = document.getElementById('product-form-overlay');
+        if (overlay) overlay.classList.remove('active');
+    },
+
     // Comprimir imagen antes de subir
     compressImage(file, maxWidth, quality) {
         return new Promise((resolve) => {
@@ -426,23 +442,6 @@ VV.marketplace = {
             };
             reader.readAsDataURL(file);
         });
-    },
-
-
-        document.getElementById('product-form').onsubmit = (e) => {
-            e.preventDefault();
-            VV.marketplace.saveProduct(product);
-        };
-
-        overlay.onclick = (e) => {
-            if (e.target === overlay) VV.marketplace.closeForm();
-        };
-    },
-
-    // Cerrar formulario
-    closeForm() {
-        const overlay = document.getElementById('product-form-overlay');
-        if (overlay) overlay.classList.remove('active');
     },
 
         // Guardar producto (MIGRADO A SUPABASE)
