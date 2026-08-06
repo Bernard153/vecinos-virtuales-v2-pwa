@@ -1021,9 +1021,9 @@
 
 .btn-solicitar-plus {
     position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    padding: 0.75rem 1.25rem;
+    bottom: 5rem;
+    right: 1.5rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 50px;
     background: linear-gradient(135deg, #2563eb, #7c3aed);
     color: white;
@@ -1035,8 +1035,11 @@
     z-index: 10001;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.4rem;
+    white-space: nowrap;
 }
+
 
 
 /* Overlay de fondo semi-transparente */
