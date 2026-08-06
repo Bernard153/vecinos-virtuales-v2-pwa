@@ -407,30 +407,57 @@ VV.cultural = {
                     return;
                 }
             }
-                
-            // Comprimir imagen antes de convertir a base64
+
+            // Subir archivo a Supabase Storage (no base64)
             if (formData.mediaType === 'image') {
-                VV.cultural.compressImage(file, 1080, 0.7, (compressedDataUrl) => {
-                    formData.mediaUrl = compressedDataUrl;
-                    console.log('✅ Imagen comprimida, tamaño:', compressedDataUrl.length);
-                    VV.cultural.savePost(existing, formData);
+                VV.cultural.compressImage(file, 1080, 0.7, async (compressedDataUrl) => {
+                    try {
+                        const response = await fetch(compressedDataUrl);
+                        const blob = await response.blob();
+                        const fileName = `cultural/${VV.data.user.id}_${Date.now()}.jpg`;
+                        
+                        const { error: uploadError } = await supabase.storage
+                            .from('cultural')
+                            .upload(fileName, blob);
+                        
+                        if (uploadError) throw uploadError;
+                        
+                        const { data: urlData } = supabase.storage
+                            .from('cultural')
+                            .getPublicUrl(fileName);
+                        
+                        formData.mediaUrl = urlData.publicUrl;
+                        console.log('✅ Imagen subida a Storage');
+                        VV.cultural.savePost(existing, formData);
+                    } catch (err) {
+                        console.error('❌ Error subiendo imagen:', err);
+                        alert('Error al subir la imagen: ' + err.message);
+                    }
                 });
-            } else {
-                // Video: convertir a base64 sin compresión
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    formData.mediaUrl = e.target.result;
-                    console.log('✅ Video convertido a base64, tamaño:', e.target.result.length);
+            } else if (formData.mediaType === 'video') {
+                try {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `cultural/${VV.data.user.id}_${Date.now()}.${fileExt}`;
+                    
+                    const { error: uploadError } = await supabase.storage
+                        .from('cultural')
+                        .upload(fileName, file);
+                    
+                    if (uploadError) throw uploadError;
+                    
+                    const { data: urlData } = supabase.storage
+                        .from('cultural')
+                        .getPublicUrl(fileName);
+                    
+                    formData.mediaUrl = urlData.publicUrl;
+                    console.log('✅ Video subido a Storage');
                     VV.cultural.savePost(existing, formData);
-                };
-                reader.onerror = function(error) {
-                    console.error('❌ Error leyendo archivo:', error);
-                    alert('Error al procesar el archivo');
-                };
-                reader.readAsDataURL(file);
+                } catch (err) {
+                    console.error('❌ Error subiendo video:', err);
+                    alert('Error al subir el video: ' + err.message);
+                }
             }
         } else {
-
             // Si no hay archivo nuevo, mantener el existente
             if (existing && (existing.media_url || existing.mediaUrl)) {
                 formData.mediaUrl = existing.media_url || existing.mediaUrl;
@@ -446,18 +473,11 @@ VV.cultural = {
             title: formData.title,
             type: formData.type,
             mediaType: formData.mediaType,
-            hasMediaUrl: !!formData.mediaUrl,
-            mediaUrlLength: formData.mediaUrl?.length || 0
+            hasMediaUrl: !!formData.mediaUrl
         });
-        
-        // TEMPORAL: Verificar qué valores acepta la DB
-        console.warn('⚠️ TIPO ENVIADO:', formData.type);
-        console.warn('⚠️ Si falla, la DB solo acepta ciertos valores específicos');
         
         try {
             if (existing) {
-                // Actualizar post existente
-                console.log('📝 Actualizando post existente:', existing.id);
                 const { error } = await supabase
                     .from('cultural_posts')
                     .update({
@@ -473,10 +493,7 @@ VV.cultural = {
                 
                 const index = VV.data.culturalPosts.findIndex(p => p.id === existing.id);
                 VV.data.culturalPosts[index] = { ...existing, ...formData };
-                console.log('✅ Post actualizado');
             } else {
-                // Crear nuevo post
-                console.log('🆕 Creando nuevo post');
                 const { data, error } = await supabase
                     .from('cultural_posts')
                     .insert({
@@ -494,7 +511,6 @@ VV.cultural = {
                     .single();
                 
                 if (error) throw error;
-                console.log('✅ Post creado:', data);
                 VV.data.culturalPosts.push(data);
             }
             
