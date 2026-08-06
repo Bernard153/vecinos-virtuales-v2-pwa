@@ -399,6 +399,7 @@ VV.marketplace = {
         `;
 
         overlay.classList.add('active');
+    },
     // Comprimir imagen antes de subir
     compressImage(file, maxWidth, quality) {
         return new Promise((resolve) => {
