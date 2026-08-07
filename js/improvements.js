@@ -303,7 +303,8 @@ VV.improvements = {
     },
     
     // Guardar mejora
-    save(existing) {
+    async save(existing) {
+
         const formData = {
             title: document.getElementById('improvement-title').value.trim(),
             author_alias: document.getElementById('improvement-author-alias').value.trim(),
