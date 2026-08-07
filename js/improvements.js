@@ -320,19 +320,20 @@ VV.improvements = {
         // Manejar foto opcional
         const photoInput = document.getElementById('improvement-photo');
         if (photoInput.files && photoInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                formData.photoUrl = e.target.result;
-                VV.improvements.saveData(existing, formData);
-            };
-            reader.readAsDataURL(photoInput.files[0]);
+            try {
+                formData.photoUrl = await VV.improvements.uploadPhoto(photoInput.files[0]);
+            } catch (err) {
+                console.error('Error subiendo foto:', err);
+                alert('Error al subir la foto: ' + err.message);
+                return;
+            }
         } else {
             // Si no hay foto nueva, mantener la existente
             if (existing && existing.photoUrl) {
                 formData.photoUrl = existing.photoUrl;
             }
-            VV.improvements.saveData(existing, formData);
         }
+        VV.improvements.saveData(existing, formData);
     },
     
     // Guardar datos de mejora - MIGRADO A SUPABASE
@@ -390,7 +391,53 @@ VV.improvements = {
             alert('Error al guardar la mejora: ' + error.message);
         }
     },
-    
+        // Comprimir imagen antes de subir
+    compressImage(file, maxWidth, quality) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob(function(blob) {
+                        resolve(blob);
+                    }, 'image/jpeg', quality);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    },
+
+    // Subir foto a Supabase Storage
+    async uploadPhoto(file) {
+        const compressedBlob = await this.compressImage(file, 1080, 0.7);
+        const compressedFile = new File([compressedBlob], 'improvement.jpg', { type: 'image/jpeg' });
+        const fileName = `improvements/${VV.data.user.id}_${Date.now()}.jpg`;
+        
+        const { error: uploadError } = await supabase.storage
+            .from('improvements')
+            .upload(fileName, compressedFile);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage
+            .from('improvements')
+            .getPublicUrl(fileName);
+        
+        return urlData.publicUrl;
+    },
+
     // Renderizar botón de voto
     renderVoteButton(improvement) {
         const votedBy = improvement.voted_by || [];
@@ -498,46 +545,62 @@ VV.improvements = {
         
         overlay.classList.add('active');
         
-        document.getElementById('complete-form').onsubmit = (e) => {
+                document.getElementById('complete-form').onsubmit = async (e) => {
             e.preventDefault();
             
             const photoInput = document.getElementById('completed-photo');
             if (photoInput.files && photoInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    improvement.completedPhotoUrl = e.target.result;
-                    VV.improvements.completeImprovement(improvement);
-                };
-                reader.readAsDataURL(photoInput.files[0]);
-            } else {
-                VV.improvements.completeImprovement(improvement);
+                try {
+                    improvement.completedPhotoUrl = await VV.improvements.uploadPhoto(photoInput.files[0]);
+                } catch (err) {
+                    console.error('Error subiendo foto:', err);
+                    alert('Error al subir la foto: ' + err.message);
+                    return;
+                }
             }
+            VV.improvements.completeImprovement(improvement);
         };
+
         
         overlay.onclick = (e) => {
             if (e.target === overlay) overlay.classList.remove('active');
         };
     },
     
-    // Completar mejora
-    completeImprovement(improvement) {
-        improvement.status = 'Completado';
-        improvement.completedAt = new Date().toISOString();
-        improvement.completedBy = VV.data.user.name;
-        
-        // Guardar en localStorage
-        localStorage.setItem('vecinosVirtuales_improvements', JSON.stringify(VV.data.improvements));
-        
-        // Registrar acción de moderador
-        VV.utils.logModeratorAction('COMPLETAR_MEJORA', {
-            mejoraId: improvement.id,
-            mejoraTitulo: improvement.title,
-            motivo: 'Mejora realizada'
-        });
-        
-        document.getElementById('complete-improvement-overlay').classList.remove('active');
-        VV.improvements.load();
-        VV.utils.showSuccess('Mejora marcada como realizada');
+        // Completar mejora
+    async completeImprovement(improvement) {
+        try {
+            const { error } = await supabase
+                .from('improvements')
+                .update({
+                    status: 'Completado',
+                    completed_photo_url: improvement.completedPhotoUrl,
+                    completed_at: new Date().toISOString(),
+                    completed_by: VV.data.user.name
+                })
+                .eq('id', improvement.id);
+            
+            if (error) throw error;
+            
+            // Actualizar en memoria
+            improvement.status = 'Completado';
+            improvement.completedAt = new Date().toISOString();
+            improvement.completedBy = VV.data.user.name;
+            
+            VV.utils.logModeratorAction('COMPLETAR_MEJORA', {
+                mejoraId: improvement.id,
+                mejoraTitulo: improvement.title,
+                motivo: 'Mejora realizada'
+            });
+            
+            document.getElementById('complete-improvement-overlay').classList.remove('active');
+            VV.improvements.load();
+            VV.utils.showSuccess('Mejora marcada como realizada');
+            
+        } catch (error) {
+            console.error('Error completando mejora:', error);
+            alert('Error al completar la mejora: ' + error.message);
+        }
     },
 
         // Eliminar mejora
