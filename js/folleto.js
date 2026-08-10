@@ -53,10 +53,11 @@ async function abrirFolletoVisual() {
 }
 
 function minimizarFolleto() {
-    if (folletoEl) {
-        folletoEl.classList.remove('active');
-        folletoEl.classList.add('hidden');
-        folletoEl.style.display = 'none';
+    const folleto = document.getElementById('folleto-container');
+    if (folleto) {
+        folleto.classList.remove('active');
+        folleto.classList.add('hidden');
+        folleto.style.display = 'none';
     }
     const backdrop = document.getElementById('folleto-backdrop');
     if (backdrop) backdrop.classList.remove('active');
@@ -87,8 +88,9 @@ async function cargarContenidoFolleto() {
             return;
         }
 
-        const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
-        const isAdmin = user && user.role === 'admin';
+        const user = VV_ROLES ? VV_ROLES.getCurrentUser() : (VV.data && VV.data.user ? VV.data.user : null);
+        const isAdmin = user && (user.role === 'admin' || user.role === 'ADMIN');
+
 
         data.forEach(item => {
             const card = document.createElement('div');
@@ -125,10 +127,11 @@ async function cargarContenidoFolleto() {
                         <button onclick="folletoShowComments('${item.id}')" style="flex:1;background:#f1f5f9;border:none;border-radius:6px;padding:0.4rem;cursor:pointer;font-size:0.75rem;">
                             💬 Comentar
                         </button>
-                        ${user && item.user_id && user.id !== item.user_id ? `
-                            <button onclick="folletoShowGiftPicker('${item.id}', '${item.user_id}')" style="flex:1;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:6px;padding:0.4rem;cursor:pointer;font-size:0.75rem;">
+                        ${user && user.id !== item.user_id ? `
+                            <button onclick="folletoShowGiftPicker('${item.id}', '${item.user_id || item.nombre_vecino}')" style="flex:1;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:6px;padding:0.4rem;cursor:pointer;font-size:0.75rem;">
                             🎁 Regalar
                         </button>` : ''}
+
                     </div>
                     <div id="folleto-comments-${item.id}" style="display:none;margin-top:0.5rem;"></div>
                     <div id="folleto-gifts-${item.id}" style="margin-top:0.3rem;"></div>
@@ -539,9 +542,9 @@ if (formSolicitud) {
                 }
             }
             
-            // === RESTRICCIÓN: Máximo 2MB por imagen ===
-            if (file.size > 2 * 1024 * 1024) {
-                alert('La imagen es demasiado grande. Máximo 2MB.');
+                       // === RESTRICCIÓN: Máximo 10MB por imagen (se comprime automáticamente) ===
+            if (file.size > 10 * 1024 * 1024) {
+                alert('La imagen es demasiado grande. Máximo 10MB.');
                 return;
             }
 
@@ -629,15 +632,21 @@ async function cargarSolicitudesPendientes() {
 async function gestionarSolicitud(id, aprobar) {
     try {
         if (aprobar) {
+            const days = prompt('¿Cuántos días autorizar? (1-90):', '7');
+            if (!days || isNaN(days) || days < 1 || days > 90) {
+                if (days !== null) alert('Ingresa un número válido (1-90)');
+                return;
+            }
             const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + 7);
+            expiresAt.setDate(expiresAt.getDate() + parseInt(days));
             await supabase.from('folleto_imagenes').update({ 
                 aprobado: true,
                 expires_at: expiresAt.toISOString(),
                 last_renewed: new Date().toISOString()
             }).eq('id', id);
-            alert("Imagen aprobada. Visible por 7 días.");
+            alert("Imagen aprobada. Visible por " + days + " días.");
         } else {
+            if (!confirm('¿Rechazar y eliminar esta solicitud?')) return;
             await supabase.from('folleto_imagenes').delete().eq('id', id);
             alert("Solicitud rechazada.");
         }
@@ -646,5 +655,6 @@ async function gestionarSolicitud(id, aprobar) {
         alert("Error: " + error.message);
     }
 }
+
 
 console.log('✅ Módulo FOLLETO cargado');
