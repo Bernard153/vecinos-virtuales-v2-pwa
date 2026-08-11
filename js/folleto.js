@@ -168,53 +168,9 @@ async function folletoShowComments(postId) {
     }
     
     section.style.display = 'block';
-    section.innerHTML = '<p style="color:#94a3b8;">Cargando comentarios...</p>';
-    
-    try {
-        const { data: comments, error } = await supabase
-            .from('folleto_comments')
-            .select('*')
-            .eq('post_id', postId)
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-        
-        const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
-        let html = '<div style="border-top:1px solid #e2e8f0;padding-top:0.5rem;">';
-        
-        if (comments && comments.length > 0) {
-            html += comments.map(c => `
-                <div style="display:flex;align-items:center;gap:0.4rem;padding:0.3rem 0;border-bottom:1px solid #f1f5f9;">
-                    <span style="font-size:1rem;">${folletoCategoryEmoji(c.category)}</span>
-                    <span style="font-size:0.8rem;color:#475569;">${c.comment_text}</span>
-                    <span style="font-size:0.7rem;color:#94a3b8;margin-left:auto;">${c.user_name || ''}</span>
-                </div>
-            `).join('');
-        } else {
-            html += '<p style="color:#94a3b8;font-size:0.8rem;">Sin comentarios aún</p>';
-        }
-        
-        if (user) {
-            html += '<div style="margin-top:0.5rem;">';
-            html += '<p style="font-size:0.75rem;color:#64748b;margin-bottom:0.3rem;">Elegí un comentario:</p>';
-            for (const [cat, textos] of Object.entries(FOLLETO_COMENTARIOS)) {
-                html += `<div style="display:flex;flex-wrap:wrap;gap:0.25rem;margin-bottom:0.25rem;">`;
-                html += `<span style="font-size:0.7rem;color:#94a3b8;min-width:70px;">${folletoCategoryEmoji(cat)} ${cat}</span>`;
-                textos.forEach(texto => {
-                    html += `<button onclick="folletoPostComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:16px;padding:0.25rem 0.6rem;font-size:0.7rem;cursor:pointer;color:#475569;">${texto}</button>`;
-                });
-                html += `</div>`;
-            }
-            html += '</div>';
-        }
-        
-        html += '</div>';
-        section.innerHTML = html;
-    } catch (err) {
-        console.error('Error cargando comentarios:', err);
-        section.innerHTML = '<p style="color:#ef4444;font-size:0.8rem;">Error al cargar comentarios</p>';
-    }
+    await folletoReloadComments(postId);
 }
+
 
 async function folletoPostComment(postId, category, text) {
     const user = VV_ROLES ? VV_ROLES.getCurrentUser() : null;
@@ -277,18 +233,9 @@ async function folletoReloadComments(postId) {
             html += '<p style="color:#94a3b8;font-size:0.8rem;">Sin comentarios aún</p>';
         }
         
+        // Solo mostrar un botón para agregar otro comentario
         if (user) {
-            html += '<div style="margin-top:0.5rem;">';
-            html += '<p style="font-size:0.75rem;color:#64748b;margin-bottom:0.3rem;">Elegí otro comentario:</p>';
-            for (const [cat, textos] of Object.entries(FOLLETO_COMENTARIOS)) {
-                html += `<div style="display:flex;flex-wrap:wrap;gap:0.25rem;margin-bottom:0.25rem;">`;
-                html += `<span style="font-size:0.7rem;color:#94a3b8;min-width:70px;">${folletoCategoryEmoji(cat)} ${cat}</span>`;
-                textos.forEach(texto => {
-                    html += `<button onclick="folletoPostComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:16px;padding:0.25rem 0.6rem;font-size:0.7rem;cursor:pointer;color:#475569;">${texto}</button>`;
-                });
-                html += `</div>`;
-            }
-            html += '</div>';
+            html += `<button onclick="folletoShowCommentPicker('${postId}')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:0.4rem 0.8rem;font-size:0.75rem;cursor:pointer;color:#475569;margin-top:0.5rem;">➕ Agregar comentario</button>`;
         }
         
         html += '</div>';
@@ -296,6 +243,26 @@ async function folletoReloadComments(postId) {
     } catch (err) {
         console.error('Error recargando comentarios:', err);
     }
+}
+
+async function folletoShowCommentPicker(postId) {
+    const section = document.getElementById('folleto-comments-' + postId);
+    if (!section) return;
+    
+    let html = '<div style="border-top:1px solid #e2e8f0;padding-top:0.5rem;">';
+    
+    for (const [cat, textos] of Object.entries(FOLLETO_COMENTARIOS)) {
+        html += `<div style="display:flex;flex-wrap:wrap;gap:0.25rem;margin-bottom:0.25rem;">`;
+        html += `<span style="font-size:0.7rem;color:#94a3b8;min-width:70px;">${folletoCategoryEmoji(cat)} ${cat}</span>`;
+        textos.forEach(texto => {
+            html += `<button onclick="folletoPostComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:16px;padding:0.25rem 0.6rem;font-size:0.7rem;cursor:pointer;color:#475569;">${texto}</button>`;
+        });
+        html += `</div>`;
+    }
+    
+    html += `<button onclick="folletoReloadComments('${postId}')" style="background:transparent;border:none;color:#94a3b8;font-size:0.75rem;cursor:pointer;margin-top:0.5rem;">✕ Cancelar</button>`;
+    html += '</div>';
+    section.innerHTML = html;
 }
 
 // ========== REGALOS ==========
