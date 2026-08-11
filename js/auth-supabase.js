@@ -23,9 +23,13 @@ VV.auth = {
                 if (userData) {
                     VV.data.user = userData;
                     VV.data.neighborhood = userData.neighborhood;
+                    localStorage.setItem('vecinosVirtualesUser', JSON.stringify(userData));
                     localStorage.setItem('vv_phone_auth', userData.id);
+		    localStorage.setItem('vecinosVirtualesUser', JSON.stringify(userData));
+
                     return true;
                 }
+
             }
             return false;
         } catch (error) {
@@ -399,9 +403,14 @@ VV.auth = {
                 return;
             }
             
-            // 4. Guardar datos del usuario
+                        // 4. Guardar datos del usuario
             VV.data.user = userData;
             VV.data.neighborhood = userData.neighborhood;
+            localStorage.setItem('vecinosVirtualesUser', JSON.stringify(userData));
+            localStorage.setItem('vv_phone_auth', userData.id);
+	    localStorage.setItem('vecinosVirtualesUser', JSON.stringify(userData));
+
+
             
             // 5. Mostrar éxito
             VV.utils.showSuccess(`¡Bienvenido de nuevo, ${userData.name}!`);

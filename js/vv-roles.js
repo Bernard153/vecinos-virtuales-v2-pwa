@@ -1,4 +1,4 @@
-window.VV_ROLES = {
+﻿window.VV_ROLES = {
     getCurrentUser: function() {
         // 1. Intentar desde VV.data.user (memoria activa)
         if (window.VV && window.VV.data && window.VV.data.user) {

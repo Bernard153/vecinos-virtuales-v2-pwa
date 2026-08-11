@@ -46,7 +46,7 @@
     if (!phone) return alert('Ingresá un número de celular');
     
     // Validar formato argentino: 10 u 11 dígitos (ej: 11 1234 5678 o 381 123 4567)
-    if (phone.length < 10 || phone.length > 11) {
+    if (phone.length < 6 || phone.length > 15) {
         return alert('Ingresá un número válido con código de área (ej: 11 1234 5678)');
     }
     
