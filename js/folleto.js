@@ -127,10 +127,11 @@ async function cargarContenidoFolleto() {
                         <button onclick="folletoShowComments('${item.id}')" style="flex:1;background:#f1f5f9;border:none;border-radius:6px;padding:0.4rem;cursor:pointer;font-size:0.75rem;">
                             💬 Comentar
                         </button>
-                        ${user && user.id !== item.user_id ? `
-                            <button onclick="folletoShowGiftPicker('${item.id}', '${item.user_id || item.nombre_vecino}')" style="flex:1;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:6px;padding:0.4rem;cursor:pointer;font-size:0.75rem;">
+                        ${user && item.user_id && user.id !== item.user_id ? `
+                            <button onclick="folletoShowGiftPicker('${item.id}', '${item.user_id}')" style="flex:1;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:6px;padding:0.4rem;cursor:pointer;font-size:0.75rem;">
                             🎁 Regalar
                         </button>` : ''}
+
 
                     </div>
                     <div id="folleto-comments-${item.id}" style="display:none;margin-top:0.5rem;"></div>
