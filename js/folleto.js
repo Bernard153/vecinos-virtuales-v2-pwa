@@ -140,10 +140,13 @@ async function cargarContenidoFolleto() {
                     <div style="display:flex;gap:0.3rem;margin-top:0.5rem;flex-wrap:wrap;">
                         <button onclick="folletoToggleHighlight('${item.id}', ${!item.highlighted})" style="background:${item.highlighted ? '#f59e0b' : '#e2e8f0'};color:${item.highlighted ? 'white' : '#475569'};border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">⭐ ${item.highlighted ? 'Quitar destaque' : 'Destacar'}</button>
                         <button onclick="folletoEditTitle('${item.id}', '${item.titulo.replace(/'/g, "\\'")}')" style="background:#e2e8f0;color:#475569;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">✏️ Título</button>
+                        <button onclick="folletoEditDescription('${item.id}', '${(item.descripcion || '').replace(/'/g, "\\'")}')" style="background:#e2e8f0;color:#475569;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">📝 Descripción</button>
                         <button onclick="folletoSetVip('${item.id}')" style="background:#e2e8f0;color:#475569;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">👑 VIP</button>
                         <button onclick="folletoSetDays('${item.id}')" style="background:#e2e8f0;color:#475569;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">📅 Días</button>
+                        <button onclick="folletoDeleteItem('${item.id}')" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🗑️ Eliminar</button>
                     </div>
                     ` : ''}
+
                 </div>
             `;
             gridFolleto.appendChild(card);
@@ -624,5 +627,33 @@ async function gestionarSolicitud(id, aprobar) {
     }
 }
 
+// Eliminar anuncio del folleto
+async function folletoDeleteItem(itemId) {
+    if (!confirm('¿Eliminar este anuncio del folleto? Esta acción no se puede deshacer.')) return;
+    try {
+        const { error } = await supabase.from('folleto_imagenes').delete().eq('id', itemId);
+        if (error) throw error;
+        alert('Anuncio eliminado.');
+        cargarContenidoFolleto();
+    } catch (err) {
+        alert('Error al eliminar: ' + err.message);
+    }
+}
+
+// Editar descripción del anuncio
+async function folletoEditDescription(itemId, currentDesc) {
+    const newDesc = prompt('Editar descripción:', currentDesc);
+    if (newDesc === null) return;
+    try {
+        const { error } = await supabase.from('folleto_imagenes')
+            .update({ descripcion: newDesc, updated_at: new Date().toISOString() })
+            .eq('id', itemId);
+        if (error) throw error;
+        alert('Descripción actualizada.');
+        cargarContenidoFolleto();
+    } catch (err) {
+        alert('Error al actualizar: ' + err.message);
+    }
+}
 
 console.log('✅ Módulo FOLLETO cargado');
