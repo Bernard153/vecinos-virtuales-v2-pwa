@@ -831,8 +831,7 @@ async function verTiendaVecino(sellerId, nombre) {
     } else {
         lista.innerHTML = productos.map(p => {
             let imgUrl = p.image_url || p.image || null;
-                ? `https://selkbxqazwxxvinnulpb.supabase.co${p.image_path}`
-                : (p.image || p.image_url || null);
+                
             
             return `
             <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer;" 
