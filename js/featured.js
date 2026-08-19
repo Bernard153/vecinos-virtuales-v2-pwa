@@ -836,7 +836,8 @@ async function verTiendaVecino(sellerId, nombre) {
             
             return `
             <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer;" 
-                 onclick="filtrarTiendaVecino('${p.product}')">
+                onclick="filtrarTiendaVecino('${p.product}', '${idBusqueda}')">
+
                 
                 <div style="width: 100%; height: 110px; background: #f8fafc; border-radius: 8px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
                     ${imgUrl ? 
@@ -858,16 +859,44 @@ async function verTiendaVecino(sellerId, nombre) {
     seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Filtrar tienda por producto del vecino (sin cambiar de usuario)
-function filtrarTiendaVecino(productName) {
+// Filtrar tienda por vendedor específico
+function filtrarTiendaVecino(productName, sellerId) {
     VV.utils.showSection('marketplace');
     setTimeout(() => {
         const search = document.getElementById('all-products-search');
         if (search) {
             search.value = productName;
         }
-        if (VV.marketplace && VV.marketplace.loadShopping) {
-            VV.marketplace.loadShopping();
+        // Filtrar productos del vendedor específico
+        if (VV.data.products && VV.data.products.length > 0) {
+            const sellerProducts = VV.data.products.filter(p => 
+                String(p.seller_id || p.sellerId || p.user_id).trim() === String(sellerId).trim()
+            );
+            const container = document.getElementById('all-products');
+            if (container && sellerProducts.length > 0) {
+                container.innerHTML = sellerProducts.map(p => `
+                    <div class="product-card">
+                        ${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
+                        <div class="card-header">
+                            <h3>${p.product}</h3>
+                            ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
+                        </div>
+                        <p><strong>Vendedor:</strong> ${p.seller_name || ''}</p>
+                        <p><strong>Negocio:</strong> ${p.business || ''}</p>
+                        <p><strong>Categoría:</strong> ${p.category || ''}</p>
+                        <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
+                        <div class="card-footer">
+                            <div class="price">
+                                <span class="price-amount">$${p.price}</span>
+                                <span class="price-unit">/ ${p.unit || ''}</span>
+                            </div>
+                            <div class="contact">
+                                <i class="fas fa-phone"></i> ${p.contact || ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
         }
     }, 300);
 }
