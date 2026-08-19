@@ -830,7 +830,7 @@ async function verTiendaVecino(sellerId, nombre) {
         lista.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">Este vecino no tiene otros productos públicos.</p>`;
     } else {
         lista.innerHTML = productos.map(p => {
-            let imgUrl = p.image_path 
+            let imgUrl = p.image_url || p.image || null;
                 ? `https://selkbxqazwxxvinnulpb.supabase.co${p.image_path}`
                 : (p.image || p.image_url || null);
             
