@@ -378,7 +378,8 @@ VV.marketplace = {
                     </div>
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" id="product-featured" ${product?.featured ? 'checked' : ''}> 
+                            <input type="checkbox" id="product-featured" disabled style="opacity:0.5;cursor:not-allowed;">
+ 
                             Producto destacado
                         </label>
                     </div>
@@ -456,7 +457,9 @@ VV.marketplace = {
             quality: document.getElementById('product-quality').value,
             contact: document.getElementById('product-contact').value.trim(),
             description: document.getElementById('product-description').value.trim(),
-            featured: document.getElementById('product-featured').checked
+            //featured: document.getElementById('product-featured').checked
+	    featured: false
+
         };
 
         if (!formData.product || !formData.category || !formData.business || !formData.price || !formData.unit || !formData.quality || !formData.contact) {
