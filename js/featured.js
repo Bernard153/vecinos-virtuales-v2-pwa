@@ -1,4 +1,4 @@
-// ========== MÓDULO OFERTAS DESTACADAS ==========
+﻿// ========== MÓDULO OFERTAS DESTACADAS ==========
 
 VV.featured = {
     // Solicitar destacar oferta
@@ -819,7 +819,6 @@ async function verTiendaVecino(sellerId, nombre) {
     if (!sellerId || sellerId === 'undefined') return;
 
     const idBusqueda = String(sellerId).trim();
-    // Filtramos productos del mismo vendedor
     const productos = VV.data.products.filter(p => 
         String(p.seller_id || p.sellerId || p.user_id).trim() === idBusqueda
     );
@@ -831,19 +830,17 @@ async function verTiendaVecino(sellerId, nombre) {
         lista.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 2rem; color: #64748b;">Este vecino no tiene otros productos públicos.</p>`;
     } else {
         lista.innerHTML = productos.map(p => {
-            // CONSTRUCCIÓN DE URL PÚBLICA (Usando tu PROJECT_REF: selkbxqazwxxvinnulpb)
-            // Si el image_path ya trae 'product-images/ID/main.jpg', lo concatenamos directo
             let imgUrl = p.image_path 
-                ? `https://selkbxqazwxxvinnulpb.supabase.co{p.image_path}`
+                ? `https://selkbxqazwxxvinnulpb.supabase.co${p.image_path}`
                 : (p.image || p.image_url || null);
             
             return `
             <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); cursor: pointer;" 
-                 onclick="VV.utils.showSection('marketplace'); setTimeout(() => { document.getElementById('all-products-search').value='${p.product}'; VV.marketplace.loadShopping(); }, 300);">
+                 onclick="filtrarTiendaVecino('${p.product}')">
                 
                 <div style="width: 100%; height: 110px; background: #f8fafc; border-radius: 8px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
                     ${imgUrl ? 
-                        `<img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://via.placeholder.com'">` : 
+                        `<img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='<i class=&quot;fas fa-camera&quot; style=&quot;font-size: 1.5rem; color: #cbd5e1;&quot;></i>'">` : 
                         `<i class="fas fa-camera" style="font-size: 1.5rem; color: #cbd5e1;"></i>`
                     }
                 </div>
@@ -860,3 +857,18 @@ async function verTiendaVecino(sellerId, nombre) {
 
     seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+// Filtrar tienda por producto del vecino (sin cambiar de usuario)
+function filtrarTiendaVecino(productName) {
+    VV.utils.showSection('marketplace');
+    setTimeout(() => {
+        const search = document.getElementById('all-products-search');
+        if (search) {
+            search.value = productName;
+        }
+        if (VV.marketplace && VV.marketplace.loadShopping) {
+            VV.marketplace.loadShopping();
+        }
+    }, 300);
+}
+
