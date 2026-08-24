@@ -625,6 +625,9 @@ VV.admin = {
         if (tabName === 'folleto' && typeof window.cargarSolicitudesPendientes === 'function') {
         window.cargarSolicitudesPendientes();
         }
+        if (tabName === 'folleto' && typeof window.cargarFolletoPublicado === 'function') {
+        window.cargarFolletoPublicado();
+        }
     },
 
     // Cargar estadísticas
@@ -2450,6 +2453,120 @@ async function gestionarSolicitud(id, aprobar) {
         alert("Error al procesar: " + err.message);
     }
 }
+// 3. Cargar folletos publicados (aprobados)
+async function cargarFolletoPublicado() {
+    const contenedor = document.getElementById('folleto-publicado-list');
+    if (!contenedor) return;
+
+    try {
+        const now = new Date().toISOString();
+        const { data, error } = await supabase
+            .from('folleto_imagenes')
+            .select('*')
+            .eq('aprobado', true)
+            .gt('expires_at', now)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            contenedor.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">No hay folletos publicados activos.</p>';
+            return;
+        }
+
+        contenedor.innerHTML = data.map(item => `
+            <div class="admin-card-solicitud" style="border-left: 4px solid #10b981;">
+                <img src="${item.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
+                <div class="info">
+                    <strong>${item.titulo}</strong>
+                    <p>${item.descripcion}</p>
+                    <p style="font-size:0.75rem;color:#94a3b8;">
+                        Por: ${item.nombre_vecino || 'Anónimo'} | 
+                        ⏰ ${Math.ceil((new Date(item.expires_at) - new Date()) / (1000*60*60*24))}d restantes
+                    </p>
+                </div>
+                <div class="acciones" style="display:flex;flex-direction:column;gap:0.3rem;">
+                    <button onclick="folletoExtenderDias('${item.id}')" class="btn-aprobar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">📅 Extender</button>
+                    <button onclick="folletoCambiarImagen('${item.id}')" class="btn-edit" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🖼️ Cambiar Imagen</button>
+                    <button onclick="folletoDeleteItem('${item.id}')" class="btn-rechazar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🗑️ Eliminar</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error("Error cargando folletos publicados:", err);
+    }
+}
+
+// 4. Extender días de un folleto
+async function folletoExtenderDias(itemId) {
+    const days = prompt('¿Cuántos días adicionales? (1-90):', '7');
+    if (!days || isNaN(days) || days < 1 || days > 90) {
+        if (days !== null) alert('Ingresa un número válido (1-90)');
+        return;
+    }
+    try {
+        const { data: item } = await supabase.from('folleto_imagenes').select('expires_at').eq('id', itemId).single();
+        const newExpiry = new Date(item.expires_at);
+        newExpiry.setDate(newExpiry.getDate() + parseInt(days));
+        await supabase.from('folleto_imagenes').update({ 
+            expires_at: newExpiry.toISOString(),
+            updated_at: new Date().toISOString()
+        }).eq('id', itemId);
+        alert(`✅ Folleto extendido ${days} días más.`);
+        cargarFolletoPublicado();
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
+// 5. Cambiar imagen de un folleto
+async function folletoCambiarImagen(itemId) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+            // Comprimir
+            const compressedBlob = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const img = new Image();
+                    img.onload = function() {
+                        let w = img.width, h = img.height;
+                        if (w > 1080) { h = Math.round((h * 1080) / w); w = 1080; }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        canvas.toBlob(resolve, 'image/jpeg', 0.7);
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            const fileName = `folleto-${Date.now()}.jpg`;
+            const { error: uploadError } = await supabase.storage.from('folleto').upload(fileName, compressedBlob);
+            if (uploadError) throw uploadError;
+            
+            const { data: urlData } = supabase.storage.from('folleto').getPublicUrl(fileName);
+            
+            await supabase.from('folleto_imagenes').update({
+                url_imagen: urlData.publicUrl,
+                updated_at: new Date().toISOString()
+            }).eq('id', itemId);
+            
+            alert('✅ Imagen actualizada.');
+            cargarFolletoPublicado();
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    };
+    input.click();
+}
+
 
 };
 
