@@ -414,28 +414,54 @@ VV.admin = {
             return;
         }
 
-        // Procesar imagen si existe
+                // Procesar imagen si existe
         const imageInput = document.getElementById('sponsor-image');
         if (imageInput.files && imageInput.files[0]) {
             const file = imageInput.files[0];
 
             try {
-                // Subir imagen a Supabase Storage
-                const fileName = `sponsor-${Date.now()}-${file.name}`;
+                // Comprimir imagen antes de subir
+                const compressedBlob = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.onload = function() {
+                            let width = img.width;
+                            let height = img.height;
+                            if (width > 1080) {
+                                height = Math.round((height * 1080) / width);
+                                width = 1080;
+                            }
+                            const canvas = document.createElement('canvas');
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            canvas.toBlob(function(blob) {
+                                resolve(blob);
+                            }, 'image/jpeg', 0.7);
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                const compressedFile = new File([compressedBlob], 'sponsor.jpg', { type: 'image/jpeg' });
+
+                // Sanitizar nombre del archivo
+                const fileName = `sponsor-${Date.now()}.jpg`;
+
                 const { data: uploadData, error: uploadError } = await supabase.storage
                     .from('sponsor-images')
-                    .upload(fileName, file, {
+                    .upload(fileName, compressedFile, {
                         cacheControl: '3600',
                         upsert: false
                     });
 
                 if (uploadError) {
                     console.error('❌ Error subiendo imagen:', uploadError);
-                    console.error('❌ Mensaje:', uploadError.message);
-                    console.error('❌ Detalles:', uploadError.error);
                     alert('Error al subir la imagen: ' + uploadError.message + '. Continuando sin imagen...');
                 } else {
-                    // Obtener URL pública
                     const { data: urlData } = supabase.storage
                         .from('sponsor-images')
                         .getPublicUrl(fileName);
@@ -451,6 +477,7 @@ VV.admin = {
 
         VV.admin.saveSponsorData(existing, formData);
     },
+
 
     // Guardar datos del anunciante (helper) - MIGRADO A SUPABASE
     async saveSponsorData(existing, formData) {
