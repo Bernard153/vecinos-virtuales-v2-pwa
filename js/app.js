@@ -30,7 +30,13 @@ document.addEventListener('DOMContentLoaded', function() {
             VV.data.pendingRegistration = true;
             VV.utils.showScreen('location-screen');
             VV.auth.requestGeolocation();
+            // Cargar mensajes del admin
+            if (typeof cargarMensajeAdmin === 'function') {
+                cargarMensajeAdmin();
+            }
+
         }
+
     }, 1500);
     
     // Setup navegación del menú

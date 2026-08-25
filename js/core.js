@@ -1,4 +1,4 @@
-// ========== VECINOS VIRTUALES - MÓDULO CORE (CORREGIDO) ==========
+﻿// ========== VECINOS VIRTUALES - MÓDULO CORE (CORREGIDO) ==========
 const VV = {
     data: {
         user: null,
@@ -162,6 +162,102 @@ const VV = {
         showSuccess(message) { console.log("Success:", message); }
     } 
 };
+
+// ========== SISTEMA DE MENSAJES ADMIN-USUARIO ==========
+
+// Cargar mensajes del usuario
+async function cargarMensajeAdmin() {
+    const user = VV_ROLES.getCurrentUser();
+    if (!user) return;
+
+    try {
+        // Verificar si el usuario tiene mensajes habilitados
+        const { data: userData } = await supabase.from('users').select('mensajes_habilitados').eq('id', user.id).single();
+        if (userData && userData.mensajes_habilitados === false) return;
+
+        const { data: mensajes, error } = await supabase
+            .from('mensajes_admin')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('respondido', false)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (error || !mensajes || mensajes.length === 0) return;
+
+        const mensaje = mensajes[0];
+        const notif = document.getElementById('mensaje-admin-notificacion');
+        const preview = document.getElementById('mensaje-admin-preview');
+        const badge = document.getElementById('mensaje-admin-badge');
+
+        if (notif && preview) {
+            preview.textContent = mensaje.titulo + ': ' + mensaje.mensaje.substring(0, 60) + '...';
+            notif.style.display = 'block';
+        }
+        
+        // Guardar el mensaje actual para usarlo después
+        window.mensajeAdminActual = mensaje;
+    } catch (err) {
+        console.error('Error cargando mensaje:', err);
+    }
+}
+
+// Abrir mensaje
+function abrirMensajeAdmin() {
+    const mensaje = window.mensajeAdminActual;
+    if (!mensaje) return;
+
+    const modal = document.getElementById('mensaje-admin-modal');
+    const contenido = document.getElementById('mensaje-admin-contenido');
+    
+    if (modal && contenido) {
+        contenido.innerHTML = `
+            <div style="background:#f8fafc;padding:1rem;border-radius:8px;margin-bottom:1rem;">
+                <strong style="font-size:1.1rem;color:#1e293b;">${mensaje.titulo}</strong>
+                <p style="margin-top:0.5rem;color:#475569;">${mensaje.mensaje}</p>
+                <p style="font-size:0.75rem;color:#94a3b8;margin-top:0.5rem;">${new Date(mensaje.created_at).toLocaleDateString()}</p>
+            </div>
+        `;
+        modal.style.display = 'flex';
+    }
+}
+
+// Cerrar mensaje
+function cerrarMensajeAdmin() {
+    const modal = document.getElementById('mensaje-admin-modal');
+    if (modal) modal.style.display = 'none';
+}
+
+// Enviar respuesta
+async function enviarRespuestaAdmin() {
+    const mensaje = window.mensajeAdminActual;
+    const respuesta = document.getElementById('mensaje-admin-respuesta')?.value.trim();
+    
+    if (!mensaje || !respuesta) {
+        alert('Escribí una respuesta antes de enviar.');
+        return;
+    }
+    
+    try {
+        await supabase.from('mensajes_admin')
+            .update({ 
+                respuesta: respuesta, 
+                respondido: true, 
+                responded_at: new Date().toISOString() 
+            })
+            .eq('id', mensaje.id);
+        
+        alert('✅ Respuesta enviada al administrador.');
+        cerrarMensajeAdmin();
+        
+        const notif = document.getElementById('mensaje-admin-notificacion');
+        if (notif) notif.style.display = 'none';
+        
+        window.mensajeAdminActual = null;
+    } catch (err) {
+        alert('Error al enviar respuesta: ' + err.message);
+    }
+}
 
 // Exportamos para que sea global
 window.VV = VV;
