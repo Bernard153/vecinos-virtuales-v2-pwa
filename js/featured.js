@@ -656,6 +656,13 @@ VV.featured = {
                             Marcar como importante (aparece primero)
                         </label>
                     </div>
+		    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="announcement-send-message">
+                            📩 Enviar también como mensaje privado (solo para usuario específico)
+                        </label>
+                    </div>
+
                     <div class="form-actions">
                         <button type="button" class="btn-cancel" onclick="VV.featured.closeAnnouncementForm()">Cancelar</button>
                         <button type="submit" class="btn-save">
@@ -705,6 +712,8 @@ VV.featured = {
 
         const duration = parseInt(document.getElementById('announcement-duration').value);
         const important = document.getElementById('announcement-important').checked;
+	        // === ENVIAR COMO MENSAJE PRIVADO ===
+        const enviarComoMensaje = document.getElementById('announcement-send-message')?.checked || false;
 
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + duration);
@@ -720,6 +729,25 @@ VV.featured = {
                     target: finalTarget,
                     expires_at: expiresAt.toISOString()
                 });
+            // Si es para un usuario específico, enviar como mensaje privado
+            if (enviarComoMensaje && targetType === 'user' && finalTarget.startsWith('user_')) {
+                const userNumber = finalTarget.replace('user_', '');
+                const { data: targetUser } = await supabase
+                    .from('users')
+                    .select('id')
+                    .eq('unique_number', parseInt(userNumber))
+                    .single();
+                
+                if (targetUser) {
+                    await supabase.from('mensajes_admin').insert({
+                        admin_id: VV.data.user.id,
+                        user_id: targetUser.id,
+                        titulo: title,
+                        mensaje: message
+                    });
+                }
+            }
+
 
             if (error) throw error;
 
