@@ -623,7 +623,8 @@ VV.admin = {
         if (tabName === 'avatars') VV.admin.loadAvatarsManagement();
         if (tabName === 'raffles') VV.admin.loadRafflesManagement();
         if (tabName === 'folleto' && typeof window.cargarSolicitudesPendientes === 'function') {
-        window.cargarSolicitudesPendientes();
+        if (tabName === 'mensajes') VV.admin.loadMensajesUsuarios();
+	window.cargarSolicitudesPendientes();
         }
         if (tabName === 'folleto' && typeof window.cargarFolletoPublicado === 'function') {
         window.cargarFolletoPublicado();
@@ -2455,6 +2456,80 @@ async function gestionarSolicitud(id, aprobar) {
 }
 
 };
+// ========== MENSAJES ADMIN-USUARIO ==========
+
+VV.admin.loadMensajesUsuarios = async function() {
+    const container = document.getElementById('admin-mensajes-list');
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">Cargando mensajes...</p>';
+
+    try {
+        const { data: mensajes, error } = await supabase
+            .from('mensajes_admin')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!mensajes || mensajes.length === 0) {
+            container.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">No hay mensajes enviados.</p>';
+            return;
+        }
+
+        // Obtener nombres de usuarios
+        const userIds = [...new Set(mensajes.map(m => m.user_id))];
+        const { data: users } = await supabase.from('users').select('id, name, unique_number').in('id', userIds);
+        const userMap = {};
+        (users || []).forEach(u => userMap[u.id] = u);
+
+        container.innerHTML = mensajes.map(m => {
+            const user = userMap[m.user_id] || {};
+            const habilitado = m.mensajes_habilitados !== false;
+            return `
+                <div class="admin-card-solicitud" style="border-left: 4px solid ${m.respondido ? '#10b981' : '#f59e0b'};">
+                    <div class="info" style="flex:1;">
+                        <strong>${m.titulo}</strong>
+                        <p style="font-size:0.85rem;margin-top:0.25rem;">${m.mensaje}</p>
+                        <p style="font-size:0.75rem;color:#94a3b8;">
+                            Para: ${user.name || 'Desconocido'} #${user.unique_number || '?'} | 
+                            ${new Date(m.created_at).toLocaleDateString()}
+                        </p>
+                        ${m.respondido ? `
+                            <div style="background:#f0fdf4;padding:0.5rem;border-radius:6px;margin-top:0.5rem;border:1px solid #bbf7d0;">
+                                <strong style="font-size:0.8rem;color:#16a34a;">✉️ Respuesta del usuario:</strong>
+                                <p style="font-size:0.85rem;margin-top:0.25rem;">${m.respuesta}</p>
+                                <p style="font-size:0.7rem;color:#94a3b8;">${new Date(m.responded_at).toLocaleDateString()}</p>
+                            </div>
+                        ` : '<p style="font-size:0.8rem;color:#f59e0b;margin-top:0.5rem;">⏳ Pendiente de respuesta</p>'}
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:0.3rem;min-width:100px;">
+                        <span style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:12px;text-align:center;background:${habilitado ? '#dcfce7' : '#fef2f2'};color:${habilitado ? '#16a34a' : '#dc2626'};">
+                            ${habilitado ? '✅ Habilitado' : '🚫 Deshabilitado'}
+                        </span>
+                        <button onclick="VV.admin.toggleMensajesUsuario('${m.user_id}', ${!habilitado})" style="background:#e2e8f0;border:none;border-radius:4px;padding:0.3rem;cursor:pointer;font-size:0.7rem;">
+                            ${habilitado ? '🔇 Deshabilitar' : '🔊 Habilitar'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error('Error cargando mensajes:', err);
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:#ef4444;">Error al cargar mensajes.</p>';
+    }
+};
+
+VV.admin.toggleMensajesUsuario = async function(userId, habilitar) {
+    try {
+        await supabase.from('users').update({ mensajes_habilitados: habilitar }).eq('id', userId);
+        VV.admin.loadMensajesUsuarios();
+        VV.utils.showSuccess(habilitar ? 'Mensajes habilitados para este usuario.' : 'Mensajes deshabilitados para este usuario.');
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
+
 
 console.log('✅ Módulo ADMIN cargado');
 
