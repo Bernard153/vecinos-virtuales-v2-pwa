@@ -2453,6 +2453,11 @@ async function gestionarSolicitud(id, aprobar) {
         alert("Error al procesar: " + err.message);
     }
 }
+
+};
+
+console.log('✅ Módulo ADMIN cargado');
+
 // 3. Cargar folletos publicados (aprobados)
 async function cargarFolletoPublicado() {
     const contenedor = document.getElementById('folleto-publicado-list');
@@ -2568,6 +2573,4 @@ async function folletoCambiarImagen(itemId) {
 }
 
 
-};
 
-console.log('✅ Módulo ADMIN cargado');
