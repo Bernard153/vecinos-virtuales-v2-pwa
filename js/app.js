@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // LOGIN EXITOSO
             VV.auth.startApp();
             
+            // Cargar mensajes del admin
+            if (typeof cargarMensajeAdmin === 'function') {
+                cargarMensajeAdmin();
+            }
+            
             // ACTIVAR MÓDULO FOLLETO SOLO AQUÍ
             if (VV.utils.activarFolleto) {
                 VV.utils.activarFolleto();
@@ -30,11 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
             VV.data.pendingRegistration = true;
             VV.utils.showScreen('location-screen');
             VV.auth.requestGeolocation();
-            // Cargar mensajes del admin
-            if (typeof cargarMensajeAdmin === 'function') {
-                cargarMensajeAdmin();
-            }
-
+          
         }
 
     }, 1500);

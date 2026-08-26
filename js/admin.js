@@ -2507,6 +2507,8 @@ VV.admin.loadMensajesUsuarios = async function() {
                         <span style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:12px;text-align:center;background:${habilitado ? '#dcfce7' : '#fef2f2'};color:${habilitado ? '#16a34a' : '#dc2626'};">
                             ${habilitado ? '✅ Habilitado' : '🚫 Deshabilitado'}
                         </span>
+			<button onclick="VV.admin.editarMensaje('${m.id}')" style="background:#e2e8f0;border:none;border-radius:4px;padding:0.3rem;cursor:pointer;font-size:0.7rem;">✏️ Editar</button>
+                        <button onclick="VV.admin.eliminarMensaje('${m.id}')" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:0.3rem;cursor:pointer;font-size:0.7rem;">🗑️ Eliminar</button>
                         <button onclick="VV.admin.toggleMensajesUsuario('${m.user_id}', ${!habilitado})" style="background:#e2e8f0;border:none;border-radius:4px;padding:0.3rem;cursor:pointer;font-size:0.7rem;">
                             ${habilitado ? '🔇 Deshabilitar' : '🔊 Habilitar'}
                         </button>
@@ -2646,6 +2648,28 @@ async function folletoCambiarImagen(itemId) {
     };
     input.click();
 }
+VV.admin.editarMensaje = async function(mensajeId) {
+    const nuevoTexto = prompt('Editar mensaje:');
+    if (!nuevoTexto) return;
+    try {
+        await supabase.from('mensajes_admin').update({ mensaje: nuevoTexto }).eq('id', mensajeId);
+        VV.admin.loadMensajesUsuarios();
+        VV.utils.showSuccess('Mensaje editado.');
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
+
+VV.admin.eliminarMensaje = async function(mensajeId) {
+    if (!confirm('¿Eliminar este mensaje definitivamente?')) return;
+    try {
+        await supabase.from('mensajes_admin').delete().eq('id', mensajeId);
+        VV.admin.loadMensajesUsuarios();
+        VV.utils.showSuccess('Mensaje eliminado.');
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
 
 
 
