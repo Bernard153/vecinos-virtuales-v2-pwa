@@ -732,22 +732,27 @@ VV.featured = {
             // Si es para un usuario específico, enviar como mensaje privado
             if (enviarComoMensaje && targetType === 'user' && finalTarget.startsWith('user_')) {
                 const userNumber = finalTarget.replace('user_', '');
-                const { data: targetUser } = await supabase
+                console.log('🔍 Buscando usuario con número:', userNumber);
+                const { data: targetUser, error: userError } = await supabase
                     .from('users')
-                    .select('id')
+                    .select('id, name, unique_number')
                     .eq('unique_number', parseInt(userNumber))
-                    .single();
+                    .maybeSingle();
                 
-                if (targetUser) {
-                    await supabase.from('mensajes_admin').insert({
+                console.log('👤 Usuario encontrado:', targetUser, 'Error:', userError);
+                
+                if (targetUser && targetUser.id) {
+                    const { error: msgError } = await supabase.from('mensajes_admin').insert({
                         admin_id: VV.data.user.id,
                         user_id: targetUser.id,
                         titulo: title,
                         mensaje: message
                     });
+                    console.log('📨 Mensaje insertado:', msgError ? 'Error: ' + msgError.message : 'OK');
+                } else {
+                    console.warn('⚠️ No se encontró el usuario número:', userNumber);
                 }
             }
-
 
             if (error) throw error;
 
