@@ -175,28 +175,41 @@ async function cargarMensajeAdmin() {
         const { data: userData } = await supabase.from('users').select('mensajes_habilitados').eq('id', user.id).single();
         if (userData && userData.mensajes_habilitados === false) return;
 
+        // Buscar hilos abiertos para este usuario
         const { data: mensajes, error } = await supabase
             .from('mensajes_admin')
             .select('*')
             .eq('user_id', user.id)
-            .eq('respondido', false)
-            .order('created_at', { ascending: false })
-            .limit(1);
+            .eq('thread_status', 'open')
+            .order('created_at', { ascending: true });
 
         if (error || !mensajes || mensajes.length === 0) return;
 
-        const mensaje = mensajes[0];
+        // Agrupar por thread_id, tomar el más reciente
+        const threads = {};
+        mensajes.forEach(m => {
+            if (!threads[m.thread_id]) threads[m.thread_id] = [];
+            threads[m.thread_id].push(m);
+        });
+
+        const threadIds = Object.keys(threads);
+        const latestThread = threads[threadIds[threadIds.length - 1]];
+        const lastMsg = latestThread[latestThread.length - 1];
+
         const notif = document.getElementById('mensaje-admin-notificacion');
         const preview = document.getElementById('mensaje-admin-preview');
         const badge = document.getElementById('mensaje-admin-badge');
 
         if (notif && preview) {
-            preview.textContent = mensaje.titulo + ': ' + mensaje.mensaje.substring(0, 60) + '...';
+            // Mostrar resumen del último mensaje
+            const msgCount = latestThread.length;
+            const ultimo = lastMsg.sender === 'admin' ? 'Admin' : 'Tú';
+            preview.textContent = `${ultimo}: ${lastMsg.mensaje.substring(0, 50)}... (${msgCount} mensaje${msgCount > 1 ? 's' : ''})`;
             notif.style.display = 'block';
         }
         
-        // Guardar el mensaje actual para usarlo después
-        window.mensajeAdminActual = mensaje;
+        window.mensajeAdminThread = latestThread;
+        window.mensajeAdminThreadId = latestThread[0].thread_id;
     } catch (err) {
         console.error('Error cargando mensaje:', err);
     }
@@ -204,18 +217,23 @@ async function cargarMensajeAdmin() {
 
 // Abrir mensaje
 function abrirMensajeAdmin() {
-    const mensaje = window.mensajeAdminActual;
-    if (!mensaje) return;
+    const thread = window.mensajeAdminThread;
+    if (!thread || thread.length === 0) return;
 
     const modal = document.getElementById('mensaje-admin-modal');
     const contenido = document.getElementById('mensaje-admin-contenido');
     
     if (modal && contenido) {
+        const user = VV_ROLES.getCurrentUser();
         contenido.innerHTML = `
-            <div style="background:#f8fafc;padding:1rem;border-radius:8px;margin-bottom:1rem;">
-                <strong style="font-size:1.1rem;color:#1e293b;">${mensaje.titulo}</strong>
-                <p style="margin-top:0.5rem;color:#475569;">${mensaje.mensaje}</p>
-                <p style="font-size:0.75rem;color:#94a3b8;margin-top:0.5rem;">${new Date(mensaje.created_at).toLocaleDateString()}</p>
+            <div style="max-height:300px;overflow-y:auto;margin-bottom:1rem;">
+                ${thread.map(m => `
+                    <div style="padding:0.5rem;margin-bottom:0.5rem;border-radius:8px;${m.sender === 'admin' ? 'background:#dbeafe;margin-left:2rem;' : 'background:#f1f5f9;margin-right:2rem;'}">
+                        <span style="font-size:0.75rem;color:#94a3b8;">${m.sender === 'admin' ? '👤 Administrador' : '💬 Tú'}</span>
+                        <p style="font-size:0.9rem;margin:0.3rem 0;">${m.mensaje}</p>
+                        <span style="font-size:0.65rem;color:#cbd5e1;">${new Date(m.created_at).toLocaleString()}</span>
+                    </div>
+                `).join('')}
             </div>
         `;
         modal.style.display = 'flex';
@@ -230,30 +248,37 @@ function cerrarMensajeAdmin() {
 
 // Enviar respuesta
 async function enviarRespuestaAdmin() {
-    const mensaje = window.mensajeAdminActual;
+    const threadId = window.mensajeAdminThreadId;
     const respuesta = document.getElementById('mensaje-admin-respuesta')?.value.trim();
+    const user = VV_ROLES.getCurrentUser();
     
-    if (!mensaje || !respuesta) {
+    if (!threadId || !respuesta) {
         alert('Escribí una respuesta antes de enviar.');
         return;
     }
     
     try {
-        await supabase.from('mensajes_admin')
-            .update({ 
-                respuesta: respuesta, 
-                respondido: true, 
-                responded_at: new Date().toISOString() 
-            })
-            .eq('id', mensaje.id);
+        await supabase.from('mensajes_admin').insert({
+            admin_id: null,
+            user_id: user.id,
+            thread_id: threadId,
+            sender: 'user',
+            mensaje: respuesta,
+            thread_status: 'open',
+            respondido: true,
+            responded_at: new Date().toISOString()
+        });
         
         alert('✅ Respuesta enviada al administrador.');
         cerrarMensajeAdmin();
         
-        const notif = document.getElementById('mensaje-admin-notificacion');
-        if (notif) notif.style.display = 'none';
+        // Recargar el hilo actualizado
+        window.mensajeAdminThread = null;
+        window.mensajeAdminThreadId = null;
         
-        window.mensajeAdminActual = null;
+        // Recargar notificación
+        setTimeout(cargarMensajeAdmin, 500);
+        
     } catch (err) {
         alert('Error al enviar respuesta: ' + err.message);
     }
