@@ -2463,63 +2463,138 @@ VV.admin.loadMensajesUsuarios = async function() {
     const container = document.getElementById('admin-mensajes-list');
     if (!container) return;
 
-    container.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">Cargando mensajes...</p>';
+    container.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">Cargando conversaciones...</p>';
 
     try {
+        // Obtener todos los mensajes agrupados por thread_id
         const { data: mensajes, error } = await supabase
             .from('mensajes_admin')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: true });
 
         if (error) throw error;
 
         if (!mensajes || mensajes.length === 0) {
-            container.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">No hay mensajes enviados.</p>';
+            container.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">No hay conversaciones.</p>';
             return;
         }
 
-        // Obtener nombres de usuarios
+        // Agrupar por thread_id
+        const threads = {};
+        mensajes.forEach(m => {
+            const tid = m.thread_id || m.id;
+            if (!threads[tid]) threads[tid] = [];
+            threads[tid].push(m);
+        });
+
+        // Obtener usuarios
         const userIds = [...new Set(mensajes.map(m => m.user_id))];
         const { data: users } = await supabase.from('users').select('id, name, unique_number').in('id', userIds);
         const userMap = {};
         (users || []).forEach(u => userMap[u.id] = u);
 
-        container.innerHTML = mensajes.map(m => {
-            const user = userMap[m.user_id] || {};
-            const habilitado = m.mensajes_habilitados !== false;
+        // Renderar cada hilo
+        container.innerHTML = Object.entries(threads).map(([tid, msgs]) => {
+            const user = userMap[msgs[0].user_id] || {};
+            const isOpen = msgs[0].thread_status !== 'closed';
+            const lastMsg = msgs[msgs.length - 1];
+            const hasUserResponse = msgs.some(m => m.sender === 'user');
+
             return `
-                <div class="admin-card-solicitud" style="border-left: 4px solid ${m.respondido ? '#10b981' : '#f59e0b'};">
-                    <div class="info" style="flex:1;">
-                        <strong>${m.titulo}</strong>
-                        <p style="font-size:0.85rem;margin-top:0.25rem;">${m.mensaje}</p>
-                        <p style="font-size:0.75rem;color:#94a3b8;">
-                            Para: ${user.name || 'Desconocido'} #${user.unique_number || '?'} | 
-                            ${new Date(m.created_at).toLocaleDateString()}
-                        </p>
-                        ${m.respondido ? `
-                            <div style="background:#f0fdf4;padding:0.5rem;border-radius:6px;margin-top:0.5rem;border:1px solid #bbf7d0;">
-                                <strong style="font-size:0.8rem;color:#16a34a;">✉️ Respuesta del usuario:</strong>
-                                <p style="font-size:0.85rem;margin-top:0.25rem;">${m.respuesta}</p>
-                                <p style="font-size:0.7rem;color:#94a3b8;">${new Date(m.responded_at).toLocaleDateString()}</p>
-                            </div>
-                        ` : '<p style="font-size:0.8rem;color:#f59e0b;margin-top:0.5rem;">⏳ Pendiente de respuesta</p>'}
-                    </div>
-                    <div style="display:flex;flex-direction:column;gap:0.3rem;min-width:100px;">
-                        <span style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:12px;text-align:center;background:${habilitado ? '#dcfce7' : '#fef2f2'};color:${habilitado ? '#16a34a' : '#dc2626'};">
-                            ${habilitado ? '✅ Habilitado' : '🚫 Deshabilitado'}
+                <div class="admin-card-solicitud" style="border-left: 4px solid ${isOpen ? (hasUserResponse ? '#10b981' : '#f59e0b') : '#94a3b8'};">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                        <strong>${user.name || 'Desconocido'} #${user.unique_number || '?'}</strong>
+                        <span style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:12px;background:${isOpen ? '#dcfce7' : '#f1f5f9'};color:${isOpen ? '#16a34a' : '#64748b'};">
+                            ${isOpen ? '🟢 Abierto' : '🔒 Cerrado'}
                         </span>
-			<button onclick="VV.admin.editarMensaje('${m.id}')" style="background:#e2e8f0;border:none;border-radius:4px;padding:0.3rem;cursor:pointer;font-size:0.7rem;">✏️ Editar</button>
-                        <button onclick="VV.admin.eliminarMensaje('${m.id}')" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:0.3rem;cursor:pointer;font-size:0.7rem;">🗑️ Eliminar</button>
-                        <button onclick="VV.admin.toggleMensajesUsuario('${m.user_id}', ${!habilitado})" style="background:#e2e8f0;border:none;border-radius:4px;padding:0.3rem;cursor:pointer;font-size:0.7rem;">
-                            ${habilitado ? '🔇 Deshabilitar' : '🔊 Habilitar'}
-                        </button>
+                    </div>
+                    <div style="max-height:200px;overflow-y:auto;margin-bottom:0.5rem;">
+                        ${msgs.map(m => `
+                            <div style="padding:0.4rem;margin-bottom:0.3rem;border-radius:6px;${m.sender === 'admin' ? 'background:#dbeafe;margin-left:1rem;' : 'background:#f1f5f9;margin-right:1rem;'}">
+                                <span style="font-size:0.7rem;color:#94a3b8;">${m.sender === 'admin' ? '👤 Admin' : '💬 ' + (user.name || 'Usuario')}</span>
+                                <p style="font-size:0.85rem;margin:0.2rem 0;">${m.mensaje}</p>
+                                ${m.respuesta && m.sender === 'user' ? '' : ''}
+                                <span style="font-size:0.65rem;color:#cbd5e1;">${new Date(m.created_at).toLocaleString()}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+                        ${isOpen ? `
+                            <button onclick="VV.admin.responderHilo('${tid}', '${msgs[0].user_id}')" style="background:#3b82f6;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">💬 Responder</button>
+                            <button onclick="VV.admin.cerrarHilo('${tid}')" style="background:#64748b;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🔒 Cerrar</button>
+                        ` : `
+                            <button onclick="VV.admin.reabrirHilo('${tid}')" style="background:#10b981;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🔓 Reabrir</button>
+                        `}
+                        <button onclick="VV.admin.eliminarHilo('${tid}')" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🗑️ Eliminar</button>
                     </div>
                 </div>
             `;
         }).join('');
     } catch (err) {
         console.error('Error cargando mensajes:', err);
-        container.innerHTML = '<p style="text-align:center;padding:2rem;color:#ef4444;">Error al cargar mensajes.</p>';
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:#ef4444;">Error al cargar conversaciones.</p>';
+    }
+};
+
+// Responder a un hilo
+VV.admin.responderHilo = async function(threadId, userId) {
+    const texto = prompt('Escribí tu respuesta:');
+    if (!texto || !texto.trim()) return;
+    try {
+        await supabase.from('mensajes_admin').insert({
+            admin_id: VV.data.user.id,
+            user_id: userId,
+            thread_id: threadId,
+            sender: 'admin',
+            mensaje: texto.trim(),
+            thread_status: 'open',
+            respondido: false
+        });
+        VV.admin.loadMensajesUsuarios();
+        VV.utils.showSuccess('Respuesta enviada.');
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
+
+// Cerrar hilo
+VV.admin.cerrarHilo = async function(threadId) {
+    if (!confirm('¿Cerrar esta conversación? El usuario dejará de verla.')) return;
+    try {
+        await supabase.from('mensajes_admin')
+            .update({ thread_status: 'closed' })
+            .eq('thread_id', threadId);
+        VV.admin.loadMensajesUsuarios();
+        VV.utils.showSuccess('Conversación cerrada.');
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
+
+// Reabrir hilo
+VV.admin.reabrirHilo = async function(threadId) {
+    try {
+        await supabase.from('mensajes_admin')
+            .update({ thread_status: 'open' })
+            .eq('thread_id', threadId);
+        VV.admin.loadMensajesUsuarios();
+        VV.utils.showSuccess('Conversación reabierta.');
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
+
+// Eliminar hilo completo
+VV.admin.eliminarHilo = async function(threadId) {
+    if (!confirm('¿Eliminar toda la conversación? Esta acción no se puede deshacer.')) return;
+    try {
+        await supabase.from('mensajes_admin')
+            .delete()
+            .eq('thread_id', threadId);
+        VV.admin.loadMensajesUsuarios();
+        VV.utils.showSuccess('Conversación eliminada.');
+    } catch (err) {
+        alert('Error: ' + err.message);
     }
 };
 
@@ -2649,28 +2724,6 @@ async function folletoCambiarImagen(itemId) {
     };
     input.click();
 }
-VV.admin.editarMensaje = async function(mensajeId) {
-    const nuevoTexto = prompt('Editar mensaje:');
-    if (!nuevoTexto) return;
-    try {
-        await supabase.from('mensajes_admin').update({ mensaje: nuevoTexto }).eq('id', mensajeId);
-        VV.admin.loadMensajesUsuarios();
-        VV.utils.showSuccess('Mensaje editado.');
-    } catch (err) {
-        alert('Error: ' + err.message);
-    }
-};
-
-VV.admin.eliminarMensaje = async function(mensajeId) {
-    if (!confirm('¿Eliminar este mensaje definitivamente?')) return;
-    try {
-        await supabase.from('mensajes_admin').delete().eq('id', mensajeId);
-        VV.admin.loadMensajesUsuarios();
-        VV.utils.showSuccess('Mensaje eliminado.');
-    } catch (err) {
-        alert('Error: ' + err.message);
-    }
-};
 
 
 
