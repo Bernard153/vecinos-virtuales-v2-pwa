@@ -617,19 +617,20 @@ VV.admin = {
         document.querySelectorAll('.admin-tab-content').forEach(content => content.classList.remove('active'));
         document.getElementById(`admin-${tabName}`).classList.add('active');
 
-        if (tabName === 'stats') VV.admin.loadStats();
+                if (tabName === 'stats') VV.admin.loadStats();
         if (tabName === 'moderator-logs') VV.admin.loadModeratorLogs();
         if (tabName === 'featured') VV.admin.loadFeaturedOffers();
         if (tabName === 'avatars') VV.admin.loadAvatarsManagement();
         if (tabName === 'raffles') VV.admin.loadRafflesManagement();
         if (tabName === 'folleto' && typeof window.cargarSolicitudesPendientes === 'function') {
-        if (tabName === 'mensajes') VV.admin.loadMensajesUsuarios();
-	window.cargarSolicitudesPendientes();
+            window.cargarSolicitudesPendientes();
         }
         if (tabName === 'folleto' && typeof window.cargarFolletoPublicado === 'function') {
-        window.cargarFolletoPublicado();
+            window.cargarFolletoPublicado();
         }
+        if (tabName === 'mensajes') VV.admin.loadMensajesUsuarios();
     },
+
 
     // Cargar estadísticas
     loadStats() {
