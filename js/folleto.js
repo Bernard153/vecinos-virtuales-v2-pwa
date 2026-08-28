@@ -114,8 +114,9 @@ async function cargarContenidoFolleto() {
                     <img src="${item.url_imagen}" alt="${item.titulo}" loading="lazy" style="width:100%;border-radius:8px;">
                 </div>
                 <div class="folleto-text" style="padding:10px;">
-                    <strong style="display:block; margin-bottom:5px;">${item.titulo}</strong>
-                    <p style="font-size:0.85em; color:#444;">${item.descripcion}</p>
+                    <strong style="display:block; margin-bottom:5px;">${sanitizeText(item.titulo)}</strong>
+                    <p style="font-size:0.85em; color:#444;">${sanitizeText(item.descripcion)}</p>
+
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;">
                         ${expiryBadge}
                         <span style="font-size:0.7rem;color:#94a3b8;">${item.nombre_vecino || ''}</span>

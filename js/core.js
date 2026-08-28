@@ -285,4 +285,13 @@ async function enviarRespuestaAdmin() {
 }
 
 // Exportamos para que sea global
+// Sanitizar texto para prevenir XSS
+function sanitizeText(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 window.VV = VV;
+
