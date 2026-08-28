@@ -32,7 +32,7 @@ VV.marketplace = {
 
         container.innerHTML = myProducts.map(p => `
             <div class="product-card">
-		${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
+		${p.image_url ? `<img src="${p.image_url}" alt="${sanitizeText(p.product)}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
                 <div class="card-header">
                     <h3>${p.product}</h3>
                     ${p.featured ? '<span class="badge featured">Destacado</span>' : ''}
@@ -1202,7 +1202,7 @@ VV.marketplace = {
                 <p><strong>Vendedor:</strong> ${p.seller_name} #${p.seller_number}</p>
                 <p><strong>Precio:</strong> <span style="font-size: 1.5rem; color: var(--success-green); font-weight: bold;">$${p.price}</span> / ${p.unit}</p>
                 <p><strong>Contacto:</strong> ${p.contact}</p>
-                ${p.description ? `<p style="color: var(--gray-600); font-size: 0.9rem;">${p.description}</p>` : ''}
+                ${p.description ? `<p style="color: var(--gray-600); font-size: 0.9rem;">${sanitizeText(p.description)}</p>` : ''}
                 <button class="btn-primary" onclick="VV.reservations.create('${p.id}')" style="width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));">
                     <i class="fas fa-calendar-check"></i> Reservar
                 </button>

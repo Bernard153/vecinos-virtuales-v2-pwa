@@ -201,7 +201,7 @@ VV.cultural = {
                 
                 ${mediaType === 'image' && mediaUrl ? `
                     <div style="margin: 1rem 0;">
-                        <img src="${mediaUrl}" alt="${post.title}" style="width: 100%; border-radius: 8px; max-height: 300px; object-fit: cover;">
+                        <img src="${mediaUrl}" alt="${sanitizeText(post.title)}" style="width: 100%; border-radius: 8px; max-height: 300px; object-fit: cover;">
                     </div>
                 ` : ''}
                 
@@ -214,7 +214,7 @@ VV.cultural = {
                     </div>
                 ` : ''}
                 
-                <p style="color: var(--gray-700); margin: 0.5rem 0; white-space: pre-wrap;">${post.description}</p>
+                <p style="color: var(--gray-700); margin: 0.5rem 0; white-space: pre-wrap;">${sanitizeText(post.description)}</p>
                                 <div class="card-footer">
                     <button class="like-btn" onclick="VV.cultural.like('${post.id}')">
                         <i class="fas fa-heart"></i> ${post.likes}
@@ -668,7 +668,7 @@ VV.cultural = {
                 html += comments.map(c => `
                     <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
                         <span style="font-size:1.1rem;">${this.categoryEmoji(c.category)}</span>
-                        <span style="font-size:0.85rem;color:var(--gray-700);">${c.comment_text}</span>
+                        <span style="font-size:0.85rem;color:var(--gray-700);">${sanitizeText(c.comment_text)}</span>
                         <span style="font-size:0.7rem;color:var(--gray-400);margin-left:auto;">${c.user_name || ''}</span>
                     </div>
                 `).join('');

@@ -2512,7 +2512,7 @@ VV.admin.loadMensajesUsuarios = async function() {
                         ${msgs.map(m => `
                             <div style="padding:0.4rem;margin-bottom:0.3rem;border-radius:6px;${m.sender === 'admin' ? 'background:#dbeafe;margin-left:1rem;' : 'background:#f1f5f9;margin-right:1rem;'}">
                                 <span style="font-size:0.7rem;color:#94a3b8;">${m.sender === 'admin' ? '👤 Admin' : '💬 ' + (user.name || 'Usuario')}</span>
-                                <p style="font-size:0.85rem;margin:0.2rem 0;">${m.mensaje}</p>
+                                <p style="font-size:0.85rem;margin:0.2rem 0;">${sanitizeText(m.mensaje)}</p>
                                 ${m.respuesta && m.sender === 'user' ? '' : ''}
                                 <span style="font-size:0.65rem;color:#cbd5e1;">${new Date(m.created_at).toLocaleString()}</span>
                             </div>
