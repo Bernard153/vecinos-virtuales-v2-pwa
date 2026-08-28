@@ -136,11 +136,6 @@ VV.marketplace = {
                         <i class="fas fa-trash"></i> Eliminar
                     </button>
                 </div>
-                ` : ''}
-                <div style="text-align:right;margin-top:0.5rem;">
-                    <button onclick="denunciarPublicacion('${p.id}', 'marketplace')" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;">🚩 Denunciar</button>
-                </div>
-
                 ` : canModerate ? `
                     <div style="margin-top: 1rem;">
                         <button class="btn-delete" onclick="VV.marketplace.deleteProduct('${p.id}')" style="width: 100%;">
@@ -164,9 +159,13 @@ VV.marketplace = {
                         </button>
                     </div>
                 `}
+                <div style="text-align:right;margin-top:0.5rem;">
+                    <button onclick="denunciarPublicacion('${p.id}', 'marketplace')" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;">🚩 Denunciar</button>
+                </div>
             </div>
         `;
         }).join('');
+
 
         VV.marketplace.setupFilters();
         VV.marketplace.updateCart();
