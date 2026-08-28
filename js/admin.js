@@ -629,6 +629,8 @@ VV.admin = {
             window.cargarFolletoPublicado();
         }
         if (tabName === 'mensajes') VV.admin.loadMensajesUsuarios();
+	if (tabName === 'denuncias') VV.admin.loadDenuncias();
+
     },
 
 
@@ -2724,6 +2726,74 @@ async function folletoCambiarImagen(itemId) {
     };
     input.click();
 }
+// ========== DENUNCIAS ==========
 
+VV.admin.loadDenuncias = async function() {
+    const container = document.getElementById('admin-denuncias-list');
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">Cargando denuncias...</p>';
+
+    try {
+        const { data: denuncias, error } = await supabase
+            .from('denuncias')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!denuncias || denuncias.length === 0) {
+            container.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">No hay denuncias.</p>';
+            return;
+        }
+
+        container.innerHTML = denuncias.map(d => `
+            <div class="admin-card-solicitud" style="border-left: 4px solid ${d.status === 'pendiente' ? '#ef4444' : d.status === 'revisado' ? '#f59e0b' : '#10b981'};">
+                <div class="info" style="flex:1;">
+                    <p><strong>🚩 ${d.motivo}</strong></p>
+                    <p style="font-size:0.85rem;margin-top:0.25rem;">${d.detalle || 'Sin detalles adicionales'}</p>
+                    <p style="font-size:0.75rem;color:#94a3b8;">
+                        Denunciante: ${d.denunciante_name} | 
+                        Tipo: ${d.post_type} | 
+                        ID: ${d.post_id.substring(0,8)}... | 
+                        ${new Date(d.created_at).toLocaleDateString()}
+                    </p>
+                    <span style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:12px;background:${d.status === 'pendiente' ? '#fef2f2' : d.status === 'revisado' ? '#fef3c7' : '#dcfce7'};color:${d.status === 'pendiente' ? '#dc2626' : d.status === 'revisado' ? '#d97706' : '#16a34a'};">
+                        ${d.status === 'pendiente' ? '🔴 Pendiente' : d.status === 'revisado' ? '🟡 Revisado' : '🟢 Resuelto'}
+                    </span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.3rem;">
+                    <button onclick="VV.admin.marcarDenuncia('${d.id}', 'revisado')" style="background:#f59e0b;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🟡 Revisado</button>
+                    <button onclick="VV.admin.marcarDenuncia('${d.id}', 'resuelto')" style="background:#10b981;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🟢 Resuelto</button>
+                    <button onclick="VV.admin.eliminarDenuncia('${d.id}')" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🗑️ Eliminar</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error('Error cargando denuncias:', err);
+        container.innerHTML = '<p style="text-align:center;padding:2rem;color:#ef4444;">Error al cargar denuncias.</p>';
+    }
+};
+
+VV.admin.marcarDenuncia = async function(id, status) {
+    try {
+        await supabase.from('denuncias').update({ status: status }).eq('id', id);
+        VV.admin.loadDenuncias();
+        VV.utils.showSuccess('Denuncia marcada como ' + status);
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
+
+VV.admin.eliminarDenuncia = async function(id) {
+    if (!confirm('¿Eliminar esta denuncia?')) return;
+    try {
+        await supabase.from('denuncias').delete().eq('id', id);
+        VV.admin.loadDenuncias();
+        VV.utils.showSuccess('Denuncia eliminada.');
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+};
 
 

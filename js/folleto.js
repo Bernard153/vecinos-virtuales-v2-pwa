@@ -128,6 +128,8 @@ async function cargarContenidoFolleto() {
                         <button onclick="folletoShowComments('${item.id}')" style="flex:1;background:#f1f5f9;border:none;border-radius:6px;padding:0.4rem;cursor:pointer;font-size:0.75rem;">
                             💬 Comentar
                         </button>
+			<button onclick="denunciarPublicacion('${item.id}', 'folleto')" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;">🚩 Denunciar</button>
+
                         ${user && item.user_id && user.id !== item.user_id ? `
                             <button onclick="folletoShowGiftPicker('${item.id}', '${item.user_id}')" style="flex:1;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:6px;padding:0.4rem;cursor:pointer;font-size:0.75rem;">
                             🎁 Regalar
@@ -654,6 +656,35 @@ async function folletoEditDescription(itemId, currentDesc) {
         cargarContenidoFolleto();
     } catch (err) {
         alert('Error al actualizar: ' + err.message);
+    }
+}
+// ========== SISTEMA DE DENUNCIAS ==========
+
+async function denunciarPublicacion(postId, postType) {
+    const user = VV_ROLES.getCurrentUser();
+    if (!user) {
+        alert('Debés iniciar sesión para denunciar.');
+        return;
+    }
+    
+    const motivo = prompt('¿Por qué denunciás esta publicación?\n\n1. Contenido inapropiado\n2. Acoso\n3. Spam\n4. Contenido falso\n5. Otro\n\nEscribí el número o el motivo:');
+    if (!motivo) return;
+    
+    const detalle = prompt('Podés agregar más detalles (opcional):');
+    
+    try {
+        await supabase.from('denuncias').insert({
+            post_id: postId,
+            post_type: postType,
+            denunciante_id: user.id,
+            denunciante_name: user.name || 'Anónimo',
+            motivo: motivo,
+            detalle: detalle || '',
+            status: 'pendiente'
+        });
+        alert('✅ Denuncia enviada. El administrador la revisará.');
+    } catch (err) {
+        alert('Error al enviar denuncia: ' + err.message);
     }
 }
 
