@@ -223,6 +223,8 @@ VV.cultural = {
                         <i class="fas fa-comment"></i> Comentar
                         <span id="comment-count-${post.id}" style="background: var(--gray-200); border-radius: 10px; padding: 0.1rem 0.4rem; font-size: 0.7rem; margin-left: 0.2rem; display: none;"></span>
                     </button>
+                    <button onclick="denunciarPublicacion('${post.id}', 'cultural')" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;margin-left:0.5rem;">🚩 Denunciar</button>
+
 
                     ${!isOwner ? `
                         <button class="like-btn" onclick="VV.cultural.showGiftPicker('${post.id}', '${post.author_id || post.userId}')" style="margin-left: 0.5rem; background: rgba(251,191,36,0.15); color: #f59e0b;">
