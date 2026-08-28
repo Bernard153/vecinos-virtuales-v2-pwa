@@ -47,6 +47,78 @@
             <div class="loading-spinner"></div>
         </div>
     </div>
+        <!-- ========== LANDING PÚBLICA (VISITANTE SIN REGISTRO) ========== -->
+    <div id="landing-screen" class="screen">
+        <div style="min-height:100vh; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%); color: white; display: flex; flex-direction: column;">
+            
+            <!-- Header -->
+            <div style="text-align: center; padding: 2rem 1.5rem 1rem;">
+                <h1 style="font-size: 2rem; font-weight: 800; margin: 0;">
+                    Vecinos Virtuales
+                </h1>
+                <p style="opacity: 0.8; margin-top: 0.5rem;">Conectá con tu barrio de forma simple</p>
+            </div>
+
+            <!-- Botón registrarse -->
+            <div style="text-align: center; padding: 0 1.5rem 1rem;">
+                <button onclick="VV.auth.requestGeolocation()" style="background: linear-gradient(135deg, #c084fc, #8b5cf6); border: none; color: white; padding: 0.75rem 2rem; border-radius: 50px; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(139,92,246,0.4);">
+                    🏠 Unirme a mi barrio
+                </button>
+            </div>
+
+            <!-- Contenido público -->
+            <div style="flex: 1; padding: 0 1rem 2rem; overflow-y: auto;">
+                
+                <!-- El Folleto -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🏪 El Folleto
+                    </h3>
+                    <div id="landing-folleto" style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
+                        <p style="opacity: 0.6; padding: 1rem;">Cargando folleto...</p>
+                    </div>
+                </div>
+
+                <!-- Ofertas Destacadas -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                        ⭐ Ofertas Destacadas
+                    </h3>
+                    <div id="landing-destacadas" style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
+                        <p style="opacity: 0.6; padding: 1rem;">Cargando ofertas...</p>
+                    </div>
+                </div>
+
+                <!-- Cultura -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🎭 Cultura y Eventos
+                    </h3>
+                    <div id="landing-cultura" style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
+                        <p style="opacity: 0.6; padding: 1rem;">Cargando eventos...</p>
+                    </div>
+                </div>
+
+                <!-- Voces Virtuales -->
+                <div style="margin-bottom: 2rem;">
+                    <h3 style="font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                        🎤 Voces Virtuales
+                    </h3>
+                    <div id="landing-voces" style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
+                        <p style="opacity: 0.6; padding: 1rem;">Cargando videos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="text-align: center; padding: 1rem; opacity: 0.6; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <p>Para publicar, comentar o interactuar necesitás una cuenta.</p>
+                <button onclick="VV.auth.requestGeolocation()" style="background: none; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 0.5rem 1.5rem; border-radius: 50px; cursor: pointer; margin-top: 0.5rem; font-size: 0.85rem;">
+                    Crear cuenta / Iniciar sesión
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- PANTALLA DE UBICACIÓN -->
     <div id="location-screen" class="screen">
@@ -1329,6 +1401,7 @@
     <script src="js/admin.js"></script>
     <script src="js/banner.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/landing.js"></script>
 	<script src="js/vv-roles.js"></script>
 	<script src="js/wallet.js"></script>
 	<script src="js/voces-virtuales-v2.js"></script>

@@ -32,12 +32,12 @@ document.addEventListener('DOMContentLoaded', function() {
             await VV.geo.init();
             VV.geo.updateLocationUI();
         } else {
-            VV.data.pendingRegistration = true;
-            VV.utils.showScreen('location-screen');
-            VV.auth.requestGeolocation();
-          
+            // VISITANTE: mostrar landing pública
+            VV.utils.showScreen('landing-screen');
+            if (typeof cargarLandingPublica === 'function') {
+                cargarLandingPublica();
+            }
         }
-
     }, 1500);
     
     // Setup navegación del menú
