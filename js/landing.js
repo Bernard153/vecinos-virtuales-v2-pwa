@@ -183,4 +183,5 @@ async function cargarAnunciantesPublico() {
 }
 
 
+
 console.log('✅ Módulo LANDING cargado');
