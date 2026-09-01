@@ -149,10 +149,13 @@ async function cargarAnunciantesPublico() {
     if (!container) return;
     
     try {
+        const now = new Date().toISOString();
         const { data: sponsors, error } = await supabase
             .from('sponsors')
             .select('*')
             .eq('active', true)
+            .eq('approved', true)
+            .gt('expires_at', now)
             .order('created_at', { ascending: false })
             .limit(10);
 
@@ -163,12 +166,12 @@ async function cargarAnunciantesPublico() {
 
         container.innerHTML = sponsors.map(s => `
             <div style="min-width: 200px; background: rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2);">
-                ${s.imageUrl ? 
-                    `<img src="${s.imageUrl}" alt="${sanitizeText(s.name)}" style="width: 100%; height: 120px; object-fit: cover;" loading="lazy">` :
+                ${s.image_url ? 
+                    `<img src="${s.image_url}" alt="${sanitizeText(s.business_name)}" style="width: 100%; height: 120px; object-fit: cover;" loading="lazy">` :
                     `<div style="width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">${s.logo || '🏪'}</div>`
                 }
                 <div style="padding: 0.5rem;">
-                    <strong style="font-size: 0.85rem; display: block;">${sanitizeText(s.name)}</strong>
+                    <strong style="font-size: 0.85rem; display: block;">${sanitizeText(s.business_name)}</strong>
                     <p style="font-size: 0.75rem; opacity: 0.7; margin: 0.25rem 0;">${sanitizeText(s.description || '')}</p>
                     <span style="font-size: 0.65rem; background: rgba(251,191,36,0.2); color: #fbbf24; padding: 0.1rem 0.4rem; border-radius: 8px;">${(s.tier || 'basic').toUpperCase()}</span>
                 </div>
@@ -178,5 +181,6 @@ async function cargarAnunciantesPublico() {
         container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">Error al cargar.</p>';
     }
 }
+
 
 console.log('✅ Módulo LANDING cargado');
