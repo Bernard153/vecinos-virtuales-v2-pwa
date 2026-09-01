@@ -1,4 +1,4 @@
-// ========== MÓDULO BANNER - 3 CUADROS FIJOS ==========
+﻿// ========== MÓDULO BANNER - 3 CUADROS FIJOS ==========
 
 VV.banner = {
     currentBanners: [],
@@ -326,8 +326,11 @@ VV.banner = {
             
             // Si tiene barrios específicos, verificar si el barrio actual está incluido
             if (Array.isArray(s.neighborhoods)) {
+                // Si no hay barrio definido (visitante), mostrar todos
+                if (!VV.data.neighborhood) return true;
                 return s.neighborhoods.includes(VV.data.neighborhood);
             }
+
             
             return false;
         });
