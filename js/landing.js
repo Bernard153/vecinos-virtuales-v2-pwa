@@ -8,6 +8,15 @@ async function cargarLandingPublica() {
         cargarVocesPublico()
     ]);
 }
+async function cargarLandingPublica() {
+    await Promise.all([
+        cargarFolletoPublico(),
+        cargarDestacadasPublico(),
+        cargarCulturaPublico(),
+        cargarVocesPublico(),
+        cargarAnunciantesPublico()
+    ]);
+}
 
 async function cargarFolletoPublico() {
     const container = document.getElementById('landing-folleto');
@@ -128,6 +137,40 @@ async function cargarVocesPublico() {
                 <div style="padding: 0.5rem;">
                     <strong style="font-size: 0.85rem; display: block;">${sanitizeText(video.title || 'Sin título')}</strong>
                     <p style="font-size: 0.75rem; opacity: 0.7; margin: 0.25rem 0;">${sanitizeText(video.author_name || '')}</p>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">Error al cargar.</p>';
+    }
+}
+async function cargarAnunciantesPublico() {
+    const container = document.getElementById('landing-anunciantes');
+    if (!container) return;
+    
+    try {
+        const { data: sponsors, error } = await supabase
+            .from('sponsors')
+            .select('*')
+            .eq('active', true)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (error || !sponsors || sponsors.length === 0) {
+            container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">No hay anunciantes disponibles.</p>';
+            return;
+        }
+
+        container.innerHTML = sponsors.map(s => `
+            <div style="min-width: 200px; background: rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2);">
+                ${s.imageUrl ? 
+                    `<img src="${s.imageUrl}" alt="${sanitizeText(s.name)}" style="width: 100%; height: 120px; object-fit: cover;" loading="lazy">` :
+                    `<div style="width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">${s.logo || '🏪'}</div>`
+                }
+                <div style="padding: 0.5rem;">
+                    <strong style="font-size: 0.85rem; display: block;">${sanitizeText(s.name)}</strong>
+                    <p style="font-size: 0.75rem; opacity: 0.7; margin: 0.25rem 0;">${sanitizeText(s.description || '')}</p>
+                    <span style="font-size: 0.65rem; background: rgba(251,191,36,0.2); color: #fbbf24; padding: 0.1rem 0.4rem; border-radius: 8px;">${(s.tier || 'basic').toUpperCase()}</span>
                 </div>
             </div>
         `).join('');
