@@ -164,6 +164,9 @@ async function cargarAnunciantesPublico() {
             return;
         }
 
+        // Guardar en memoria para que el banner también los use
+        VV.data.sponsors = sponsors;
+
         container.innerHTML = sponsors.map(s => `
             <div style="min-width: 200px; background: rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2);">
                 ${s.image_url ? 
@@ -177,10 +180,16 @@ async function cargarAnunciantesPublico() {
                 </div>
             </div>
         `).join('');
+        
+        // Cargar también en el banner del pie
+        if (VV.banner && VV.banner.loadDesktopBanners) {
+            VV.banner.loadDesktopBanners(sponsors);
+        }
     } catch (err) {
         container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">Error al cargar.</p>';
     }
 }
+
 
 
 
