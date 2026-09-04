@@ -222,9 +222,8 @@ window.VV_VOCES_V2 = {
             container.innerHTML = `<span class="linea-activa">${lineaActiva.texto}</span>`;
         }
     },
-
     // ============================================================
-    // TAB 1: GRABACIÓN
+    // TAB 1: GRABACIÓN (mezcla micrófono + pista)
     // ============================================================
     startRecording: async function() {
         this.fragmentosVideo = [];
@@ -232,6 +231,7 @@ window.VV_VOCES_V2 = {
         const audioComponent = document.getElementById('vv-pista-audio');
 
         try {
+            // 1. Capturar cámara + micrófono
             this.streamCamaraMicro = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24 } },
                 audio: {
@@ -244,12 +244,41 @@ window.VV_VOCES_V2 = {
             const camaraPreview = document.getElementById('vv-camara-preview');
             if (camaraPreview) camaraPreview.srcObject = this.streamCamaraMicro;
 
+            // 2. Crear AudioContext para mezclar micrófono + pista
+            const audioContext = new AudioContext();
+            const destination = audioContext.createMediaStreamDestination();
+
+            // 3. Conectar micrófono al mezclador
+            const micSource = audioContext.createMediaStreamSource(this.streamCamaraMicro);
+            const micGain = audioContext.createGain();
+            micGain.gain.value = 1.0; // Volumen de la voz
+            micSource.connect(micGain);
+            micGain.connect(destination);
+
+            // 4. Conectar pista de acompañamiento al mezclador
+            let musicGain;
+            if (audioComponent) {
+                const musicSource = audioContext.createMediaElementSource(audioComponent);
+                musicGain = audioContext.createGain();
+                musicGain.gain.value = 0.7; // Volumen de la música
+                musicSource.connect(musicGain);
+                musicGain.connect(destination);
+                // También conectar a los altavoces para que el usuario escuche
+                musicSource.connect(audioContext.destination);
+            }
+
+            // 5. Crear stream combinado: video de cámara + audio mezclado
+            const combinedStream = new MediaStream();
+            this.streamCamaraMicro.getVideoTracks().forEach(track => combinedStream.addTrack(track));
+            destination.stream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
+
+            // 6. Crear MediaRecorder con el stream combinado
             let opcionesCodec = { mimeType: 'video/webm;codecs=vp8,opus' };
             if (!MediaRecorder.isTypeSupported(opcionesCodec.mimeType)) {
                 opcionesCodec = { mimeType: 'video/mp4' };
             }
 
-            this.mediaRecorder = new MediaRecorder(this.streamCamaraMicro, opcionesCodec);
+            this.mediaRecorder = new MediaRecorder(combinedStream, opcionesCodec);
 
             this.mediaRecorder.ondataavailable = (e) => {
                 if (e.data && e.data.size > 0) this.fragmentosVideo.push(e.data);
@@ -262,6 +291,11 @@ window.VV_VOCES_V2 = {
 
                 document.getElementById('vv-zona-grabacion').classList.add('oculto');
                 document.getElementById('vv-zona-post-grabacion').classList.remove('oculto');
+                
+                // Guardar referencia para controles de volumen
+                this.audioContext = audioContext;
+                this.micGain = micGain;
+                this.musicGain = musicGain;
             };
 
             if (btnRec) btnRec.classList.add('grabando');
@@ -277,6 +311,7 @@ window.VV_VOCES_V2 = {
             alert("⚠️ Fallo de cámara/micrófono: " + err.message + "\n\nAsegurate de:\n• Usar Chrome o Safari actualizado\n• Permitir acceso a cámara y micrófono\n• Usar auriculares para mejor calidad");
         }
     },
+
 
     stopRecording: function() {
         const btnRec = document.getElementById('vv-btn-rec-action');
@@ -1255,6 +1290,17 @@ window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('wallet-balance-display').innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Iniciá sesión</span>';
         }
     }
+    // Ajustar volumen independiente de voz y música
+    ajustarVolumen: function(tipo, valor) {
+        if (!this.audioContext) return;
+        const vol = parseFloat(valor);
+        if (tipo === 'voz' && this.micGain) {
+            this.micGain.gain.value = vol;
+        } else if (tipo === 'musica' && this.musicGain) {
+            this.musicGain.gain.value = vol;
+        }
+    },
+
 });
 
 
