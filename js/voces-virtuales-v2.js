@@ -244,8 +244,9 @@ window.VV_VOCES_V2 = {
             const camaraPreview = document.getElementById('vv-camara-preview');
             if (camaraPreview) camaraPreview.srcObject = this.streamCamaraMicro;
 
-            // 2. Crear AudioContext para mezclar micrófono + pista
-            const audioContext = new AudioContext();
+            // 2. Crear AudioContext para mezclar micrófono + pista (reutilizar si ya existe)
+            const audioContext = this.audioContext || new AudioContext();
+            this.audioContext = audioContext;
             const destination = audioContext.createMediaStreamDestination();
 
             // 3. Conectar micrófono al mezclador
@@ -255,17 +256,20 @@ window.VV_VOCES_V2 = {
             micSource.connect(micGain);
             micGain.connect(destination);
 
-            // 4. Conectar pista de acompañamiento al mezclador
+            // 4. Conectar pista de acompañamiento al mezclador (solo crear source una vez)
             let musicGain;
             if (audioComponent) {
-                const musicSource = audioContext.createMediaElementSource(audioComponent);
+                if (!this.musicSource) {
+                    this.musicSource = audioContext.createMediaElementSource(audioComponent);
+                }
                 musicGain = audioContext.createGain();
                 musicGain.gain.value = 0.7; // Volumen de la música
-                musicSource.connect(musicGain);
+                this.musicSource.connect(musicGain);
                 musicGain.connect(destination);
                 // También conectar a los altavoces para que el usuario escuche
-                musicSource.connect(audioContext.destination);
+                this.musicSource.connect(audioContext.destination);
             }
+
 
             // 5. Crear stream combinado: video de cámara + audio mezclado
             const combinedStream = new MediaStream();
@@ -293,9 +297,9 @@ window.VV_VOCES_V2 = {
                 document.getElementById('vv-zona-post-grabacion').classList.remove('oculto');
                 
                 // Guardar referencia para controles de volumen
-                this.audioContext = audioContext;
                 this.micGain = micGain;
                 this.musicGain = musicGain;
+
             };
 
             if (btnRec) btnRec.classList.add('grabando');
