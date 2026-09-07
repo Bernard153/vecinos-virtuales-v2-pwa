@@ -251,8 +251,13 @@ window.VV_VOCES_V2 = {
         try {
             this.streamCamaraMicro = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24 } },
-                audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                }
             });
+
 
             const camaraPreview = document.getElementById('vv-camara-preview');
             if (camaraPreview) camaraPreview.srcObject = this.streamCamaraMicro;
