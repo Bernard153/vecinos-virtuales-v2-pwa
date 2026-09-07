@@ -885,56 +885,7 @@ VV.cultural = {
         document.body.appendChild(modal);
         modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
     },
-
-    sendGift: async function(postId, toUserId, itemCode, itemName, price) {
-        const result = await VV_WALLET.sendGift(toUserId, itemCode, postId, 'cultural');
-
-        if (result.success) {
-            document.getElementById('cultural-gift-modal').remove();
-            alert('🎉 ¡' + itemName + ' enviado!');
-            this.loadGifts(postId);
-        } else {
-            alert('❌ ' + result.error);
-        }
-    },
-
-    loadGifts: async function(postId) {
-        const section = document.getElementById('cultural-gifts-' + postId);
-        if (!section) return;
-
-        try {
-            const { data: gifts, error } = await supabase
-                .from('regalos_enviados')
-                .select('*')
-                .eq('publicacion_id', postId)
-                .order('created_at', { ascending: false })
-                .limit(10);
-
-            if (error || !gifts || gifts.length === 0) {
-                section.innerHTML = '';
-                return;
-            }
-
-            const codes = [...new Set(gifts.map(g => g.tipo_regalo))];
-            const { data: items } = await supabase.from('catalogo_regalos').select('*').in('code', codes);
-            const itemMap = {};
-            (items || []).forEach(i => itemMap[i.code] = i);
-
-            section.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;padding-top:0.5rem;">' +
-                gifts.map(g => {
-                    const item = itemMap[g.tipo_regalo] || {};
-                    return '<span style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:20px;padding:0.2rem 0.6rem;font-size:0.75rem;display:flex;align-items:center;gap:0.2rem;">' +
-                        '<span style="font-size:1rem;">' + (item.icono || '🎁') + '</span>' +
-                        '<span style="color:#f59e0b;font-weight:600;">' + (item.nombre || g.tipo_regalo) + '</span>' +
-                        '</span>';
-                }).join('') +
-                '</div>';
-
-        } catch (err) {
-            console.error('Error cargando regalos:', err);
-        }
-    },
-
+    
     // Comprimir imagen usando Canvas API
     compressImage(file, maxWidth, quality, callback) {
         const reader = new FileReader();

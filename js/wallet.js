@@ -25,9 +25,10 @@
     initWallet: async function(userId) {
         if (!userId) return;
         try {
-            await supabase.from('billeteras').insert([{
+            await supabase.from('billeteras').upsert([{
                 user_id: userId, saldo_monedas: 10, puntos_xp: 0
-            }]);
+            }], { onConflict: 'user_id' });
+
             await this.addTransaction(userId, 10, 'reward', 'Créditos de bienvenida');
         } catch (err) {
             console.error('Error inicializando billetera:', err);
@@ -43,8 +44,10 @@
                 .eq('user_id', userId);
             if (!wallet || wallet.length === 0) {
                 await this.initWallet(userId);
+                return true; // Ya creditó las 10 de bienvenida
             }
-            const w = wallet && wallet[0] ? wallet[0] : { saldo_monedas: 0, puntos_xp: 0 };
+            const w = wallet[0];
+
             const nuevoSaldo = (w.saldo_monedas || 0) + amount;
             const nuevoXP = (w.puntos_xp || 0) + Math.floor(amount / 2);
             const { error: updateError } = await supabase
