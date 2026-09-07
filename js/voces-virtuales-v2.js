@@ -225,7 +225,7 @@ window.VV_VOCES_V2 = {
     // ============================================================
     // TAB 1: GRABACIÓN (mezcla micrófono + pista)
     // ============================================================
-    startRecording: async function() {
+        startRecording: async function() {
         this.fragmentosVideo = [];
         const btnRec = document.getElementById('vv-btn-rec-action');
         const audioComponent = document.getElementById('vv-pista-audio');
@@ -247,29 +247,31 @@ window.VV_VOCES_V2 = {
             // 2. Crear AudioContext para mezclar micrófono + pista (reutilizar si ya existe)
             const audioContext = this.audioContext || new AudioContext();
             this.audioContext = audioContext;
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
             const destination = audioContext.createMediaStreamDestination();
 
             // 3. Conectar micrófono al mezclador
             const micSource = audioContext.createMediaStreamSource(this.streamCamaraMicro);
             const micGain = audioContext.createGain();
-            micGain.gain.value = 1.0; // Volumen de la voz
+            micGain.gain.value = parseFloat(document.getElementById('vv-vol-voz')?.value || 1.0);
             micSource.connect(micGain);
             micGain.connect(destination);
+            this.micGain = micGain; // Asignar AHORA para que los sliders funcionen durante grabación
 
             // 4. Conectar pista de acompañamiento al mezclador (solo crear source una vez)
             let musicGain;
-            if (audioComponent) {
+            if (audioComponent && audioComponent.src) {
                 if (!this.musicSource) {
                     this.musicSource = audioContext.createMediaElementSource(audioComponent);
                 }
                 musicGain = audioContext.createGain();
-                musicGain.gain.value = 0.7; // Volumen de la música
+                musicGain.gain.value = parseFloat(document.getElementById('vv-vol-musica')?.value || 0.7);
                 this.musicSource.connect(musicGain);
                 musicGain.connect(destination);
-                // También conectar a los altavoces para que el usuario escuche
-                this.musicSource.connect(audioContext.destination);
+                this.musicGain = musicGain; // Asignar AHORA
             }
-
 
             // 5. Crear stream combinado: video de cámara + audio mezclado
             const combinedStream = new MediaStream();
@@ -295,17 +297,12 @@ window.VV_VOCES_V2 = {
 
                 document.getElementById('vv-zona-grabacion').classList.add('oculto');
                 document.getElementById('vv-zona-post-grabacion').classList.remove('oculto');
-                
-                // Guardar referencia para controles de volumen
-                this.micGain = micGain;
-                this.musicGain = musicGain;
-
             };
 
             if (btnRec) btnRec.classList.add('grabando');
-            this.mediaRecorder.start();
+            this.mediaRecorder.start(1000); // timeslice de 1s para evitar cortes
             
-            if (audioComponent) {
+            if (audioComponent && audioComponent.src) {
                 audioComponent.currentTime = 0;
                 audioComponent.play();
             }
@@ -490,7 +487,7 @@ window.VV_VOCES_V2 = {
                 btnRec.classList.add('grabando');
                 btnRec.innerHTML = '⏹️ Detener Ensayo';
             }
-            this.mediaRecorder.start();
+            this.mediaRecorder.start(1000);
 
         } catch (err) {
             alert("⚠️ Error de cámara: " + err.message);
