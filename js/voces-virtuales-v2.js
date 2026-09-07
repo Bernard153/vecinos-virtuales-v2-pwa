@@ -243,7 +243,7 @@ window.VV_VOCES_V2 = {
     // ============================================================
     // TAB 1: GRABACIÓN (mezcla micrófono + pista)
     // ============================================================
-     startRecording: async function() {
+         startRecording: async function() {
         this.fragmentosVideo = [];
         const btnRec = document.getElementById('vv-btn-rec-action');
         const audioComponent = document.getElementById('vv-pista-audio');
@@ -251,18 +251,35 @@ window.VV_VOCES_V2 = {
         try {
             this.streamCamaraMicro = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24 } },
-                audio: {
-                    echoCancellation: false,
-                    noiseSuppression: false,
-                    autoGainControl: false
-                }
+                audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
             });
-
 
             const camaraPreview = document.getElementById('vv-camara-preview');
             if (camaraPreview) camaraPreview.srcObject = this.streamCamaraMicro;
 
-            // AudioContext NUEVO cada vez (no reutilizar)
+            // Canvas para aplicar filtros y grabar
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            if (this.currentFilter) {
+                ctx.filter = this.currentFilter;
+            }
+
+            this.isRecording = true;
+            const drawFrame = () => {
+                if (!this.isRecording) return;
+                if (camaraPreview.readyState >= 2) {
+                    ctx.drawImage(camaraPreview, 0, 0, canvas.width, canvas.height);
+                }
+                requestAnimationFrame(drawFrame);
+            };
+            if (camaraPreview.readyState >= 2) drawFrame();
+            else camaraPreview.addEventListener('playing', drawFrame, { once: true });
+
+            const canvasStream = canvas.captureStream(24);
+
+            // AudioContext NUEVO
             const audioContext = new AudioContext();
             this.audioContext = audioContext;
             if (audioContext.state === 'suspended') {
@@ -270,7 +287,7 @@ window.VV_VOCES_V2 = {
             }
             const destination = audioContext.createMediaStreamDestination();
 
-            // Micrófono → mezclador (NO a altavoces = sin eco)
+            // Micrófono → mezclador
             const micSource = audioContext.createMediaStreamSource(this.streamCamaraMicro);
             const micGain = audioContext.createGain();
             micGain.gain.value = parseFloat(document.getElementById('vv-vol-voz')?.value || 1.0);
@@ -278,7 +295,7 @@ window.VV_VOCES_V2 = {
             micGain.connect(destination);
             this.micGain = micGain;
 
-            // Pista → mezclador + altavoces (para que se escuche)
+            // Pista → mezclador + altavoces
             if (audioComponent && audioComponent.src) {
                 this.musicSource = audioContext.createMediaElementSource(audioComponent);
                 const musicGain = audioContext.createGain();
@@ -289,12 +306,11 @@ window.VV_VOCES_V2 = {
                 this.musicGain = musicGain;
             }
 
-            // Stream combinado
+            // Stream combinado: canvas video + audio mezclado
             const combinedStream = new MediaStream();
-            this.streamCamaraMicro.getVideoTracks().forEach(track => combinedStream.addTrack(track));
+            canvasStream.getVideoTracks().forEach(track => combinedStream.addTrack(track));
             destination.stream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
 
-            // Codec
             let opcionesCodec = { mimeType: 'video/webm;codecs=vp8,opus' };
             if (!MediaRecorder.isTypeSupported(opcionesCodec.mimeType)) {
                 opcionesCodec = { mimeType: 'video/webm' };
@@ -311,16 +327,19 @@ window.VV_VOCES_V2 = {
             };
 
             this.mediaRecorder.onstop = () => {
+                this.isRecording = false;
                 this.videoGrabadoBlob = new Blob(this.fragmentosVideo, { type: this.opcionesCodec.mimeType || 'video/webm' });
                 const preview = document.getElementById('vv-preview-grabacion');
                 if (preview) preview.src = URL.createObjectURL(this.videoGrabadoBlob);
 
                 document.getElementById('vv-zona-grabacion').classList.add('oculto');
                 document.getElementById('vv-zona-post-grabacion').classList.remove('oculto');
+
+                setTimeout(() => this.initTrimControls(), 200);
             };
 
             this.mediaRecorder.onerror = (e) => {
-                console.error('❌ MediaRecorder error:', e);
+                console.error('MediaRecorder error:', e);
             };
 
             if (btnRec) btnRec.classList.add('grabando');
@@ -337,10 +356,11 @@ window.VV_VOCES_V2 = {
         }
     },
 
-
-    stopRecording: function() {
+        stopRecording: function() {
         const btnRec = document.getElementById('vv-btn-rec-action');
         if (btnRec) btnRec.classList.remove('grabando');
+
+        this.isRecording = false;
 
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
             this.mediaRecorder.stop();
@@ -360,11 +380,10 @@ window.VV_VOCES_V2 = {
         if (preview && preview.src) preview.play();
     },
 
-    discardRecording: function() {
+        discardRecording: function() {
         this.videoGrabadoBlob = null;
         this.fragmentosVideo = [];
 
-        // Limpiar AudioContext
         if (this.audioContext) {
             try { this.audioContext.close(); } catch(e) {}
             this.audioContext = null;
@@ -373,14 +392,21 @@ window.VV_VOCES_V2 = {
         this.micGain = null;
         this.musicGain = null;
         this.mediaRecorder = null;
+        this.isRecording = false;
 
-        // Detener streams
+        // Reset filtro
+        this.currentFilter = '';
+        const previewCam = document.getElementById('vv-camara-preview');
+        if (previewCam) previewCam.style.filter = '';
+        document.querySelectorAll('.vv-filter-btn').forEach(b => b.classList.remove('active'));
+        const normalBtn = document.querySelector('.vv-filter-btn');
+        if (normalBtn) normalBtn.classList.add('active');
+
         if (this.streamCamaraMicro) {
             this.streamCamaraMicro.getTracks().forEach(track => track.stop());
             this.streamCamaraMicro = null;
         }
 
-        // Reemplazar audio element (para que createMediaElementSource funcione la próxima vez)
         const oldAudio = document.getElementById('vv-pista-audio');
         if (oldAudio) {
             const newAudio = document.createElement('audio');
@@ -394,7 +420,6 @@ window.VV_VOCES_V2 = {
         if (inputTitulo) inputTitulo.value = "";
         if (checkDerechos) checkDerechos.checked = false;
 
-        // Volver a zona de subida para elegir nueva pista
         document.getElementById('vv-zona-post-grabacion').classList.add('oculto');
         document.getElementById('vv-zona-grabacion').classList.add('oculto');
         document.getElementById('vv-zona-subida').classList.remove('oculto');
@@ -1374,6 +1399,205 @@ window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('wallet-balance-display').innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Iniciá sesión</span>';
         }
     }
+// ========== FILTROS DE CÁMARA ==========
+VV_VOCES_V2.setFilter = function(filter, btn) {
+    this.currentFilter = filter === 'none' ? '' : filter;
+    const preview = document.getElementById('vv-camara-preview');
+    if (preview) preview.style.filter = filter === 'none' ? '' : filter;
+    document.querySelectorAll('.vv-filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+};
+
+// ========== EDICIÓN POST-GRABACIÓN ==========
+VV_VOCES_V2.formatTime = function(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return m + ':' + s.toString().padStart(2, '0');
+};
+
+VV_VOCES_V2.initTrimControls = function() {
+    const video = document.getElementById('vv-preview-grabacion');
+    const startSlider = document.getElementById('vv-trim-start');
+    const endSlider = document.getElementById('vv-trim-end');
+    if (!video || !startSlider || !endSlider) return;
+
+    const setup = () => {
+        const duration = Math.floor(video.duration) || 0;
+        if (duration === 0) return;
+        startSlider.max = duration;
+        startSlider.value = 0;
+        endSlider.max = duration;
+        endSlider.value = duration;
+        VV_VOCES_V2.updateTrimDisplay();
+    };
+
+    if (video.readyState >= 1) setup();
+    else video.addEventListener('loadedmetadata', setup, { once: true });
+};
+
+VV_VOCES_V2.updateTrimDisplay = function() {
+    const startSlider = document.getElementById('vv-trim-start');
+    const endSlider = document.getElementById('vv-trim-end');
+    if (!startSlider || !endSlider) return;
+
+    if (parseInt(startSlider.value) >= parseInt(endSlider.value)) {
+        startSlider.value = parseInt(endSlider.value) - 1;
+    }
+
+    const startTime = document.getElementById('vv-trim-start-time');
+    const endTime = document.getElementById('vv-trim-end-time');
+    if (startTime) startTime.textContent = this.formatTime(parseInt(startSlider.value));
+    if (endTime) endTime.textContent = this.formatTime(parseInt(endSlider.value));
+};
+
+VV_VOCES_V2.applyTrim = async function() {
+    const startSlider = document.getElementById('vv-trim-start');
+    const endSlider = document.getElementById('vv-trim-end');
+    if (!startSlider || !endSlider) return;
+
+    const start = parseInt(startSlider.value);
+    const end = parseInt(endSlider.value);
+    if (end - start < 1) { alert('El recorte debe durar al menos 1 segundo.'); return; }
+
+    const btn = document.getElementById('vv-btn-trim');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+    try {
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(this.videoGrabadoBlob);
+        video.muted = true;
+        await new Promise(r => video.addEventListener('loadedmetadata', r, { once: true }));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;
+        canvas.height = 480;
+        const ctx = canvas.getContext('2d');
+        const canvasStream = canvas.captureStream(24);
+
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaElementSource(video);
+        const dest = audioContext.createMediaStreamDestination();
+        source.connect(dest);
+
+        const combinedStream = new MediaStream();
+        canvasStream.getVideoTracks().forEach(t => combinedStream.addTrack(t));
+        dest.stream.getAudioTracks().forEach(t => combinedStream.addTrack(t));
+
+        let mimeType = 'video/webm;codecs=vp8,opus';
+        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+
+        const recorder = new MediaRecorder(combinedStream, { mimeType });
+        const chunks = [];
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+        recorder.onstop = () => {
+            VV_VOCES_V2.videoGrabadoBlob = new Blob(chunks, { type: mimeType });
+            const preview = document.getElementById('vv-preview-grabacion');
+            if (preview) preview.src = URL.createObjectURL(VV_VOCES_V2.videoGrabadoBlob);
+            audioContext.close();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cut"></i> Aplicar Recorte';
+            setTimeout(() => VV_VOCES_V2.initTrimControls(), 200);
+            alert('✅ Recorte aplicado: ' + VV_VOCES_V2.formatTime(start) + ' - ' + VV_VOCES_V2.formatTime(end));
+        };
+
+        video.currentTime = start;
+        await new Promise(r => video.addEventListener('seeked', r, { once: true }));
+        recorder.start();
+        video.play();
+
+        const drawFrame = () => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            if (video.currentTime < end && !video.ended) {
+                requestAnimationFrame(drawFrame);
+            } else {
+                video.pause();
+                recorder.stop();
+            }
+        };
+        video.addEventListener('playing', drawFrame, { once: true });
+
+    } catch (err) {
+        console.error('Error trim:', err);
+        alert('Error al recortar: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-cut"></i> Aplicar Recorte';
+    }
+};
+
+VV_VOCES_V2.applyAudioBoost = async function() {
+    const boostSlider = document.getElementById('vv-audio-boost');
+    if (!boostSlider) return;
+    const boost = parseFloat(boostSlider.value);
+    if (boost === 1) { alert('El volumen ya está normal (1.0x). Subí el slider para aumentar.'); return; }
+
+    const btn = document.getElementById('vv-btn-boost');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+    try {
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(this.videoGrabadoBlob);
+        video.muted = false;
+        await new Promise(r => video.addEventListener('loadedmetadata', r, { once: true }));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 640;
+        canvas.height = 480;
+        const ctx = canvas.getContext('2d');
+        const canvasStream = canvas.captureStream(24);
+
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaElementSource(video);
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = boost;
+        const dest = audioContext.createMediaStreamDestination();
+        source.connect(gainNode);
+        gainNode.connect(dest);
+
+        const combinedStream = new MediaStream();
+        canvasStream.getVideoTracks().forEach(t => combinedStream.addTrack(t));
+        dest.stream.getAudioTracks().forEach(t => combinedStream.addTrack(t));
+
+        let mimeType = 'video/webm;codecs=vp8,opus';
+        if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+
+        const recorder = new MediaRecorder(combinedStream, { mimeType });
+        const chunks = [];
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+        recorder.onstop = () => {
+            VV_VOCES_V2.videoGrabadoBlob = new Blob(chunks, { type: mimeType });
+            const preview = document.getElementById('vv-preview-grabacion');
+            if (preview) preview.src = URL.createObjectURL(VV_VOCES_V2.videoGrabadoBlob);
+            audioContext.close();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-volume-up"></i> Aplicar Volumen';
+            setTimeout(() => VV_VOCES_V2.initTrimControls(), 200);
+            alert('✅ Volumen aplicado: ' + boost.toFixed(1) + 'x');
+        };
+
+        video.currentTime = 0;
+        recorder.start();
+        video.play();
+
+        const drawFrame = () => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            if (!video.ended) {
+                requestAnimationFrame(drawFrame);
+            } else {
+                recorder.stop();
+            }
+        };
+        video.addEventListener('playing', drawFrame, { once: true });
+
+    } catch (err) {
+        console.error('Error boost:', err);
+        alert('Error al ajustar volumen: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-volume-up"></i> Aplicar Volumen';
+    }
+};
+
 });
 
 
