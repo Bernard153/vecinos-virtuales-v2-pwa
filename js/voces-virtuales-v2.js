@@ -144,10 +144,27 @@ window.VV_VOCES_V2 = {
     // ============================================================
     // TAB 1: MODO ARTISTA — Cargar pista local
     // ============================================================
-    loadLocalTrack: function(audioFile, lrcFile) {
+        loadLocalTrack: function(audioFile, lrcFile) {
         if (!audioFile) return;
-
         const self = this;
+
+        // Limpiar AudioContext anterior
+        if (this.audioContext) {
+            try { this.audioContext.close(); } catch(e) {}
+            this.audioContext = null;
+            this.musicSource = null;
+            this.micGain = null;
+            this.musicGain = null;
+        }
+
+        // Reemplazar audio element para poder crear nuevo MediaElementSource
+        const oldAudio = document.getElementById('vv-pista-audio');
+        if (oldAudio) {
+            const newAudio = document.createElement('audio');
+            newAudio.id = 'vv-pista-audio';
+            newAudio.controls = true;
+            oldAudio.parentNode.replaceChild(newAudio, oldAudio);
+        }
 
         const readerAudio = new FileReader();
         readerAudio.onload = function(e) {
@@ -179,6 +196,7 @@ window.VV_VOCES_V2 = {
             if (container) container.innerHTML = "Canción Original<br>(Sin letra sincronizada)";
         }
     },
+
 
     parsearLRC: function(texto) {
         this.lrcLineas = [];
@@ -225,34 +243,29 @@ window.VV_VOCES_V2 = {
     // ============================================================
     // TAB 1: GRABACIÓN (mezcla micrófono + pista)
     // ============================================================
-            startRecording: async function() {
+     startRecording: async function() {
         this.fragmentosVideo = [];
         const btnRec = document.getElementById('vv-btn-rec-action');
         const audioComponent = document.getElementById('vv-pista-audio');
 
         try {
-            // 1. Capturar cámara + micrófono
             this.streamCamaraMicro = await navigator.mediaDevices.getUserMedia({
                 video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 24 } },
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                }
+                audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
             });
 
             const camaraPreview = document.getElementById('vv-camara-preview');
             if (camaraPreview) camaraPreview.srcObject = this.streamCamaraMicro;
 
-            // 2. Crear AudioContext (reutilizar si ya existe)
-            const audioContext = this.audioContext || new AudioContext();
+            // AudioContext NUEVO cada vez (no reutilizar)
+            const audioContext = new AudioContext();
             this.audioContext = audioContext;
             if (audioContext.state === 'suspended') {
                 await audioContext.resume();
             }
             const destination = audioContext.createMediaStreamDestination();
 
-            // 3. Conectar micrófono al mezclador (NO a los altavoces para evitar eco)
+            // Micrófono → mezclador (NO a altavoces = sin eco)
             const micSource = audioContext.createMediaStreamSource(this.streamCamaraMicro);
             const micGain = audioContext.createGain();
             micGain.gain.value = parseFloat(document.getElementById('vv-vol-voz')?.value || 1.0);
@@ -260,33 +273,32 @@ window.VV_VOCES_V2 = {
             micGain.connect(destination);
             this.micGain = micGain;
 
-            // 4. Conectar pista de acompañamiento al mezclador Y a los altavoces
-            let musicGain;
+            // Pista → mezclador + altavoces (para que se escuche)
             if (audioComponent && audioComponent.src) {
-                if (!this.musicSource) {
-                    this.musicSource = audioContext.createMediaElementSource(audioComponent);
-                }
-                musicGain = audioContext.createGain();
+                this.musicSource = audioContext.createMediaElementSource(audioComponent);
+                const musicGain = audioContext.createGain();
                 musicGain.gain.value = parseFloat(document.getElementById('vv-vol-musica')?.value || 0.7);
                 this.musicSource.connect(musicGain);
                 musicGain.connect(destination);
-                // Conectar SOLO la música a los altavoces para que se escuche sin eco
                 musicGain.connect(audioContext.destination);
                 this.musicGain = musicGain;
             }
 
-            // 5. Crear stream combinado: video de cámara + audio mezclado
+            // Stream combinado
             const combinedStream = new MediaStream();
             this.streamCamaraMicro.getVideoTracks().forEach(track => combinedStream.addTrack(track));
             destination.stream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
 
-            // 6. Crear MediaRecorder
+            // Codec
             let opcionesCodec = { mimeType: 'video/webm;codecs=vp8,opus' };
             if (!MediaRecorder.isTypeSupported(opcionesCodec.mimeType)) {
-                opcionesCodec = { mimeType: 'video/mp4' };
+                opcionesCodec = { mimeType: 'video/webm' };
+            }
+            if (!MediaRecorder.isTypeSupported(opcionesCodec.mimeType)) {
+                opcionesCodec = {};
             }
 
-            this.mediaRecorder = new MediaRecorder(combinedStream, opcionesCodec);
+            this.mediaRecorder = new MediaRecorder(combinedStream, opcionesCodec.mimeType ? opcionesCodec : undefined);
             this.opcionesCodec = opcionesCodec;
 
             this.mediaRecorder.ondataavailable = (e) => {
@@ -294,7 +306,7 @@ window.VV_VOCES_V2 = {
             };
 
             this.mediaRecorder.onstop = () => {
-                this.videoGrabadoBlob = new Blob(this.fragmentosVideo, { type: this.opcionesCodec.mimeType });
+                this.videoGrabadoBlob = new Blob(this.fragmentosVideo, { type: this.opcionesCodec.mimeType || 'video/webm' });
                 const preview = document.getElementById('vv-preview-grabacion');
                 if (preview) preview.src = URL.createObjectURL(this.videoGrabadoBlob);
 
@@ -302,12 +314,16 @@ window.VV_VOCES_V2 = {
                 document.getElementById('vv-zona-post-grabacion').classList.remove('oculto');
             };
 
+            this.mediaRecorder.onerror = (e) => {
+                console.error('❌ MediaRecorder error:', e);
+            };
+
             if (btnRec) btnRec.classList.add('grabando');
-            this.mediaRecorder.start(1000);
-            
+            this.mediaRecorder.start();
+
             if (audioComponent && audioComponent.src) {
                 audioComponent.currentTime = 0;
-                audioComponent.play();
+                audioComponent.play().catch(e => console.error('Error play:', e));
             }
 
         } catch (err) {
@@ -316,14 +332,15 @@ window.VV_VOCES_V2 = {
         }
     },
 
-        stopRecording: function() {
+
+    stopRecording: function() {
         const btnRec = document.getElementById('vv-btn-rec-action');
         if (btnRec) btnRec.classList.remove('grabando');
-        
+
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
             this.mediaRecorder.stop();
         }
-        
+
         const audioComponent = document.getElementById('vv-pista-audio');
         if (audioComponent) audioComponent.pause();
 
@@ -341,16 +358,43 @@ window.VV_VOCES_V2 = {
     discardRecording: function() {
         this.videoGrabadoBlob = null;
         this.fragmentosVideo = [];
-        
+
+        // Limpiar AudioContext
+        if (this.audioContext) {
+            try { this.audioContext.close(); } catch(e) {}
+            this.audioContext = null;
+        }
+        this.musicSource = null;
+        this.micGain = null;
+        this.musicGain = null;
+        this.mediaRecorder = null;
+
+        // Detener streams
+        if (this.streamCamaraMicro) {
+            this.streamCamaraMicro.getTracks().forEach(track => track.stop());
+            this.streamCamaraMicro = null;
+        }
+
+        // Reemplazar audio element (para que createMediaElementSource funcione la próxima vez)
+        const oldAudio = document.getElementById('vv-pista-audio');
+        if (oldAudio) {
+            const newAudio = document.createElement('audio');
+            newAudio.id = 'vv-pista-audio';
+            newAudio.controls = true;
+            oldAudio.parentNode.replaceChild(newAudio, oldAudio);
+        }
+
         const inputTitulo = document.getElementById('vv-input-titulo-obra');
         const checkDerechos = document.getElementById('vv-check-derechos');
-        
         if (inputTitulo) inputTitulo.value = "";
         if (checkDerechos) checkDerechos.checked = false;
 
+        // Volver a zona de subida para elegir nueva pista
         document.getElementById('vv-zona-post-grabacion').classList.add('oculto');
-        document.getElementById('vv-zona-grabacion').classList.remove('oculto');
+        document.getElementById('vv-zona-grabacion').classList.add('oculto');
+        document.getElementById('vv-zona-subida').classList.remove('oculto');
     },
+
 
     publishOriginal: async function(title, isAuthor) {
         if (!title) {
@@ -675,14 +719,33 @@ VV_VOCES_V2.descargarLocal = function() {
 
 // Grabar sin pista (modo acústico)
 VV_VOCES_V2.irAGrabarSinPista = function() {
+    // Limpiar AudioContext anterior
+    if (this.audioContext) {
+        try { this.audioContext.close(); } catch(e) {}
+        this.audioContext = null;
+    }
+    this.musicSource = null;
+    this.micGain = null;
+    this.musicGain = null;
+
     this.audioTrackBlobURL = null;
     this.isLRC = false;
     const container = document.getElementById('vv-letra-container');
     if (container) container.innerHTML = "🎵 Modo Acústico — Tocá grabar y empezá a tocar tu instrumento";
-    
+
+    // Reemplazar audio element
+    const oldAudio = document.getElementById('vv-pista-audio');
+    if (oldAudio) {
+        const newAudio = document.createElement('audio');
+        newAudio.id = 'vv-pista-audio';
+        newAudio.controls = true;
+        oldAudio.parentNode.replaceChild(newAudio, oldAudio);
+    }
+
     document.getElementById('vv-zona-subida').classList.add('oculto');
     document.getElementById('vv-zona-grabacion').classList.remove('oculto');
 };
+
 
 // Stubs para explorar (si no existen aún)
 VV_VOCES_V2.switchTab = function(tab) {
