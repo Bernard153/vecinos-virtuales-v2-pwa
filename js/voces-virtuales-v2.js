@@ -580,6 +580,15 @@ VV_VOCES_V2.onLyricSelected = function() {
         nameDisplay.textContent = '📄 ' + fileLetra.files[0].name;
     }
 };
+VV_VOCES_V2.ajustarVolumen = function(tipo, valor) {
+    if (!this.audioContext) return;
+    const vol = parseFloat(valor);
+    if (tipo === 'voz' && this.micGain) {
+        this.micGain.gain.value = vol;
+    } else if (tipo === 'musica' && this.musicGain) {
+        this.musicGain.gain.value = vol;
+    }
+};
 
 // Wrapper: cargar pista desde los inputs del HTML
 VV_VOCES_V2.loadLocalTrackFromInputs = function() {
@@ -1290,17 +1299,7 @@ window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('wallet-balance-display').innerHTML = '<span style="color:#94a3b8;font-size:0.8rem;">Iniciá sesión</span>';
         }
     }
-    // Ajustar volumen independiente de voz y música
-    ajustarVolumen: function(tipo, valor) {
-        if (!this.audioContext) return;
-        const vol = parseFloat(valor);
-        if (tipo === 'voz' && this.micGain) {
-            this.micGain.gain.value = vol;
-        } else if (tipo === 'musica' && this.musicGain) {
-            this.musicGain.gain.value = vol;
-        }
-    },
-
 });
+
 
 
