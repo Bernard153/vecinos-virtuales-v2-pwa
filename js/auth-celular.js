@@ -1,8 +1,11 @@
 ﻿VV.authCelular = {
     
     startRegistration() {
-        VV.utils.showScreen('terms-screen');
+        // Los términos ya se aceptaron en terminos.html, ir directo al registro
+        VV.data.pendingRegistration = true;
+        VV.authCelular.onNeighborhoodSelected(VV.data.neighborhood);
     },
+
     
     acceptTerms() {
         const accepted = document.getElementById('terms-check')?.checked;
