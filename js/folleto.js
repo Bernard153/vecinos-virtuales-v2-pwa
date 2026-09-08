@@ -77,6 +77,7 @@ async function cargarContenidoFolleto() {
             .select('*')
             .eq('aprobado', true)
             .gt('expires_at', now)
+            .eq('neighborhood', VV.data.neighborhood)
             .order('highlighted', { ascending: false })
             .order('created_at', { ascending: false });
 
@@ -84,7 +85,15 @@ async function cargarContenidoFolleto() {
         gridFolleto.innerHTML = '';
 
         if (!data || data.length === 0) {
-            gridFolleto.innerHTML = '<p style="padding:20px;">No hay anuncios disponibles por ahora.</p>';
+        gridFolleto.innerHTML = `
+                <div style="text-align:center;padding:2rem;color:#666;">
+                    <div style="font-size:3rem;margin-bottom:1rem;">🏘️</div>
+                    <h3 style="margin:0 0 0.5rem 0;">Bienvenido a ${sanitizeText(VV.data.neighborhood || 'tu barrio')}</h3>
+                    <p style="margin:0 0 1rem 0;">Este folleto está esperando su primer anuncio.</p>
+                    <p style="font-size:0.85rem;color:#999;">Tocá el botón + para publicar el primero.</p>
+                </div>
+            `;
+
             return;
         }
 

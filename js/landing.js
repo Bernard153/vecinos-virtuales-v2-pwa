@@ -24,16 +24,19 @@ async function cargarFolletoPublico() {
     
     try {
         const now = new Date().toISOString();
-        const { data, error } = await supabase
+        const barrio = VV.data.neighborhood || null;
+        let query = supabase
             .from('folleto_imagenes')
             .select('*')
             .eq('aprobado', true)
             .gt('expires_at', now)
             .order('created_at', { ascending: false })
             .limit(10);
+        if (barrio) query = query.eq('neighborhood', barrio);
+        const { data, error } = await query;
 
         if (error || !data || data.length === 0) {
-            container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">No hay anuncios disponibles.</p>';
+            container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">Sé el primero en publicar en el folleto 📢</p>';
             return;
         }
 
@@ -57,7 +60,8 @@ async function cargarDestacadasPublico() {
     
     try {
         const now = new Date().toISOString();
-        const { data, error } = await supabase
+        const barrio = VV.data.neighborhood || null;
+        let query = supabase
             .from('featured_offers')
             .select('*')
             .eq('status', 'active')
@@ -65,9 +69,11 @@ async function cargarDestacadasPublico() {
             .gt('expires_at', now)
             .order('created_at', { ascending: false })
             .limit(10);
+        if (barrio) query = query.eq('neighborhood', barrio);
+        const { data, error } = await query;
 
         if (error || !data || data.length === 0) {
-            container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">No hay ofertas destacadas.</p>';
+            container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">No hay ofertas destacadas aún.</p>';
             return;
         }
 
@@ -90,14 +96,17 @@ async function cargarCulturaPublico() {
     if (!container) return;
     
     try {
-        const { data, error } = await supabase
+        const barrio = VV.data.neighborhood || null;
+        let query = supabase
             .from('cultural_posts')
             .select('*')
             .order('created_at', { ascending: false })
             .limit(10);
+        if (barrio) query = query.eq('neighborhood', barrio);
+        const { data, error } = await query;
 
         if (error || !data || data.length === 0) {
-            container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">No hay eventos.</p>';
+            container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">No hay eventos culturales aún.</p>';
             return;
         }
 
@@ -115,19 +124,23 @@ async function cargarCulturaPublico() {
     }
 }
 
+
 async function cargarVocesPublico() {
     const container = document.getElementById('landing-voces');
     if (!container) return;
     
     try {
-        const { data, error } = await supabase
+        const barrio = VV.data.neighborhood || null;
+        let query = supabase
             .from('karaoke_videos')
             .select('*')
             .order('created_at', { ascending: false })
             .limit(10);
+        if (barrio) query = query.eq('neighborhood', barrio);
+        const { data, error } = await query;
 
         if (error || !data || data.length === 0) {
-            container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">No hay videos.</p>';
+            container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">No hay videos aún.</p>';
             return;
         }
 
@@ -144,6 +157,7 @@ async function cargarVocesPublico() {
         container.innerHTML = '<p style="opacity: 0.6; padding: 1rem;">Error al cargar.</p>';
     }
 }
+
 async function cargarAnunciantesPublico() {
     const container = document.getElementById('landing-anunciantes');
     if (!container) return;
