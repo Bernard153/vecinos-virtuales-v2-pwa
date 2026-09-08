@@ -27,10 +27,13 @@
     },
    
     onNeighborhoodSelected(neighborhood) {
+        const formatted = VV.geo.formatNeighborhoodName(neighborhood);
+        VV.data.neighborhood = formatted;
         const el = document.getElementById('reg-selected-neighborhood');
-        if (el) el.textContent = neighborhood;
+        if (el) el.textContent = formatted;
         VV.utils.showScreen('register-phone-screen');
     },
+
     
    async registerWithPin() {
     const name = document.getElementById('reg-name')?.value.trim();
@@ -63,7 +66,11 @@
         alert('El barrio Administrador no está disponible para registro público.');
         return;
     }
-    
+    if (!VV.data.neighborhood) {
+        alert('No se detectó tu barrio. Volvé atrás y seleccioná tu barrio manualmente.');
+        return;
+    }
+
     // === RATE LIMITING: evitar intentos rápidos ===
     const lastAttempt = localStorage.getItem('vv_last_register_attempt');
     if (lastAttempt) {
