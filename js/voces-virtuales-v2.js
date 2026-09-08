@@ -842,8 +842,8 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
     // 3. Insertar el registro en la tabla karaoke_videos
     const registro = {
         user_id: user.id,
-        user_name: user.name || user.email || 'Anónimo',
-        title: metadata.title || 'Sin título',
+        user_name: user.name || user.email || 'An├│nimo',
+        title: metadata.title || 'Sin t├¡tulo',
         video_url: videoUrl,
         audio_url: this.audioTrackBlobURL || null,
         track_id: metadata.track_id || '',
@@ -856,8 +856,10 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
         estado_moderacion: 'aprobado',
         reportado: false,
         likes_count: 0,
-        views_count: 0
+        views_count: 0,
+        neighborhood: VV.data.neighborhood || user.neighborhood
     };
+
 
     const { data: insertData, error: insertError } = await supabase
         .from('karaoke_videos')
@@ -889,13 +891,17 @@ VV_VOCES_V2.cargarFeed = async function() {
     container.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem;">Cargando obras del barrio...</p>';
 
     try {
-        const { data, error } = await supabase
+         const { data, error } = await supabase
             .from('karaoke_videos')
             .select('*')
             .eq('visible', true)
             .eq('estado_moderacion', 'aprobado')
+            .eq('neighborhood', VV.data.neighborhood)
             .order('created_at', { ascending: false })
             .limit(24);
+
+
+
 
         if (error) throw error;
 
