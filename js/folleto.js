@@ -77,9 +77,10 @@ async function cargarContenidoFolleto() {
             .select('*')
             .eq('aprobado', true)
             .gt('expires_at', now)
-            .eq('neighborhood', VV.data.neighborhood)
+            .or(`neighborhood.is.null,neighborhood.eq.${VV.data.neighborhood}`)
             .order('highlighted', { ascending: false })
             .order('created_at', { ascending: false });
+
 
         if (error) throw error;
         gridFolleto.innerHTML = '';

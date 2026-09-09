@@ -23,12 +23,20 @@ VV.auth = {
                 if (userData) {
                     VV.data.user = userData;
                     VV.data.neighborhood = userData.neighborhood;
+                    // Asegurar home_neighborhood y current_neighborhood
+                    if (!userData.home_neighborhood) {
+                        userData.home_neighborhood = userData.neighborhood;
+                        supabase.from('users').update({ home_neighborhood: userData.neighborhood }).eq('id', userData.id);
+                    }
+                    if (!userData.current_neighborhood) {
+                        userData.current_neighborhood = userData.neighborhood;
+                        supabase.from('users').update({ current_neighborhood: userData.neighborhood }).eq('id', userData.id);
+                    }
                     localStorage.setItem('vecinosVirtualesUser', JSON.stringify(userData));
                     localStorage.setItem('vv_phone_auth', userData.id);
-		    localStorage.setItem('vecinosVirtualesUser', JSON.stringify(userData));
-
                     return true;
                 }
+
 
             }
             return false;

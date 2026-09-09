@@ -865,7 +865,8 @@ VV.admin = {
     },
 
     // Guardar imagen de portada
-    saveBannerImage() {
+        // Guardar imagen de portada
+    async saveBannerImage() {
         const fileInput = document.getElementById('banner-image-file');
         if (!fileInput.files || !fileInput.files[0]) {
             alert('Por favor selecciona una imagen');
@@ -873,30 +874,93 @@ VV.admin = {
         }
 
         const file = fileInput.files[0];
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            localStorage.setItem('welcomeBannerImage', e.target.result);
+        try {
+            // Comprimir imagen
+            const compressedBlob = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const maxW = 1200;
+                        const scale = Math.min(1, maxW / img.width);
+                        canvas.width = img.width * scale;
+                        canvas.height = img.height * scale;
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob(b => resolve(b), 'image/jpeg', 0.8);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Subir a Supabase Storage
+            const fileName = `portada/portada-global-${Date.now()}.jpg`;
+            const { error: uploadError } = await supabase.storage
+                .from('barrio-media')
+                .upload(fileName, compressedBlob, { contentType: 'image/jpeg', cacheControl: '3600' });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage
+                .from('barrio-media')
+                .getPublicUrl(fileName);
+
+            const portadaUrl = urlData.publicUrl;
+
+            // Guardar URL en tabla de configuración
+            await supabase.from('app_config').upsert([{
+                key: 'welcome_banner_image',
+                value: portadaUrl,
+                updated_at: new Date().toISOString()
+            }], { onConflict: 'key' });
+
+            // También en localStorage para carga rápida
+            localStorage.setItem('welcomeBannerImage', portadaUrl);
+
             document.getElementById('banner-image-overlay').classList.remove('active');
             VV.admin.loadBannerImage();
-            VV.utils.showSuccess('Imagen de portada actualizada');
-        };
-        reader.readAsDataURL(file);
+            VV.utils.showSuccess('Imagen de portada actualizada para todos los barrios');
+        } catch (err) {
+            console.error('Error guardando portada:', err);
+            alert('Error al guardar: ' + err.message);
+        }
     },
 
     // Eliminar imagen de portada
-    removeBannerImage() {
+    async removeBannerImage() {
         if (!confirm('¿Eliminar la imagen de portada?')) return;
 
-        localStorage.removeItem('welcomeBannerImage');
-        document.getElementById('banner-image-overlay').classList.remove('active');
-        VV.admin.loadBannerImage();
-        VV.utils.showSuccess('Imagen de portada eliminada');
+        try {
+            await supabase.from('app_config').delete().eq('key', 'welcome_banner_image');
+            localStorage.removeItem('welcomeBannerImage');
+            document.getElementById('banner-image-overlay').classList.remove('active');
+            VV.admin.loadBannerImage();
+            VV.utils.showSuccess('Imagen de portada eliminada');
+        } catch (err) {
+            console.error('Error eliminando portada:', err);
+        }
     },
 
     // Cargar imagen de portada
-    loadBannerImage() {
+    async loadBannerImage() {
         const banner = document.getElementById('welcome-banner');
-        const imageUrl = localStorage.getItem('welcomeBannerImage');
+        if (!banner) return;
+
+        let imageUrl = localStorage.getItem('welcomeBannerImage');
+
+        // Si no está en localStorage, intentar cargar desde Supabase
+        if (!imageUrl) {
+            try {
+                const { data } = await supabase.from('app_config').select('value').eq('key', 'welcome_banner_image').single();
+                if (data && data.value) {
+                    imageUrl = data.value;
+                    localStorage.setItem('welcomeBannerImage', imageUrl);
+                }
+            } catch (err) {
+                // No existe configuración, usar gradiente por defecto
+            }
+        }
 
         if (imageUrl) {
             banner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${imageUrl}')`;
@@ -2634,28 +2698,52 @@ async function cargarFolletoPublicado() {
             return;
         }
 
-        contenedor.innerHTML = data.map(item => `
-            <div class="admin-card-solicitud" style="border-left: 4px solid #10b981;">
-                <img src="${item.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
-                <div class="info">
-                    <strong>${item.titulo}</strong>
-                    <p>${item.descripcion}</p>
-                    <p style="font-size:0.75rem;color:#94a3b8;">
-                        Por: ${item.nombre_vecino || 'Anónimo'} | 
-                        ⏰ ${Math.ceil((new Date(item.expires_at) - new Date()) / (1000*60*60*24))}d restantes
-                    </p>
+        // Agrupar por barrio
+        const porBarrio = {};
+        data.forEach(item => {
+            const barrio = item.neighborhood || 'Sin barrio asignado';
+            if (!porBarrio[barrio]) porBarrio[barrio] = [];
+            porBarrio[barrio].push(item);
+        });
+
+        // Renderizar agrupado
+        let html = '';
+        Object.keys(porBarrio).sort().forEach(barrio => {
+            const items = porBarrio[barrio];
+            html += `
+                <div style="margin-bottom:1.5rem;">
+                    <h3 style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;padding:0.6rem 1rem;border-radius:8px;font-size:0.9rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;">
+                        📍 ${barrio} <span style="background:rgba(255,255,255,0.2);padding:0.1rem 0.5rem;border-radius:12px;font-size:0.75rem;">${items.length} anuncio${items.length !== 1 ? 's' : ''}</span>
+                    </h3>
+                    ${items.map(item => `
+                        <div class="admin-card-solicitud" style="border-left: 4px solid #10b981; margin-bottom:0.5rem;">
+                            <img src="${item.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
+                            <div class="info">
+                                <strong>${item.titulo}</strong>
+                                <p>${item.descripcion}</p>
+                                <p style="font-size:0.75rem;color:#94a3b8;">
+                                    Por: ${item.nombre_vecino || 'Anónimo'} |
+                                    📍 ${item.neighborhood || 'Sin barrio'} |
+                                    ⏰ ${Math.ceil((new Date(item.expires_at) - new Date()) / (1000*60*60*24))}d restantes
+                                </p>
+                            </div>
+                            <div class="acciones" style="display:flex;flex-direction:column;gap:0.3rem;">
+                                <button onclick="folletoExtenderDias('${item.id}')" class="btn-aprobar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">📅 Extender</button>
+                                <button onclick="folletoCambiarImagen('${item.id}')" class="btn-edit" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🖼️ Cambiar Imagen</button>
+                                <button onclick="folletoDeleteItem('${item.id}')" class="btn-rechazar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🗑️ Eliminar</button>
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
-                <div class="acciones" style="display:flex;flex-direction:column;gap:0.3rem;">
-                    <button onclick="folletoExtenderDias('${item.id}')" class="btn-aprobar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">📅 Extender</button>
-                    <button onclick="folletoCambiarImagen('${item.id}')" class="btn-edit" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🖼️ Cambiar Imagen</button>
-                    <button onclick="folletoDeleteItem('${item.id}')" class="btn-rechazar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🗑️ Eliminar</button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        });
+
+        contenedor.innerHTML = html;
     } catch (err) {
         console.error("Error cargando folletos publicados:", err);
     }
 }
+
 
 // 4. Extender días de un folleto
 async function folletoExtenderDias(itemId) {

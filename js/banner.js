@@ -25,6 +25,14 @@ VV.banner = {
         // Filtrar anunciantes activos y que correspondan al barrio actual
         const activeBanners = VV.banner.getActiveBanners();
         console.log('📢 Banners activos:', activeBanners.length);
+        const activeBanners = VV.banner.getActiveBanners();
+        console.log('📢 Banners activos:', activeBanners.length);
+        
+        // Incrementar vistas de los banners mostrados
+        activeBanners.forEach(s => {
+            s.views = (s.views || 0) + 1;
+            supabase.from('sponsors').update({ views: s.views }).eq('id', s.id);
+        });
         
         // Cargar también en el banner de desktop
         VV.banner.loadDesktopBanners(activeBanners);
@@ -180,11 +188,13 @@ VV.banner = {
         
         const sponsor = VV.data.sponsors.find(s => s.id === sponsorId);
         if (sponsor) {
-            sponsor.clicks += 1;
-            sponsor.views += 1;
+            sponsor.clicks = (sponsor.clicks || 0) + 1;
+            sponsor.views = (sponsor.views || 0) + 1;
+            supabase.from('sponsors').update({ clicks: sponsor.clicks, views: sponsor.views }).eq('id', sponsor.id);
             VV.banner.showSponsorDetails(sponsor);
         }
     },
+
     
     // Registrar click desde tarjetas
     trackClick(sponsorId) {
@@ -192,11 +202,13 @@ VV.banner = {
         
         const sponsor = VV.data.sponsors.find(s => s.id === sponsorId);
         if (sponsor) {
-            sponsor.clicks += 1;
-            sponsor.views += 1;
+            sponsor.clicks = (sponsor.clicks || 0) + 1;
+            sponsor.views = (sponsor.views || 0) + 1;
+            supabase.from('sponsors').update({ clicks: sponsor.clicks, views: sponsor.views }).eq('id', sponsor.id);
             VV.banner.showSponsorDetails(sponsor);
         }
     },
+
     
     // Mostrar detalles del anunciante
     showSponsorDetails(sponsor) {
@@ -219,7 +231,7 @@ VV.banner = {
                         </div>
                     `}
                     <h2 style="margin: 0 0 0.5rem 0; color: var(--gray-800);">${sponsor.businessName}</h2>
-                    <p style="margin: 0; color: var(--gray-600); font-size: 1.1rem;">${sponsor.category || 'Negocio Local'}</p>
+                    <p style="margin: 0; color: var(--gray-600); font-size: 1.1rem;">📍 ${sponsor.neighborhood || sponsor.neighborhoods || 'Sin barrio'} • ${sponsor.category || 'Negocio Local'}</p>
                     <span style="display: inline-block; margin-top: 0.5rem; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
                         ${sponsor.tier.toUpperCase()}
                     </span>
@@ -375,7 +387,7 @@ VV.banner = {
                     <div style="flex: 1;">
                         <h4 style="margin: 0 0 0.25rem 0; color: var(--gray-800);">${sponsor.businessName}</h4>
                         <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">
-                            ${sponsor.category || 'Negocio Local'}
+                            ${sponsor.neighborhood ? sponsor.neighborhood + ' • ' : ''}📍 ${sponsor.neighborhood || (Array.isArray(sponsor.neighborhoods) ? sponsor.neighborhoods.join(', ') : sponsor.neighborhoods) || 'Sin barrio'} • ${sponsor.category || 'Negocio Local'}
                         </p>
                     </div>
                     <span style="background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">
@@ -436,6 +448,7 @@ VV.banner = {
                                     </div>
                                     <div style="flex: 1;">
                                         <h4 style="margin: 0 0 0.25rem 0; color: var(--gray-800); font-size: 1.1rem;">${sponsor.business_name || sponsor.name}</h4>
+                                        <p style="font-size: 0.85rem; color: var(--primary-blue); margin: 0.1rem 0;">📍 ${sponsor.neighborhood || 'Sin barrio'}</p>
                                         <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">
                                             Negocio Local
                                         </p>

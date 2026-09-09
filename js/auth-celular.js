@@ -21,22 +21,16 @@
     
     formatNeighborhoodName(name) {
         if (!name) return '';
-        return name
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-zA-Z0-9\s]/g, '')
-            .toUpperCase()
-            .trim();
-    },
-   
-    onNeighborhoodSelected(neighborhood) {
-        const formatted = VV.geo.formatNeighborhoodName(neighborhood);
-        VV.data.neighborhood = formatted;
-        const el = document.getElementById('reg-selected-neighborhood');
-        if (el) el.textContent = formatted;
-        VV.utils.showScreen('register-phone-screen');
+        return name.trim();
     },
 
+   
+    onNeighborhoodSelected(neighborhood) {
+        VV.data.neighborhood = neighborhood.trim();
+        const el = document.getElementById('reg-selected-neighborhood');
+        if (el) el.textContent = VV.data.neighborhood;
+        VV.utils.showScreen('register-phone-screen');
+    },
     
    async registerWithPin() {
     const name = document.getElementById('reg-name')?.value.trim();
@@ -127,6 +121,8 @@
                         name: name,
                         phone: phone,
                         neighborhood: VV.data.neighborhood,
+                        home_neighborhood: VV.data.neighborhood,
+                        current_neighborhood: VV.data.neighborhood,
                         unique_number: uniqueNumber,
                         folleto_credits: 3,
                         featured_credits: 1,
@@ -161,6 +157,8 @@
                 name: name,
                 phone: phone,
                 neighborhood: VV.data.neighborhood,
+                home_neighborhood: VV.data.neighborhood,
+                current_neighborhood: VV.data.neighborhood,
                 unique_number: uniqueNumber,
                 folleto_credits: 3,
                 featured_credits: 1,
