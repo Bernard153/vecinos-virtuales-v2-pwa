@@ -77,7 +77,7 @@ async function cargarContenidoFolleto() {
             .select('*')
             .eq('aprobado', true)
             .gt('expires_at', now)
-            .or(`neighborhood.is.null,neighborhood.eq.${VV.data.neighborhood}`)
+            .eq('neighborhood', VV.data.neighborhood)
             .order('highlighted', { ascending: false })
             .order('created_at', { ascending: false });
 
@@ -554,12 +554,14 @@ if (formSolicitud) {
                 url_imagen: urlData.publicUrl,
                 aprobado: false,
                 user_id: user ? user.id : null,
+                neighborhood: VV.data.neighborhood,
                 expires_at: expiresAt.toISOString(),
                 last_renewed: new Date().toISOString(),
                 highlighted: false,
                 vip_icon: null,
                 vip_label: null
             }]);
+
 
             if (insertError) throw insertError;
 

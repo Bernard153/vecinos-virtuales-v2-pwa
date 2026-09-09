@@ -2474,23 +2474,39 @@ async function cargarSolicitudesPendientes() {
 
         if (error) throw error;
 
-        lista.innerHTML = data.length === 0 ? '<p>No hay solicitudes nuevas.</p>' : '';
+        lista.innerHTML = data.length === 0 ? '<p style="text-align:center;padding:2rem;color:#94a3b8;">No hay solicitudes nuevas.</p>' : '';
 
+        // Agrupar por barrio
+        const porBarrio = {};
         data.forEach(sol => {
-            const card = document.createElement('div');
-            card.className = 'admin-card-solicitud';
-            card.innerHTML = `
-                <img src="${sol.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
-                <div class="info">
-                    <strong>${sol.titulo}</strong>
-                    <p>${sol.nombre_vecino}: ${sol.descripcion}</p>
-                </div>
-                <div class="acciones">
-                    <button onclick="gestionarSolicitud('${sol.id}', true)" class="btn-aprobar">Aprobar</button>
-                    <button onclick="gestionarSolicitud('${sol.id}', false)" class="btn-rechazar">Eliminar</button>
-                </div>
-            `;
-            lista.appendChild(card);
+            const barrio = sol.neighborhood || 'Sin barrio';
+            if (!porBarrio[barrio]) porBarrio[barrio] = [];
+            porBarrio[barrio].push(sol);
+        });
+
+        Object.keys(porBarrio).sort().forEach(barrio => {
+            const header = document.createElement('div');
+            header.style.cssText = 'background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;margin:1rem 0 0.5rem 0;display:flex;align-items:center;gap:0.5rem;';
+            header.innerHTML = `📍 ${barrio} <span style="background:rgba(255,255,255,0.2);padding:0.1rem 0.5rem;border-radius:12px;font-size:0.75rem;">${porBarrio[barrio].length}</span>`;
+            lista.appendChild(header);
+
+            porBarrio[barrio].forEach(sol => {
+                const card = document.createElement('div');
+                card.className = 'admin-card-solicitud';
+                card.innerHTML = `
+                    <img src="${sol.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
+                    <div class="info">
+                        <strong>${sol.titulo}</strong>
+                        <p>${sol.nombre_vecino}: ${sol.descripcion}</p>
+                        <p style="font-size:0.75rem;color:#94a3b8;">📍 ${sol.neighborhood || 'Sin barrio'}</p>
+                    </div>
+                    <div class="acciones">
+                        <button onclick="gestionarSolicitud('${sol.id}', true)" class="btn-aprobar">Aprobar</button>
+                        <button onclick="gestionarSolicitud('${sol.id}', false)" class="btn-rechazar">Eliminar</button>
+                    </div>
+                `;
+                lista.appendChild(card);
+            });
         });
     } catch (err) {
         console.error("Error admin folleto:", err.message);

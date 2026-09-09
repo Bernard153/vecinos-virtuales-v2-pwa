@@ -896,7 +896,7 @@ VV_VOCES_V2.cargarFeed = async function() {
             .select('*')
             .eq('visible', true)
             .eq('estado_moderacion', 'aprobado')
-            .or(`neighborhood.is.null,neighborhood.eq.${VV.data.neighborhood}`)
+            .eq('neighborhood', VV.data.neighborhood)
             .order('created_at', { ascending: false })
             .limit(24);
 

@@ -21,14 +21,14 @@ const VV = {
                 const { data: services } = await supabase.from('services').select('*').order('created_at', { ascending: false });
                 VV.data.services = services || [];
                 
-                const { data: culturalPosts } = await supabase.from('cultural_posts').select('*').or(`neighborhood.is.null,neighborhood.eq.${VV.data.neighborhood}`).order('created_at', { ascending: false });
+                const { data: culturalPosts } = await supabase.from('cultural_posts').select('*').eq('neighborhood', VV.data.neighborhood).order('created_at', { ascending: false });
                 VV.data.culturalPosts = culturalPosts || [];
 
 
                 const { data: folletoData } = await supabase.from('folleto_imagenes').select('*').eq('aprobado', true).order('created_at', { ascending: false });
                 VV.data.folleto = folletoData || [];
                 
-                const { data: improvements } = await supabase.from('improvements').select('*').or(`neighborhood.is.null,neighborhood.eq.${VV.data.neighborhood}`).order('created_at', { ascending: false });
+                const { data: improvements } = await supabase.from('improvements').select('*').eq('neighborhood', VV.data.neighborhood).order('created_at', { ascending: false });
                 VV.data.improvements = improvements || [];
 
                 
