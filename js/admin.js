@@ -952,7 +952,9 @@ VV.admin = {
         // Si no está en localStorage, intentar cargar desde Supabase
         if (!imageUrl) {
             try {
-                const { data } = await supabase.from('app_config').select('value').eq('key', 'welcome_banner_image').single();
+                const { data, error } = await supabase.from('app_config').select('value').eq('key', 'welcome_banner_image').maybeSingle();
+                if (error || !data || !data.value) return;
+
                 if (data && data.value) {
                     imageUrl = data.value;
                     localStorage.setItem('welcomeBannerImage', imageUrl);
