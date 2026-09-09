@@ -530,7 +530,8 @@ VV.auth = {
         VV.auth.updateMenuForRole();
         
         // Inicializar banner
-        VV.banner.init();
+        if (VV.banner && VV.banner.init) VV.banner.init();
+
         
         // Cargar ofertas destacadas
         if (typeof VV.featured !== 'undefined') {

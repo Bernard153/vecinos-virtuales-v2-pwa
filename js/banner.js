@@ -25,9 +25,7 @@ VV.banner = {
         // Filtrar anunciantes activos y que correspondan al barrio actual
         const activeBanners = VV.banner.getActiveBanners();
         console.log('📢 Banners activos:', activeBanners.length);
-        const activeBanners = VV.banner.getActiveBanners();
-        console.log('📢 Banners activos:', activeBanners.length);
-        
+                
         // Incrementar vistas de los banners mostrados
         activeBanners.forEach(s => {
             s.views = (s.views || 0) + 1;
