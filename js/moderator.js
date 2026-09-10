@@ -1,4 +1,4 @@
-// ========== MÓDULO MODERADOR ==========
+﻿// ========== MÓDULO MODERADOR (Supabase) ==========
 
 VV.moderator = {
     // Cargar panel de moderador
@@ -7,262 +7,390 @@ VV.moderator = {
             alert('No tienes permisos de moderación');
             return;
         }
-        
-        // Mostrar nombre del barrio
         document.getElementById('moderator-neighborhood').textContent = VV.data.neighborhood;
-        
-        // Cargar tab activo
         VV.moderator.showTab('users');
     },
-    
+
     // Cambiar tab
     showTab(tabName) {
-        // Ocultar todos los tabs
-        document.querySelectorAll('.moderator-tab-content').forEach(tab => {
-            tab.classList.remove('active');
+        document.querySelectorAll('.moderator-tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.moderator-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+
+        const tabEl = document.getElementById(`moderator-${tabName}`);
+        if (tabEl) tabEl.classList.add('active');
+
+        // Activar botón correspondiente
+        const btns = document.querySelectorAll('.moderator-tabs .tab-btn');
+        btns.forEach((btn, i) => {
+            if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${tabName}'`)) {
+                btn.classList.add('active');
+            }
         });
-        document.querySelectorAll('.moderator-tabs .tab-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        // Mostrar tab seleccionado
-        document.getElementById(`moderator-${tabName}`).classList.add('active');
-        event.target.classList.add('active');
-        
-        // Cargar contenido según tab
+
         switch(tabName) {
-            case 'users':
-                VV.moderator.loadUsers();
-                break;
-            case 'content':
-                VV.moderator.loadContent();
-                break;
-            case 'improvements':
-                VV.moderator.loadImprovements();
-                break;
-            case 'stats':
-                VV.moderator.loadStats();
-                break;
+            case 'users': VV.moderator.loadUsers(); break;
+            case 'content': VV.moderator.loadContent(); break;
+            case 'improvements': VV.moderator.loadImprovements(); break;
+            case 'reports': VV.moderator.loadReports(); break;
+            case 'stats': VV.moderator.loadStats(); break;
         }
     },
-    
-    // Cargar usuarios del barrio (SIN datos personales sensibles)
-    loadUsers() {
-        const users = VV.auth.getAllUsers().filter(u => 
-            u.neighborhood === VV.data.neighborhood && u.id !== VV.data.user.id
-        );
-        
+
+    // Registrar acción de moderador en Supabase
+    async logAction(action, details) {
+        try {
+            await supabase.from('moderator_logs').insert([{
+                moderator_id: VV.data.user.id,
+                moderator_name: VV.data.user.name,
+                neighborhood: VV.data.neighborhood,
+                action: action,
+                details: JSON.stringify(details),
+                created_at: new Date().toISOString()
+            }]);
+        } catch (err) {
+            console.error('Error registrando log:', err);
+        }
+    },
+
+    // Cargar usuarios del barrio
+    async loadUsers() {
         const container = document.getElementById('moderator-users-list');
-        
-        if (users.length === 0) {
-            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay otros usuarios en tu barrio</p>';
-            return;
+        if (!container) return;
+
+        try {
+            const { data: users, error } = await supabase
+                .from('users')
+                .select('id, name, unique_number, role, blocked, created_at')
+                .eq('neighborhood', VV.data.neighborhood)
+                .neq('id', VV.data.user.id)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (!users || users.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay otros usuarios en tu barrio</p>';
+                return;
+            }
+
+            container.innerHTML = users.map(user => `
+                <div class="user-card" style="opacity: ${user.blocked ? 0.6 : 1};">
+                    <div class="user-info">
+                        <h4>${sanitizeText(user.name)} ${user.blocked ? '<span style="color:#ef4444;font-size:0.75rem;">🚫 BLOQUEADO</span>' : ''}</h4>
+                        <p style="color: var(--gray-600); font-size: 0.9rem;">Usuario #${user.unique_number}</p>
+                        <p style="font-size: 0.85rem; color: var(--gray-500);">
+                            <i class="fas fa-calendar"></i> Registrado: ${new Date(user.created_at).toLocaleDateString()}
+                        </p>
+                    </div>
+                    <div class="user-actions">
+                        ${user.blocked
+                            ? `<button class="btn-approve" onclick="VV.moderator.toggleBlockUser('${user.id}', '${user.name.replace(/'/g, "\\'")}', false)">
+                                <i class="fas fa-user-check"></i> Desbloquear
+                              </button>`
+                            : `<button class="btn-delete" onclick="VV.moderator.toggleBlockUser('${user.id}', '${user.name.replace(/'/g, "\\'")}', true)">
+                                <i class="fas fa-user-times"></i> Bloquear
+                              </button>`
+                        }
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error('Error cargando usuarios:', err);
+            container.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">Error al cargar usuarios</p>';
         }
-        
-        container.innerHTML = users.map(user => `
-            <div class="user-card">
-                <div class="user-info">
-                    <h4>${user.name}</h4>
-                    <p style="color: var(--gray-600); font-size: 0.9rem;">
-                        Usuario #${user.uniqueNumber}
-                    </p>
-                    <p style="font-size: 0.85rem; color: var(--gray-500);">
-                        <i class="fas fa-calendar"></i> Registrado: ${new Date(user.createdAt).toLocaleDateString()}
-                    </p>
-                </div>
-                <div class="user-actions">
-                    <button class="btn-delete" onclick="VV.moderator.removeUser('${user.id}', '${user.name}')">
-                        <i class="fas fa-user-times"></i> Eliminar
-                    </button>
-                </div>
-            </div>
-        `).join('');
     },
-    
-    // Eliminar usuario problemático
-    removeUser(userId, userName) {
-        if (!confirm(`¿Eliminar al usuario "${userName}"?\n\nEsta acción no se puede deshacer.`)) return;
-        
-        const userKey = `vecinosVirtuales_user_${userId}`;
-        localStorage.removeItem(userKey);
-        
-        // Registrar acción
-        VV.utils.logModeratorAction('ELIMINAR_USUARIO', {
-            usuarioId: userId,
-            usuarioNombre: userName,
-            motivo: 'Usuario problemático'
-        });
-        
-        VV.moderator.loadUsers();
-        VV.utils.showSuccess('Usuario eliminado');
+
+    // Bloquear/desbloquear usuario
+    async toggleBlockUser(userId, userName, block) {
+        if (!confirm(`¿${block ? 'Bloquear' : 'Desbloquear'} al usuario "${userName}"?\n\nUn usuario bloqueado no puede ingresar a la app.`)) return;
+
+        try {
+            const { error } = await supabase
+                .from('users')
+                .update({ blocked: block, blocked_reason: block ? 'Bloqueado por moderador' : null })
+                .eq('id', userId);
+
+            if (error) throw error;
+
+            await VV.moderator.logAction(block ? 'BLOQUEAR_USUARIO' : 'DESBLOQUEAR_USUARIO', {
+                usuarioId: userId, usuarioNombre: userName
+            });
+
+            VV.moderator.loadUsers();
+            VV.utils.showSuccess(`Usuario ${block ? 'bloqueado' : 'desbloqueado'}`);
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
     },
-    
+
     // Cargar contenido para moderar
-    loadContent() {
-        // Productos del barrio
-        const products = VV.data.products.filter(p => 
-            p.neighborhood === VV.data.neighborhood
-        );
-        
+    async loadContent() {
+        // Productos
         const productsContainer = document.getElementById('moderator-products-list');
-        
-        if (products.length === 0) {
-            productsContainer.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">No hay productos</p>';
-        } else {
-            productsContainer.innerHTML = `
-                <div class="products-grid">
-                    ${products.map(p => `
-                        <div class="product-card">
-                            <h4>${p.product}</h4>
-                            <p><strong>Vendedor:</strong> ${p.sellerName}</p>
-                            <p style="font-size: 0.9rem; color: var(--gray-600);">${p.description || 'Sin descripción'}</p>
-                            <button class="btn-delete" onclick="VV.moderator.removeProduct('${p.id}', '${p.product}')" style="width: 100%; margin-top: 0.5rem;">
+        if (productsContainer) {
+            try {
+                const { data: products, error } = await supabase
+                    .from('products')
+                    .select('id, product, seller_name, description, neighborhood, created_at')
+                    .eq('neighborhood', VV.data.neighborhood)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!products || products.length === 0) {
+                    productsContainer.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">No hay productos</p>';
+                } else {
+                    productsContainer.innerHTML = products.map(p => `
+                        <div class="product-card" style="border:1px solid var(--gray-200);border-radius:8px;padding:1rem;margin-bottom:0.5rem;">
+                            <h4>${sanitizeText(p.product)}</h4>
+                            <p><strong>Vendedor:</strong> ${sanitizeText(p.seller_name || '')}</p>
+                            <p style="font-size: 0.9rem; color: var(--gray-600);">${sanitizeText(p.description || 'Sin descripción')}</p>
+                            <button class="btn-delete" onclick="VV.moderator.removeProduct('${p.id}', '${p.product.replace(/'/g, "\\'")}')" style="width: 100%; margin-top: 0.5rem;">
                                 <i class="fas fa-trash"></i> Eliminar Producto
                             </button>
                         </div>
-                    `).join('')}
-                </div>
-            `;
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error cargando productos:', err);
+                productsContainer.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">Error al cargar productos</p>';
+            }
         }
-        
-        // Publicaciones culturales del barrio
-        const cultural = VV.data.culturalPosts.filter(c => 
-            c.neighborhood === VV.data.neighborhood
-        );
-        
+
+        // Publicaciones culturales
         const culturalContainer = document.getElementById('moderator-cultural-list');
-        
-        if (cultural.length === 0) {
-            culturalContainer.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">No hay publicaciones culturales</p>';
-        } else {
-            culturalContainer.innerHTML = `
-                <div class="cultural-grid">
-                    ${cultural.map(c => `
-                        <div class="cultural-card">
-                            <h4>${c.title}</h4>
-                            <p><strong>Por:</strong> ${c.userName}</p>
-                            <p style="font-size: 0.9rem; color: var(--gray-600);">${c.description.substring(0, 100)}...</p>
-                            <button class="btn-delete" onclick="VV.moderator.removeCultural('${c.id}', '${c.title}')" style="width: 100%; margin-top: 0.5rem;">
+        if (culturalContainer) {
+            try {
+                const { data: cultural, error } = await supabase
+                    .from('cultural_posts')
+                    .select('id, title, type, description, author_name, neighborhood, created_at')
+                    .eq('neighborhood', VV.data.neighborhood)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!cultural || cultural.length === 0) {
+                    culturalContainer.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">No hay publicaciones culturales</p>';
+                } else {
+                    culturalContainer.innerHTML = cultural.map(c => `
+                        <div class="cultural-card" style="border:1px solid var(--gray-200);border-radius:8px;padding:1rem;margin-bottom:0.5rem;">
+                            <h4>${sanitizeText(c.title)}</h4>
+                            <p><strong>Por:</strong> ${sanitizeText(c.author_name || '')}</p>
+                            <p style="font-size: 0.9rem; color: var(--gray-600);">${sanitizeText((c.description || '').substring(0, 100))}...</p>
+                            <button class="btn-delete" onclick="VV.moderator.removeCultural('${c.id}', '${c.title.replace(/'/g, "\\'")}')" style="width: 100%; margin-top: 0.5rem;">
                                 <i class="fas fa-trash"></i> Eliminar Publicación
                             </button>
                         </div>
-                    `).join('')}
-                </div>
-            `;
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error cargando cultural:', err);
+                culturalContainer.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">Error al cargar publicaciones</p>';
+            }
         }
     },
-    
-    // Eliminar producto inapropiado
-    removeProduct(productId, productName) {
+
+    // Eliminar producto
+    async removeProduct(productId, productName) {
         if (!confirm(`¿Eliminar el producto "${productName}"?`)) return;
-        
-        const index = VV.data.products.findIndex(p => p.id === productId);
-        if (index > -1) {
-            const product = VV.data.products[index];
-            VV.data.products.splice(index, 1);
-            
-            // Guardar en localStorage
-            localStorage.setItem('vecinosVirtuales_products', JSON.stringify(VV.data.products));
-            
-            // Registrar acción
-            VV.utils.logModeratorAction('ELIMINAR_PRODUCTO', {
-                productoId: productId,
-                productoNombre: productName,
-                vendedor: product.sellerName,
-                motivo: 'Contenido inapropiado'
+
+        try {
+            const { error } = await supabase
+                .from('products')
+                .delete()
+                .eq('id', productId);
+
+            if (error) throw error;
+
+            await VV.moderator.logAction('ELIMINAR_PRODUCTO', {
+                productoId: productId, productoNombre: productName
             });
-            
+
             VV.moderator.loadContent();
             VV.utils.showSuccess('Producto eliminado');
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
         }
     },
-    
-    // Eliminar publicación cultural inapropiada
-    removeCultural(culturalId, culturalTitle) {
+
+    // Eliminar publicación cultural
+    async removeCultural(culturalId, culturalTitle) {
         if (!confirm(`¿Eliminar la publicación "${culturalTitle}"?`)) return;
-        
-        const index = VV.data.culturalPosts.findIndex(c => c.id === culturalId);
-        if (index > -1) {
-            const cultural = VV.data.culturalPosts[index];
-            VV.data.culturalPosts.splice(index, 1);
-            
-            // Guardar en localStorage
-            localStorage.setItem('vecinosVirtuales_cultural', JSON.stringify(VV.data.culturalPosts));
-            
-            // Registrar acción
-            VV.utils.logModeratorAction('ELIMINAR_PUBLICACION', {
-                publicacionId: culturalId,
-                publicacionTitulo: culturalTitle,
-                autor: cultural.userName,
-                tipo: cultural.type,
-                motivo: 'Contenido inapropiado'
+
+        try {
+            const { error } = await supabase
+                .from('cultural_posts')
+                .delete()
+                .eq('id', culturalId);
+
+            if (error) throw error;
+
+            await VV.moderator.logAction('ELIMINAR_PUBLICACION', {
+                publicacionId: culturalId, publicacionTitulo: culturalTitle
             });
-            
+
             VV.moderator.loadContent();
             VV.utils.showSuccess('Publicación eliminada');
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
         }
     },
-    
-    // Cargar mejoras (pendientes y realizadas)
-    loadImprovements() {
-        const improvements = VV.data.improvements.filter(i => 
-            i.neighborhood === VV.data.neighborhood
-        );
-        
-        const pending = improvements.filter(i => i.status !== 'Completado');
-        const completed = improvements.filter(i => i.status === 'Completado');
-        
-        // Pendientes
-        const pendingContainer = document.getElementById('moderator-improvements-pending');
-        if (pending.length === 0) {
-            pendingContainer.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">No hay mejoras pendientes</p>';
-        } else {
-            pendingContainer.innerHTML = pending.map(i => `
-                <div class="improvement-card" style="border-left: 4px solid var(--warning-orange);">
-                    <h4>${i.title}</h4>
-                    <p style="font-size: 0.9rem; color: var(--gray-600);">${i.description}</p>
-                    <div style="margin-top: 0.5rem;">
-                        <span class="badge status-${i.status.toLowerCase().replace(' ', '-')}">${i.status}</span>
-                        <span class="badge priority-${i.priority.toLowerCase()}">${i.priority}</span>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
-                        <i class="fas fa-thumbs-up"></i> ${i.votes} votos
-                    </p>
-                </div>
-            `).join('');
-        }
-        
-        // Realizadas
-        const completedContainer = document.getElementById('moderator-improvements-completed');
-        if (completed.length === 0) {
-            completedContainer.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">No hay mejoras completadas</p>';
-        } else {
-            completedContainer.innerHTML = completed.map(i => `
-                <div class="improvement-card" style="border-left: 4px solid var(--success-green);">
-                    <h4>${i.title}</h4>
-                    <p style="font-size: 0.9rem; color: var(--gray-600);">${i.description}</p>
-                    <div style="margin-top: 0.5rem;">
-                        <span class="badge status-completado">✓ Completado</span>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
-                        <i class="fas fa-thumbs-up"></i> ${i.votes} votos
-                    </p>
-                </div>
-            `).join('');
+
+    // Cargar mejoras
+    async loadImprovements() {
+        try {
+            const { data: improvements, error } = await supabase
+                .from('improvements')
+                .select('*')
+                .eq('neighborhood', VV.data.neighborhood)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            const pending = (improvements || []).filter(i => i.status !== 'Completado' && i.status !== 'completed');
+            const completed = (improvements || []).filter(i => i.status === 'Completado' || i.status === 'completed');
+
+            const pendingContainer = document.getElementById('moderator-improvements-pending');
+            if (pendingContainer) {
+                pendingContainer.innerHTML = pending.length === 0
+                    ? '<p style="color: var(--gray-600); padding: 1rem;">No hay mejoras pendientes</p>'
+                    : pending.map(i => `
+                        <div class="improvement-card" style="border-left: 4px solid var(--warning-orange); padding: 1rem; margin-bottom: 0.5rem; background: var(--gray-50); border-radius: 8px;">
+                            <h4>${sanitizeText(i.title)}</h4>
+                            <p style="font-size: 0.9rem; color: var(--gray-600);">${sanitizeText(i.description || '')}</p>
+                            <div style="margin-top: 0.5rem;">
+                                <span class="badge" style="background: #f1f5f9; color: #475569; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">${sanitizeText(i.status || 'Pendiente')}</span>
+                                <span class="badge" style="background: #fef3c7; color: #92400e; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">${sanitizeText(i.priority || 'Normal')}</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
+                                <i class="fas fa-thumbs-up"></i> ${i.votes || 0} votos
+                            </p>
+                        </div>
+                    `).join('');
+            }
+
+            const completedContainer = document.getElementById('moderator-improvements-completed');
+            if (completedContainer) {
+                completedContainer.innerHTML = completed.length === 0
+                    ? '<p style="color: var(--gray-600); padding: 1rem;">No hay mejoras completadas</p>'
+                    : completed.map(i => `
+                        <div class="improvement-card" style="border-left: 4px solid var(--success-green); padding: 1rem; margin-bottom: 0.5rem; background: var(--gray-50); border-radius: 8px;">
+                            <h4>${sanitizeText(i.title)}</h4>
+                            <p style="font-size: 0.9rem; color: var(--gray-600);">${sanitizeText(i.description || '')}</p>
+                            <span class="badge" style="background: #dcfce7; color: #166534; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">✅ Completado</span>
+                        </div>
+                    `).join('');
+            }
+        } catch (err) {
+            console.error('Error cargando mejoras:', err);
         }
     },
-    
-    // Cargar estadísticas del barrio
-    loadStats() {
-        const users = VV.auth.getAllUsers().filter(u => u.neighborhood === VV.data.neighborhood);
-        const products = VV.data.products.filter(p => p.neighborhood === VV.data.neighborhood);
-        const cultural = VV.data.culturalPosts.filter(c => c.neighborhood === VV.data.neighborhood);
-        const improvements = VV.data.improvements.filter(i => i.neighborhood === VV.data.neighborhood);
-        
-        document.getElementById('mod-stat-users').textContent = users.length;
-        document.getElementById('mod-stat-products').textContent = products.length;
-        document.getElementById('mod-stat-cultural').textContent = cultural.length;
-        document.getElementById('mod-stat-improvements').textContent = improvements.length;
+
+    // Cargar denuncias
+    async loadReports() {
+        const container = document.getElementById('moderator-reports-list');
+        if (!container) return;
+
+        try {
+            const { data: reports, error } = await supabase
+                .from('denuncias')
+                .select('*')
+                .eq('neighborhood', VV.data.neighborhood)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (!reports || reports.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #94a3b8; grid-column: 1/-1; padding: 2rem;">No hay denuncias en tu barrio 🎉</p>';
+                return;
+            }
+
+            container.innerHTML = reports.map(r => `
+                <div class="admin-card-solicitud" style="border-left: 4px solid #ef4444;">
+                    <div class="info">
+                        <strong>🚨 ${sanitizeText(r.tipo || 'Denuncia')}</strong>
+                        <p>${sanitizeText(r.motivo || r.reason || 'Sin motivo especificado')}</p>
+                        <p style="font-size:0.75rem;color:#94a3b8;">
+                            Por: ${sanitizeText(r.reporter_name || r.denunciante || 'Anónimo')} |
+                            ${new Date(r.created_at).toLocaleDateString()}
+                        </p>
+                    </div>
+                    <div class="acciones">
+                        <button class="btn-approve" onclick="VV.moderator.resolveReport('${r.id}')" style="font-size:0.75rem;">
+                            <i class="fas fa-check"></i> Resolver
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error('Error cargando denuncias:', err);
+            container.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">Error al cargar denuncias</p>';
+        }
+    },
+
+    // Resolver denuncia
+    async resolveReport(reportId) {
+        if (!confirm('¿Marcar esta denuncia como resuelta?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('denuncias')
+                .update({ status: 'resolved', resolved_at: new Date().toISOString(), resolved_by: VV.data.user.id })
+                .eq('id', reportId);
+
+            if (error) throw error;
+
+            await VV.moderator.logAction('RESOLVER_DENUNCIA', { denunciaId: reportId });
+
+            VV.moderator.loadReports();
+            VV.utils.showSuccess('Denuncia resuelta');
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
+    // Cargar estadísticas
+    async loadStats() {
+        try {
+            // Usuarios
+            const { count: usersCount } = await supabase
+                .from('users')
+                .select('*', { count: 'exact', head: true })
+                .eq('neighborhood', VV.data.neighborhood);
+
+            // Productos
+            const { count: productsCount } = await supabase
+                .from('products')
+                .select('*', { count: 'exact', head: true })
+                .eq('neighborhood', VV.data.neighborhood);
+
+            // Cultural
+            const { count: culturalCount } = await supabase
+                .from('cultural_posts')
+                .select('*', { count: 'exact', head: true })
+                .eq('neighborhood', VV.data.neighborhood);
+
+            // Mejoras
+            const { count: improvementsCount } = await supabase
+                .from('improvements')
+                .select('*', { count: 'exact', head: true })
+                .eq('neighborhood', VV.data.neighborhood);
+
+            const elUsers = document.getElementById('mod-stat-users');
+            const elProducts = document.getElementById('mod-stat-products');
+            const elCultural = document.getElementById('mod-stat-cultural');
+            const elImprovements = document.getElementById('mod-stat-improvements');
+
+            if (elUsers) elUsers.textContent = usersCount || 0;
+            if (elProducts) elProducts.textContent = productsCount || 0;
+            if (elCultural) elCultural.textContent = culturalCount || 0;
+            if (elImprovements) elImprovements.textContent = improvementsCount || 0;
+        } catch (err) {
+            console.error('Error cargando stats:', err);
+        }
     }
 };
 

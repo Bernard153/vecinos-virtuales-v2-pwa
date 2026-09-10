@@ -1068,6 +1068,9 @@
                         <button class="tab-btn" onclick="VV.moderator.showTab('improvements')">
                             <i class="fas fa-tasks"></i> Mejoras
                         </button>
+                        <button class="tab-btn" onclick="VV.moderator.showTab('reports')">
+                            <i class="fas fa-exclamation-triangle"></i> Denuncias
+                        </button>
                         <button class="tab-btn" onclick="VV.moderator.showTab('stats')">
                             <i class="fas fa-chart-pie"></i> Estadísticas
                         </button>
@@ -1094,6 +1097,14 @@
                         
                         <h3 style="color: var(--success-green);"><i class="fas fa-check-circle"></i> Realizadas</h3>
                         <div id="moderator-improvements-completed"></div>
+                    </div>
+                    <div id="moderator-reports" class="moderator-tab-content admin-tab-content">
+                        <p style="color: var(--gray-600); margin-bottom: 1rem; padding: 1rem; background: var(--gray-50); border-radius: 8px;">
+                            <i class="fas fa-info-circle"></i> Revisá las denuncias de contenido inapropiado en tu barrio.
+                        </p>
+                        <div id="moderator-reports-list" class="admin-grid-pendientes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px;">
+                            <p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">Cargando denuncias...</p>
+                        </div>
                     </div>
 
                     <div id="moderator-stats" class="moderator-tab-content admin-tab-content">
