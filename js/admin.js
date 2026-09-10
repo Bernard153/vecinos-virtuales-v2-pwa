@@ -1383,11 +1383,22 @@ VV.admin.loadAllUsers = async function () {
                         ${user.business_address ? `<p style="margin: 0.25rem 0;"><i class="fas fa-location-dot"></i> ${user.business_address}</p>` : ''}
                     </div>
                 </div>
-                <div class="user-actions" style="margin-top: 0.75rem;">
-                    <span class="user-role-badge ${user.role === 'admin' ? 'admin' : 'user'}" style="padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.75rem; font-weight: 700; background: ${user.role === 'admin' ? 'linear-gradient(135deg, var(--primary-blue), var(--primary-purple))' : 'var(--gray-200)'}; color: ${user.role === 'admin' ? 'white' : 'var(--gray-700)'};">
-                        ${user.role === 'admin' ? '👑 Admin' : '🏠 Vecino'}
+                <div class="user-actions" style="margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                    <span class="user-role-badge ${user.role === 'admin' ? 'admin' : user.role === 'moderator' ? 'moderator' : 'user'}" style="padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.75rem; font-weight: 700; background: ${user.role === 'admin' ? 'linear-gradient(135deg, var(--primary-blue), var(--primary-purple))' : user.role === 'moderator' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'var(--gray-200)'}; color: ${user.role === 'admin' || user.role === 'moderator' ? 'white' : 'var(--gray-700)'};">
+                        ${user.role === 'admin' ? '👑 Admin' : user.role === 'moderator' ? '🛡️ Moderador' : '🏠 Vecino'}
                     </span>
+                    ${user.id !== VV.data.user.id && user.role !== 'admin' ? `
+                        ${user.role === 'moderator' ?
+                            `<button class="btn-edit" onclick="VV.admin.toggleModerator('${user.id}')" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">
+                                <i class="fas fa-user-minus"></i> Quitar Moderador
+                            </button>` :
+                            `<button class="btn-approve" onclick="VV.admin.toggleModerator('${user.id}')" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">
+                                <i class="fas fa-shield-alt"></i> Hacer Moderador
+                            </button>`
+                        }
+                    ` : ''}
                 </div>
+
             </div>
         `).join('');
 
