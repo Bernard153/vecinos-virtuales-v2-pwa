@@ -229,8 +229,7 @@ VV.geo = {
     // Formatear nombre de barrio (normalizado sin tildes)
     formatNeighborhoodName(name) {
         if (!name) return '';
-        // Solo trim y capitalizar primera letra, mantener tildes
-        return name.trim();
+        return name.trim().replace(/[\n\r\t]/g, '');
     },
 
     // Verificar si un punto está dentro de un polígono (Ray Casting Algorithm)

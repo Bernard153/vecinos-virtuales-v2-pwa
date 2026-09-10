@@ -182,8 +182,7 @@ VV.auth = {
     
     // Seleccionar barrio
             selectNeighborhood(neighborhood) {
-        VV.data.neighborhood = VV.geo.formatNeighborhoodName(neighborhood);
-
+            VV.data.neighborhood = neighborhood.trim().replace(/[\n\r\t]/g, '');
         
         const neighborhoodElement = document.getElementById('selected-neighborhood');
         if (neighborhoodElement) {

@@ -554,7 +554,7 @@ if (formSolicitud) {
                 url_imagen: urlData.publicUrl,
                 aprobado: false,
                 user_id: user ? user.id : null,
-                neighborhood: VV.data.neighborhood,
+                neighborhood: (VV.data.neighborhood || '').trim().replace(/[\n\r\t]/g, ''),
                 expires_at: expiresAt.toISOString(),
                 last_renewed: new Date().toISOString(),
                 highlighted: false,
