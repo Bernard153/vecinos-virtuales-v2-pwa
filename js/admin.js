@@ -2466,6 +2466,9 @@ async function cargarSolicitudesPendientes() {
     if(!lista) return;
 
     try {
+        const barrioFilter = document.getElementById('admin-folleto-barrio-filter');
+        const barrioSeleccionado = barrioFilter ? barrioFilter.value : 'all';
+
         const { data, error } = await supabase
             .from('folleto_imagenes')
             .select('*')
@@ -2474,11 +2477,27 @@ async function cargarSolicitudesPendientes() {
 
         if (error) throw error;
 
-        lista.innerHTML = data.length === 0 ? '<p style="text-align:center;padding:2rem;color:#94a3b8;">No hay solicitudes nuevas.</p>' : '';
+        // Cargar barrios en el selector (solo si está vacío)
+        if (barrioFilter && barrioFilter.options.length <= 1) {
+            const barrios = [...new Set(data.map(d => d.neighborhood).filter(Boolean))].sort();
+            barrios.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b;
+                opt.textContent = b;
+                barrioFilter.appendChild(opt);
+            });
+        }
+
+        // Filtrar por barrio
+        const filtrados = barrioSeleccionado === 'all' 
+            ? data 
+            : data.filter(d => d.neighborhood === barrioSeleccionado);
+
+        lista.innerHTML = filtrados.length === 0 ? '<p style="text-align:center;padding:2rem;color:#94a3b8;grid-column:1/-1;">No hay solicitudes nuevas.</p>' : '';
 
         // Agrupar por barrio
         const porBarrio = {};
-        data.forEach(sol => {
+        filtrados.forEach(sol => {
             const barrio = sol.neighborhood || 'Sin barrio';
             if (!porBarrio[barrio]) porBarrio[barrio] = [];
             porBarrio[barrio].push(sol);
@@ -2486,7 +2505,7 @@ async function cargarSolicitudesPendientes() {
 
         Object.keys(porBarrio).sort().forEach(barrio => {
             const header = document.createElement('div');
-            header.style.cssText = 'background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;margin:1rem 0 0.5rem 0;display:flex;align-items:center;gap:0.5rem;';
+            header.style.cssText = 'grid-column:1/-1;background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;padding:0.5rem 1rem;border-radius:8px;font-size:0.85rem;margin:0.5rem 0;display:flex;align-items:center;gap:0.5rem;';
             header.innerHTML = `📍 ${barrio} <span style="background:rgba(255,255,255,0.2);padding:0.1rem 0.5rem;border-radius:12px;font-size:0.75rem;">${porBarrio[barrio].length}</span>`;
             lista.appendChild(header);
 
@@ -2512,6 +2531,7 @@ async function cargarSolicitudesPendientes() {
         console.error("Error admin folleto:", err.message);
     }
 }
+
 
 // 2. Función para Aprobar o Eliminar
 async function gestionarSolicitud(id, aprobar) {
@@ -2701,6 +2721,9 @@ async function cargarFolletoPublicado() {
     if (!contenedor) return;
 
     try {
+        const barrioFilter = document.getElementById('admin-folleto-barrio-filter');
+        const barrioSeleccionado = barrioFilter ? barrioFilter.value : 'all';
+
         const now = new Date().toISOString();
         const { data, error } = await supabase
             .from('folleto_imagenes')
@@ -2711,48 +2734,63 @@ async function cargarFolletoPublicado() {
 
         if (error) throw error;
 
-        if (!data || data.length === 0) {
-            contenedor.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;">No hay folletos publicados activos.</p>';
+        // Cargar barrios en el selector (solo si está vacío)
+        if (barrioFilter && barrioFilter.options.length <= 1) {
+            const barrios = [...new Set(data.map(d => d.neighborhood).filter(Boolean))].sort();
+            barrios.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b;
+                opt.textContent = b;
+                barrioFilter.appendChild(opt);
+            });
+        }
+
+        // Filtrar por barrio
+        const filtrados = barrioSeleccionado === 'all'
+            ? data
+            : data.filter(d => d.neighborhood === barrioSeleccionado);
+
+        if (!filtrados || filtrados.length === 0) {
+            contenedor.innerHTML = '<p style="text-align:center;padding:2rem;color:#94a3b8;grid-column:1/-1;">No hay folletos publicados activos.</p>';
             return;
         }
 
         // Agrupar por barrio
         const porBarrio = {};
-        data.forEach(item => {
+        filtrados.forEach(item => {
             const barrio = item.neighborhood || 'Sin barrio asignado';
             if (!porBarrio[barrio]) porBarrio[barrio] = [];
             porBarrio[barrio].push(item);
         });
 
-        // Renderizar agrupado
         let html = '';
         Object.keys(porBarrio).sort().forEach(barrio => {
             const items = porBarrio[barrio];
             html += `
-                <div style="margin-bottom:1.5rem;">
+                <div style="grid-column:1/-1;margin-bottom:0.5rem;">
                     <h3 style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;padding:0.6rem 1rem;border-radius:8px;font-size:0.9rem;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;">
                         📍 ${barrio} <span style="background:rgba(255,255,255,0.2);padding:0.1rem 0.5rem;border-radius:12px;font-size:0.75rem;">${items.length} anuncio${items.length !== 1 ? 's' : ''}</span>
                     </h3>
-                    ${items.map(item => `
-                        <div class="admin-card-solicitud" style="border-left: 4px solid #10b981; margin-bottom:0.5rem;">
-                            <img src="${item.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
-                            <div class="info">
-                                <strong>${item.titulo}</strong>
-                                <p>${item.descripcion}</p>
-                                <p style="font-size:0.75rem;color:#94a3b8;">
-                                    Por: ${item.nombre_vecino || 'Anónimo'} |
-                                    📍 ${item.neighborhood || 'Sin barrio'} |
-                                    ⏰ ${Math.ceil((new Date(item.expires_at) - new Date()) / (1000*60*60*24))}d restantes
-                                </p>
-                            </div>
-                            <div class="acciones" style="display:flex;flex-direction:column;gap:0.3rem;">
-                                <button onclick="folletoExtenderDias('${item.id}')" class="btn-aprobar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">📅 Extender</button>
-                                <button onclick="folletoCambiarImagen('${item.id}')" class="btn-edit" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🖼️ Cambiar Imagen</button>
-                                <button onclick="folletoDeleteItem('${item.id}')" class="btn-rechazar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🗑️ Eliminar</button>
-                            </div>
-                        </div>
-                    `).join('')}
                 </div>
+                ${items.map(item => `
+                    <div class="admin-card-solicitud" style="border-left: 4px solid #10b981;">
+                        <img src="${item.url_imagen}" style="width:100px; height:100px; object-fit:cover; border-radius:5px;">
+                        <div class="info">
+                            <strong>${item.titulo}</strong>
+                            <p>${item.descripcion}</p>
+                            <p style="font-size:0.75rem;color:#94a3b8;">
+                                Por: ${item.nombre_vecino || 'Anónimo'} |
+                                📍 ${item.neighborhood || 'Sin barrio'} |
+                                ⏰ ${Math.ceil((new Date(item.expires_at) - new Date()) / (1000*60*60*24))}d restantes
+                            </p>
+                        </div>
+                        <div class="acciones" style="display:flex;flex-direction:column;gap:0.3rem;">
+                            <button onclick="folletoExtenderDias('${item.id}')" class="btn-aprobar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">📅 Extender</button>
+                            <button onclick="folletoCambiarImagen('${item.id}')" class="btn-edit" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🖼️ Cambiar Imagen</button>
+                            <button onclick="folletoDeleteItem('${item.id}')" class="btn-rechazar" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                `).join('')}
             `;
         });
 

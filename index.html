@@ -1024,20 +1024,29 @@
                     <div id="admin-folleto" class="admin-tab-content">
                         <div style="padding: 20px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;">
                             <h3 style="margin-bottom: 20px; color: #1e293b;">📋 Moderación de Folleto Vecinal</h3>
-                            
+
+                            <!-- Selector de barrio -->
+                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px;">
+                                <label style="font-size: 0.85rem; color: #64748b; font-weight: 600;">📍 Filtrar por barrio:</label>
+                                <select id="admin-folleto-barrio-filter" onchange="cargarSolicitudesPendientes(); cargarFolletoPublicado();" style="padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem; flex: 1; max-width: 300px;">
+                                    <option value="all">Todos los barrios</option>
+                                </select>
+                            </div>
+
                             <p style="color: #64748b; margin-bottom: 15px; font-weight: 600;">Imágenes pendientes de aprobación:</p>
                             <div id="lista-solicitudes-pendientes" class="admin-grid-pendientes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
                                 <p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">Buscando solicitudes...</p>
                             </div>
-                            
+
                             <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
-                            
+
                             <p style="color: #64748b; margin-bottom: 15px; font-weight: 600;">Folletos publicados activos:</p>
                             <div id="folleto-publicado-list" class="admin-grid-pendientes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
                                 <p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">Cargando folletos...</p>
                             </div>
                         </div>
                     </div>
+
 
                 </section>
 
