@@ -287,32 +287,7 @@ VV.moderator = {
                             <button class="btn-delete" onclick="VV.moderator.removeImprovement('${i.id}', '${i.title.replace(/'/g, "\\'")}')" style="width: 100%; margin-top: 0.5rem;">
                                 <i class="fas fa-trash"></i> Eliminar Mejora
                             </button>
-    				// Eliminar mejora
-    				async removeImprovement(improvementId, improvementTitle) {
-        				if (!confirm(`¿Eliminar la mejora "${improvementTitle}"?`)) return;
-
-        				try {
-            				const { error } = await supabase
-                				.from('improvements')
-                				.delete()
-                				.eq('id', improvementId);
-
-            				if (error) throw error;
-
-            				await VV.moderator.logAction('ELIMINAR_MEJORA', {
-                				mejoraId: improvementId,
-                				mejoraTitulo: improvementTitle
-            				});
-
-            				VV.moderator.loadImprovements();
-            				VV.utils.showSuccess('Mejora eliminada');
-        				} catch (err) {
-            				console.error('Error eliminando mejora:', err);
-            				alert('Error al eliminar: ' + err.message);
-        				}
-    				},
-
-                        </div>
+                         </div>
                     `).join('');
 
             }
@@ -320,6 +295,31 @@ VV.moderator = {
             console.error('Error cargando mejoras:', err);
         }
     },
+    // Eliminar mejora
+    async removeImprovement(improvementId, improvementTitle) {
+        if (!confirm(`¿Eliminar la mejora "${improvementTitle}"?`)) return;
+
+        try {
+            const { error } = await supabase
+                .from('improvements')
+                .delete()
+                .eq('id', improvementId);
+
+            if (error) throw error;
+
+            await VV.moderator.logAction('ELIMINAR_MEJORA', {
+                mejoraId: improvementId,
+                mejoraTitulo: improvementTitle
+            });
+
+            VV.moderator.loadImprovements();
+            VV.utils.showSuccess('Mejora eliminada');
+        } catch (err) {
+            console.error('Error eliminando mejora:', err);
+            alert('Error al eliminar: ' + err.message);
+        }
+    },
+
 
     // Cargar denuncias
     async loadReports() {
