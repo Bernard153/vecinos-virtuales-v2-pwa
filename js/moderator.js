@@ -267,8 +267,12 @@ VV.moderator = {
                             <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
                                 <i class="fas fa-thumbs-up"></i> ${i.votes || 0} votos
                             </p>
+                            <button class="btn-delete" onclick="VV.moderator.removeImprovement('${i.id}', '${i.title.replace(/'/g, "\\'")}')" style="width: 100%; margin-top: 0.5rem;">
+                                <i class="fas fa-trash"></i> Eliminar Mejora
+                            </button>
                         </div>
                     `).join('');
+
             }
 
             const completedContainer = document.getElementById('moderator-improvements-completed');
@@ -280,8 +284,37 @@ VV.moderator = {
                             <h4>${sanitizeText(i.title)}</h4>
                             <p style="font-size: 0.9rem; color: var(--gray-600);">${sanitizeText(i.description || '')}</p>
                             <span class="badge" style="background: #dcfce7; color: #166534; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem;">✅ Completado</span>
+                            <button class="btn-delete" onclick="VV.moderator.removeImprovement('${i.id}', '${i.title.replace(/'/g, "\\'")}')" style="width: 100%; margin-top: 0.5rem;">
+                                <i class="fas fa-trash"></i> Eliminar Mejora
+                            </button>
+    				// Eliminar mejora
+    				async removeImprovement(improvementId, improvementTitle) {
+        				if (!confirm(`¿Eliminar la mejora "${improvementTitle}"?`)) return;
+
+        				try {
+            				const { error } = await supabase
+                				.from('improvements')
+                				.delete()
+                				.eq('id', improvementId);
+
+            				if (error) throw error;
+
+            				await VV.moderator.logAction('ELIMINAR_MEJORA', {
+                				mejoraId: improvementId,
+                				mejoraTitulo: improvementTitle
+            				});
+
+            				VV.moderator.loadImprovements();
+            				VV.utils.showSuccess('Mejora eliminada');
+        				} catch (err) {
+            				console.error('Error eliminando mejora:', err);
+            				alert('Error al eliminar: ' + err.message);
+        				}
+    				},
+
                         </div>
                     `).join('');
+
             }
         } catch (err) {
             console.error('Error cargando mejoras:', err);
