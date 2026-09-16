@@ -6,7 +6,7 @@ VV.auth = {
     userLocation: null,
     neighborhoods: [],
     
-    // Verificar sesión existente en Supabase
+// Verificar sesión existente en Supabase
         async checkExistingUser() {
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -16,9 +16,10 @@ VV.auth = {
                     .from('users')
                     .select('*')
                     .eq('id', session.user.id)
-                    .single();
+                    .maybeSingle();
                 
-                if (error) throw error;
+                // Ignorar el error "0 rows" — no es real, solo significa que no hay fila
+                if (error && error.code !== 'PGRST116') throw error;
                 
                 if (userData) {
                     VV.data.user = userData;
@@ -37,7 +38,11 @@ VV.auth = {
                     return true;
                 }
 
-
+                // Sesión sin fila en users: limpiar sesión corrupta y volver al landing
+                await supabase.auth.signOut();
+                localStorage.removeItem('vecinosVirtualesUser');
+                localStorage.removeItem('vv_phone_auth');
+                return false;
             }
             return false;
         } catch (error) {
@@ -45,6 +50,7 @@ VV.auth = {
             return false;
         }
     },
+
     
     // Solicitar geolocalización
     requestGeolocation() {

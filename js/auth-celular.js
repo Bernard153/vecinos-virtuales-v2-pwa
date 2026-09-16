@@ -43,9 +43,9 @@
     
     // === VALIDACIONES BÁSICAS ===
     if (!name || name.length < 2) return alert('Ingresá un nombre válido (mínimo 2 caracteres)');
+    if (/@<>/.test(name)) return alert('El nombre no puede contener @ ni símbolos especiales');
     if (!phone) return alert('Ingresá un número de celular');
     
-    // Validar formato argentino: 10 u 11 dígitos (ej: 11 1234 5678 o 381 123 4567)
     if (phone.length < 6 || phone.length > 15) {
         return alert('Ingresá un número válido con código de área (ej: 11 1234 5678)');
     }
@@ -53,7 +53,6 @@
     if (!pin || pin.length < 6) return alert('La clave debe tener al menos 6 caracteres');
     if (pin !== pinConfirm) return alert('Las claves no coinciden');
     
-    // Validar que el PIN no sea secuencial (123456) ni repetido (111111)
     if (/^(\d)\1{5,}$/.test(pin)) return alert('La clave no puede ser todos números iguales');
     if (/^(012345|123456|234567|345678|456789|567890|987654|876543|765432|654321|543210)$/.test(pin)) {
         return alert('Elegí una clave más segura, no secuencial');
@@ -68,11 +67,11 @@
         return;
     }
 
-    // === RATE LIMITING: evitar intentos rápidos ===
+    // === RATE LIMITING ===
     const lastAttempt = localStorage.getItem('vv_last_register_attempt');
     if (lastAttempt) {
         const elapsed = Date.now() - parseInt(lastAttempt);
-        if (elapsed < 30000) { // 30 segundos entre intentos
+        if (elapsed < 30000) {
             const wait = Math.ceil((30000 - elapsed) / 1000);
             return alert(`Esperá ${wait} segundos antes de intentar de nuevo`);
         }
@@ -83,70 +82,99 @@
         // Verificar si ya existe en tabla users
         const { data: existing } = await supabase
             .from('users')
-            .select('id')
+            .select('id, name, unique_number, neighborhood')
             .eq('phone', phone)
             .maybeSingle();
             
         if (existing) {
-            alert('Este celular ya está registrado. Usá "Ya tengo cuenta" para ingresar.');
+            alert(`Este celular ya está registrado como ${existing.name} (#${existing.unique_number}). Usá "Ya tengo cuenta" para ingresar.`);
             return;
         }
         
-        // Verificar también en Auth si el email ya existe
         const fakeEmail = `u${phone}@vv.app`;
         
+        // Intentar signUp
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: fakeEmail,
             password: pin
         });
         
-        if (authError) {
-            if (authError.message.includes('already registered') || authError.message.includes('already been registered')) {
-                const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-                    email: fakeEmail,
-                    password: pin
-                });
-                
-                if (loginError) {
-                    alert('Este celular ya tiene una cuenta. Si recordás tu clave, usá "Ya tengo cuenta". Si no, contactá al administrador.');
-                    return;
-                }
-                
-                const uniqueNumber = await VV.auth.generateUniqueNumber(VV.data.neighborhood);
-                const { data: userData, error: userError } = await supabase
-                    .from('users')
-                    .insert({
-                        id: loginData.user.id,
-                        email: fakeEmail,
-                        name: name,
-                        phone: phone,
-                        neighborhood: VV.data.neighborhood,
-                        home_neighborhood: VV.data.neighborhood,
-                        current_neighborhood: VV.data.neighborhood,
-                        unique_number: uniqueNumber,
-                        folleto_credits: 3,
-                        featured_credits: 1,
-                        role: 'user',
-                        avatar: 'basic-1',
-                        unlocked_avatars: [],
-                        blocked: false
-                    })
-                    .select()
-                    .single();
-                
-                if (userError) throw userError;
-                
-                localStorage.setItem('vv_phone_auth', userData.id);
-                VV.data.user = userData;
-                VV.data.neighborhood = userData.neighborhood;
-                
-                VV.utils.showSuccess(`¡Bienvenido, ${userData.name}! Tu número es #${uniqueNumber}`);
+        // === Caso: el email ya existe en Auth (422) ===
+        const yaRegistrado = authError && (
+            authError.status === 422 ||
+            authError.message?.toLowerCase().includes('already registered') ||
+            authError.message?.toLowerCase().includes('already been registered')
+        );
+        
+        if (yaRegistrado) {
+            // El usuario existe en Auth pero no en users (sesión huérfana).
+            // Intentar login con el PIN que ingresó.
+            const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+                email: fakeEmail,
+                password: pin
+            });
+            
+            if (loginError) {
+                // El PIN no coincide con el que ya tenían
+                alert('Este celular ya está registrado pero la clave no coincide. Si recordás tu clave, usá "Ya tengo cuenta". Si no, contactá al administrador.');
+                return;
+            }
+            
+            // Verificar si ya tiene fila en users (por las dudas)
+            const { data: existingUser } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', loginData.user.id)
+                .maybeSingle();
+            
+            if (existingUser) {
+                // Ya tiene todo, solo loguear
+                localStorage.setItem('vv_phone_auth', existingUser.id);
+                VV.data.user = existingUser;
+                VV.data.neighborhood = existingUser.neighborhood;
+                VV.utils.showSuccess(`¡Bienvenido de nuevo, ${existingUser.name}!`);
                 setTimeout(() => VV.auth.startApp(), 1500);
                 return;
             }
-            throw authError;
+            
+            // No tiene fila en users: crearla ahora
+            const uniqueNumber = await VV.auth.generateUniqueNumber(VV.data.neighborhood);
+            const { data: userData, error: userError } = await supabase
+                .from('users')
+                .insert({
+                    id: loginData.user.id,
+                    email: fakeEmail,
+                    name: name,
+                    phone: phone,
+                    neighborhood: VV.data.neighborhood,
+                    home_neighborhood: VV.data.neighborhood,
+                    current_neighborhood: VV.data.neighborhood,
+                    unique_number: uniqueNumber,
+                    folleto_credits: 3,
+                    featured_credits: 1,
+                    role: 'user',
+                    avatar: 'basic-1',
+                    unlocked_avatars: [],
+                    blocked: false
+                })
+                .select()
+                .maybeSingle();
+            
+            if (userError) throw userError;
+            
+            localStorage.setItem('vv_phone_auth', userData.id);
+            VV.data.user = userData;
+            VV.data.neighborhood = userData.neighborhood;
+            
+            VV.utils.showSuccess(`¡Bienvenido, ${userData.name}! Tu número es #${uniqueNumber}`);
+            setTimeout(() => VV.auth.startApp(), 1500);
+            return;
         }
         
+        // Otro error de Auth que no es "already registered"
+        if (authError) throw authError;
+        
+        // === SignUp exitoso (usuario nuevo de verdad) ===
         const uniqueNumber = await VV.auth.generateUniqueNumber(VV.data.neighborhood);
         
         const { data: userData, error: userError } = await supabase
@@ -168,7 +196,7 @@
                 blocked: false
             })
             .select()
-            .single();
+            .maybeSingle();
         
         if (userError) throw userError;
         
@@ -184,6 +212,7 @@
         alert('Error al crear la cuenta: ' + error.message);
     }
 },
+
 
     
     async loginWithPin() {
