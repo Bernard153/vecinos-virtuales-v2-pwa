@@ -7,9 +7,14 @@ VV.moderator = {
             alert('No tienes permisos de moderación');
             return;
         }
-        document.getElementById('moderator-neighborhood').textContent = VV.data.neighborhood;
+        // Asegurar que el barrio esté seteado (fallback al barrio del usuario)
+        if (!VV.data.neighborhood && VV.data.user && VV.data.user.neighborhood) {
+            VV.data.neighborhood = VV.data.user.neighborhood;
+        }
+        document.getElementById('moderator-neighborhood').textContent = VV.data.neighborhood || (VV.data.user ? VV.data.user.neighborhood : '');
         VV.moderator.showTab('users');
     },
+
 
     // Cambiar tab
     showTab(tabName) {
@@ -61,7 +66,7 @@ VV.moderator = {
             const { data: users, error } = await supabase
                 .from('users')
                 .select('id, name, unique_number, role, blocked, created_at')
-                .eq('neighborhood', VV.data.neighborhood)
+                .eq('neighborhood', VV.data.neighborhood || (VV.data.user ? VV.data.user.neighborhood : null))
                 .neq('id', VV.data.user.id)
                 .order('created_at', { ascending: false });
 
@@ -132,7 +137,7 @@ VV.moderator = {
                 const { data: products, error } = await supabase
                     .from('products')
                     .select('id, product, seller_name, description, neighborhood, created_at')
-                    .eq('neighborhood', VV.data.neighborhood)
+                    .eq('neighborhood', VV.data.neighborhood || (VV.data.user ? VV.data.user.neighborhood : null))
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -244,7 +249,7 @@ VV.moderator = {
             const { data: improvements, error } = await supabase
                 .from('improvements')
                 .select('*')
-                .eq('neighborhood', VV.data.neighborhood)
+                .eq('neighborhood', VV.data.neighborhood || (VV.data.user ? VV.data.user.neighborhood : null))
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -330,7 +335,7 @@ VV.moderator = {
             const { data: reports, error } = await supabase
                 .from('denuncias')
                 .select('*')
-                .eq('neighborhood', VV.data.neighborhood)
+                .eq('neighborhood', VV.data.neighborhood || (VV.data.user ? VV.data.user.neighborhood : null))
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -392,7 +397,7 @@ VV.moderator = {
             const { count: usersCount } = await supabase
                 .from('users')
                 .select('*', { count: 'exact', head: true })
-                .eq('neighborhood', VV.data.neighborhood);
+                .eq('neighborhood', VV.data.neighborhood || (VV.data.user ? VV.data.user.neighborhood : null));
 
             // Productos
             const { count: productsCount } = await supabase
