@@ -88,14 +88,14 @@ VV.improvements = {
         container.innerHTML = neighborhoodImprovements.map(imp => `
             <div class="improvement-card">
                 <div class="card-header">
-                    <h3>${imp.title}</h3>
+                    <h3>${VV.utils.escapeHtml(imp.title)}</h3>
                     <div style="display: flex; gap: 0.5rem;">
-                        <span class="badge status-${imp.status.toLowerCase().replace(' ', '-')}">${imp.status}</span>
-                        <span class="badge priority-${imp.priority.toLowerCase()}">${imp.priority}</span>
+                        <span class="badge status-${imp.status.toLowerCase().replace(' ', '-')}">${VV.utils.escapeHtml(imp.status)}</span>
+                        <span class="badge priority-${imp.priority.toLowerCase()}">${VV.utils.escapeHtml(imp.priority)}</span>
                         ${imp.photoUrl || imp.completedPhotoUrl ? '<span class="badge" style="background: var(--primary-blue);"><i class="fas fa-camera"></i></span>' : ''}
                     </div>
                 </div>
-                <p style="color: var(--gray-700); margin: 0.5rem 0;">${imp.description}</p>
+                <p style="color: var(--gray-700); margin: 0.5rem 0;">${VV.utils.escapeHtml(imp.description)}</p>
                 ${(imp.photo_url || imp.photoUrl) ? `
                     <div style="margin: 0.5rem 0;">
                         <img src="${imp.photo_url || imp.photoUrl}" onclick="VV.improvements.viewPhoto('${imp.photo_url || imp.photoUrl}')" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; cursor: pointer;" alt="Foto del problema">
@@ -109,13 +109,13 @@ VV.improvements = {
                     </div>
                 ` : ''}
                 <div style="font-size: 0.85rem; color: var(--gray-600); margin: 0.5rem 0;">
-                    <i class="fas fa-user"></i> Propuesto por: <strong>${imp.author_alias || imp.author_name || 'Anónimo'}</strong><br>
+                    <i class="fas fa-user"></i> Propuesto por: <strong>${VV.utils.escapeHtml(imp.author_alias || imp.author_name || 'Anónimo')}</strong><br>
                     <i class="fas fa-calendar"></i> Propuesta: ${new Date(imp.createdAt || imp.created_at || Date.now()).toLocaleDateString('es-AR')}
-                    ${imp.status === 'Completado' && imp.completedAt ? `<br><i class="fas fa-check-circle"></i> Realizada: ${new Date(imp.completedAt).toLocaleDateString('es-AR')} por ${imp.completedBy}` : ''}
+                    ${imp.status === 'Completado' && imp.completedAt ? `<br><i class="fas fa-check-circle"></i> Realizada: ${new Date(imp.completedAt).toLocaleDateString('es-AR')} por ${VV.utils.escapeHtml(imp.completedBy)}` : ''}
                 </div>
 
                 <div class="card-footer">
-                    <span style="color: var(--gray-600);"><i class="fas fa-tag"></i> ${imp.category}</span>
+                    <span style="color: var(--gray-600);"><i class="fas fa-tag"></i> ${VV.utils.escapeHtml(imp.category)}</span>
                     ${VV.improvements.renderVoteButton(imp)}
                     <button onclick="denunciarPublicacion('${imp.id}', 'improvements')" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;margin-left:0.5rem;">🚩 Denunciar</button>
                 </div>

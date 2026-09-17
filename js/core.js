@@ -161,7 +161,17 @@ const VV = {
             localStorage.setItem('moderatorLogs', JSON.stringify(logs.slice(0, 500)));
         },
 
-        showSuccess(message) { console.log("Success:", message); }
+        showSuccess(message) { console.log("Success:", message); },
+        escapeHtml(text) {
+            if (text === null || text === undefined) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        },
+
     } 
 };
 
