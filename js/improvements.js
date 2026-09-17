@@ -117,7 +117,9 @@ VV.improvements = {
                 <div class="card-footer">
                     <span style="color: var(--gray-600);"><i class="fas fa-tag"></i> ${imp.category}</span>
                     ${VV.improvements.renderVoteButton(imp)}
+                    <button onclick="denunciarPublicacion('${imp.id}', 'improvements')" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;margin-left:0.5rem;">🚩 Denunciar</button>
                 </div>
+
                 ${(imp.author_id === VV.data.user.id) ? `
                     <div class="card-actions" style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
                         <button class="btn-edit" onclick="VV.improvements.showForm('${imp.id}')" style="flex: 1;">
