@@ -978,7 +978,8 @@ VV.admin = {
     },
 
     // Cargar logs de actividad de moderadores
- VV.admin.loadModeratorLogs = async function() {
+loadModeratorLogs: async function() {
+
     if (!VV.utils.isAdmin()) return;
 
     const neighborhoodFilter = document.getElementById('log-filter-neighborhood')?.value || '';
@@ -1105,9 +1106,11 @@ VV.admin = {
         console.error('Error cargando logs:', err);
         container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--error-red);">Error al cargar la actividad</p>';
     }
+    }
 };
 
 // Solicitar ser anunciante (usuarios comunes)
+
 window.requestSponsorStatus = function () {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
