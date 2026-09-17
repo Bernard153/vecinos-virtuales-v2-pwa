@@ -1,4 +1,4 @@
-// ========== MÓDULO SERVICIOS ==========
+﻿// ========== MÓDULO SERVICIOS ==========
 
 VV.services = {
     // Servicios por defecto (disponibles en todos los barrios)
@@ -44,7 +44,7 @@ VV.services = {
             return `
             <div class="service-card">
                 <div class="card-header">
-                    <h3>${service.service_name || service.serviceName}${service.isDefault ? ' <span style="font-size: 0.7rem; color: var(--primary-blue);">★ OFICIAL</span>' : ''}</h3>
+                    <h3>${VV.utils.escapeHtml(service.service_name || service.serviceName)}${service.isDefault ? ' <span style="font-size: 0.7rem; color: var(--primary-blue);">★ OFICIAL</span>' : ''}</h3>
                     <div style="display: flex; align-items: center; gap: 0.25rem; color: var(--warning-orange);">
                         ${VV.services.generateStars(service.rating || 5)}
                         <span style="margin-left: 0.25rem; font-weight: 600;">${service.rating || 5}</span>
@@ -298,25 +298,26 @@ VV.services = {
         container.innerHTML = services.map(service => `
             <div class="service-card">
                 <div class="card-header">
-                    <h3>${service.serviceName}${service.isDefault ? ' <span style="font-size: 0.7rem; color: var(--primary-blue);">★ OFICIAL</span>' : ''}</h3>
+                    <h3>${VV.utils.escapeHtml(service.serviceName)}${service.isDefault ? ' <span style="font-size: 0.7rem; color: var(--primary-blue);">★ OFICIAL</span>' : ''}</h3>
                     <div style="display: flex; align-items: center; gap: 0.25rem; color: var(--warning-orange);">
                         ${VV.services.generateStars(service.rating || 5)}
                         <span style="margin-left: 0.25rem; font-weight: 600;">${service.rating || 5}</span>
                     </div>
                 </div>
-                <p><strong>Proveedor:</strong> ${service.providerName}</p>
-                <p><strong>Categoría:</strong> ${service.category}</p>
-                <p style="color: var(--gray-700); margin: 0.5rem 0;">${service.description}</p>
+                <p><strong>Proveedor:</strong> ${VV.utils.escapeHtml(service.providerName)}</p>
+                <p><strong>Categoría:</strong> ${VV.utils.escapeHtml(service.category)}</p>
+                <p style="color: var(--gray-700); margin: 0.5rem 0;">${VV.utils.escapeHtml(service.description)}</p>
                 <div style="margin: 1rem 0; padding: 1rem; background: var(--gray-50); border-radius: 8px;">
-                    <p style="margin-bottom: 0.5rem;"><i class="fas fa-clock"></i> ${service.availability}</p>
-                    <p style="margin-bottom: 0.5rem;"><i class="fas fa-phone"></i> ${service.contact}</p>
-                    ${service.price ? `<p><i class="fas fa-dollar-sign"></i> ${service.price}</p>` : ''}
+                    <p style="margin-bottom: 0.5rem;"><i class="fas fa-clock"></i> ${VV.utils.escapeHtml(service.availability)}</p>
+                    <p style="margin-bottom: 0.5rem;"><i class="fas fa-phone"></i> ${VV.utils.escapeHtml(service.contact)}</p>
+                    ${service.price ? `<p><i class="fas fa-dollar-sign"></i> ${VV.utils.escapeHtml(service.price)}</p>` : ''}
                 </div>
-                <button class="btn-primary" onclick="VV.services.contact('${service.contact}')" style="width: 100%;">
+                <button class="btn-primary" onclick="VV.services.contact(this.dataset.contact)" data-contact="${VV.utils.escapeHtml(service.contact)}" style="width: 100%;">
                     <i class="fas fa-phone"></i> Contactar
                 </button>
             </div>
         `).join('');
+
     },
     
     // Eliminar servicio (MIGRADO A SUPABASE)

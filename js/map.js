@@ -1,4 +1,4 @@
-// ========== MÓDULO DE MAPA INTERACTIVO ==========
+﻿// ========== MÓDULO DE MAPA INTERACTIVO ==========
 
 VV.map = {
     mapInstance: null,
@@ -122,20 +122,21 @@ VV.map = {
             
             marker.bindPopup(`
                 <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-blue);">🛒 ${product.name}</h4>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${product.description}</p>
-                    <p style="margin: 0.5rem 0; font-weight: 600; color: var(--success-green);">$${product.price}</p>
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-blue);">🛒 ${VV.utils.escapeHtml(product.name)}</h4>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${VV.utils.escapeHtml(product.description)}</p>
+                    <p style="margin: 0.5rem 0; font-weight: 600; color: var(--success-green);">$${VV.utils.escapeHtml(product.price)}</p>
                     <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">
-                        <i class="fas fa-user"></i> ${product.users?.name || 'Vendedor'}
+                        <i class="fas fa-user"></i> ${VV.utils.escapeHtml(product.users?.name || 'Vendedor')}
                     </p>
                     <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">
                         <i class="fas fa-map-marker-alt"></i> A ${VV.geo.formatDistance(distance)}
                     </p>
-                    <button onclick="VV.marketplace.showProductDetail('${product.id}')" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: var(--primary-blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    <button onclick="VV.marketplace.showProductDetail(this.dataset.id)" data-id="${VV.utils.escapeHtml(product.id)}" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: var(--primary-blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
                         Ver Detalles
                     </button>
                 </div>
             `);
+
             
             marker.addTo(VV.map.layers.commerce);
         });
@@ -209,16 +210,17 @@ VV.map = {
             
             marker.bindPopup(`
                 <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: #ef4444;">🚨 ${service.title}</h4>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${service.description}</p>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #ef4444;">🚨 ${VV.utils.escapeHtml(service.title)}</h4>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${VV.utils.escapeHtml(service.description)}</p>
                     <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">
-                        <i class="fas fa-user"></i> ${service.provider}
+                        <i class="fas fa-user"></i> ${VV.utils.escapeHtml(service.provider)}
                     </p>
                     <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">
-                        <i class="fas fa-phone"></i> ${service.contact}
+                        <i class="fas fa-phone"></i> ${VV.utils.escapeHtml(service.contact)}
                     </p>
                 </div>
             `);
+
             
             marker.addTo(VV.map.layers.emergency);
         });
@@ -262,8 +264,8 @@ VV.map = {
             
             marker.bindPopup(`
                 <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: #f59e0b;">⚠️ ${alert.title}</h4>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${alert.description}</p>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #f59e0b;">⚠️ ${VV.utils.escapeHtml(alert.title)}</h4>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${VV.utils.escapeHtml(alert.description)}</p>
                     <p style="margin: 0.5rem 0; font-size: 0.75rem; color: var(--gray-600);">
                         <i class="fas fa-clock"></i> Hace ${timeAgo}
                     </p>
@@ -272,6 +274,7 @@ VV.map = {
                     </p>
                 </div>
             `);
+
             
             marker.addTo(VV.map.layers.security);
         });
@@ -314,8 +317,8 @@ VV.map = {
             
             marker.bindPopup(`
                 <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: ${color};">${icon} ${item.title}</h4>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${item.description}</p>
+                    <h4 style="margin: 0 0 0.5rem 0; color: ${color};">${icon} ${VV.utils.escapeHtml(item.title)}</h4>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${VV.utils.escapeHtml(item.description)}</p>
                     ${item.end_time ? `
                         <p style="margin: 0.5rem 0; font-size: 0.75rem; color: var(--gray-600);">
                             <i class="fas fa-clock"></i> ${isEvent ? 'Fecha:' : 'Hasta:'} ${new Date(item.end_time).toLocaleString('es-AR')}
@@ -323,6 +326,7 @@ VV.map = {
                     ` : ''}
                 </div>
             `);
+
             
             marker.addTo(VV.map.layers.events);
         });
