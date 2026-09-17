@@ -978,25 +978,40 @@ VV.admin = {
     },
 
     // Cargar logs de actividad de moderadores
-    loadModeratorLogs() {
-        const neighborhoodFilter = document.getElementById('log-filter-neighborhood').value;
-        const actionFilter = document.getElementById('log-filter-action').value;
+ VV.admin.loadModeratorLogs = async function() {
+    if (!VV.utils.isAdmin()) return;
 
-        // Cargar todos los logs
-        let logs = VV.utils.getModeratorLogs(null, 200);
+    const neighborhoodFilter = document.getElementById('log-filter-neighborhood')?.value || '';
+    const actionFilter = document.getElementById('log-filter-action')?.value || '';
 
-        // Aplicar filtros
-        if (neighborhoodFilter) {
-            logs = logs.filter(log => log.neighborhood === neighborhoodFilter);
+    const container = document.getElementById('moderator-logs-list');
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">Cargando actividad...</p>';
+
+    try {
+        let query = supabase
+            .from('moderator_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(200);
+
+        if (neighborhoodFilter) query = query.eq('neighborhood', neighborhoodFilter);
+        if (actionFilter) query = query.eq('action', actionFilter);
+
+        const { data: logs, error } = await query;
+
+        if (error) throw error;
+
+        if (!logs || logs.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay actividad registrada</p>';
+            return;
         }
-        if (actionFilter) {
-            logs = logs.filter(log => log.action === actionFilter);
-        }
 
-        // Poblar filtro de barrios (solo una vez)
+        // Llenar filtro de barrios si está vacío
         const neighborhoodSelect = document.getElementById('log-filter-neighborhood');
-        if (neighborhoodSelect.options.length === 1) {
-            const neighborhoods = [...new Set(VV.utils.getModeratorLogs(null, 500).map(l => l.neighborhood))];
+        if (neighborhoodSelect && neighborhoodSelect.options.length <= 1) {
+            const neighborhoods = [...new Set(logs.map(l => l.neighborhood).filter(Boolean))].sort();
             neighborhoods.forEach(n => {
                 const option = document.createElement('option');
                 option.value = n;
@@ -1005,12 +1020,23 @@ VV.admin = {
             });
         }
 
-        const container = document.getElementById('moderator-logs-list');
+        const actionColor = {
+            'BLOQUEAR_USUARIO': '#ef4444',
+            'DESBLOQUEAR_USUARIO': '#10b981',
+            'ELIMINAR_USUARIO': '#ef4444',
+            'ELIMINAR_PRODUCTO': '#f59e0b',
+            'ELIMINAR_PUBLICACION': '#f59e0b',
+            'RESOLVER_DENUNCIA': '#10b981'
+        };
 
-        if (logs.length === 0) {
-            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay actividad registrada</p>';
-            return;
-        }
+        const actionText = {
+            'BLOQUEAR_USUARIO': '🔒 Bloquear usuario',
+            'DESBLOQUEAR_USUARIO': '🔓 Desbloquear usuario',
+            'ELIMINAR_USUARIO': '🗑 Eliminar usuario',
+            'ELIMINAR_PRODUCTO': '🗑 Eliminar producto',
+            'ELIMINAR_PUBLICACION': '🗑 Eliminar publicación',
+            'RESOLVER_DENUNCIA': '✅ Resolver denuncia'
+        };
 
         container.innerHTML = `
             <div style="overflow-x: auto;">
@@ -1026,50 +1052,47 @@ VV.admin = {
                     </thead>
                     <tbody>
                         ${logs.map((log, index) => {
-            const date = new Date(log.timestamp);
-            const actionColor = {
-                'ELIMINAR_USUARIO': 'var(--error-red)',
-                'ELIMINAR_PRODUCTO': 'var(--warning-orange)',
-                'ELIMINAR_PUBLICACION': 'var(--primary-purple)'
-            }[log.action] || 'var(--gray-600)';
-
-            const actionText = {
-                'ELIMINAR_USUARIO': '🚫 Eliminó Usuario',
-                'ELIMINAR_PRODUCTO': '🗑️ Eliminó Producto',
-                'ELIMINAR_PUBLICACION': '🚫 Eliminó Publicación'
-            }[log.action] || log.action;
-
+            const date = new Date(log.created_at);
             let detailsText = '';
-            if (log.action === 'ELIMINAR_USUARIO') {
-                detailsText = `Usuario: ${log.details.usuarioNombre}`;
-            } else if (log.action === 'ELIMINAR_PRODUCTO') {
-                detailsText = `Producto: "${log.details.productoNombre}" de ${log.details.vendedor}`;
-            } else if (log.action === 'ELIMINAR_PUBLICACION') {
-                detailsText = `"${log.details.publicacionTitulo}" (${log.details.tipo}) de ${log.details.autor}`;
+            try {
+                const details = typeof log.details === 'string' ? JSON.parse(log.details) : log.details;
+                if (log.action === 'BLOQUEAR_USUARIO' || log.action === 'DESBLOQUEAR_USUARIO') {
+                    detailsText = `Usuario: ${details.usuarioNombre || details.usuarioId || 'N/A'}`;
+                } else if (log.action === 'ELIMINAR_PRODUCTO') {
+                    detailsText = `Producto: "${details.productoNombre || 'N/A'}" de ${details.vendedor || 'N/A'}`;
+                } else if (log.action === 'ELIMINAR_PUBLICACION') {
+                    detailsText = `"${details.publicacionTitulo || 'N/A'}" (${details.tipo || 'N/A'}) de ${details.autor || 'N/A'}`;
+                } else if (log.action === 'RESOLVER_DENUNCIA') {
+                    detailsText = `Denuncia ID: ${details.denunciaId || 'N/A'}`;
+                } else {
+                    detailsText = JSON.stringify(details);
+                }
+            } catch (e) {
+                detailsText = log.details || 'Sin detalles';
             }
 
             return `
-                                <tr style="border-bottom: 1px solid var(--gray-200); ${index % 2 === 0 ? 'background: var(--gray-50);' : ''}">
-                                    <td style="padding: 0.75rem; font-size: 0.85rem; color: var(--gray-600);">
-                                        ${date.toLocaleDateString()}<br>
-                                        ${date.toLocaleTimeString()}
-                                    </td>
-                                    <td style="padding: 0.75rem; font-weight: 600;">
-                                        ${log.moderatorName}
-                                    </td>
-                                    <td style="padding: 0.75rem;">
-                                        <span style="background: var(--gray-200); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;">
-                                            ${log.neighborhood}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 0.75rem; color: ${actionColor}; font-weight: 600;">
-                                        ${actionText}
-                                    </td>
-                                    <td style="padding: 0.75rem; font-size: 0.9rem; color: var(--gray-700);">
-                                        ${detailsText}
-                                    </td>
-                                </tr>
-                            `;
+                            <tr style="border-bottom: 1px solid var(--gray-200); ${index % 2 === 0 ? 'background: var(--gray-50);' : ''}">
+                                <td style="padding: 0.75rem; font-size: 0.85rem; color: var(--gray-600);">
+                                    ${date.toLocaleDateString()}<br>
+                                    ${date.toLocaleTimeString()}
+                                </td>
+                                <td style="padding: 0.75rem; font-weight: 600;">
+                                    ${VV.utils.escapeHtml(log.moderator_name || 'N/A')}
+                                </td>
+                                <td style="padding: 0.75rem;">
+                                    <span style="background: var(--gray-200); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.85rem;">
+                                        ${VV.utils.escapeHtml(log.neighborhood || 'N/A')}
+                                    </span>
+                                </td>
+                                <td style="padding: 0.75rem; color: ${actionColor[log.action] || 'var(--gray-600)'}; font-weight: 600;">
+                                    ${actionText[log.action] || log.action}
+                                </td>
+                                <td style="padding: 0.75rem; font-size: 0.9rem; color: var(--gray-700);">
+                                    ${VV.utils.escapeHtml(detailsText)}
+                                </td>
+                            </tr>
+                        `;
         }).join('')}
                     </tbody>
                 </table>
@@ -1078,6 +1101,9 @@ VV.admin = {
                 Mostrando ${logs.length} registro(s) de actividad
             </p>
         `;
+    } catch (err) {
+        console.error('Error cargando logs:', err);
+        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--error-red);">Error al cargar la actividad</p>';
     }
 };
 
@@ -1496,13 +1522,28 @@ VV.admin.loadAllImprovements = async function () {
     const neighborhoodFilter = document.getElementById('admin-improvement-neighborhood-filter').value;
     const statusFilter = document.getElementById('admin-improvement-status-filter').value;
 
-    const neighborhoods = [...new Set(VV.data.improvements.map(i => i.neighborhood).filter(Boolean))].sort();
+    // Cargar mejoras desde Supabase (no de localStorage)
+    let allImprovements = VV.data.improvements || [];
+    try {
+        const { data, error } = await supabase
+            .from('improvements')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (!error && data) {
+            allImprovements = data;
+            VV.data.improvements = data; // Actualizar cache local
+        }
+    } catch (e) {
+        console.warn('No se pudieron cargar mejoras de Supabase, usando cache local:', e);
+    }
+
+    const neighborhoods = [...new Set(allImprovements.map(i => i.neighborhood).filter(Boolean))].sort();
     const neighborhoodSelect = document.getElementById('admin-improvement-neighborhood-filter');
     const currentValue = neighborhoodSelect.value;
     neighborhoodSelect.innerHTML = '<option value="">Todos los barrios</option>' +
         neighborhoods.map(n => `<option value="${n}" ${n === currentValue ? 'selected' : ''}>${n}</option>`).join('');
 
-    let filtered = VV.data.improvements;
+    let filtered = allImprovements;
     if (neighborhoodFilter) filtered = filtered.filter(i => i.neighborhood === neighborhoodFilter);
     if (statusFilter) filtered = filtered.filter(i => i.status === statusFilter);
 
@@ -2902,15 +2943,44 @@ VV.admin.loadDenuncias = async function() {
             return;
         }
 
-        container.innerHTML = denuncias.map(d => `
+        // Mapear post_type a tabla y columna de título
+        const tableMap = {
+            'cultural': { table: 'cultural_posts', col: 'title' },
+            'folleto': { table: 'folleto_imagenes', col: 'titulo' },
+            'marketplace': { table: 'products', col: 'product' },
+            'improvements': { table: 'improvements', col: 'title' },
+            'voces': { table: 'karaoke_videos', col: 'title' }
+        };
+
+        // Buscar el título de cada publicación denunciada
+        const denunciasConTitulo = await Promise.all(denuncias.map(async (d) => {
+            let pubTitulo = '(publicación no encontrada)';
+            const map = tableMap[d.post_type];
+            if (map) {
+                try {
+                    const { data: pub } = await supabase
+                        .from(map.table)
+                        .select(map.col)
+                        .eq('id', d.post_id)
+                        .maybeSingle();
+                    if (pub && pub[map.col]) pubTitulo = pub[map.col];
+                } catch (e) { /* tabla no existe o sin permisos */ }
+            }
+            return { ...d, pubTitulo };
+        }));
+
+        container.innerHTML = denunciasConTitulo.map(d => `
             <div class="admin-card-solicitud" style="border-left: 4px solid ${d.status === 'pendiente' ? '#ef4444' : d.status === 'revisado' ? '#f59e0b' : '#10b981'};">
                 <div class="info" style="flex:1;">
-                    <p><strong>🚩 ${d.motivo}</strong></p>
-                    <p style="font-size:0.85rem;margin-top:0.25rem;">${d.detalle || 'Sin detalles adicionales'}</p>
+                    <p><strong>🚩 ${VV.utils.escapeHtml(d.motivo)}</strong></p>
+                    <p style="font-size:0.85rem;margin-top:0.25rem;">${VV.utils.escapeHtml(d.detalle || 'Sin detalles adicionales')}</p>
+                    <p style="font-size:0.8rem;margin-top:0.25rem;color:#3b82f6;">
+                        📄 Publicación: <strong>${VV.utils.escapeHtml(d.pubTitulo)}</strong>
+                    </p>
                     <p style="font-size:0.75rem;color:#94a3b8;">
-                        Denunciante: ${d.denunciante_name} | 
-                        Tipo: ${d.post_type} | 
-                        ID: ${d.post_id.substring(0,8)}... | 
+                        Denunciante: ${VV.utils.escapeHtml(d.denunciante_name || 'Anónimo')} |
+                        Tipo: ${VV.utils.escapeHtml(d.post_type)} |
+                        ID: ${VV.utils.escapeHtml(d.post_id ? d.post_id.substring(0,8) : 'N/A')}... |
                         ${new Date(d.created_at).toLocaleDateString()}
                     </p>
                     <span style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:12px;background:${d.status === 'pendiente' ? '#fef2f2' : d.status === 'revisado' ? '#fef3c7' : '#dcfce7'};color:${d.status === 'pendiente' ? '#dc2626' : d.status === 'revisado' ? '#d97706' : '#16a34a'};">
@@ -2920,7 +2990,7 @@ VV.admin.loadDenuncias = async function() {
                 <div style="display:flex;flex-direction:column;gap:0.3rem;">
                     <button onclick="VV.admin.marcarDenuncia('${d.id}', 'revisado')" style="background:#f59e0b;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🟡 Revisado</button>
                     <button onclick="VV.admin.marcarDenuncia('${d.id}', 'resuelto')" style="background:#10b981;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🟢 Resuelto</button>
-                    <button onclick="VV.admin.eliminarDenuncia('${d.id}')" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🗑️ Eliminar</button>
+                    <button onclick="VV.admin.eliminarDenuncia('${d.id}')" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:0.3rem 0.5rem;cursor:pointer;font-size:0.7rem;">🗑 Eliminar</button>
                 </div>
             </div>
         `).join('');
@@ -2929,6 +2999,7 @@ VV.admin.loadDenuncias = async function() {
         container.innerHTML = '<p style="text-align:center;padding:2rem;color:#ef4444;">Error al cargar denuncias.</p>';
     }
 };
+
 
 VV.admin.marcarDenuncia = async function(id, status) {
     try {
