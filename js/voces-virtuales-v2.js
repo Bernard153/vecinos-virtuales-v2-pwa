@@ -376,7 +376,17 @@ window.VV_VOCES_V2 = {
         if (this.streamCamaraMicro) {
             this.streamCamaraMicro.getTracks().forEach(track => track.stop());
         }
+
+        // Limpiar audioContext y musicSource para la próxima grabación
+        if (this.audioContext) {
+            try { this.audioContext.close(); } catch(e) {}
+            this.audioContext = null;
+        }
+        this.musicSource = null;
+        this.micGain = null;
+        this.musicGain = null;
     },
+
 
 
     playPreview: function() {
