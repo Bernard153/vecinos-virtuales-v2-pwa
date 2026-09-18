@@ -297,7 +297,7 @@ window.VV_VOCES_V2 = {
             micGain.connect(destination);
             this.micGain = micGain;
 
-            // Pista → mezclador + altavoces (crear UNA VEZ por elemento de audio)
+            // Pista → mezclador + altavoces (crear UNA VEZ; reconectar limpio en cada grabación)
             if (audioComponent && audioComponent.src) {
                 if (!this.musicSource) {
                     this.musicSource = audioContext.createMediaElementSource(audioComponent);
@@ -305,10 +305,13 @@ window.VV_VOCES_V2 = {
                     this.musicSource.connect(this.musicGain);
                     this.musicGain.connect(audioContext.destination);
                 }
-                // Reconectar al destination actual de esta grabación
+                // Desconectar conexiones previas (evita acumulación → tildón)
+                try { this.musicGain.disconnect(); } catch(e) {}
                 this.musicGain.gain.value = parseFloat(document.getElementById('vv-vol-musica')?.value || 0.7);
                 this.musicGain.connect(destination);
+                this.musicGain.connect(audioContext.destination);
             }
+
 
 
 
@@ -377,6 +380,12 @@ window.VV_VOCES_V2 = {
 
         if (this.streamCamaraMicro) {
             this.streamCamaraMicro.getTracks().forEach(track => track.stop());
+        }
+
+        // Liberar el micrófono de esta grabación (evita acumulación)
+        if (this.micGain) {
+            try { this.micGain.disconnect(); } catch(e) {}
+            this.micGain = null;
         }
 
        
