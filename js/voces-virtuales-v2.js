@@ -279,17 +279,15 @@ window.VV_VOCES_V2 = {
 
             const canvasStream = canvas.captureStream(24);
 
-            // AudioContext: reutilizar si ya existe (evita crash y error de elemento ya conectado)
-            if (!this.audioContext) {
-                this.audioContext = new AudioContext();
-            }
-            const audioContext = this.audioContext;
+            // AudioContext NUEVO
+            const audioContext = new AudioContext();
+            this.audioContext = audioContext;
             if (audioContext.state === 'suspended') {
                 await audioContext.resume();
             }
             const destination = audioContext.createMediaStreamDestination();
 
-            // Micrófono → mezclador (nuevo cada vez, el stream cambia)
+            // Micrófono → mezclador
             const micSource = audioContext.createMediaStreamSource(this.streamCamaraMicro);
             const micGain = audioContext.createGain();
             micGain.gain.value = parseFloat(document.getElementById('vv-vol-voz')?.value || 1.0);
@@ -297,23 +295,16 @@ window.VV_VOCES_V2 = {
             micGain.connect(destination);
             this.micGain = micGain;
 
-            // Pista → mezclador + altavoces (crear UNA VEZ; reconectar limpio en cada grabación)
+            // Pista → mezclador + altavoces
             if (audioComponent && audioComponent.src) {
-                if (!this.musicSource) {
-                    this.musicSource = audioContext.createMediaElementSource(audioComponent);
-                    this.musicGain = audioContext.createGain();
-                    this.musicSource.connect(this.musicGain);
-                    this.musicGain.connect(audioContext.destination);
-                }
-                // Desconectar conexiones previas (evita acumulación → tildón)
-                try { this.musicGain.disconnect(); } catch(e) {}
-                this.musicGain.gain.value = parseFloat(document.getElementById('vv-vol-musica')?.value || 0.7);
-                this.musicGain.connect(destination);
-                this.musicGain.connect(audioContext.destination);
+                this.musicSource = audioContext.createMediaElementSource(audioComponent);
+                const musicGain = audioContext.createGain();
+                musicGain.gain.value = parseFloat(document.getElementById('vv-vol-musica')?.value || 0.7);
+                this.musicSource.connect(musicGain);
+                musicGain.connect(destination);
+                musicGain.connect(audioContext.destination);
+                this.musicGain = musicGain;
             }
-
-
-
 
             // Stream combinado: canvas video + audio mezclado
             const combinedStream = new MediaStream();
@@ -381,16 +372,7 @@ window.VV_VOCES_V2 = {
         if (this.streamCamaraMicro) {
             this.streamCamaraMicro.getTracks().forEach(track => track.stop());
         }
-
-        // Liberar el micrófono de esta grabación (evita acumulación)
-        if (this.micGain) {
-            try { this.micGain.disconnect(); } catch(e) {}
-            this.micGain = null;
-        }
-
-       
     },
-
 
 
     playPreview: function() {
@@ -402,6 +384,13 @@ window.VV_VOCES_V2 = {
         this.videoGrabadoBlob = null;
         this.fragmentosVideo = [];
 
+        if (this.audioContext) {
+            try { this.audioContext.close(); } catch(e) {}
+            this.audioContext = null;
+        }
+        this.musicSource = null;
+        this.micGain = null;
+        this.musicGain = null;
         this.mediaRecorder = null;
         this.isRecording = false;
 
@@ -425,10 +414,6 @@ window.VV_VOCES_V2 = {
             newAudio.controls = true;
             oldAudio.parentNode.replaceChild(newAudio, oldAudio);
         }
-
-        // El elemento de audio se reemplazó: limpiar la fuente para recrearla en la próxima grabación
-        this.musicSource = null;
-        this.musicGain = null;
 
         const inputTitulo = document.getElementById('vv-input-titulo-obra');
         const checkDerechos = document.getElementById('vv-check-derechos');
@@ -950,20 +935,18 @@ VV_VOCES_V2.renderVideoCard = function(video) {
                 <div class="vv-play-overlay"><i class="fas fa-play"></i></div>
             </div>
             <div class="vv-video-info">
-                <h4>${VV.utils.escapeHtml(video.title || 'Sin título')}</h4>
-                <p class="vv-video-author">${VV.utils.escapeHtml(video.user_name || 'Anónimo')}</p>
+                <h4>${video.title || 'Sin título'}</h4>
+                <p class="vv-video-author">${video.user_name || 'Anónimo'}</p>
                 <div class="vv-video-meta">
                     <span>${tipo} ${acustico}</span>
                     <span>👍 ${video.likes_count || 0}</span>
                     <span>👁 ${video.views_count || 0}</span>
                     <span>${fecha}</span>
                 </div>
-                <button onclick="event.stopPropagation(); denunciarPublicacion('${video.id}', 'voces')" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;margin-top:0.5rem;">🚩 Denunciar</button>
             </div>
         </div>
     `;
 };
-
 
 VV_VOCES_V2.openVideoPlayer = async function(videoId) {
     const existingModal = document.getElementById('vv-video-modal');
@@ -1006,8 +989,8 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
                 <source src="${video.video_url}" type="video/webm">
             </video>
             <div style="padding:1rem;">
-                <h3 style="margin:0 0 0.25rem;color:#1e293b;">${VV.utils.escapeHtml(video.title || 'Sin título')}</h3>
-                <p style="margin:0 0 0.5rem;color:#64748b;font-size:0.85rem;">${VV.utils.escapeHtml(video.user_name || 'Anónimo')}</p>
+                <h3 style="margin:0 0 0.25rem;color:#1e293b;">${video.title}</h3>
+                <p style="margin:0 0 0.5rem;color:#64748b;font-size:0.85rem;">${video.user_name || 'Anónimo'}</p>
                 <div style="display:flex;gap:1rem;font-size:0.85rem;color:#64748b;margin-bottom:1rem;">
                     <span id="vv-likes-count">👍 ${video.likes_count || 0}</span>
                     <span>👁 ${(video.views_count || 0) + 1}</span>
@@ -1023,9 +1006,6 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
                         </button>
                         <button class="vv-btn-gift" onclick="VV_VOCES_V2.showGiftPicker('${video.id}', '${video.user_id}')" style="background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);color:#f59e0b;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.85rem;">
                             🎁 Regalar
-                        </button>
-                        <button class="vv-btn-denunciar" onclick="denunciarPublicacion('${video.id}', 'voces')" style="background:transparent;border:1px solid #e2e8f0;color:#94a3b8;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.85rem;">
-                            🚩 Denunciar
                         </button>
                     ` : '<p style="color:#94a3b8;font-size:0.85rem;">Iniciá sesión para interactuar</p>'}
                 </div>
