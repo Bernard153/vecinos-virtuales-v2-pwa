@@ -314,37 +314,40 @@ VV.banner = {
     // Obtener banners activos del barrio
     getActiveBanners() {
         const now = new Date();
-        
+
         return VV.data.sponsors.filter(s => {
-            // Verificar si está activo
-            if (!s.active || s.status === 'expired') return false;
-            
-            // Verificar fecha de expiración
-            if (s.expiresAt) {
-                const expiresAt = new Date(s.expiresAt);
+            // Verificar si está activo y aprobado
+            if (!s.active || s.status === 'expired' || s.status === 'pending') return false;
+
+            // Verificar fecha de expiración (soporta expires_at y expiresAt)
+            const expiresAtStr = s.expires_at || s.expiresAt;
+            if (expiresAtStr) {
+                const expiresAt = new Date(expiresAtStr);
                 if (expiresAt <= now) {
-                    // Marcar como expirado
                     s.status = 'expired';
                     s.active = false;
-                    console.log(`🗑️ Anunciante vencido: ${s.name} (expiró el ${expiresAt.toLocaleDateString()})`);
                     return false;
                 }
             }
-            
+
             // Si no tiene barrios definidos o es 'all', mostrar en todos
             if (!s.neighborhoods || s.neighborhoods === 'all') return true;
-            
-            // Si tiene barrios específicos, verificar si el barrio actual está incluido
-            if (Array.isArray(s.neighborhoods)) {
-                // Si no hay barrio definido (visitante), mostrar todos
-                if (!VV.data.neighborhood) return true;
-                return s.neighborhoods.includes(VV.data.neighborhood);
+
+            // neighborhoods puede ser un array o un string JSON
+            let barrios = s.neighborhoods;
+            if (typeof barrios === 'string') {
+                try { barrios = JSON.parse(barrios); } catch (e) { return true; }
             }
 
-            
-            return false;
+            if (Array.isArray(barrios)) {
+                if (!VV.data.neighborhood) return true;
+                return barrios.includes(VV.data.neighborhood);
+            }
+
+            return true;
         });
     },
+
     
     // Cargar banners en el dashboard desktop
     loadDesktopBanners(banners) {
