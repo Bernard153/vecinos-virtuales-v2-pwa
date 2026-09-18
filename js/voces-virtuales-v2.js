@@ -935,18 +935,20 @@ VV_VOCES_V2.renderVideoCard = function(video) {
                 <div class="vv-play-overlay"><i class="fas fa-play"></i></div>
             </div>
             <div class="vv-video-info">
-                <h4>${video.title || 'Sin título'}</h4>
-                <p class="vv-video-author">${video.user_name || 'Anónimo'}</p>
+                <h4>${VV.utils.escapeHtml(video.title || 'Sin título')}</h4>
+                <p class="vv-video-author">${VV.utils.escapeHtml(video.user_name || 'Anónimo')}</p>
                 <div class="vv-video-meta">
                     <span>${tipo} ${acustico}</span>
                     <span>👍 ${video.likes_count || 0}</span>
                     <span>👁 ${video.views_count || 0}</span>
                     <span>${fecha}</span>
                 </div>
+                <button onclick="event.stopPropagation(); denunciarPublicacion('${video.id}', 'voces')" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;margin-top:0.5rem;">🚩 Denunciar</button>
             </div>
         </div>
     `;
 };
+
 
 VV_VOCES_V2.openVideoPlayer = async function(videoId) {
     const existingModal = document.getElementById('vv-video-modal');
@@ -1007,7 +1009,11 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
                         <button class="vv-btn-gift" onclick="VV_VOCES_V2.showGiftPicker('${video.id}', '${video.user_id}')" style="background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);color:#f59e0b;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.85rem;">
                             🎁 Regalar
                         </button>
+                        <button class="vv-btn-denunciar" onclick="denunciarPublicacion('${video.id}', 'voces')" style="background:transparent;border:1px solid #e2e8f0;color:#94a3b8;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.85rem;">
+                            🚩 Denunciar
+                        </button>
                     ` : '<p style="color:#94a3b8;font-size:0.85rem;">Iniciá sesión para interactuar</p>'}
+
                 </div>
                 <div id="vv-comments-section" style="display:none;margin-top:1rem;"></div>
                 <div id="vv-gifts-section" style="margin-top:1rem;"></div>
