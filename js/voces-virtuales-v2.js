@@ -279,15 +279,17 @@ window.VV_VOCES_V2 = {
 
             const canvasStream = canvas.captureStream(24);
 
-            // AudioContext NUEVO
-            const audioContext = new AudioContext();
-            this.audioContext = audioContext;
+            // AudioContext: reutilizar si ya existe (evita crash y error de elemento ya conectado)
+            if (!this.audioContext) {
+                this.audioContext = new AudioContext();
+            }
+            const audioContext = this.audioContext;
             if (audioContext.state === 'suspended') {
                 await audioContext.resume();
             }
             const destination = audioContext.createMediaStreamDestination();
 
-            // Micrófono → mezclador
+            // Micrófono → mezclador (nuevo cada vez, el stream cambia)
             const micSource = audioContext.createMediaStreamSource(this.streamCamaraMicro);
             const micGain = audioContext.createGain();
             micGain.gain.value = parseFloat(document.getElementById('vv-vol-voz')?.value || 1.0);
@@ -295,19 +297,19 @@ window.VV_VOCES_V2 = {
             micGain.connect(destination);
             this.micGain = micGain;
 
-            // Pista → mezclador + altavoces
+            // Pista → mezclador + altavoces (crear UNA VEZ por elemento de audio)
             if (audioComponent && audioComponent.src) {
-                // Evitar conectar el mismo elemento de audio dos veces
                 if (!this.musicSource) {
                     this.musicSource = audioContext.createMediaElementSource(audioComponent);
-                    const musicGain = audioContext.createGain();
-                    musicGain.gain.value = parseFloat(document.getElementById('vv-vol-musica')?.value || 0.7);
-                    this.musicSource.connect(musicGain);
-                    musicGain.connect(destination);
-                    musicGain.connect(audioContext.destination);
-                    this.musicGain = musicGain;
+                    this.musicGain = audioContext.createGain();
+                    this.musicSource.connect(this.musicGain);
+                    this.musicGain.connect(audioContext.destination);
                 }
+                // Reconectar al destination actual de esta grabación
+                this.musicGain.gain.value = parseFloat(document.getElementById('vv-vol-musica')?.value || 0.7);
+                this.musicGain.connect(destination);
             }
+
 
 
             // Stream combinado: canvas video + audio mezclado
@@ -377,14 +379,7 @@ window.VV_VOCES_V2 = {
             this.streamCamaraMicro.getTracks().forEach(track => track.stop());
         }
 
-        // Limpiar audioContext y musicSource para la próxima grabación
-        if (this.audioContext) {
-            try { this.audioContext.close(); } catch(e) {}
-            this.audioContext = null;
-        }
-        this.musicSource = null;
-        this.micGain = null;
-        this.musicGain = null;
+       
     },
 
 
@@ -398,13 +393,6 @@ window.VV_VOCES_V2 = {
         this.videoGrabadoBlob = null;
         this.fragmentosVideo = [];
 
-        if (this.audioContext) {
-            try { this.audioContext.close(); } catch(e) {}
-            this.audioContext = null;
-        }
-        this.musicSource = null;
-        this.micGain = null;
-        this.musicGain = null;
         this.mediaRecorder = null;
         this.isRecording = false;
 
@@ -428,6 +416,10 @@ window.VV_VOCES_V2 = {
             newAudio.controls = true;
             oldAudio.parentNode.replaceChild(newAudio, oldAudio);
         }
+
+        // El elemento de audio se reemplazó: limpiar la fuente para recrearla en la próxima grabación
+        this.musicSource = null;
+        this.musicGain = null;
 
         const inputTitulo = document.getElementById('vv-input-titulo-obra');
         const checkDerechos = document.getElementById('vv-check-derechos');
