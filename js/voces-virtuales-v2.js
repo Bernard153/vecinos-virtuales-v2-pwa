@@ -298,14 +298,23 @@ window.VV_VOCES_V2 = {
 
             // Pista → mezclador + altavoces
             if (audioComponent && audioComponent.src) {
-                this.musicSource = audioContext.createMediaElementSource(audioComponent);
+                try {
+                    if (!this.musicSource) {
+                        this.musicSource = audioContext.createMediaElementSource(audioComponent);
+                    }
+                } catch (e) {
+                    console.warn('MediaElementSource ya existe, continuando...');
+                }
                 const musicGain = audioContext.createGain();
                 musicGain.gain.value = parseFloat(document.getElementById('vv-vol-musica')?.value || 0.7);
-                this.musicSource.connect(musicGain);
+                if (this.musicSource) {
+                    this.musicSource.connect(musicGain);
+                }
                 musicGain.connect(destination);
                 musicGain.connect(audioContext.destination);
                 this.musicGain = musicGain;
             }
+
 
             // Stream combinado: canvas video + audio mezclado
             const combinedStream = new MediaStream();
