@@ -384,6 +384,16 @@ window.VV_VOCES_V2 = {
             this.streamCamaraMicro.getTracks().forEach(track => track.stop());
         }
 
+        // Reemplazar el elemento de audio para la próxima grabación
+        const oldAudio = document.getElementById('vv-pista-audio');
+        if (oldAudio) {
+            const newAudio = document.createElement('audio');
+            newAudio.id = 'vv-pista-audio';
+            newAudio.controls = true;
+            if (this.audioTrackBlobURL) newAudio.src = this.audioTrackBlobURL;
+            oldAudio.parentNode.replaceChild(newAudio, oldAudio);
+        }
+
         // Limpiar para la próxima grabación
         if (this.audioContext) {
             try { this.audioContext.close(); } catch(e) {}
@@ -393,6 +403,7 @@ window.VV_VOCES_V2 = {
         this.micGain = null;
         this.musicGain = null;
     },
+
 
 
 
