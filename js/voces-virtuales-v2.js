@@ -279,8 +279,9 @@ window.VV_VOCES_V2 = {
 
             const canvasStream = canvas.captureStream(24);
 
-            // AudioContext NUEVO
-            const audioContext = new AudioContext();
+          
+            // AudioContext con latencia mínima
+            const audioContext = new AudioContext({ latencyHint: 'interactive' });
             this.audioContext = audioContext;
             if (audioContext.state === 'suspended') {
                 await audioContext.resume();
@@ -343,7 +344,7 @@ window.VV_VOCES_V2 = {
             };
 
             if (btnRec) btnRec.classList.add('grabando');
-            this.mediaRecorder.start();
+            this.mediaRecorder.start(100);
 
             if (audioComponent && audioComponent.src) {
                 audioComponent.currentTime = 0;
@@ -1479,8 +1480,8 @@ VV_VOCES_V2.applyTrim = async function() {
         await new Promise(r => video.addEventListener('loadedmetadata', r, { once: true }));
 
         const canvas = document.createElement('canvas');
-        canvas.width = 640;
-        canvas.height = 480;
+        canvas.width = 480;
+        canvas.height = 360;
         const ctx = canvas.getContext('2d');
         const canvasStream = canvas.captureStream(24);
 
