@@ -259,8 +259,8 @@ window.VV_VOCES_V2 = {
 
             // Canvas para aplicar filtros y grabar
             const canvas = document.createElement('canvas');
-            canvas.width = 480;
-            canvas.height = 360;
+            canvas.width = 640;
+            canvas.height = 480;
             const ctx = canvas.getContext('2d');
             if (this.currentFilter) {
                 ctx.filter = this.currentFilter;
@@ -280,7 +280,7 @@ window.VV_VOCES_V2 = {
             const canvasStream = canvas.captureStream(24);
 
             // AudioContext NUEVO
-            const audioContext = new AudioContext({ latencyHint: 'interactive' });
+            const audioContext = new AudioContext();
             this.audioContext = audioContext;
             if (audioContext.state === 'suspended') {
                 await audioContext.resume();
@@ -343,7 +343,7 @@ window.VV_VOCES_V2 = {
             };
 
             if (btnRec) btnRec.classList.add('grabando');
-            this.mediaRecorder.start(100);
+            this.mediaRecorder.start();
 
             if (audioComponent && audioComponent.src) {
                 audioComponent.currentTime = 0;
