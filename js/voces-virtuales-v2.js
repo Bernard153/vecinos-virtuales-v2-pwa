@@ -301,9 +301,11 @@ window.VV_VOCES_V2 = {
                 try {
                     if (!this.musicSource) {
                         this.musicSource = audioContext.createMediaElementSource(audioComponent);
+  
                     }
                 } catch (e) {
                     console.warn('MediaElementSource ya existe, continuando...');
+                    this.musicSource = null;
                 }
                 const musicGain = audioContext.createGain();
                 musicGain.gain.value = parseFloat(document.getElementById('vv-vol-musica')?.value || 0.7);
@@ -314,7 +316,6 @@ window.VV_VOCES_V2 = {
                 musicGain.connect(audioContext.destination);
                 this.musicGain = musicGain;
             }
-
 
             // Stream combinado: canvas video + audio mezclado
             const combinedStream = new MediaStream();
@@ -382,7 +383,17 @@ window.VV_VOCES_V2 = {
         if (this.streamCamaraMicro) {
             this.streamCamaraMicro.getTracks().forEach(track => track.stop());
         }
+
+        // Limpiar para la próxima grabación
+        if (this.audioContext) {
+            try { this.audioContext.close(); } catch(e) {}
+            this.audioContext = null;
+        }
+        this.musicSource = null;
+        this.micGain = null;
+        this.musicGain = null;
     },
+
 
 
     playPreview: function() {
