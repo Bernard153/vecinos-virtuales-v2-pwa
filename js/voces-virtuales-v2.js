@@ -940,6 +940,8 @@ VV_VOCES_V2.renderVideoCard = function(video) {
                 <div class="vv-video-meta">
                     <span>${tipo} ${acustico}</span>
                     <span>👍 ${video.likes_count || 0}</span>
+                    <span>💬 ${video.comments_count || 0}</span>
+                    <span>🎁 ${video.gifts_count || 0}</span>
                     <span>👁 ${video.views_count || 0}</span>
                     <span>${fecha}</span>
                 </div>
@@ -948,6 +950,7 @@ VV_VOCES_V2.renderVideoCard = function(video) {
         </div>
     `;
 };
+
 
 
 VV_VOCES_V2.openVideoPlayer = async function(videoId) {
@@ -1023,6 +1026,11 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
 
     document.body.appendChild(modal);
     this.loadVideoGifts(videoId);
+    // Cargar comentarios automáticamente al abrir el reproductor
+    const commentsSection = document.getElementById('vv-comments-section');
+    if (commentsSection) commentsSection.style.display = 'none';
+    this.showComments(videoId, true);
+
     modal.onclick = function(e) {
         if (e.target === modal) VV_VOCES_V2.closeVideoPlayer();
     };
