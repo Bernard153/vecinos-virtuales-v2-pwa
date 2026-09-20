@@ -38,6 +38,8 @@ VV.moderator = {
             case 'improvements': VV.moderator.loadImprovements(); break;
             case 'reports': VV.moderator.loadReports(); break;
             case 'stats': VV.moderator.loadStats(); break;
+            case 'voces': VV.moderator.loadVoces(); break;
+
         }
     },
 
@@ -272,9 +274,15 @@ VV.moderator = {
                             <p style="font-size: 0.85rem; color: var(--gray-500); margin-top: 0.5rem;">
                                 <i class="fas fa-thumbs-up"></i> ${i.votes || 0} votos
                             </p>
-                            <button class="btn-delete" onclick="VV.moderator.removeImprovement('${i.id}', '${i.title.replace(/'/g, "\\'")}')" style="width: 100%; margin-top: 0.5rem;">
-                                <i class="fas fa-trash"></i> Eliminar Mejora
-                            </button>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                <button class="btn-approve" onclick="VV.moderator.markImprovementCompleted('${i.id}')" style="flex: 1;">
+                                    <i class="fas fa-check"></i> Marcar Realizada
+                                </button>
+                                <button class="btn-delete" onclick="VV.moderator.removeImprovement('${i.id}', '${i.title.replace(/'/g, "\\'")}')" style="flex: 1;">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </button>
+                            </div>
+
                         </div>
                     `).join('');
 
@@ -293,6 +301,15 @@ VV.moderator = {
                                 <i class="fas fa-trash"></i> Eliminar Mejora
                             </button>
                          </div>
+                         <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                             <button class="btn-approve" onclick="VV.moderator.markImprovementPending('${i.id}')" style="flex: 1;">
+                                 <i class="fas fa-undo"></i> Volver a Pendiente
+                             </button>
+                             <button class="btn-delete" onclick="VV.moderator.removeImprovement('${i.id}', '${i.title.replace(/'/g, "\\'")}')" style="flex: 1;">
+                                 <i class="fas fa-trash"></i> Eliminar
+                             </button>
+                         </div>
+
                     `).join('');
 
             }
@@ -300,6 +317,43 @@ VV.moderator = {
             console.error('Error cargando mejoras:', err);
         }
     },
+    // Marcar mejora como completada
+    async markImprovementCompleted(improvementId) {
+        if (!confirm('¿Marcar esta mejora como Realizada?')) return;
+        try {
+            const { error } = await supabase
+                .from('improvements')
+                .update({ status: 'completed', completed_at: new Date().toISOString(), completed_by: VV.data.user.name })
+                .eq('id', improvementId);
+            if (error) throw error;
+            await VV.moderator.logAction('MARCAR_MEJORA_COMPLETADA', { improvementId });
+            VV.moderator.loadImprovements();
+            VV.utils.showSuccess('Mejora marcada como Realizada');
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
+    // Volver a pendiente
+    async markImprovementPending(improvementId) {
+        if (!confirm('¿Volver a marcar como Pendiente?')) return;
+        try {
+            const { error } = await supabase
+                .from('improvements')
+                .update({ status: 'pending', completed_at: null, completed_by: null })
+                .eq('id', improvementId);
+            if (error) throw error;
+            await VV.moderator.logAction('MARCAR_MEJORA_PENDIENTE', { improvementId });
+            VV.moderator.loadImprovements();
+            VV.utils.showSuccess('Mejora vuelta a Pendiente');
+        } catch (err) {
+            pausar video
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
     // Eliminar mejora
     async removeImprovement(improvementId, improvementTitle) {
         if (!confirm(`¿Eliminar la mejora "${improvementTitle}"?`)) return;
@@ -389,6 +443,93 @@ VV.moderator = {
             alert('Error: ' + err.message);
         }
     },
+    // Cargar videos de Voces Virtuales
+    async loadVoces() {
+        const container = document.getElementById('moderator-voces-list');
+        if (!container) return;
+
+        try {
+            const { data: videos, error } = await supabase
+                .from('karaoke_videos')
+                .select('*')
+                .eq('neighborhood', VV.data.neighborhood || (VV.data.user ? VV.data.user.neighborhood : null))
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (!videos || videos.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #94a3b8; grid-column: 1/-1; padding: 2rem;">No hay videos en tu barrio</p>';
+                return;
+            }
+
+            container.innerHTML = videos.map(v => `
+                <div class="admin-card-solicitud" style="border-left: 4px solid ${v.visible ? 'var(--success-green)' : 'var(--gray-400)'};">
+                    <div style="position: relative;">
+                        <video preload="metadata" muted style="width: 100%; border-radius: 8px; max-height: 150px; object-fit: cover;">
+                            <source src="${v.video_url}" type="video/webm">
+                        </video>
+                    </div>
+                    <div class="info" style="margin-top: 0.5rem;">
+                        <strong>${sanitizeText(v.title || 'Sin título')}</strong>
+                        <p style="font-size: 0.85rem; color: var(--gray-600);">${sanitizeText(v.user_name || 'Anónimo')}</p>
+                        <p style="font-size: 0.75rem; color: #94a3b8;">
+                            👍 ${v.likes_count || 0} | 💬 ${v.comments_count || 0} | 🎁 ${v.gifts_count || 0} | ${new Date(v.created_at).toLocaleDateString()}
+                        </p>
+                        <span style="font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 12px; background: ${v.visible ? '#dcfce7' : '#f1f5f9'}; color: ${v.visible ? '#166534' : '#64748b'};">
+                            ${v.visible ? '✅ Visible' : '⏸️ Pausado'}
+                        </span>
+                    </div>
+                    <div class="acciones" style="display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn-approve" onclick="VV.moderator.toggleVideoVisibility('${v.id}', ${!v.visible})" style="font-size: 0.75rem; flex: 1; min-width: 80px;">
+                            <i class="fas fa-${v.visible ? 'pause' : 'play'}"></i> ${v.visible ? 'Pausar' : 'Activar'}
+                        </button>
+                        <button class="btn-delete" onclick="VV.moderator.deleteVideo('${v.id}', '${(v.title || '').replace(/'/g, "\\'")}')" style="font-size: 0.75rem; flex: 1; min-width: 80px;">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error('Error cargando videos:', err);
+            container.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">Error al cargar videos</p>';
+        }
+    },
+
+    // Pausar/activar video
+    async toggleVideoVisibility(videoId, visible) {
+        try {
+            const { error } = await supabase
+                .from('karaoke_videos')
+                .update({ visible: visible })
+                .eq('id', videoId);
+            if (error) throw error;
+            await VV.moderator.logAction(visible ? 'ACTIVAR_VIDEO' : 'PAUSAR_VIDEO', { videoId });
+            VV.moderator.loadVoces();
+            VV.utils.showSuccess(visible ? 'Video activado' : 'Video pausado');
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
+    // Eliminar video
+    async deleteVideo(videoId, title) {
+        if (!confirm(`¿Eliminar el video "${title}"?`)) return;
+        try {
+            const { error } = await supabase
+                .from('karaoke_videos')
+                .delete()
+                .eq('id', videoId);
+            if (error) throw error;
+            await VV.moderator.logAction('ELIMINAR_VIDEO', { videoId, title });
+            VV.moderator.loadVoces();
+            VV.utils.showSuccess('Video eliminado');
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
 
     // Cargar estadísticas
     async loadStats() {

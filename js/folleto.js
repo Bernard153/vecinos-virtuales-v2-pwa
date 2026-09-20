@@ -685,15 +685,17 @@ async function denunciarPublicacion(postId, postType) {
     const detalle = prompt('Podés agregar más detalles (opcional):');
     
     try {
-        await supabase.from('denuncias').insert({
+         await supabase.from('denuncias').insert({
             post_id: postId,
             post_type: postType,
             denunciante_id: user.id,
             denunciante_name: user.name || 'Anónimo',
             motivo: motivo,
             detalle: detalle || '',
+            neighborhood: VV.data.neighborhood || VV.data.user?.neighborhood || null,
             status: 'pendiente'
         });
+
         alert('✅ Denuncia enviada. El administrador la revisará.');
     } catch (err) {
         alert('Error al enviar denuncia: ' + err.message);
