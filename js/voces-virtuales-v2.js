@@ -1193,8 +1193,10 @@ VV_VOCES_V2.postComment = async function(videoId, category, text) {
 
         }
 
-        document.getElementById('vv-comments-section').style.display = 'none';
+        const section = document.getElementById('vv-comments-section');
+        section.style.display = 'block';
         this.showComments(videoId);
+
 
     } catch (err) {
         console.error('Error posteando comentario:', err);
