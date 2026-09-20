@@ -412,7 +412,7 @@ VV.cultural = {
 
             // Subir archivo a Supabase Storage (no base64)
             if (formData.mediaType === 'image') {
-                VV.cultural.compressImage(file, 1080, 0.7, async (compressedDataUrl) => {
+            VV.cultural.compressImage(file, 800, 0.6, async (compressedDataUrl) => {
                     try {
                         const response = await fetch(compressedDataUrl);
                         const blob = await response.blob();

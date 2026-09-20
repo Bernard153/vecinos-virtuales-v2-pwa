@@ -146,7 +146,7 @@ async function cargarVocesPublico() {
 
         container.innerHTML = data.map(video => `
             <div style="min-width: 200px; background: rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2);">
-                ${video.thumbnail_url ? `<img src="${video.thumbnail_url}" alt="${sanitizeText(video.title)}" style="width: 100%; height: 120px; object-fit: cover;" loading="lazy">` : `<div style="width:100%;height:120px;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎤</div>`}
+                ${video.video_url ? `<video src="${video.video_url}" muted preload="metadata" style="width: 100%; height: 120px; object-fit: cover;" loading="lazy"></video>` : `<div style="width:100%;height:120px;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎤</div>`}
                 <div style="padding: 0.5rem;">
                     <strong style="font-size: 0.85rem; display: block;">${sanitizeText(video.title || 'Sin título')}</strong>
                     <p style="font-size: 0.75rem; opacity: 0.7; margin: 0.25rem 0;">${sanitizeText(video.author_name || '')}</p>
