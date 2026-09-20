@@ -1095,63 +1095,67 @@ VV_VOCES_V2.COMENTARIOS = {
     especial: ['Candidato al certamen', 'Esto merece un regalo', 'No paro de escucharlo', 'Lo compartí con todos']
 };
 
-VV_VOCES_V2.showComments = async function(videoId) {
+VV_VOCES_V2.showComments = async function(videoId, forceReload) {
     const section = document.getElementById('vv-comments-section');
     if (!section) return;
 
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-        section.innerHTML = '<p style="color:#94a3b8;">Cargando comentarios...</p>';
-
-        try {
-            const { data: comments } = await supabase
-    		.from('karaoke_comments')
-    		.select('*')
-    		.eq('video_id', videoId)
-    		.order('created_at', { ascending: false });
-
-            const user = VV_ROLES.getCurrentUser();
-
-            let html = '<div class="vv-comments-list">';
-
-            if (comments && comments.length > 0) {
-                html += comments.map(c => `
-                    <div class="vv-comment-badge">
-                        <span class="vv-comment-cat">${this.categoryEmoji(c.category)}</span>
-                        <span>${c.comment_text}</span>
-                    </div>
-                `).join('');
-            } else {
-                html += '<p style="color:#94a3b8;font-size:0.85rem;">Sin comentarios aún</p>';
-            }
-
-            html += '</div>';
-
-            if (user) {
-                html += '<div class="vv-comment-picker">';
-                html += '<p style="font-size:0.8rem;color:#94a3b8;margin-bottom:0.5rem;">Elegí un comentario:</p>';
-
-                for (const [cat, textos] of Object.entries(this.COMENTARIOS)) {
-                    html += `<div class="vv-comment-category">`;
-                    html += `<span class="vv-comment-cat-label">${this.categoryEmoji(cat)} ${cat}</span>`;
-                    textos.forEach((texto, i) => {
-                        html += `<button class="vv-comment-btn" onclick="VV_VOCES_V2.postComment('${videoId}', '${cat}', '${texto.replace(/'/g, "\\'")}')">${texto}</button>`;
-                    });
-                    html += `</div>`;
-                }
-                html += '</div>';
-            }
-
-            section.innerHTML = html;
-
-        } catch (err) {
-            console.error('Error cargando comentarios:', err);
-            section.innerHTML = '<p style="color:#ef4444;">Error al cargar comentarios</p>';
-        }
-    } else {
+    // Si está visible y no es recarga forzada, ocultar (toggle)
+    if (section.style.display === 'block' && !forceReload) {
         section.style.display = 'none';
+        return;
+    }
+
+    // Mostrar y cargar comentarios
+    section.style.display = 'block';
+    section.innerHTML = '<p style="color:#94a3b8;">Cargando comentarios...</p>';
+
+    try {
+        const { data: comments } = await supabase
+            .from('karaoke_comments')
+            .select('*')
+            .eq('video_id', videoId)
+            .order('created_at', { ascending: false });
+
+        const user = VV_ROLES.getCurrentUser();
+
+        let html = '<div class="vv-comments-list">';
+
+        if (comments && comments.length > 0) {
+            html += comments.map(c => `
+                <div class="vv-comment-badge">
+                    <span class="vv-comment-cat">${this.categoryEmoji(c.category)}</span>
+                    <span>${c.comment_text}</span>
+                </div>
+            `).join('');
+        } else {
+            html += '<p style="color:#94a3b8;font-size:0.85rem;">Sin comentarios aún</p>';
+        }
+
+        html += '</div>';
+
+        if (user) {
+            html += '<div class="vv-comment-picker">';
+            html += '<p style="font-size:0.8rem;color:#94a3b8;margin-bottom:0.5rem;">Elegí un comentario:</p>';
+
+            for (const [cat, textos] of Object.entries(this.COMENTARIOS)) {
+                html += `<div class="vv-comment-category">`;
+                html += `<span class="vv-comment-cat-label">${this.categoryEmoji(cat)} ${cat}</span>`;
+                textos.forEach((texto, i) => {
+                    html += `<button class="vv-comment-btn" onclick="VV_VOCES_V2.postComment('${videoId}', '${cat}', '${texto.replace(/'/g, "\\'")}')">${texto}</button>`;
+                });
+                html += `</div>`;
+            }
+            html += '</div>';
+        }
+
+        section.innerHTML = html;
+
+    } catch (err) {
+        console.error('Error cargando comentarios:', err);
+        section.innerHTML = '<p style="color:#ef4444;font-size:0.85rem;">Error al cargar comentarios</p>';
     }
 };
+
 
 VV_VOCES_V2.categoryEmoji = function(category) {
     const emojis = { musical: '🎵', energia: '🔥', emocional: '❤️', reconocimiento: '👏', especial: '🌟' };
@@ -1193,9 +1197,7 @@ VV_VOCES_V2.postComment = async function(videoId, category, text) {
 
         }
 
-        const section = document.getElementById('vv-comments-section');
-        section.style.display = 'block';
-        this.showComments(videoId);
+        this.showComments(videoId, true);
 
 
     } catch (err) {
