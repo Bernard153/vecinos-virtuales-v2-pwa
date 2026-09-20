@@ -347,13 +347,13 @@ VV.moderator = {
             await VV.moderator.logAction('MARCAR_MEJORA_PENDIENTE', { improvementId });
             VV.moderator.loadImprovements();
             VV.utils.showSuccess('Mejora vuelta a Pendiente');
-        } catch (err) {
-            pausar video
+           } catch (err) {
             console.error('Error:', err);
             alert('Error: ' + err.message);
         }
     },
 
+ 
     // Eliminar mejora
     async removeImprovement(improvementId, improvementTitle) {
         if (!confirm(`¿Eliminar la mejora "${improvementTitle}"?`)) return;
