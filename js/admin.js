@@ -1800,84 +1800,126 @@ VV.admin.rejectFeaturedRequest = async function (requestId) {
     }
 };
 
-VV.admin.loadFeaturedOffers = function () {
-    const allFeatured = JSON.parse(localStorage.getItem('featuredOffers') || '[]');
+VV.admin.loadFeaturedOffers = async function () {
     const container = document.getElementById('featured-management');
+    if (!container) return;
 
-    if (allFeatured.length === 0) {
-        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay ofertas destacadas</p>';
-        return;
+    container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">Cargando ofertas destacadas...</p>';
+
+    try {
+        const { data: allFeatured, error } = await supabase
+            .from('featured_offers')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!allFeatured || allFeatured.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay ofertas destacadas</p>';
+            return;
+        }
+
+        // Agrupar por barrio
+        const byNeighborhood = {};
+        allFeatured.forEach(f => {
+            const barrio = f.neighborhood || 'Sin barrio';
+            if (!byNeighborhood[barrio]) byNeighborhood[barrio] = [];
+            byNeighborhood[barrio].push(f);
+        });
+
+        let html = '';
+
+        for (const [barrio, offers] of Object.entries(byNeighborhood)) {
+            const active = offers.filter(f => f.status === 'active' && !f.blocked && new Date(f.expires_at) > new Date());
+            const expired = offers.filter(f => new Date(f.expires_at) <= new Date() && !f.blocked);
+            const blocked = offers.filter(f => f.blocked);
+            const pending = offers.filter(f => f.status === 'pending');
+
+            html += `
+                <div style="margin-bottom: 2rem; border: 1px solid var(--gray-200); border-radius: 12px; padding: 1rem; background: var(--gray-50);">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 1rem;"><i class="fas fa-map-marker-alt"></i> ${VV.utils.escapeHtml(barrio)}</h3>
+            `;
+
+            if (active.length > 0) {
+                html += `<h4 style="color: var(--success-green);"><i class="fas fa-check-circle"></i> Activas (${active.length})</h4>`;
+                html += `<div style="display: grid; gap: 1rem; margin-top: 0.5rem; margin-bottom: 1rem;">`;
+                html += active.map(f => VV.admin.renderFeaturedCard(f)).join('');
+                html += `</div>`;
+            }
+
+            if (pending.length > 0) {
+                html += `<h4 style="color: var(--warning-orange);"><i class="fas fa-clock"></i> Pendientes (${pending.length})</h4>`;
+                html += `<div style="display: grid; gap: 1rem; margin-top: 0.5rem; margin-bottom: 1rem;">`;
+                html += pending.map(f => VV.admin.renderFeaturedCard(f)).join('');
+                html += `</div>`;
+            }
+
+            if (blocked.length > 0) {
+                html += `<h4 style="color: var(--error-red);"><i class="fas fa-ban"></i> Bloqueadas (${blocked.length})</h4>`;
+                html += `<div style="display: grid; gap: 1rem; margin-top: 0.5rem; margin-bottom: 1rem;">`;
+                html += blocked.map(f => VV.admin.renderFeaturedCard(f)).join('');
+                html += `</div>`;
+            }
+
+            if (expired.length > 0) {
+                html += `<h4 style="color: var(--gray-600);"><i class="fas fa-clock"></i> Expiradas (${expired.length})</h4>`;
+                html += `<div style="display: grid; gap: 1rem; margin-top: 0.5rem;">`;
+                html += expired.map(f => VV.admin.renderFeaturedCard(f)).join('');
+                html += `</div>`;
+            }
+
+            if (active.length === 0 && pending.length === 0 && blocked.length === 0 && expired.length === 0) {
+                html += `<p style="color: var(--gray-600);">Sin ofertas en este barrio</p>`;
+            }
+
+            html += `</div>`;
+        }
+
+        container.innerHTML = html;
+    } catch (err) {
+        console.error('Error cargando ofertas destacadas:', err);
+        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--error-red);">Error al cargar ofertas destacadas</p>';
     }
-
-    // Agrupar por estado
-    const active = allFeatured.filter(f => f.status === 'active' && !f.blocked && new Date(f.expiresAt) > new Date());
-    const expired = allFeatured.filter(f => new Date(f.expiresAt) <= new Date());
-    const blocked = allFeatured.filter(f => f.blocked);
-
-    container.innerHTML = `
-        <div style="margin-bottom: 2rem;">
-            <h4 style="color: var(--success-green);"><i class="fas fa-check-circle"></i> Activas (${active.length})</h4>
-            <div style="display: grid; gap: 1rem; margin-top: 1rem;">
-                ${active.length > 0 ? active.map(f => VV.admin.renderFeaturedCard(f)).join('') : '<p style="color: var(--gray-600);">No hay ofertas activas</p>'}
-            </div>
-        </div>
-        
-        <div style="margin-bottom: 2rem;">
-            <h4 style="color: var(--error-red);"><i class="fas fa-ban"></i> Bloqueadas (${blocked.length})</h4>
-            <div style="display: grid; gap: 1rem; margin-top: 1rem;">
-                ${blocked.length > 0 ? blocked.map(f => VV.admin.renderFeaturedCard(f)).join('') : '<p style="color: var(--gray-600);">No hay ofertas bloqueadas</p>'}
-            </div>
-        </div>
-        
-        <div>
-            <h4 style="color: var(--gray-600);"><i class="fas fa-clock"></i> Expiradas (${expired.length})</h4>
-            <div style="display: grid; gap: 1rem; margin-top: 1rem;">
-                ${expired.length > 0 ? expired.map(f => VV.admin.renderFeaturedCard(f)).join('') : '<p style="color: var(--gray-600);">No hay ofertas expiradas</p>'}
-            </div>
-        </div>
-    `;
 };
 
 VV.admin.renderFeaturedCard = function (offer) {
-    const daysLeft = Math.ceil((new Date(offer.expiresAt) - new Date()) / (1000 * 60 * 60 * 24));
+    const daysLeft = Math.ceil((new Date(offer.expires_at) - new Date()) / (1000 * 60 * 60 * 24));
     const isExpired = daysLeft <= 0;
+    const isActive = offer.status === 'active' && !offer.blocked && !isExpired;
+    const isPending = offer.status === 'pending';
 
     return `
-        <div style="background: white; border-radius: 8px; padding: 1rem; border-left: 4px solid ${offer.blocked ? 'var(--error-red)' : isExpired ? 'var(--gray-400)' : 'var(--warning-orange)'};">
+        <div style="background: white; border-radius: 8px; padding: 1rem; border-left: 4px solid ${offer.blocked ? 'var(--error-red)' : isExpired ? 'var(--gray-400)' : isPending ? 'var(--warning-orange)' : 'var(--success-green)'};">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
                 <div style="flex: 1;">
-                    <h5 style="margin: 0 0 0.25rem 0;">${offer.title}</h5>
+                    <h5 style="margin: 0 0 0.25rem 0;">${VV.utils.escapeHtml(offer.title || 'Sin título')}</h5>
                     <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">
-                        ${offer.userName} #${offer.userNumber} - ${offer.neighborhood}
+                        ${VV.utils.escapeHtml(offer.user_name || 'N/A')} #${offer.user_number || 'N/A'} - ${VV.utils.escapeHtml(offer.neighborhood || 'N/A')}
                     </p>
                 </div>
-                ${offer.blocked ? `
-                    <span style="background: var(--error-red); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
-                        BLOQUEADA
-                    </span>
-                ` : isExpired ? `
-                    <span style="background: var(--gray-400); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
-                        EXPIRADA
-                    </span>
-                ` : `
-                    <span style="background: var(--success-green); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
-                        ACTIVA
-                    </span>
-                `}
+                ${offer.blocked ? `<span style="background: var(--error-red); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">BLOQUEADA</span>` : isExpired ? `<span style="background: var(--gray-400); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">EXPIRADA</span>` : isPending ? `<span style="background: var(--warning-orange); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">PENDIENTE</span>` : `<span style="background: var(--success-green); color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">ACTIVA</span>`}
             </div>
-            <p style="margin: 0.5rem 0; font-size: 0.9rem;"><strong>Producto:</strong> ${offer.productName || offer.product?.product || 'N/A'}</p>
+            ${offer.image_url ? `<div style="margin: 0.5rem 0;"><img src="${offer.image_url}" alt="Imagen" style="max-width: 100%; max-height: 150px; border-radius: 8px; border: 1px solid var(--gray-300);"></div>` : ''}
+            ${offer.description ? `<p style="margin: 0.5rem 0; font-size: 0.9rem;"><strong>Descripción:</strong> ${VV.utils.escapeHtml(offer.description)}</p>` : ''}
             <div style="display: flex; gap: 1rem; margin: 0.5rem 0; font-size: 0.85rem;">
-                <span><i class="fas fa-thumbs-up" style="color: var(--success-green);"></i> ${offer.goodVotes || 0}</span>
-                <span><i class="fas fa-thumbs-down" style="color: var(--error-red);"></i> ${offer.badVotes || 0}</span>
-                <span><i class="fas fa-clock"></i> ${isExpired ? 'Expirada' : `${daysLeft} día${daysLeft !== 1 ? 's' : ''}`}</span>
+                <span><i class="fas fa-clock"></i> ${isExpired ? 'Expirada' : isPending ? 'Pendiente' : `${daysLeft} día${daysLeft !== 1 ? 's' : ''}`}</span>
+                <span><i class="fas fa-calendar"></i> ${new Date(offer.created_at).toLocaleDateString()}</span>
             </div>
-            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                ${!offer.blocked && !isExpired ? `
-                    <button class="btn-delete" onclick="VV.admin.deactivateFeatured('${offer.id}')" style="flex: 1;">
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                ${isActive ? `
+                    <button class="btn-delete" onclick="VV.admin.deactivateFeatured('${offer.id}')" style="flex: 1; min-width: 100px;">
                         <i class="fas fa-ban"></i> Desactivar
                     </button>
                 ` : ''}
-                <button class="btn-delete" onclick="VV.admin.deleteFeatured('${offer.id}')" style="flex: 1;">
+                ${isPending ? `
+                    <button class="btn-approve" onclick="VV.admin.approveFeaturedRequest('${offer.id}')" style="flex: 1; min-width: 100px;">
+                        <i class="fas fa-check"></i> Aprobar
+                    </button>
+                    <button class="btn-delete" onclick="VV.admin.rejectFeaturedRequest('${offer.id}')" style="flex: 1; min-width: 100px;">
+                        <i class="fas fa-times"></i> Rechazar
+                    </button>
+                ` : ''}
+                <button class="btn-delete" onclick="VV.admin.deleteFeatured('${offer.id}')" style="flex: 1; min-width: 100px;">
                     <i class="fas fa-trash"></i> Eliminar
                 </button>
             </div>
@@ -1885,30 +1927,44 @@ VV.admin.renderFeaturedCard = function (offer) {
     `;
 };
 
-VV.admin.deactivateFeatured = function (offerId) {
+VV.admin.deactivateFeatured = async function (offerId) {
     if (!confirm('¿Desactivar esta oferta destacada?')) return;
 
-    const allFeatured = JSON.parse(localStorage.getItem('featuredOffers') || '[]');
-    const offerIndex = allFeatured.findIndex(f => f.id === offerId);
+    try {
+        const { error } = await supabase
+            .from('featured_offers')
+            .update({ status: 'inactive', blocked: true })
+            .eq('id', offerId);
 
-    if (offerIndex !== -1) {
-        allFeatured[offerIndex].status = 'inactive';
-        allFeatured[offerIndex].blocked = true;
-        localStorage.setItem('featuredOffers', JSON.stringify(allFeatured));
+        if (error) throw error;
+
         VV.admin.loadFeaturedOffers();
         VV.utils.showSuccess('Oferta desactivada');
+    } catch (err) {
+        console.error('Error desactivando oferta:', err);
+        alert('Error: ' + err.message);
     }
 };
 
-VV.admin.deleteFeatured = function (offerId) {
+VV.admin.deleteFeatured = async function (offerId) {
     if (!confirm('¿Eliminar esta oferta destacada permanentemente?')) return;
 
-    const allFeatured = JSON.parse(localStorage.getItem('featuredOffers') || '[]');
-    const filtered = allFeatured.filter(f => f.id !== offerId);
-    localStorage.setItem('featuredOffers', JSON.stringify(filtered));
-    VV.admin.loadFeaturedOffers();
-    VV.utils.showSuccess('Oferta eliminada');
+    try {
+        const { error } = await supabase
+            .from('featured_offers')
+            .delete()
+            .eq('id', offerId);
+
+        if (error) throw error;
+
+        VV.admin.loadFeaturedOffers();
+        VV.utils.showSuccess('Oferta eliminada');
+    } catch (err) {
+        console.error('Error eliminando oferta:', err);
+        alert('Error: ' + err.message);
+    }
 };
+
 // ============================================================
 // ADMIN: GESTIÓN DE BILLETERAS
 // ============================================================
