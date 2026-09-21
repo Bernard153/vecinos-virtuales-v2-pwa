@@ -402,20 +402,27 @@ VV.moderator = {
             container.innerHTML = reports.map(r => `
                 <div class="admin-card-solicitud" style="border-left: 4px solid #ef4444;">
                     <div class="info">
-                        <strong>🚨 ${sanitizeText(r.tipo || 'Denuncia')}</strong>
-                        <p>${sanitizeText(r.motivo || r.reason || 'Sin motivo especificado')}</p>
+                        <strong>🚨 ${sanitizeText(r.motivo || 'Denuncia')}</strong>
+                        <p>${sanitizeText(r.detalle || 'Sin detalles')}</p>
+                        <p style="font-size:0.8rem;color:#3b82f6;margin-top:0.25rem;">
+                            📄 Publicación: <strong>${sanitizeText(r.post_type || 'N/A')}</strong> (ID: ${(r.post_id || '').substring(0,8)}...)
+                        </p>
                         <p style="font-size:0.75rem;color:#94a3b8;">
-                            Por: ${sanitizeText(r.reporter_name || r.denunciante || 'Anónimo')} |
+                            Denunciante: ${sanitizeText(r.denunciante_name || 'Anónimo')} |
                             ${new Date(r.created_at).toLocaleDateString()}
                         </p>
                     </div>
-                    <div class="acciones">
-                        <button class="btn-approve" onclick="VV.moderator.resolveReport('${r.id}')" style="font-size:0.75rem;">
+                    <div class="acciones" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn-approve" onclick="VV.moderator.resolveReport('${r.id}')" style="font-size:0.75rem; flex: 1; min-width: 80px;">
                             <i class="fas fa-check"></i> Resolver
+                        </button>
+                        <button class="btn-delete" onclick="VV.moderator.deleteReport('${r.id}')" style="font-size:0.75rem; flex: 1; min-width: 80px;">
+                            <i class="fas fa-trash"></i> Eliminar
                         </button>
                     </div>
                 </div>
             `).join('');
+
         } catch (err) {
             console.error('Error cargando denuncias:', err);
             container.innerHTML = '<p style="color: var(--gray-600); padding: 1rem;">Error al cargar denuncias</p>';
