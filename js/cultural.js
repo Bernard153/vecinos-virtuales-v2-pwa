@@ -642,16 +642,17 @@ VV.cultural = {
         }
     },
 
-    showComments: async function(postId) {
+    showComments: async function(postId, forceReload) {
         const section = document.getElementById('cultural-comments-' + postId);
         if (!section) return;
 
-        if (section.style.display === 'block') {
+        if (section.style.display === 'block' && !forceReload) {
             section.style.display = 'none';
             return;
         }
 
         section.style.display = 'block';
+
         section.innerHTML = '<p style="color: var(--gray-500);">Cargando comentarios...</p>';
 
         try {
@@ -730,8 +731,10 @@ VV.cultural = {
             // Actualizar contador
             this.loadCommentCount(postId);
 
-            // Recargar comentarios en la sección visible
-            await this.reloadComments(postId);
+            // Recargar comentarios forzando visualización
+            await this.showComments(postId, true);
+
+
 
         } catch (err) {
             console.error('Error posteando comentario:', err);
@@ -759,7 +762,7 @@ VV.cultural = {
                 html += comments.map(c => `
                     <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
                         <span style="font-size:1.1rem;">${VV.cultural.categoryEmoji(c.category)}</span>
-                        <span style="font-size:0.85rem;color:var(--gray-700);">${c.comment_text}</span>
+                        <span style="font-size:0.85rem;color:var(--gray-700);">${sanitizeText(c.comment_text)}</span>
                         <span style="font-size:0.7rem;color:var(--gray-400);margin-left:auto;">${c.user_name || ''}</span>
                     </div>
                 `).join('');
