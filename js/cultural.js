@@ -686,8 +686,10 @@ VV.cultural = {
                     html += `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.3rem;">`;
                     html += `<span style="font-size:0.75rem;color:var(--gray-500);min-width:90px;">${this.categoryEmoji(cat)} ${cat}</span>`;
                     textos.forEach(texto => {
-                        html += `<button onclick="VV.cultural.postComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:var(--gray-100);border:1px solid var(--gray-200);border-radius:20px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;color:var(--gray-700);">${texto}</button>`;
+                        const safeTexto = texto.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        html += `<button onclick="VV.cultural.postComment('${postId}', '${cat}', '${safeTexto}')" style="background:var(--gray-100);border:1px solid var(--gray-200);border-radius:20px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;color:var(--gray-700);">${texto}</button>`;
                     });
+
                     html += `</div>`;
                 }
                 html += '</div>';
@@ -731,8 +733,11 @@ VV.cultural = {
             // Actualizar contador
             this.loadCommentCount(postId);
 
-            // Recargar comentarios forzando visualización
-            await this.showComments(postId, true);
+            // Forzar visualización y recargar comentarios
+            const section = document.getElementById('cultural-comments-' + postId);
+            if (section) section.style.display = 'block';
+            await this.reloadComments(postId);
+
 
 
 
@@ -763,7 +768,7 @@ VV.cultural = {
                     <div style="display:flex;align-items:center;gap:0.4rem;padding:0.4rem 0;border-bottom:1px solid var(--gray-100);">
                         <span style="font-size:1.1rem;">${VV.cultural.categoryEmoji(c.category)}</span>
                         <span style="font-size:0.85rem;color:var(--gray-700);">${sanitizeText(c.comment_text)}</span>
-                        <span style="font-size:0.7rem;color:var(--gray-400);margin-left:auto;">${c.user_name || ''}</span>
+                        <span style="font-size:0.7rem;color:var(--gray-400);margin-left:auto;">${sanitizeText(c.user_name || '')}</span>
                     </div>
                 `).join('');
             } else {
@@ -772,12 +777,13 @@ VV.cultural = {
 
             if (user) {
                 html += '<div style="margin-top: 0.75rem;">';
-                html += '<p style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.4rem;">Elegí otro comentario:</p>';
+                html += '<p style="font-size: 0.8rem; color: var(--gray-600); margin-bottom: 0.4rem;">Elegí un comentario:</p>';
                 for (const [cat, textos] of Object.entries(VV.cultural.COMENTARIOS)) {
                     html += `<div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.3rem;">`;
                     html += `<span style="font-size:0.75rem;color:var(--gray-500);min-width:90px;">${VV.cultural.categoryEmoji(cat)} ${cat}</span>`;
                     textos.forEach(texto => {
-                        html += `<button onclick="VV.cultural.postComment('${postId}', '${cat}', '${texto.replace(/'/g, "\\'")}')" style="background:var(--gray-100);border:1px solid var(--gray-200);border-radius:20px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;color:var(--gray-700);">${texto}</button>`;
+                        const safeTexto = texto.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        html += `<button onclick="VV.cultural.postComment('${postId}', '${cat}', '${safeTexto}')" style="background:var(--gray-100);border:1px solid var(--gray-200);border-radius:20px;padding:0.3rem 0.7rem;font-size:0.75rem;cursor:pointer;color:var(--gray-700);">${texto}</button>`;
                     });
                     html += `</div>`;
                 }
@@ -791,6 +797,7 @@ VV.cultural = {
             console.error('Error recargando comentarios:', err);
         }
     },
+
 
       
     sendGift: async function(postId, toUserId, itemCode, itemName, price) {
