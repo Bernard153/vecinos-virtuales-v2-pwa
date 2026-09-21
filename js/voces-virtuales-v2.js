@@ -1016,8 +1016,19 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
                             🚩 Denunciar
                         </button>
                     ` : '<p style="color:#94a3b8;font-size:0.85rem;">Iniciá sesión para interactuar</p>'}
-
                 </div>
+                ${VV.utils.canModerate() ? `
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #e2e8f0;">
+                        <span style="font-size:0.75rem;color:#94a3b8;width:100%;margin-bottom:0.25rem;">🛡️ Panel de moderación:</span>
+                        <button onclick="VV.moderator.toggleVideoVisibility('${video.id}', ${!video.visible})" style="background:#f59e0b;color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.8rem;flex:1;min-width:100px;">
+                            <i class="fas fa-${video.visible ? 'pause' : 'play'}"></i> ${video.visible ? 'Pausar' : 'Activar'}
+                        </button>
+                        <button onclick="VV.moderator.deleteVideo('${video.id}', '${(video.title || '').replace(/'/g, "\\'")}')" style="background:#ef4444;color:white;border:none;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-size:0.8rem;flex:1;min-width:100px;">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
+                ` : ''}
+
                 <div id="vv-comments-section" style="display:none;margin-top:1rem;"></div>
                 <div id="vv-gifts-section" style="margin-top:1rem;"></div>
             </div>
