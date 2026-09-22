@@ -458,13 +458,15 @@ VV.raffle = {
         wheel.style.transform = `rotate(${totalRotation}deg)`;
         
         // Después de la animación, mostrar ganador
-        setTimeout(() => {
-            VV.raffle.announceWinner(raffleId, winner);
+        setTimeout(async () => {
+            await VV.raffle.announceWinner(raffleId, winner);
         }, 5000);
+
     },
     
     // Anunciar ganador
-    announceWinner(raffleId, winner) {
+    async announceWinner(raffleId, winner) {
+
         const raffles = JSON.parse(localStorage.getItem('raffles') || '[]');
         const raffleIndex = raffles.findIndex(r => r.id === raffleId);
         
