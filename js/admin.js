@@ -2234,7 +2234,11 @@ VV.admin.loadAvatarsManagement = async function () {
         return;
     }
 
+    // Guardar usuarios para que unlockAvatarForUser los encuentre
+    VV.data.allUsers = users;
+
     const premiumAvatars = VV.avatars.defaultAvatars.filter(a => a.premium);
+
 
     container.innerHTML = `
         <div style="margin-bottom: 2rem;">
