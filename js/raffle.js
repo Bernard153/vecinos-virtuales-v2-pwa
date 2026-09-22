@@ -505,7 +505,7 @@ VV.raffle = {
             }, 1000);
         }
     },
-    
+
     // Aplicar premio al ganador
     applyPrize(raffle, winner) {
         switch(raffle.prizeType) {
@@ -513,19 +513,30 @@ VV.raffle = {
                 VV.avatars.unlockAvatar(winner.id, raffle.prizeData.avatarId);
                 break;
             case 'credits':
-                // Guardar créditos en el usuario
-                const users = VV.auth.getAllUsers();
-                const userIndex = users.findIndex(u => u.id === winner.id);
-                if (userIndex !== -1) {
-                    if (!users[userIndex].featuredCredits) users[userIndex].featuredCredits = 0;
-                    users[userIndex].featuredCredits += parseInt(raffle.prizeData.days);
-                    const userKey = `vecinosVirtuales_user_${winner.id}`;
-                    localStorage.setItem(userKey, JSON.stringify(users[userIndex]));
-                }
+                // Guardar créditos en Supabase
+                (async () => {
+                    try {
+                        const { data: user } = await supabase
+                            .from('users')
+                            .select('featured_credits')
+                            .eq('id', winner.id)
+                            .single();
+                        if (user) {
+                            const newCredits = (user.featured_credits || 0) + parseInt(raffle.prizeData.days);
+                            await supabase
+                                .from('users')
+                                .update({ featured_credits: newCredits })
+                                .eq('id', winner.id);
+                        }
+                    } catch (err) {
+                        console.error('Error aplicando créditos:', err);
+                    }
+                })();
                 break;
             // Los premios de producto y custom son manuales
         }
     },
+
     
     // Anunciar ganador públicamente en Supabase
     async announceWinnerPublic(raffle) {
