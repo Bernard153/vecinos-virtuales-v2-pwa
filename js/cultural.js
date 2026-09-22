@@ -709,26 +709,14 @@ VV.cultural = {
         if (!user) { alert('Iniciá sesión para comentar'); return; }
 
         try {
-            const { data: existing } = await supabase
-                .from('cultural_comments')
-                .select('id')
-                .eq('post_id', postId)
-                .eq('user_id', user.id)
-                .maybeSingle();
-
-            if (existing) {
-                await supabase.from('cultural_comments')
-                    .update({ comment_text: text, category: category })
-                    .eq('id', existing.id);
-            } else {
-                await supabase.from('cultural_comments').insert([{
-                    post_id: postId,
-                    user_id: user.id,
-                    user_name: user.name || user.email || 'Anónimo',
-                    comment_text: text,
-                    category: category
-                }]);
-            }
+            await supabase.from('cultural_comments').insert([{
+                post_id: postId,
+                user_id: user.id,
+                user_name: user.name || user.email || 'Anónimo',
+                comment_text: text,
+                category: category
+            }]);
+        
 
             // Actualizar contador
             this.loadCommentCount(postId);
@@ -737,8 +725,6 @@ VV.cultural = {
             const section = document.getElementById('cultural-comments-' + postId);
             if (section) section.style.display = 'block';
             await this.reloadComments(postId);
-
-
 
 
         } catch (err) {
