@@ -1,4 +1,4 @@
-// ========== MÓDULO RULETA DE LA SUERTE ==========
+﻿// ========== MÓDULO RULETA DE LA SUERTE ==========
 
 VV.raffle = {
     // Crear nuevo sorteo (solo admin)
@@ -494,7 +494,7 @@ VV.raffle = {
         VV.raffle.showConfetti();
         
         // Publicar resultado
-        VV.raffle.announceWinnerPublic(raffle);
+        await VV.raffle.announceWinnerPublic(raffle);
         
         // Recargar panel de admin si está abierto
         if (typeof VV.admin !== 'undefined' && VV.utils.isAdmin()) {
@@ -525,24 +525,23 @@ VV.raffle = {
         }
     },
     
-    // Anunciar ganador públicamente
-    announceWinnerPublic(raffle) {
-        const announcement = {
-            id: VV.utils.generateId(),
-            type: 'success',
-            title: `🎉 Ganador del Sorteo: ${raffle.title}`,
-            message: `¡Felicitaciones a ${raffle.winnerName} #${raffle.winnerNumber}!\n\nHa ganado: ${raffle.prizeData.prizeDisplay}\n\n¡Enhorabuena!`,
-            target: raffle.target,
-            important: true,
-            isOfficial: true,
-            createdAt: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString() // 15 días
-        };
-        
-        const announcements = JSON.parse(localStorage.getItem('adminAnnouncements') || '[]');
-        announcements.push(announcement);
-        localStorage.setItem('adminAnnouncements', JSON.stringify(announcements));
+    // Anunciar ganador públicamente en Supabase
+    async announceWinnerPublic(raffle) {
+        try {
+            await supabase.from('announcements').insert([{
+                title: `🎉 Ganador del Sorteo: ${raffle.title}`,
+                content: `¡Felicitaciones a ${raffle.winnerName} #${raffle.winnerNumber}!\n\nHa ganado: ${raffle.prizeData.prizeDisplay}\n\n¡Enhorabuena!`,
+                neighborhood: raffle.target === 'all' ? null : raffle.target,
+                target: raffle.target,
+                active: true,
+                important: true,
+                expires_at: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString()
+            }]);
+        } catch (err) {
+            console.error('Error guardando anuncio del ganador:', err);
+        }
     },
+
     
     // Mostrar confetti
     showConfetti() {
