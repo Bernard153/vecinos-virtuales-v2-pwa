@@ -852,8 +852,8 @@ VV.featured = {
                 }
             </style>
         `;
-    }
-};
+    };
+
     // Cerrar/dismiss anuncio
     dismissAnnouncement(announcementId) {
         const card = event.target.closest('.announcement-card');
