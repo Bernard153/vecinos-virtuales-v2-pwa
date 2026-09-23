@@ -540,20 +540,40 @@ VV.raffle = {
     
     // Anunciar ganador públicamente en Supabase
     async announceWinnerPublic(raffle) {
+        // Generar instrucciones según el tipo de premio
+        let instrucciones = '';
+        switch(raffle.prizeType) {
+            case 'avatar':
+                instrucciones = '🎁 Tu premio: Avatar Premium desbloqueado.\n¡Ya está disponible en tu perfil! Andá a "Mi Avatar" para seleccionarlo.';
+                break;
+            case 'credits':
+                instrucciones = `🎁 Tu premio: ${raffle.prizeData.days} días de destacado.\nYa tenés los créditos cargados en tu cuenta. Usalos para destacar tus productos en el marketplace.`;
+                break;
+            case 'product':
+                instrucciones = `🎁 Tu premio: ${raffle.prizeData.prizeDisplay}.\nPara coordinar la entrega, contactate con la administración por WhatsApp o mensaje dentro de la app.`;
+                break;
+            case 'custom':
+                instrucciones = `🎁 Tu premio: ${raffle.prizeData.prizeDisplay}.\nPara coordinar la entrega, contactate con la administración por WhatsApp o mensaje dentro de la app.`;
+                break;
+            default:
+                instrucciones = '🎁 Para reclamar tu premio, contactate con la administración.';
+        }
+
         try {
             await supabase.from('announcements').insert([{
-                title: `🎉 Ganador del Sorteo: ${raffle.title}`,
-                content: `¡Felicitaciones a ${raffle.winnerName} #${raffle.winnerNumber}!\n\nHa ganado: ${raffle.prizeData.prizeDisplay}\n\n¡Enhorabuena!`,
+                title: `🎉 ¡Ganaste el Sorteo: ${raffle.title}!`,
+                content: `¡Felicitaciones ${raffle.winnerName} #${raffle.winnerNumber}!\n\n${instrucciones}\n\n📞 Contacto: Escribinos por WhatsApp al número que aparece en "Consultar" o enviános un mensaje desde la app.`,
                 neighborhood: raffle.target === 'all' ? null : raffle.target,
                 target: raffle.target,
                 active: true,
                 important: true,
-                expires_at: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString()
+                expires_at: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString()
             }]);
         } catch (err) {
             console.error('Error guardando anuncio del ganador:', err);
         }
     },
+
 
     
     // Mostrar confetti

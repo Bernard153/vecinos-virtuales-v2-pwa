@@ -808,8 +808,9 @@ VV.featured = {
                     
                     <div style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
                         <p style="margin: 0; color: var(--gray-800); white-space: pre-wrap; line-height: 1.6;">
-                            ${announcement.message}
+                            ${VV.utils.escapeHtml(announcement.content || announcement.message || '')}
                         </p>
+
                     </div>
                     
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--gray-600);">
