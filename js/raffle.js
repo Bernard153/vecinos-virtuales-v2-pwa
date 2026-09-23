@@ -561,8 +561,8 @@ VV.raffle = {
 
         try {
             await supabase.from('announcements').insert([{
-                title: `🎉 ¡Ganaste el Sorteo: ${raffle.title}!`,
-                content: `¡Felicitaciones ${raffle.winnerName} #${raffle.winnerNumber}!\n\n${instrucciones}\n\n📞 Contacto: Escribinos por WhatsApp al número que aparece en "Consultar" o enviános un mensaje desde la app.`,
+                title: `🎉 ¡Ganador del Sorteo: ${raffle.title}!`,
+                content: `¡Felicitaciones ${raffle.winnerName} #${raffle.winnerNumber}!\n\n${instrucciones}\n\n📞 Contacto: Escribinos por WhatsApp al número que aparece en "Consultar" o enviános un mensaje desde la app.\n\n🎁 Recordá: ¡Los sorteos de Vecinos Virtuales son totalmente GRATIS!`,
                 neighborhood: raffle.target === 'all' ? null : raffle.target,
                 target: raffle.target,
                 active: true,

@@ -279,12 +279,15 @@ VV.featured = {
             const currentNeighborhoodNormalized = normalizeNeighborhood(VV.data.neighborhood);
 
             // Filtrar anuncios por barrio o usuario
+            const dismissed = JSON.parse(localStorage.getItem('dismissedAnnouncements') || '[]');
             const activeAnnouncements = (announcements || []).filter(a =>
-                a.target === 'all' ||
+                (a.target === 'all' ||
                 normalizeNeighborhood(a.target) === currentNeighborhoodNormalized ||
                 a.target === ('user_' + VV.data.user.uniqueNumber) ||
-                isAdmin
+                isAdmin) &&
+                !dismissed.includes(a.id)
             );
+
 
             // Cargar ofertas destacadas activas desde Supabase
             let offersQuery = supabase
@@ -817,7 +820,8 @@ VV.featured = {
                         <span>
                             <i class="fas fa-clock"></i> ${daysLeft} día${daysLeft !== 1 ? 's' : ''} restante${daysLeft !== 1 ? 's' : ''}
                         </span>
-                        ${announcement.target !== 'all' ? (
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            ${announcement.target !== 'all' ? (
                 announcement.target.startsWith('user_') ? `
                             <span>
                                 <i class="fas fa-user"></i> Usuario específico (${announcement.target.replace('user_', '#')})
@@ -832,9 +836,14 @@ VV.featured = {
                                 <i class="fas fa-globe"></i> Todos los barrios
                             </span>
                         `}
+                            <button onclick="VV.featured.dismissAnnouncement('${announcement.id}')" style="background:transparent;border:none;color:var(--gray-500);cursor:pointer;font-size:0.85rem;padding:0.2rem 0.5rem;border-radius:6px;" title="Cerrar notificación">
+                                ✕
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+
             
             <style>
                 @keyframes pulse {
@@ -845,6 +854,23 @@ VV.featured = {
         `;
     }
 };
+    // Cerrar/dismiss anuncio
+    dismissAnnouncement(announcementId) {
+        const card = event.target.closest('.announcement-card');
+        if (card) {
+            card.style.transition = 'opacity 0.3s, transform 0.3s';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            setTimeout(() => card.remove(), 300);
+        }
+        // Guardar en localStorage para que no vuelva a aparecer en esta sesión
+        const dismissed = JSON.parse(localStorage.getItem('dismissedAnnouncements') || '[]');
+        if (!dismissed.includes(announcementId)) {
+            dismissed.push(announcementId);
+            localStorage.setItem('dismissedAnnouncements', JSON.stringify(dismissed));
+        }
+    },
+
 async function verTiendaVecino(sellerId, nombre) {
     const seccion = document.getElementById('galeria-vendedor-seccion');
     const lista = document.getElementById('lista-productos-vendedor');
