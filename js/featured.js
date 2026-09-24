@@ -851,11 +851,12 @@ VV.featured = {
                     50% { opacity: 0.7; }
                 }
             </style>
-        `;
-    };
+          `;
+    },
 
     // Cerrar/dismiss anuncio
     dismissAnnouncement(announcementId) {
+
         const card = event.target.closest('.announcement-card');
         if (card) {
             card.style.transition = 'opacity 0.3s, transform 0.3s';
