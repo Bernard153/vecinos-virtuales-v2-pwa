@@ -870,9 +870,11 @@ VV.featured = {
             dismissed.push(announcementId);
             localStorage.setItem('dismissedAnnouncements', JSON.stringify(dismissed));
         }
-    },
+    }
+};
 
 async function verTiendaVecino(sellerId, nombre) {
+
     const seccion = document.getElementById('galeria-vendedor-seccion');
     const lista = document.getElementById('lista-productos-vendedor');
     const titulo = document.getElementById('titulo-galeria');
