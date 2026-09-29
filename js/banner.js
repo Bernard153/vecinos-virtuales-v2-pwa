@@ -316,6 +316,7 @@ VV.banner = {
         const now = new Date();
 
         return VV.data.sponsors.filter(s => {
+<<<<<<< Updated upstream
             // Verificar si está activo y aprobado
             if (!s.active || s.status === 'expired' || s.status === 'pending') return false;
 
@@ -323,6 +324,14 @@ VV.banner = {
             const expiresAtStr = s.expires_at || s.expiresAt;
             if (expiresAtStr) {
                 const expiresAt = new Date(expiresAtStr);
+=======
+            // Verificar si está activo
+            if (!s.active || s.status === 'expired') return false;
+            
+            // Verificar fecha de expiración
+            if (s.expires_at) {
+                const expiresAt = new Date(s.expires_at);
+>>>>>>> Stashed changes
                 if (expiresAt <= now) {
                     s.status = 'expired';
                     s.active = false;

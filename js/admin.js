@@ -93,11 +93,13 @@ VV.admin = {
                 .update({
                     status: 'active',
                     active: true,
+                    approved: true,
                     duration: parseInt(duration),
                     expires_at: expiresAt.toISOString(),
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', requestId);
+
 
             if (error) throw error;
 
@@ -152,12 +154,39 @@ VV.admin = {
             console.error('Error cargando sponsors:', error);
         }
 
-        if (VV.data.sponsors.length === 0) {
+        // Poblar el filtro de barrios
+        const filterSelect = document.getElementById('admin-sponsor-barrio-filter');
+        if (filterSelect) {
+            const allNeighborhoods = new Set();
+            VV.data.sponsors.forEach(s => {
+                if (s.neighborhoods && Array.isArray(s.neighborhoods)) {
+                    s.neighborhoods.forEach(n => allNeighborhoods.add(n));
+                }
+            });
+            const currentValue = filterSelect.value || 'all';
+            filterSelect.innerHTML = '<option value="all">Todos los barrios</option>' +
+                Array.from(allNeighborhoods).sort().map(n =>
+                    `<option value="${n}" ${currentValue === n ? 'selected' : ''}>${n}</option>`
+                ).join('');
+        }
+
+        // Filtrar por barrio seleccionado
+        const selectedBarrio = filterSelect ? filterSelect.value : 'all';
+        let sponsorsToShow = VV.data.sponsors;
+        if (selectedBarrio && selectedBarrio !== 'all') {
+            sponsorsToShow = VV.data.sponsors.filter(s => {
+                if (!s.neighborhoods || s.neighborhoods === 'all') return true;
+                if (Array.isArray(s.neighborhoods)) return s.neighborhoods.includes(selectedBarrio);
+                return s.neighborhoods === selectedBarrio;
+            });
+        }
+
+        if (sponsorsToShow.length === 0) {
             container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay anunciantes</p>';
             return;
         }
 
-        container.innerHTML = VV.data.sponsors.map(sponsor => `
+        container.innerHTML = sponsorsToShow.map(sponsor => `
             <div class="sponsor-management-card">
                 <div class="sponsor-management-header">
                     <div class="sponsor-logo">${sponsor.logo}</div>
@@ -172,8 +201,8 @@ VV.admin = {
                 </div>
                 <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px;">
                     <p style="font-size: 0.85rem; color: var(--gray-600); margin: 0;">
-                        <i class="fas fa-map-marker-alt"></i> 
-                        <strong>Visible en:</strong> 
+                        <i class="fas fa-map-marker-alt"></i>
+                        <strong>Visible en:</strong>
                         ${!sponsor.neighborhoods || sponsor.neighborhoods === 'all'
                 ? '<span style="color: var(--success-green);">Todos los barrios</span>'
                 : Array.isArray(sponsor.neighborhoods)
@@ -196,6 +225,7 @@ VV.admin = {
             </div>
         `).join('');
     },
+
 
     // Mostrar formulario de anunciante
     async showSponsorForm(sponsorId = null) {
@@ -616,8 +646,8 @@ VV.admin = {
 
         document.querySelectorAll('.admin-tab-content').forEach(content => content.classList.remove('active'));
         document.getElementById(`admin-${tabName}`).classList.add('active');
-
-                if (tabName === 'stats') VV.admin.loadStats();
+        if (tabName === 'sponsors') VV.admin.loadSponsors();
+        if (tabName === 'stats') VV.admin.loadStats();
         if (tabName === 'moderator-logs') VV.admin.loadModeratorLogs();
         if (tabName === 'featured') VV.admin.loadFeaturedOffers();
         if (tabName === 'avatars') VV.admin.loadAvatarsManagement();

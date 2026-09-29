@@ -970,8 +970,16 @@
 		    </div>
 
                     <div id="admin-sponsors" class="admin-tab-content active">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px;">
+                            <label style="font-size: 0.85rem; color: #64748b; font-weight: 600;">📍 Filtrar por barrio:</label>
+                            <select id="admin-sponsor-barrio-filter" onchange="VV.admin.loadSponsors()" style="padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem; flex: 1; max-width: 300px;">
+                                <option value="all">Todos los barrios</option>
+                            </select>
+                        </div>
                         <div id="sponsors-management"></div>
                     </div>
+
+
 
                     <div id="admin-featured" class="admin-tab-content">
                         <div id="featured-management"></div>
