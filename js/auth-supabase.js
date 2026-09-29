@@ -600,7 +600,7 @@ VV.auth = {
             if (adminProductsMenu) adminProductsMenu.style.display = 'none';
             if (adminImprovementsMenu) adminImprovementsMenu.style.display = 'none';
             if (moderatorMenu) moderatorMenu.style.display = 'flex';
-            if (sponsorRequestMenu) sponsorRequestMenu.style.display = 'none';
+            if (sponsorRequestMenu) sponsorRequestMenu.style.display = 'flex';
             if (editBannerBtn) editBannerBtn.style.display = 'none';
             if (emergencyConfigBtn) emergencyConfigBtn.style.display = 'inline-block';
             VV.admin.loadBannerImage();
