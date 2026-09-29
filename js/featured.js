@@ -726,12 +726,13 @@ VV.featured = {
                 .from('announcements')
                 .insert({
                     title: title,
-                    message: message,
+                    content: message,
                     type: type,
                     important: important,
                     target: finalTarget,
                     expires_at: expiresAt.toISOString()
                 });
+
             // Si es para un usuario específico, enviar como mensaje privado
             if (enviarComoMensaje && targetType === 'user' && finalTarget.startsWith('user_')) {
                 const userNumber = finalTarget.replace('user_', '');
