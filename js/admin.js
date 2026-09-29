@@ -75,7 +75,6 @@ VV.admin = {
 
     // Aprobar solicitud
     async approveSponsorRequest(requestId) {
-        // Solicitar duración al admin
         const duration = prompt('¿Por cuántos días activar este anunciante? (Ej: 30, 60, 90)', '30');
         if (!duration || isNaN(duration)) {
             alert('Duración inválida');
@@ -83,23 +82,36 @@ VV.admin = {
         }
 
         try {
-            // Calcular fecha de expiración
             const expiresAt = new Date();
             expiresAt.setDate(expiresAt.getDate() + parseInt(duration));
 
-            // Actualizar el sponsor en Supabase
+            // Obtener el neighborhood del sponsor
+            const { data: sponsor, error: fetchError } = await supabase
+                .from('sponsors')
+                .select('neighborhood, neighborhoods')
+                .eq('id', requestId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            const updateData = {
+                status: 'active',
+                active: true,
+                approved: true,
+                duration: parseInt(duration),
+                expires_at: expiresAt.toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            // Copiar neighborhood a neighborhoods si no existe
+            if (sponsor.neighborhood && !sponsor.neighborhoods) {
+                updateData.neighborhoods = [sponsor.neighborhood];
+            }
+
             const { error } = await supabase
                 .from('sponsors')
-                .update({
-                    status: 'active',
-                    active: true,
-                    approved: true,
-                    duration: parseInt(duration),
-                    expires_at: expiresAt.toISOString(),
-                    updated_at: new Date().toISOString()
-                })
+                .update(updateData)
                 .eq('id', requestId);
-
 
             if (error) throw error;
 
@@ -112,6 +124,7 @@ VV.admin = {
             alert('Error al aprobar el anunciante: ' + error.message);
         }
     },
+
 
     // Rechazar solicitud
     async rejectSponsorRequest(requestId) {
@@ -176,11 +189,16 @@ VV.admin = {
         let sponsorsToShow = VV.data.sponsors;
         if (selectedBarrio && selectedBarrio !== 'all') {
             sponsorsToShow = VV.data.sponsors.filter(s => {
-                if (!s.neighborhoods || s.neighborhoods === 'all') return true;
+                if (!s.neighborhoods || s.neighborhoods === 'all') {
+                    // Si no tiene neighborhoods, verificar neighborhood (singular)
+                    if (s.neighborhood) return s.neighborhood === selectedBarrio;
+                    return true;
+                }
                 if (Array.isArray(s.neighborhoods)) return s.neighborhoods.includes(selectedBarrio);
                 return s.neighborhoods === selectedBarrio;
             });
         }
+
 
         if (sponsorsToShow.length === 0) {
             container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--gray-600);">No hay anunciantes</p>';

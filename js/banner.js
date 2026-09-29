@@ -331,6 +331,12 @@ VV.banner = {
                 }
             }
 
+            // Si tiene neighborhood (singular) pero no neighborhoods (plural)
+            if (s.neighborhood && !s.neighborhoods) {
+                if (!VV.data.neighborhood) return true;
+                return s.neighborhood === VV.data.neighborhood;
+            }
+
             // Si no tiene barrios definidos o es 'all', mostrar en todos
             if (!s.neighborhoods || s.neighborhoods === 'all') return true;
 
@@ -348,6 +354,7 @@ VV.banner = {
             return true;
         });
     },
+
 
     
     // Cargar banners en el dashboard desktop
