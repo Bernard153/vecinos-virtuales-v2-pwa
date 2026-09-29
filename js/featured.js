@@ -747,11 +747,11 @@ VV.featured = {
                 
                 if (targetUser && targetUser.id) {
                     const { error: msgError } = await supabase.from('mensajes_admin').insert({
-                        admin_id: VV.data.user.id,
+                        sender: 'admin',
                         user_id: targetUser.id,
-                        titulo: title,
-                        mensaje: message
+                        content: title + ': ' + message
                     });
+
                     console.log('📨 Mensaje insertado:', msgError ? 'Error: ' + msgError.message : 'OK');
                 } else {
                     console.warn('⚠️ No se encontró el usuario número:', userNumber);
