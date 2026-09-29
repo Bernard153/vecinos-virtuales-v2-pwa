@@ -154,21 +154,22 @@ VV.admin = {
             console.error('Error cargando sponsors:', error);
         }
 
-        // Poblar el filtro de barrios
+        // Poblar el filtro de barrios con todos los barrios disponibles
         const filterSelect = document.getElementById('admin-sponsor-barrio-filter');
         if (filterSelect) {
-            const allNeighborhoods = new Set();
-            VV.data.sponsors.forEach(s => {
-                if (s.neighborhoods && Array.isArray(s.neighborhoods)) {
-                    s.neighborhoods.forEach(n => allNeighborhoods.add(n));
-                }
-            });
             const currentValue = filterSelect.value || 'all';
+            let allNeighborhoods = [];
+            try {
+                allNeighborhoods = await VV.auth.getExistingNeighborhoods();
+            } catch (e) {
+                console.error('Error cargando barrios para filtro:', e);
+            }
             filterSelect.innerHTML = '<option value="all">Todos los barrios</option>' +
-                Array.from(allNeighborhoods).sort().map(n =>
+                allNeighborhoods.sort().map(n =>
                     `<option value="${n}" ${currentValue === n ? 'selected' : ''}>${n}</option>`
                 ).join('');
         }
+
 
         // Filtrar por barrio seleccionado
         const selectedBarrio = filterSelect ? filterSelect.value : 'all';
