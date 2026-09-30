@@ -747,10 +747,15 @@ VV.featured = {
                 
                 if (targetUser && targetUser.id) {
                     const { error: msgError } = await supabase.from('mensajes_admin').insert({
-                        sender: 'admin',
+                        admin_id: VV.data.user.id,
                         user_id: targetUser.id,
-                        content: title + ': ' + message
+                        thread_id: 'admin_' + targetUser.id,
+                        sender: 'admin',
+                        mensaje: title + ': ' + message,
+                        thread_status: 'open',
+                        respondido: false
                     });
+
 
                     console.log('📨 Mensaje insertado:', msgError ? 'Error: ' + msgError.message : 'OK');
                 } else {
