@@ -395,11 +395,9 @@ VV.cultural = {
                     alert('Solo se permiten imágenes JPG, PNG o WebP');
                     return;
                 }
-                if (file.size > MAX_IMAGE_SIZE) {
-                    alert(`La imagen es demasiado grande (${(file.size/1024/1024).toFixed(1)}MB). Máximo 2MB.`);
-                    return;
-                }
+                // No validar tamaño de imagen: se comprime antes de subir
             } else if (formData.mediaType === 'video') {
+
                 if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
                     alert('Solo se permiten videos MP4 o WebM');
                     return;
