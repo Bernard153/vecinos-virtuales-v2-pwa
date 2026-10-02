@@ -343,12 +343,19 @@ window.VV_VOCES_V2 = {
             };
 
             if (btnRec) btnRec.classList.add('grabando');
-            this.mediaRecorder.start();
 
             if (audioComponent && audioComponent.src) {
                 audioComponent.currentTime = 0;
-                audioComponent.play().catch(e => console.error('Error play:', e));
+                audioComponent.play().then(() => {
+                    this.mediaRecorder.start();
+                }).catch(e => {
+                    console.error('Error play:', e);
+                    this.mediaRecorder.start();
+                });
+            } else {
+                this.mediaRecorder.start();
             }
+
 
         } catch (err) {
             console.error('Error grabación:', err);
