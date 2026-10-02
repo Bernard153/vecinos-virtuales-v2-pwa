@@ -279,13 +279,14 @@ window.VV_VOCES_V2 = {
 
             const canvasStream = canvas.captureStream(24);
 
-            // AudioContext NUEVO
-            const audioContext = new AudioContext();
+            // AudioContext NUEVO — baja latencia
+            const audioContext = new AudioContext({ latencyHint: 'interactive' });
             this.audioContext = audioContext;
             if (audioContext.state === 'suspended') {
                 await audioContext.resume();
             }
             const destination = audioContext.createMediaStreamDestination();
+
 
             // Micrófono → mezclador
             const micSource = audioContext.createMediaStreamSource(this.streamCamaraMicro);
@@ -353,7 +354,7 @@ window.VV_VOCES_V2 = {
                     this.mediaRecorder.start();
                 });
             } else {
-                this.mediaRecorder.start();
+                this.mediaRecorder.start(100);
             }
 
 
