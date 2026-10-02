@@ -270,10 +270,12 @@ window.VV_VOCES_V2 = {
             const drawFrame = () => {
                 if (!this.isRecording) return;
                 if (camaraPreview.readyState >= 2) {
+                    ctx.filter = this.currentFilter || 'none';
                     ctx.drawImage(camaraPreview, 0, 0, canvas.width, canvas.height);
                 }
                 requestAnimationFrame(drawFrame);
             };
+
             if (camaraPreview.readyState >= 2) drawFrame();
             else camaraPreview.addEventListener('playing', drawFrame, { once: true });
 
