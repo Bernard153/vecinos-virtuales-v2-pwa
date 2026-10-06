@@ -601,6 +601,10 @@ VV.moderator = {
                                 <i class="fas fa-check-circle"></i> ${approvals.length}/${a.required_approvals || 2} aprobaciones
                             </span>
                         </div>
+                        <button onclick="VV.moderator.verEvidencia('${a.id}')" style="width: 100%; background: #1e293b; color: white; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.5rem;">
+                            <i class="fas fa-search"></i> Ver evidencia completa
+                        </button>
+
                         ${photos.length > 0 ? `
                             <div style="display: flex; gap: 0.25rem; overflow-x: auto; margin-bottom: 0.5rem;">
                                 ${photos.slice(0, 5).map(url => `<img src="${url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="window.open('${url}', '_blank')">`).join('')}
