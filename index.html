@@ -1084,6 +1084,10 @@
                         <button class="tab-btn" onclick="VV.moderator.showTab('stats')">
                             <i class="fas fa-chart-pie"></i> Estadísticas
                         </button>
+                        <button class="tab-btn" onclick="VV.moderator.showTab('alertas')">
+                            <i class="fas fa-shield-alt"></i> Alertas
+                        </button>
+
                         <button class="tab-btn" onclick="VV.moderator.showTab('voces')">
                             <i class="fas fa-microphone"></i> Voces
                         </button>
@@ -1161,6 +1165,15 @@
                             </div>
                         </div>
                     </div>
+                    <div id="moderator-alertas" class="moderator-tab-content admin-tab-content">
+                        <p style="color: var(--gray-600); margin-bottom: 1rem; padding: 1rem; background: #fef2f2; border-radius: 8px; border-left: 4px solid #dc2626;">
+                            <i class="fas fa-shield-alt"></i> <strong>Alertas de seguridad vecinal.</strong> Revisá las alertas enviadas por los vecinos de tu barrio. Necesitás aprobar con otro moderador para publicar la alerta a todos los vecinos.
+                        </p>
+                        <div id="moderator-alertas-list" class="admin-grid-pendientes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 15px;">
+                            <p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">Cargando alertas...</p>
+                        </div>
+                    </div>
+
                     <div id="moderator-voces" class="moderator-tab-content admin-tab-content">
                         <p style="color: var(--gray-600); margin-bottom: 1rem; padding: 1rem; background: var(--gray-50); border-radius: 8px;">
                             <i class="fas fa-info-circle"></i> Revisá y moderá los videos publicados en tu barrio.

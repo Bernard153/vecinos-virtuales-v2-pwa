@@ -39,8 +39,9 @@ VV.moderator = {
             case 'reports': VV.moderator.loadReports(); break;
             case 'stats': VV.moderator.loadStats(); break;
             case 'voces': VV.moderator.loadVoces(); break;
-
+            case 'alertas': VV.moderator.loadAlertas(); break;
         }
+
     },
 
     // Registrar acción de moderador en Supabase
@@ -536,6 +537,200 @@ VV.moderator = {
             alert('Error: ' + err.message);
         }
     },
+    // ====== ALERTAS VECINALES ======
+    async loadAlertas() {
+        const container = document.getElementById('moderator-alertas-list');
+        if (!container) return;
+
+        container.innerHTML = '<p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">Cargando alertas...</p>';
+
+        try {
+            const { data: alertas, error } = await supabase
+                .from('alertas_vecinales')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (!alertas || alertas.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">No hay alertas.</p>';
+                return;
+            }
+
+            container.innerHTML = alertas.map(a => {
+                const photos = a.photos || [];
+                const gpsPoints = a.gps_points || [];
+                const approvals = a.approvals || [];
+                const isAuto = a.is_auto;
+                const status = a.status;
+                const time = new Date(a.created_at).toLocaleString('es-AR');
+
+                let statusBadge = '';
+                if (status === 'pending') {
+                    statusBadge = '<span style="background: #f59e0b; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Pendiente</span>';
+                } else if (status === 'approved') {
+                    statusBadge = '<span style="background: #10b981; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Aprobada</span>';
+                } else if (status === 'rejected') {
+                    statusBadge = '<span style="background: #64748b; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Rechazada</span>';
+                } else if (status === 'resolved') {
+                    statusBadge = '<span style="background: #3b82f6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">Resuelta</span>';
+                }
+
+                return `
+                    <div style="background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid ${status === 'pending' ? '#f59e0b' : status === 'approved' ? '#10b981' : '#64748b'};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <h4 style="margin: 0; color: #1e293b; font-size: 1rem;">
+                                <i class="fas fa-shield-alt" style="color: #dc2626;"></i> ${a.user_name || 'Vecino'}
+                            </h4>
+                            ${statusBadge}
+                        </div>
+                        <p style="color: #64748b; font-size: 0.8rem; margin: 0 0 0.5rem 0;">
+                            <i class="fas fa-clock"></i> ${time} ${isAuto ? '<span style="color: #dc2626; font-weight: bold;">(AUTO)</span>' : ''}
+                        </p>
+                        <p style="color: #64748b; font-size: 0.8rem; margin: 0 0 0.5rem 0;">
+                            <i class="fas fa-map-marker-alt"></i> ${a.neighborhood || 'Sin barrio'}
+                        </p>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                            <span style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; color: #475569;">
+                                <i class="fas fa-camera"></i> ${photos.length} fotos
+                            </span>
+                            <span style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; color: #475569;">
+                                <i class="fas fa-map-pin"></i> ${gpsPoints.length} GPS
+                            </span>
+                            <span style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; color: #475569;">
+                                <i class="fas fa-check-circle"></i> ${approvals.length}/${a.required_approvals || 2} aprobaciones
+                            </span>
+                        </div>
+                        ${photos.length > 0 ? `
+                            <div style="display: flex; gap: 0.25rem; overflow-x: auto; margin-bottom: 0.5rem;">
+                                ${photos.slice(0, 5).map(url => `<img src="${url}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="window.open('${url}', '_blank')">`).join('')}
+                            </div>
+                        ` : ''}
+                        ${a.audio_url ? `
+                            <audio controls src="${a.audio_url}" style="width: 100%; height: 30px; margin-bottom: 0.5rem;"></audio>
+                        ` : ''}
+                        ${gpsPoints.length > 0 ? `
+                            <p style="font-size: 0.75rem; color: #64748b; margin: 0 0 0.5rem 0;">
+                                <i class="fas fa-route"></i> Ultima ubicacion: ${gpsPoints[gpsPoints.length - 1].lat.toFixed(4)}, ${gpsPoints[gpsPoints.length - 1].lng.toFixed(4)}
+                            </p>
+                        ` : ''}
+                        ${status === 'pending' ? `
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                <button onclick="VV.moderator.approveAlerta('${a.id}')" style="flex: 1; background: #10b981; color: white; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">
+                                    <i class="fas fa-check"></i> Aprobar
+                                </button>
+                                <button onclick="VV.moderator.rejectAlerta('${a.id}')" style="flex: 1; background: #ef4444; color: white; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold;">
+                                    <i class="fas fa-times"></i> Rechazar
+                                </button>
+                            </div>
+                        ` : ''}
+                        ${status === 'approved' ? `
+                            <button onclick="VV.moderator.resolveAlerta('${a.id}')" style="width: 100%; background: #3b82f6; color: white; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; margin-top: 0.5rem;">
+                                <i class="fas fa-flag-checkered"></i> Marcar como resuelta
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+        } catch (err) {
+            console.error('Error cargando alertas:', err);
+            container.innerHTML = '<p style="text-align: center; color: #ef4444; grid-column: 1/-1;">Error al cargar alertas.</p>';
+        }
+    },
+
+    async approveAlerta(alertaId) {
+        const user = VV_ROLES.getCurrentUser();
+        if (!user) return;
+
+        try {
+            // Obtener la alerta actual
+            const { data: alerta, error: fetchError } = await supabase
+                .from('alertas_vecinales')
+                .select('approvals, required_approvals')
+                .eq('id', alertaId)
+                .single();
+
+            if (fetchError) throw fetchError;
+
+            let approvals = alerta.approvals || [];
+            
+            // Verificar si ya aprobó
+            if (approvals.includes(user.id)) {
+                alert('Ya aprobaste esta alerta');
+                return;
+            }
+
+            approvals.push(user.id);
+
+            // Verificar si alcanzó las aprobaciones necesarias
+            const required = alerta.required_approvals || 2;
+            const newStatus = approvals.length >= required ? 'approved' : 'pending';
+
+            const { error } = await supabase
+                .from('alertas_vecinales')
+                .update({ 
+                    approvals: approvals,
+                    status: newStatus
+                })
+                .eq('id', alertaId);
+
+            if (error) throw error;
+
+            if (newStatus === 'approved') {
+                VV.utils.showSuccess('Alerta aprobada y publicada a los vecinos');
+            } else {
+                VV.utils.showSuccess('Aprobacion registrada. Faltan ' + (required - approvals.length) + ' mas.');
+            }
+
+            VV.moderator.loadAlertas();
+        } catch (err) {
+            console.error('Error aprobando alerta:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
+    async rejectAlerta(alertaId) {
+        if (!confirm('¿Rechazar esta alerta?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('alertas_vecinales')
+                .update({ status: 'rejected' })
+                .eq('id', alertaId);
+
+            if (error) throw error;
+
+            VV.utils.showSuccess('Alerta rechazada');
+            VV.moderator.loadAlertas();
+        } catch (err) {
+            console.error('Error rechazando alerta:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
+    async resolveAlerta(alertaId) {
+        if (!confirm('¿Marcar esta alerta como resuelta?')) return;
+
+        try {
+            const { error } = await supabase
+                .from('alertas_vecinales')
+                .update({ 
+                    status: 'resolved',
+                    resolved_at: new Date().toISOString()
+                })
+                .eq('id', alertaId);
+
+            if (error) throw error;
+
+            VV.utils.showSuccess('Alerta marcada como resuelta');
+            VV.moderator.loadAlertas();
+        } catch (err) {
+            console.error('Error resolviendo alerta:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
 
 
     // Cargar estadísticas
