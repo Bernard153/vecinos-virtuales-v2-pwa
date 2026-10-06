@@ -156,9 +156,10 @@ VV.alertas = {
     async startPhotoCapture() {
         try {
             this.stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+                video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
                 audio: false
             });
+
             const video = document.createElement('video');
             video.srcObject = this.stream;
             video.muted = true;
