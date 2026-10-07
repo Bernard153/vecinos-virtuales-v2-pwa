@@ -1893,6 +1893,26 @@ window.addEventListener('hashchange', function() {
 <button id="alerta-flotante" style="position: fixed; bottom: 20px; right: 20px; width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #dc2626, #991b1b); border: 3px solid white; box-shadow: 0 4px 12px rgba(220,38,38,0.5); cursor: pointer; z-index: 99999; display: none; align-items: center; justify-content: center; transition: all 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
     <i class="fas fa-shield-alt" style="font-size: 1.5rem; color: white;"></i>
 </button>
+<!-- Notificacion flotante de alerta aprobada -->
+<div id="alerta-notificacion" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #dc2626, #991b1b); color: white; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(220,38,38,0.5); z-index: 99998; cursor: pointer; max-width: 90%; display: none; align-items: center; gap: 0.75rem;" onclick="VV.alertas.abrirAlertaPublica()">
+    <i class="fas fa-shield-alt" style="font-size: 1.5rem;"></i>
+    <div>
+        <p style="margin: 0; font-weight: bold; font-size: 0.95rem;" id="alerta-notif-titulo">Alerta en tu barrio</p>
+        <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;" id="alerta-notif-detalle">Toca para ver</p>
+    </div>
+    <button onclick="event.stopPropagation(); document.getElementById('alerta-notificacion').style.display='none';" style="background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 0.8rem; margin-left: 0.5rem;">X</button>
+</div>
+
+<!-- Modal de alerta publica (para vecinos) -->
+<div id="alerta-publica-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10009; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="margin: 0; color: #dc2626; font-size: 1.25rem;" id="alerta-publica-titulo">Alerta en el barrio</h2>
+            <button onclick="document.getElementById('alerta-publica-modal').style.display='none';" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">X</button>
+        </div>
+        <div id="alerta-publica-contenido"></div>
+    </div>
+</div>
 
 <!-- Modal de alerta activa -->
 <div id="alerta-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; padding: 1rem;">
