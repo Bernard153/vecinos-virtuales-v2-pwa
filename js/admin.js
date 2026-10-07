@@ -666,6 +666,7 @@ VV.admin = {
         document.querySelectorAll('.admin-tab-content').forEach(content => content.classList.remove('active'));
         document.getElementById(`admin-${tabName}`).classList.add('active');
         if (tabName === 'sponsors') VV.admin.loadSponsors();
+        if (tabName === 'alertas') VV.admin.loadAlertas();
         if (tabName === 'stats') VV.admin.loadStats();
         if (tabName === 'moderator-logs') VV.admin.loadModeratorLogs();
         if (tabName === 'featured') VV.admin.loadFeaturedOffers();
@@ -3134,4 +3135,134 @@ VV.admin.eliminarDenuncia = async function(id) {
     }
 };
 
+    // ====== ALERTAS VECINALES (ADMIN) ======
+    async loadAlertas() {
+        const container = document.getElementById('admin-alertas-list');
+        if (!container) return;
+
+        container.innerHTML = '<p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">Cargando alertas...</p>';
+
+        try {
+            const { data: alertas, error } = await supabase
+                .from('alertas_vecinales')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (!alertas || alertas.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">No hay alertas.</p>';
+                return;
+            }
+
+            container.innerHTML = alertas.map(a => {
+                const photos = a.photos || [];
+                const gpsPoints = a.gps_points || [];
+                const approvals = a.approvals || [];
+                const time = new Date(a.created_at).toLocaleString('es-AR');
+
+                let statusBadge = '';
+                if (a.status === 'pending') statusBadge = '<span style="background:#f59e0b;color:white;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.75rem;">Pendiente</span>';
+                else if (a.status === 'approved') statusBadge = '<span style="background:#10b981;color:white;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.75rem;">Aprobada</span>';
+                else if (a.status === 'rejected') statusBadge = '<span style="background:#64748b;color:white;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.75rem;">Rechazada</span>';
+                else if (a.status === 'resolved') statusBadge = '<span style="background:#3b82f6;color:white;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.75rem;">Resuelta</span>';
+
+                return '<div style="background:white;border-radius:12px;padding:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.1);border-left:4px solid ' + (a.status === 'pending' ? '#f59e0b' : a.status === 'approved' ? '#10b981' : '#64748b') + ';">' +
+                    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">' +
+                    '<h4 style="margin:0;color:#1e293b;font-size:1rem;">' + (a.user_name || 'Vecino') + '</h4>' +
+                    statusBadge +
+                    '</div>' +
+                    '<p style="color:#64748b;font-size:0.8rem;margin:0 0 0.5rem 0;">' + time + (a.is_auto ? ' (AUTO)' : '') + '</p>' +
+                    '<p style="color:#64748b;font-size:0.8rem;margin:0 0 0.5rem 0;">' + (a.neighborhood || 'Sin barrio') + '</p>' +
+                    '<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.5rem;">' +
+                    '<span style="background:#f1f5f9;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.75rem;color:#475569;">' + photos.length + ' fotos</span>' +
+                    '<span style="background:#f1f5f9;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.75rem;color:#475569;">' + gpsPoints.length + ' GPS</span>' +
+                    '<span style="background:#f1f5f9;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.75rem;color:#475569;">' + approvals.length + '/' + (a.required_approvals || 2) + ' aprob.</span>' +
+                    '</div>' +
+                    '<button onclick="VV.moderator.verEvidencia(\'' + a.id + '\')" style="width:100%;background:#1e293b;color:white;padding:0.5rem;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:bold;margin-bottom:0.5rem;">Ver evidencia completa</button>' +
+                    (a.status === 'pending' ? '<div style="display:flex;gap:0.5rem;">' +
+                    '<button onclick="VV.admin.aprobarAlerta(\'' + a.id + '\')" style="flex:1;background:#10b981;color:white;padding:0.5rem;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:bold;">Aprobar y publicar</button>' +
+                    '<button onclick="VV.admin.rechazarAlerta(\'' + a.id + '\')" style="flex:1;background:#ef4444;color:white;padding:0.5rem;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:bold;">Rechazar</button>' +
+                    '</div>' : '') +
+                    (a.status === 'approved' ? '<button onclick="VV.admin.desactivarAlerta(\'' + a.id + '\')" style="width:100%;background:#ef4444;color:white;padding:0.5rem;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:bold;margin-top:0.5rem;">Desactivar alerta</button>' : '') +
+                    (a.status === 'approved' ? '<button onclick="VV.admin.resolverAlerta(\'' + a.id + '\')" style="width:100%;background:#3b82f6;color:white;padding:0.5rem;border:none;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:bold;margin-top:0.5rem;">Marcar como resuelta</button>' : '') +
+                    '</div>';
+            }).join('');
+
+        } catch (err) {
+            console.error('Error cargando alertas:', err);
+            container.innerHTML = '<p style="text-align: center; color: #ef4444; grid-column: 1/-1;">Error al cargar alertas.</p>';
+        }
+    },
+
+    async aprobarAlerta(alertaId) {
+        try {
+            const { error } = await supabase
+                .from('alertas_vecinales')
+                .update({ status: 'approved', approvals: ['admin_override'] })
+                .eq('id', alertaId);
+
+            if (error) throw error;
+
+            VV.utils.showSuccess('Alerta aprobada y publicada');
+            VV.admin.loadAlertas();
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
+    async rechazarAlerta(alertaId) {
+        if (!confirm('Rechazar esta alerta?')) return;
+        try {
+            const { error } = await supabase
+                .from('alertas_vecinales')
+                .update({ status: 'rejected' })
+                .eq('id', alertaId);
+
+            if (error) throw error;
+
+            VV.utils.showSuccess('Alerta rechazada');
+            VV.admin.loadAlertas();
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
+    async desactivarAlerta(alertaId) {
+        if (!confirm('Desactivar esta alerta? Los vecinos dejarian de verla.')) return;
+        try {
+            const { error } = await supabase
+                .from('alertas_vecinales')
+                .update({ status: 'rejected' })
+                .eq('id', alertaId);
+
+            if (error) throw error;
+
+            VV.utils.showSuccess('Alerta desactivada');
+            VV.admin.loadAlertas();
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    },
+
+    async resolverAlerta(alertaId) {
+        if (!confirm('Marcar como resuelta?')) return;
+        try {
+            const { error } = await supabase
+                .from('alertas_vecinales')
+                .update({ status: 'resolved', resolved_at: new Date().toISOString() })
+                .eq('id', alertaId);
+
+            if (error) throw error;
+
+            VV.utils.showSuccess('Alerta resuelta');
+            VV.admin.loadAlertas();
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error: ' + err.message);
+        }
+    },
 
