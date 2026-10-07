@@ -496,6 +496,20 @@
                             <span style="background:#ef4444;color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;" id="mensaje-admin-badge">1</span>
                         </div>
                     </div>
+                    <!-- Notificacion de alerta vecinal -->
+                    <div id="alerta-vecinal-notificacion" style="display:none; margin-bottom: 1rem; padding: 1rem; background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #dc2626; border-radius: 12px; cursor: pointer; animation: pulse 2s infinite;" onclick="abrirAlertaVecinal()">
+                        <div style="display:flex;align-items:center;gap:0.75rem;">
+                            <div style="width:40px;height:40px;border-radius:50%;background:#dc2626;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="fas fa-shield-alt" style="color:white;font-size:1.2rem;"></i>
+                            </div>
+                            <div style="flex:1;">
+                                <p style="margin:0;font-weight:bold;color:#dc2626;font-size:0.9rem;">Alerta en tu barrio</p>
+                                <p id="alerta-vecinal-preview" style="font-size:0.85rem;color:#475569;margin-top:0.25rem;"></p>
+                            </div>
+                            <button id="alerta-silenciar-btn" onclick="event.stopPropagation(); silenciarAlerta();" style="background:none;border:none;cursor:pointer;font-size:1.2rem;padding:0.25rem;">🔊</button>
+                        </div>
+                    </div>
+
                     <!-- MODAL DE MENSAJE DEL ADMIN -->
                     <div id="mensaje-admin-modal" class="modal-overlay" style="display:none;">
                         <div class="modal-form" style="max-width:500px;">

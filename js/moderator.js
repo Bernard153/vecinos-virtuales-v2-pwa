@@ -598,7 +598,7 @@ VV.moderator = {
                                 <i class="fas fa-map-pin"></i> ${gpsPoints.length} GPS
                             </span>
                             <span style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; color: #475569;">
-                                <i class="fas fa-check-circle"></i> ${approvals.length}/${a.required_approvals || 2} aprobaciones
+                                <i class="fas fa-check-circle"></i> ${approvals.length}/${a.required_approvals || 1} aprobacion
                             </span>
                         </div>
                         <button onclick="VV.moderator.verEvidencia('${a.id}')" style="width: 100%; background: #1e293b; color: white; padding: 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.5rem;">

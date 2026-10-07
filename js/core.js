@@ -290,6 +290,8 @@ async function enviarRespuestaAdmin() {
         
         // Recargar notificación
         setTimeout(cargarMensajeAdmin, 500);
+        setTimeout(cargarAlertaVecinal, 1000);
+
         
     } catch (err) {
         alert('Error al enviar respuesta: ' + err.message);
