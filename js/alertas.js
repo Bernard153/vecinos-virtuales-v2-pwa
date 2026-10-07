@@ -172,7 +172,7 @@ VV.alertas = {
                 canvas.height = 480;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.5));
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.7));
                 if (blob) {
                     const fileName = 'alerta-' + this.alertaId + '-' + Date.now() + '.jpg';
                     try {
