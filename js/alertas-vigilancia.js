@@ -99,9 +99,20 @@ VV.alertas.playAlertSound = function() {
 // Silenciar
 VV.alertas.silenciarAlerta = function() {
     localStorage.setItem('alerta_silenciada', 'true');
-    VV.utils.showSuccess('Alerta silenciada por 1 hora');
+    var bar = document.getElementById('alerta-vigilancia-bar');
+    if (bar) {
+        bar.innerHTML = '<div style="max-width:600px;margin:0 auto;display:flex;align-items:center;gap:0.5rem;">' +
+            '<i class="fas fa-bell-slash" style="font-size:1.3rem;"></i>' +
+            '<div style="flex:1;">' +
+            '<p style="margin:0;font-weight:bold;font-size:0.9rem;">Alerta silenciada por 1 hora</p>' +
+            '<p style="margin:0;font-size:0.75rem;opacity:0.9;">No recibiras mas sonidos de esta alerta</p>' +
+            '</div></div>';
+        bar.style.background = 'linear-gradient(135deg,#475569,#334155)';
+        setTimeout(function() { bar.style.display = 'none'; }, 3000);
+    }
     setTimeout(function() { localStorage.removeItem('alerta_silenciada'); }, 3600000);
 };
+
 
 // Abrir modal de alerta vecinal
 VV.alertas.abrirAlertaVecinal = function() {
