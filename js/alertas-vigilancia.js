@@ -1,9 +1,16 @@
-// ============================================================
 // MODO VIGILANCIA - Notificacion a vecinos
 // ============================================================
 
+// Esperar a que VV.alertas exista
+function initVigilancia() {
+    if (typeof VV === 'undefined' || !VV.alertas) {
+        setTimeout(initVigilancia, 500);
+        return;
+    }
+
 // Cargar alerta activa del barrio
 VV.alertas.cargarAlertaActiva = async function() {
+
     var user = VV_ROLES.getCurrentUser();
     if (!user) return;
 
@@ -321,3 +328,15 @@ setTimeout(function() {
         }, 30000);
     }
 }, 3000);
+}
+
+// Inicializar
+initVigilancia();
+
+// Cargar alertas cada 30 segundos
+setInterval(function() {
+    if (typeof VV !== 'undefined' && VV.alertas && VV.alertas.cargarAlertaActiva) {
+        VV.alertas.cargarAlertaActiva();
+    }
+}, 30000);
+
