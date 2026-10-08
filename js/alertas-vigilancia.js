@@ -48,16 +48,19 @@ VV.alertas.cargarAlertaActiva = async function() {
             '<p style="margin:0;font-size:0.75rem;opacity:0.9;">' + (alerta.user_name || 'Vecino') + ' - ' + (alerta.is_auto ? 'Envio automatico' : 'Alerta activa') + '</p>' +
             '</div>' +
             '<button onclick="event.stopPropagation();VV.alertas.silenciarAlerta();" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:0.4rem 0.6rem;border-radius:8px;cursor:pointer;font-size:0.75rem;">Silenciar</button>' +
+            '<button onclick="event.stopPropagation();VV.alertas.cerrarAlertaBar();" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:0.4rem 0.6rem;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:bold;">X</button>' +
             '<i class="fas fa-chevron-right" style="font-size:0.85rem;"></i>' +
             '</div>';
+
 
         bar.style.display = 'block';
         bar.onclick = function() { VV.alertas.abrirAlertaVecinal(); };
 
         // Sonido si no esta silenciada
-        if (!localStorage.getItem('alerta_silenciada')) {
+        if (!VV.alertas.verificarSilencio()) {
             VV.alertas.playAlertSound();
         }
+
 
     } catch (err) {
         console.error('Error cargando alerta activa:', err);
@@ -99,20 +102,29 @@ VV.alertas.playAlertSound = function() {
 // Silenciar
 VV.alertas.silenciarAlerta = function() {
     localStorage.setItem('alerta_silenciada', 'true');
+    localStorage.setItem('alerta_silenciada_hasta', Date.now() + 3600000);
     var bar = document.getElementById('alerta-vigilancia-bar');
-    if (bar) {
-        bar.innerHTML = '<div style="max-width:600px;margin:0 auto;display:flex;align-items:center;gap:0.5rem;">' +
-            '<i class="fas fa-bell-slash" style="font-size:1.3rem;"></i>' +
-            '<div style="flex:1;">' +
-            '<p style="margin:0;font-weight:bold;font-size:0.9rem;">Alerta silenciada por 1 hora</p>' +
-            '<p style="margin:0;font-size:0.75rem;opacity:0.9;">No recibiras mas sonidos de esta alerta</p>' +
-            '</div></div>';
-        bar.style.background = 'linear-gradient(135deg,#475569,#334155)';
-        setTimeout(function() { bar.style.display = 'none'; }, 3000);
-    }
-    setTimeout(function() { localStorage.removeItem('alerta_silenciada'); }, 3600000);
+    if (bar) bar.style.display = 'none';
+    VV.utils.showSuccess('Alerta silenciada por 1 hora');
 };
 
+// Verificar si el silencio ya expiro
+VV.alertas.verificarSilencio = function() {
+    var hasta = localStorage.getItem('alerta_silenciada_hasta');
+    if (hasta && Date.now() > parseInt(hasta)) {
+        localStorage.removeItem('alerta_silenciada');
+        localStorage.removeItem('alerta_silenciada_hasta');
+        return false;
+    }
+    return localStorage.getItem('alerta_silenciada') === 'true';
+};
+
+
+// Cerrar barra de alerta
+VV.alertas.cerrarAlertaBar = function() {
+    var bar = document.getElementById('alerta-vigilancia-bar');
+    if (bar) bar.style.display = 'none';
+};
 
 // Abrir modal de alerta vecinal
 VV.alertas.abrirAlertaVecinal = function() {
