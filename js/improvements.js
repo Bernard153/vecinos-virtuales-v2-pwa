@@ -109,7 +109,7 @@ VV.improvements = {
                     </div>
                 ` : ''}
                 <div style="font-size: 0.85rem; color: var(--gray-600); margin: 0.5rem 0;">
-                    <i class="fas fa-user"></i> Propuesto por: <strong>${VV.utils.escapeHtml(imp.author_alias || imp.author_name || 'Anónimo')}</strong><br>
+                    <i class="fas fa-user"></i> Propuesto por: <strong>${imp.author_avatar || '👤'} ${VV.utils.escapeHtml(imp.author_alias || imp.author_name || 'Anónimo')}</strong><br>
                     <i class="fas fa-calendar"></i> Propuesta: ${new Date(imp.createdAt || imp.created_at || Date.now()).toLocaleDateString('es-AR')}
                     ${imp.status === 'Completado' && imp.completedAt ? `<br><i class="fas fa-check-circle"></i> Realizada: ${new Date(imp.completedAt).toLocaleDateString('es-AR')} por ${VV.utils.escapeHtml(imp.completedBy)}` : ''}
                 </div>
@@ -367,6 +367,8 @@ VV.improvements = {
                     .insert({
                         title: formData.title,
                         author_alias: formData.author_alias,
+                        author_id: VV.data.user.id,
+                        author_avatar: VV.avatars.getUserAvatar(VV.data.user.id).emoji,
                         description: formData.description,
                         category: formData.category,
                         priority: formData.priority,

@@ -197,7 +197,7 @@ VV.cultural = {
                     <h3>${post.title}</h3>
                     <span class="badge" style="background: rgba(139, 92, 246, 0.1); color: var(--primary-purple);">${VV.cultural.getTypeLabel(post.type)}</span>
                 </div>
-                <p><strong>Por:</strong> ${authorName}</p>
+                <p><strong>Por:</strong> ${post.author_avatar || '👤'} ${authorName}</p>
                 
                 ${mediaType === 'image' && mediaUrl ? `
                     <div style="margin: 1rem 0;">
@@ -505,6 +505,7 @@ VV.cultural = {
                         author_id: VV.data.user.id,
                         author_name: VV.data.user.name,
                         author_number: VV.data.user.unique_number,
+                        author_avatar: VV.avatars.getUserAvatar(VV.data.user.id).emoji,
                         neighborhood: VV.data.neighborhood
                     })
                     .select()

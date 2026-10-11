@@ -105,7 +105,7 @@ VV.marketplace = {
                     <span class="badge" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white;">🔖 Reservable</span>
                     <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
                 </div>
-                <p><strong>Vendedor:</strong> ${VV.avatars.getUserAvatar(p.seller_id).emoji} ${p.seller_name}</p>
+                <p><strong>Vendedor:</strong> ${p.seller_avatar || '👤'} ${p.seller_name}</p>
                 <p><strong>Negocio:</strong> ${p.business}</p>
                 <p><strong>Dirección:</strong> ${p.business_address || 'No especificada'}</p>
                 <p><strong>Categoría:</strong> ${p.category}</p>
@@ -229,7 +229,7 @@ VV.marketplace = {
                     ${p.featured ? '<span class="badge featured">Destacado</span>' : ''}
                     <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
                 </div>
-                <p><strong>Vendedor:</strong> ${VV.avatars.getUserAvatar(p.seller_id).emoji} ${p.seller_name}</p>
+                <p><strong>Vendedor:</strong> ${p.seller_avatar || '👤'} ${p.seller_name}</p>
                 <p><strong>Negocio:</strong> ${p.business}</p>
                 <p><strong>Categoría:</strong> ${p.category}</p>
                 <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
