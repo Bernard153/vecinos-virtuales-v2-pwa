@@ -44,17 +44,47 @@ VV.avatars = {
     ],
     
     // Obtener avatar del usuario
+    // Cache de avatares de otros usuarios
+    avatarCache: {},
+
+    // Cargar avatares de todos los usuarios del barrio
+    async loadAvatarCache() {
+        try {
+            const { data: users, error } = await supabase
+                .from('users')
+                .select('id, avatar, name')
+                .eq('neighborhood', VV.data.neighborhood || VV.data.user?.neighborhood);
+
+            if (error) throw error;
+
+            if (users) {
+                users.forEach(u => {
+                    VV.avatars.avatarCache[u.id] = u.avatar || null;
+                });
+            }
+        } catch (err) {
+            console.error('Error cargando cache de avatares:', err);
+        }
+    },
+
     getUserAvatar(userId) {
         // Si es el usuario actual, usar VV.data.user
-        const user = (userId === VV.data.user?.id) ? VV.data.user : null;
-        
-        if (!user || !user.avatar) {
-            return VV.avatars.defaultAvatars[0]; // Avatar por defecto
+        if (userId === VV.data.user?.id) {
+            if (!VV.data.user.avatar) return VV.avatars.defaultAvatars[0];
+            const avatar = VV.avatars.defaultAvatars.find(a => a.id === VV.data.user.avatar);
+            return avatar || VV.avatars.defaultAvatars[0];
         }
-        
-        const avatar = VV.avatars.defaultAvatars.find(a => a.id === user.avatar);
-        return avatar || VV.avatars.defaultAvatars[0];
+
+        // Buscar en cache de otros usuarios
+        const cachedAvatarId = VV.avatars.avatarCache[userId];
+        if (cachedAvatarId) {
+            const avatar = VV.avatars.defaultAvatars.find(a => a.id === cachedAvatarId);
+            if (avatar) return avatar;
+        }
+
+        return VV.avatars.defaultAvatars[0];
     },
+
     
     // Verificar si el usuario tiene un avatar desbloqueado
     hasAvatar(userId, avatarId) {
@@ -380,6 +410,85 @@ VV.avatars = {
         
         const config = rarityConfig[rarity] || rarityConfig['common'];
         return `<span style="color: ${config.color}; font-weight: 600;">${config.label}</span>`;
+    }
+};
+// ====== CACHE DE AVATARES ======
+VV.avatars.avatarCache = {};
+
+VV.avatars.batchLoadAvatars = async function(userIds) {
+    var uniqueIds = [];
+    for (var i = 0; i < userIds.length; i++) {
+        if (userIds[i] && !VV.avatars.avatarCache[userIds[i]] && !uniqueIds.includes(userIds[i])) {
+            uniqueIds.push(userIds[i]);
+        }
+    }
+    if (uniqueIds.length === 0) return;
+    try {
+        var { data, error } = await supabase
+            .from('users')
+            .select('id, avatar')
+            .in('id', uniqueIds);
+        if (data) {
+            for (var j = 0; j < data.length; j++) {
+                var avatar = VV.avatars.defaultAvatars.find(function(a) { return a.id === data[j].avatar; });
+                VV.avatars.avatarCache[data[j].id] = avatar ? avatar.emoji : '👤';
+            }
+        }
+    } catch (e) {
+        console.error('Error loading avatars:', e);
+    }
+};
+
+VV.avatars.getAvatarEmoji = function(userId) {
+    return VV.avatars.avatarCache[userId] || '👤';
+};
+// Cache de avatares de otros usuarios
+VV.avatars.userAvatarCache = {};
+
+VV.avatars.getAvatarForUser = function(userId, userAvatarField) {
+    if (!userId) return VV.avatars.defaultAvatars[0];
+    
+    // Si ya tenemos el avatar en cache
+    if (VV.avatars.userAvatarCache[userId]) {
+        return VV.avatars.userAvatarCache[userId];
+    }
+    
+    // Si pasamos el campo avatar directamente
+    if (userAvatarField) {
+        var avatar = VV.avatars.defaultAvatars.find(function(a) { return a.id === userAvatarField; });
+        if (avatar) {
+            VV.avatars.userAvatarCache[userId] = avatar;
+            return avatar;
+        }
+    }
+    
+    return VV.avatars.defaultAvatars[0];
+};
+
+VV.avatars.fetchAvatars = async function(userIds) {
+    if (!userIds || userIds.length === 0) return;
+    
+    var uniqueIds = [...new Set(userIds)].filter(function(id) { return id && !VV.avatars.userAvatarCache[id]; });
+    if (uniqueIds.length === 0) return;
+    
+    try {
+        var { data: users, error } = await supabase
+            .from('users')
+            .select('id, avatar')
+            .in('id', uniqueIds);
+        
+        if (error || !users) return;
+        
+        users.forEach(function(u) {
+            if (u.avatar) {
+                var avatar = VV.avatars.defaultAvatars.find(function(a) { return a.id === u.avatar; });
+                if (avatar) {
+                    VV.avatars.userAvatarCache[u.id] = avatar;
+                }
+            }
+        });
+    } catch (e) {
+        console.error('Error fetch avatars:', e);
     }
 };
 

@@ -56,8 +56,27 @@ VV.geo = {
                 { lat: -34.5730, lng: -58.4430 },
                 { lat: -34.5730, lng: -58.4730 }
             ]
+        },
+        "Lomas de Tafí": {
+            center: { lat: -26.8241, lng: -65.2226 },
+            bounds: [
+                { lat: -26.8100, lng: -65.2350 },
+                { lat: -26.8100, lng: -65.2100 },
+                { lat: -26.8400, lng: -65.2100 },
+                { lat: -26.8400, lng: -65.2350 }
+            ]
+        },
+        "Barrio Norte": {
+            center: { lat: -26.8100, lng: -65.2100 },
+            bounds: [
+                { lat: -26.8000, lng: -65.2200 },
+                { lat: -26.8000, lng: -65.2000 },
+                { lat: -26.8200, lng: -65.2000 },
+                { lat: -26.8200, lng: -65.2200 }
+            ]
         }
     },
+
     
     trackingInterval: null,
     lastLocation: null,
