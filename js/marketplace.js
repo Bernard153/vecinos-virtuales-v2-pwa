@@ -105,7 +105,7 @@ VV.marketplace = {
                     <span class="badge" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white;">🔖 Reservable</span>
                     <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
                 </div>
-                <p><strong>Vendedor:</strong> ${p.seller_name}</p>
+                <p><strong>Vendedor:</strong> ${VV.avatars.getUserAvatar(p.seller_id).emoji} ${p.seller_name}</p>
                 <p><strong>Negocio:</strong> ${p.business}</p>
                 <p><strong>Dirección:</strong> ${p.business_address || 'No especificada'}</p>
                 <p><strong>Categoría:</strong> ${p.category}</p>
@@ -229,7 +229,7 @@ VV.marketplace = {
                     ${p.featured ? '<span class="badge featured">Destacado</span>' : ''}
                     <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
                 </div>
-                <p><strong>Vendedor:</strong> ${p.seller_name}</p>
+                <p><strong>Vendedor:</strong> ${VV.avatars.getUserAvatar(p.seller_id).emoji} ${p.seller_name}</p>
                 <p><strong>Negocio:</strong> ${p.business}</p>
                 <p><strong>Categoría:</strong> ${p.category}</p>
                 <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
@@ -546,6 +546,7 @@ VV.marketplace = {
                     .insert({
                         seller_id: VV.data.user.id,
                         seller_name: VV.data.user.name,
+                        seller_avatar: VV.avatars.getUserAvatar(VV.data.user.id).emoji,
                         seller_number: VV.data.user.unique_number,
                         neighborhood: VV.data.neighborhood,
                         product: formData.product,
@@ -1203,7 +1204,7 @@ VV.marketplace = {
                     <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
                 </div>
                 <p><strong>Negocio:</strong> ${p.business}</p>
-                <p><strong>Vendedor:</strong> ${p.seller_name} #${p.seller_number}</p>
+                <p><strong>Vendedor:</strong> ${VV.avatars.getUserAvatar(p.seller_id).emoji} ${p.seller_name} #${p.seller_number}</p>
                 <p><strong>Precio:</strong> <span style="font-size: 1.5rem; color: var(--success-green); font-weight: bold;">$${p.price}</span> / ${p.unit}</p>
                 <p><strong>Contacto:</strong> ${p.contact}</p>
                 ${p.description ? `<p style="color: var(--gray-600); font-size: 0.9rem;">${sanitizeText(p.description)}</p>` : ''}
