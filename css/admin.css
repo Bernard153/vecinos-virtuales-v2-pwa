@@ -44,11 +44,14 @@
 .sponsor-management-card {
     background: white;
     border-radius: var(--border-radius);
-    padding: 1.5rem;
+    padding: 1rem;
     box-shadow: var(--shadow-sm);
     border: 2px solid var(--gray-200);
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+    max-width: 100%;
+    box-sizing: border-box;
 }
+
 
 .sponsor-management-header {
     display: flex;
@@ -105,6 +108,9 @@
 .sponsor-management-actions {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
 }
 
 .sponsor-management-actions button {
