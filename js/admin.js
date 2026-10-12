@@ -1970,7 +1970,8 @@ VV.admin.renderFeaturedCard = function (offer) {
                         <i class="fas fa-times"></i> Rechazar
                     </button>
                 ` : ''}
-                <button class="btn-delete" onclick="VV.admin.deleteFeatured('${offer.id}')" style="flex: 1; min-width: 100px;">
+                <button class="btn-delete" onclick="VV.admin.deleteFeatured('${offer.id}')" style="flex: none; padding: 0.5rem 1rem; min-width: auto;">
+
                     <i class="fas fa-trash"></i> Eliminar
                 </button>
             </div>
