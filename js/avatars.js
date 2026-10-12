@@ -216,7 +216,7 @@ VV.avatars = {
                         <p style="margin: 0; color: var(--gray-600); font-size: 0.85rem;">
                             ${VV.avatars.getRarityBadge(avatar.rarity)}
                         </p>
-                        <button class="btn-primary" onclick="VV.avatars.showAvatarGallery()" style="margin-top: 1rem; width: auto; padding: 0.75rem 2rem;">
+                        <button class="btn-primary" onclick="VV.avatars.showAvatarGallery()" style="margin-top: 1rem; width: auto;">
                             <i class="fas fa-edit"></i> Cambiar Avatar
                         </button>
                     </div>
