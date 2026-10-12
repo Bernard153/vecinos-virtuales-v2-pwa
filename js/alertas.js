@@ -757,3 +757,50 @@ setTimeout(() => {
         VV.alertas.init();
     }
 }, 2000);
+
+// Limpieza automática de alertas viejas
+VV.alertas.limpiarAlertasViejas = async function() {
+    try {
+        // Buscar alertas resueltas o rechazadas con más de 48 horas
+        var hace48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+        var { data: viejas, error } = await supabase
+            .from('alertas_vecinales')
+            .select('id, photos, audio_url')
+            .in('status', ['resolved', 'rejected'])
+            .lt('created_at', hace48h);
+
+        if (error || !viejas || viejas.length === 0) return;
+
+        for (var i = 0; i < viejas.length; i++) {
+            var a = viejas[i];
+            // Borrar fotos del Storage
+            var photos = a.photos || [];
+            for (var j = 0; j < photos.length; j++) {
+                try {
+                    var fileName = photos[j].split('/').pop();
+                    await supabase.storage.from('alertas-photos').remove([fileName]);
+                } catch(e) {}
+            }
+            // Borrar audio del Storage
+            if (a.audio_url) {
+                try {
+                    var audioName = a.audio_url.split('/').pop();
+                    await supabase.storage.from('alertas-photos').remove([audioName]);
+                } catch(e) {}
+            }
+            // Borrar registro de la DB
+            await supabase.from('alertas_vecinales').delete().eq('id', a.id);
+        }
+        console.log(viejas.length + ' alertas viejas limpiadas');
+    } catch (err) {
+        console.error('Error limpiando alertas:', err);
+    }
+};
+
+// Ejecutar limpieza al iniciar la app
+setTimeout(function() {
+    if (typeof VV !== 'undefined' && VV.alertas) {
+        VV.alertas.limpiarAlertasViejas();
+    }
+}, 5000);
+
