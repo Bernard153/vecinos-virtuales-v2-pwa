@@ -218,10 +218,11 @@ VV.admin = {
                     <p><i class="fas fa-mouse-pointer"></i> ${sponsor.clicks} clics</p>
                     <p><i class="fas fa-phone"></i> ${sponsor.contact}</p>
                 </div>
-                <div style="margin: 0.5rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 4px;">
-                    <p style="font-size: 0.85rem; color: var(--gray-600); margin: 0;">
+                <div style="margin: 0.25rem 0; padding: 0.25rem 0.5rem; background: var(--gray-50); border-radius: 4px; display: inline-block;">
+                    <p style="font-size: 0.8rem; color: var(--gray-600); margin: 0;">
                         <i class="fas fa-map-marker-alt"></i>
                         <strong>Visible en:</strong>
+
                         ${!sponsor.neighborhoods || sponsor.neighborhoods === 'all'
                 ? '<span style="color: var(--success-green);">Todos los barrios</span>'
                 : Array.isArray(sponsor.neighborhoods)

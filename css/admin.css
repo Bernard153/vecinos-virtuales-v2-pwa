@@ -88,14 +88,24 @@
 }
 
 .sponsor-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin: 1rem 0;
-    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+    padding: 0.5rem;
     background: var(--gray-50);
     border-radius: 8px;
 }
+
+.sponsor-stats p {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--gray-700);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
 
 .sponsor-stats p {
     display: flex;
