@@ -402,11 +402,21 @@
                         <i class="fas fa-exchange-alt"></i>
                         <span>Canjear XP</span>
                     </a>
+                    <a href="#" class="menu-item" data-section="directorio">
+                        <i class="fas fa-address-book"></i>
+                        <span>Directorio</span>
+                    </a>
+
                     <a href="#" class="menu-item" data-section="services">
                         <i class="fas fa-users"></i>
                         <span>Servicios</span>
                     </a>
-					<a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#voces');">
+                    <a href="#" class="menu-item" data-section="perfiles">
+                        <i class="fas fa-address-card"></i>
+                        <span>Directorio</span>
+                    </a>
+
+	            <a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#voces');">
                        <i class="fas fa-microphone"></i><span>🎤 Voces Virtuales</span>
                     </a>
 		            <a href="#" class="menu-item" onclick="event.preventDefault(); conmutarVistasPro('#karaoke');"><i class="fas fa-microphone"></i><span>🎤 Karaoke</span></a>
@@ -860,6 +870,17 @@
                 </section>
 
                 <!-- SERVICIOS -->
+                <section id="perfiles" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-address-card"></i> Directorio del Barrio</h2>
+                        <span style="color: var(--gray-600); font-size: 0.9rem;">Barrio: <strong id="perfiles-neighborhood"></strong></span>
+                    </div>
+                    <div id="perfiles-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; padding: 1rem;">
+                        <p style="text-align: center; color: var(--gray-600); grid-column: 1/-1;">Cargando...</p>
+                    </div>
+                </section>
+
+
                 <section id="services" class="content-section">
                     <div class="section-header">
                         <h2><i class="fas fa-users"></i> Servicios del Barrio</h2>
@@ -1505,6 +1526,7 @@
     <script src="js/moderator.js"></script>
     <script src="js/evidencia.js"></script>
     <script src="js/alertas-vigilancia.js"></script>
+    <script src="js/perfiles.js"></script>
     <script src="js/banner.js"></script>
     <script src="js/app.js"></script>
     <script src="js/landing.js"></script>
