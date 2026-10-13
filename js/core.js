@@ -97,6 +97,7 @@ const VV = {
                 if (sectionId === 'services' && VV.services) VV.services.load();
                 if (sectionId === 'improvements' && VV.improvements) VV.improvements.load();
                 if (sectionId === 'cultural' && VV.cultural) VV.cultural.load();
+                if (sectionId === 'perfiles' && VV.perfiles) VV.perfiles.load();
                 if (sectionId === 'admin') {
                     if (VV.utils.isAdmin()) {
                         VV.admin.load();
@@ -120,6 +121,10 @@ const VV = {
                 if (sectionId === 'admin-wallet' && VV.admin.loadAllWallets) {
                     VV.admin.loadAllWallets();
                 }
+                if (sectionId === 'perfiles' && VV.perfiles) {
+                    VV.perfiles.load();
+                }
+
                 if (sectionId === 'folleto') {
                     if (typeof window.abrirFolletoVisual === 'function') {
                         window.abrirFolletoVisual();
