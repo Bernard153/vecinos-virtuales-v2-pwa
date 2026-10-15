@@ -2,6 +2,9 @@
 
 VV.map = {
     mapInstance: null,
+    _productLocation: null,
+    _productMap: null,
+    _productMarker: null,
     layers: {
         commerce: null,      // Comercios y Vendedores
         emergency: null,     // Emergencias y Servicios
@@ -784,9 +787,7 @@ VV.map = {
         `;
 
         overlay.classList.add('active');
-    _productLocation: null,
-    _productMap: null,
-    _productMarker: null,
+    
 
     initProductLocationMap(existingLocation) {
         VV.map._productLocation = existingLocation || null;
