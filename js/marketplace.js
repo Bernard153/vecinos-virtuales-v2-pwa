@@ -108,6 +108,10 @@ VV.marketplace = {
                 <p><strong>Vendedor:</strong> ${p.seller_avatar || '👤'} ${p.seller_name}</p>
                 <p><strong>Negocio:</strong> ${p.business}</p>
                 <p><strong>Dirección:</strong> ${p.business_address || 'No especificada'}</p>
+                <button onclick="VV.map.showBusinessLocationById('${p.id}')" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">
+                    <i class="fas fa-map-marker-alt"></i> Ver ubicación en el mapa
+                </button>
+
                 <p><strong>Categoría:</strong> ${p.category}</p>
                 <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
                 <div class="card-footer">
@@ -232,7 +236,11 @@ VV.marketplace = {
                 <p><strong>Vendedor:</strong> ${p.seller_avatar || '👤'} ${p.seller_name}</p>
                 <p><strong>Negocio:</strong> ${p.business}</p>
                 <p><strong>Categoría:</strong> ${p.category}</p>
+                <button onclick="VV.map.showBusinessLocationById('${p.id}')" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">
+                    <i class="fas fa-map-marker-alt"></i> Ver ubicación en el mapa
+                </button>
                 <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
+
                 <div class="card-footer">
                     <div class="price">
                         <span class="price-amount">$${p.price}</span>
@@ -1207,6 +1215,10 @@ VV.marketplace = {
                 <p><strong>Vendedor:</strong> ${VV.avatars.getUserAvatar(p.seller_id).emoji} ${p.seller_name} #${p.seller_number}</p>
                 <p><strong>Precio:</strong> <span style="font-size: 1.5rem; color: var(--success-green); font-weight: bold;">$${p.price}</span> / ${p.unit}</p>
                 <p><strong>Contacto:</strong> ${p.contact}</p>
+                <button onclick="VV.map.showBusinessLocationById('${p.id}')" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">
+                    <i class="fas fa-map-marker-alt"></i> Ver ubicación en el mapa
+                </button>
+
                 ${p.description ? `<p style="color: var(--gray-600); font-size: 0.9rem;">${sanitizeText(p.description)}</p>` : ''}
                 <button class="btn-primary" onclick="VV.reservations.create('${p.id}')" style="width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));">
                     <i class="fas fa-calendar-check"></i> Reservar

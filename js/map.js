@@ -82,48 +82,67 @@ VV.map = {
         ]);
     },
     
-   // CAPA 1: Comercios y Vendedores (productos + anunciantes)
+    // CAPA 1: Comercios y Vendedores (productos + anunciantes)
     async loadCommerce() {
-  const { data: vendors, error } = await supabase.rpc(
-    'get_public_vendor_locations'
-  );
+        VV.map.layers.commerce.clearLayers();
+        
+        // Obtener productos con geolocalización activa
+        const { data: products, error } = await supabase
+            .from('products')
+            .select('*, users(name)')
+            .eq('is_geolocated', true)
+            .eq('neighborhood', VV.data.user.current_neighborhood)
+            .not('location', 'is', null);
+        
+        if (error) {
+            console.error('Error cargando vendedores:', error);
+            return;
+        }
+        
+        products?.forEach(product => {
+            if (!product.location) return;
+            
+            const marker = L.marker([product.location.lat, product.location.lng], {
+                icon: L.divIcon({
+                    className: 'vendor-marker',
+                    html: '<div style="background: #10b981; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
+                    iconSize: [16, 16]
+                })
+            });
+            
+            let distance = 0;
+            try {
+                distance = VV.geo.calculateDistance(
+                    VV.data.user.current_location || VV.geo.neighborhoods[VV.data.user.current_neighborhood]?.center || { lat: 0, lng: 0 },
+                    product.location
+                );
+            } catch (e) {
+                console.warn('Error calculando distancia:', e);
+            }
+            
+            marker.bindPopup(`
+                <div style="min-width: 200px;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-blue);">🛒 ${VV.utils.escapeHtml(product.name)}</h4>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${VV.utils.escapeHtml(product.description)}</p>
+                    <p style="margin: 0.5rem 0; font-weight: 600; color: var(--success-green);">$${VV.utils.escapeHtml(product.price)}</p>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">
+                        <i class="fas fa-user"></i> ${VV.utils.escapeHtml(product.users?.name || 'Vendedor')}
+                    </p>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">
+                        <i class="fas fa-map-marker-alt"></i> A ${VV.geo.formatDistance(distance)}
+                    </p>
+                    <button onclick="VV.marketplace.showProductDetail(this.dataset.id)" data-id="${VV.utils.escapeHtml(product.id)}" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: var(--primary-blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        Ver Detalles
+                    </button>
+                </div>
+            `);
 
-  if (error) {
-    console.error('Error cargando vendedores del barrio:', error);
-    return;
-  }
-
-  this.markers ??= [];
-
-  (vendors ?? []).forEach((vendor) => {
-    const latitude = Number(vendor.latitude);
-    const longitude = Number(vendor.longitude);
-
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
-
-    const popup = document.createElement('div');
-    popup.className = 'vv-map-vendor-popup';
-
-    const name = document.createElement('h4');
-    name.textContent = vendor.business_name || 'Comercio';
-    popup.appendChild(name);
-
-    const locationLabel = document.createElement('p');
-    locationLabel.textContent =
-      vendor.location_mode === 'mobile'
-        ? 'Ubicación móvil compartida'
-        : 'Ubicación fija compartida';
-    popup.appendChild(locationLabel);
-
-    const marker = L.marker([latitude, longitude], {
-      icon: this.createCustomIcon('commerce', '💼'),
-    })
-      .bindPopup(popup)
-      .addTo(this.map);
-
-    this.markers.push(marker);
-  });
-}
+            
+            marker.addTo(VV.map.layers.commerce);
+        });
+        
+        console.log(`✅ ${products?.length || 0} comercios cargados`);
+    },
     
     // CAPA 2: Emergencias y Servicios (teléfonos de emergencia + servicios profesionales)
     async loadEmergency() {
@@ -716,6 +735,111 @@ VV.map = {
         if (overlay) overlay.classList.remove('active');
     }
 };
+    // Mostrar ubicación de un comercio en mini-mapa
+    showBusinessLocationById(productId) {
+        const product = VV.data.products.find(p => p.id === productId);
+        if (!product) {
+            console.warn('Producto no encontrado:', productId);
+            return;
+        }
+        VV.map.showBusinessLocation(product);
+    },
+
+    showBusinessLocation(product) {
+        // Ubicación: usar la del producto si existe, sino centro del barrio
+        const neighborhoodCenter = 
+            VV.geo.neighborhoods[VV.data.user.current_neighborhood]?.center ||
+            VV.geo.neighborhoods[product.neighborhood]?.center ||
+            { lat: -34.6037, lng: -58.3816 };
+
+        const location = product.location || neighborhoodCenter;
+        const hasExactLocation = !!product.location;
+
+        let overlay = document.getElementById('business-map-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'business-map-overlay';
+            overlay.className = 'modal-overlay';
+            document.body.appendChild(overlay);
+        }
+
+        overlay.innerHTML = `
+            <div class="modal-form" style="max-width: 600px; padding: 0; overflow: hidden;">
+                <div style="padding: 1rem; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple)); color: white; border-radius: 8px 8px 0 0;">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas fa-store"></i> ${VV.utils.escapeHtml(product.business)}
+                    </h3>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.95;">
+                        <i class="fas fa-map-marker-alt"></i> ${VV.utils.escapeHtml(product.business_address || 'Dirección no especificada')} — ${VV.utils.escapeHtml(product.neighborhood || VV.data.user.current_neighborhood || '')}
+                    </p>
+                </div>
+                <div id="business-mini-map" style="height: 400px; width: 100%;"></div>
+                <div style="padding: 0.75rem 1rem; background: var(--gray-50); display: flex; justify-content: space-between; align-items: center; border-radius: 0 0 8px 8px;">
+                    <div style="font-size: 0.85rem; color: var(--gray-600);">
+                        <i class="fas fa-tag"></i> ${VV.utils.escapeHtml(product.product)} — $${VV.utils.escapeHtml(String(product.price))}/${VV.utils.escapeHtml(product.unit)}
+                    </div>
+                    <button class="btn-cancel" onclick="VV.map.closeBusinessMap()">Cerrar</button>
+                </div>
+            </div>
+        `;
+
+        overlay.classList.add('active');
+
+        // Inicializar mini-mapa después de que el DOM esté listo
+        setTimeout(() => {
+            const miniMap = L.map('business-mini-map', {
+                zoomControl: true,
+                touchZoom: true,
+                scrollWheelZoom: true
+            }).setView([location.lat, location.lng], hasExactLocation ? 17 : 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(miniMap);
+
+            const marker = L.marker([location.lat, location.lng], {
+                icon: L.divIcon({
+                    className: 'business-marker',
+                    html: '<div style="background: #10b981; width: 28px; height: 28px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 14px;">🏪</div>',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                })
+            }).addTo(miniMap);
+
+            marker.bindPopup(`
+                <div style="min-width: 200px;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-blue);">🏪 ${VV.utils.escapeHtml(product.business)}</h4>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">
+                        <i class="fas fa-map-marker-alt"></i> ${VV.utils.escapeHtml(product.business_address || 'Dirección no especificada')}
+                    </p>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">
+                        <i class="fas fa-tag"></i> ${VV.utils.escapeHtml(product.product)} — $${VV.utils.escapeHtml(String(product.price))}/${VV.utils.escapeHtml(product.unit)}
+                    </p>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">
+                        <i class="fas fa-phone"></i> ${VV.utils.escapeHtml(product.contact)}
+                    </p>
+                    ${!hasExactLocation ? '<p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle"></i> Ubicación aproximada del barrio</p>' : ''}
+                </div>
+            `).openPopup();
+
+            VV.map._miniMap = miniMap;
+        }, 100);
+
+        overlay.onclick = (e) => {
+            if (e.target === overlay) VV.map.closeBusinessMap();
+        };
+    },
+
+    closeBusinessMap() {
+        const overlay = document.getElementById('business-map-overlay');
+        if (overlay) overlay.classList.remove('active');
+        if (VV.map._miniMap) {
+            VV.map._miniMap.remove();
+            VV.map._miniMap = null;
+        }
+    },
+
 
 // Agregar animación de pulso para alertas
 const style = document.createElement('style');
