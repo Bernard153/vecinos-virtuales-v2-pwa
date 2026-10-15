@@ -102,9 +102,12 @@ async function cargarContenidoFolleto() {
         const isAdmin = user && (user.role === 'admin' || user.role === 'ADMIN');
 
 
+        if (!VV.map._folletoItems) VV.map._folletoItems = {};
         data.forEach(item => {
+            VV.map._folletoItems[item.id] = item;
             const card = document.createElement('div');
             card.className = 'folleto-item';
+
             
             // Estilo VIP/destacado
             const vipStyle = item.highlighted ? 'border: 3px solid #f59e0b; box-shadow: 0 4px 12px rgba(251,191,36,0.3);' : '';
@@ -134,6 +137,10 @@ async function cargarContenidoFolleto() {
                     <a href="https://wa.me/?text=${mensajeWS}" target="_blank" class="btn-share-ws" style="display:block; margin-top:10px; color:#25d366; text-decoration:none; font-weight:bold; font-size:0.8rem;">
                         <i class="fab fa-whatsapp"></i> Consultar
                     </a>
+                    <button onclick="VV.map.showFolletoLocation('${item.id}')" style="display:block; width:100%; margin-top:6px; padding:0.4rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;">
+                        <i class="fas fa-map-marker-alt"></i> Ver ubicación
+                    </button>
+
                     <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
                         <button onclick="folletoShowComments('${item.id}')" style="flex:1;background:#f1f5f9;border:none;border-radius:6px;padding:0.4rem;cursor:pointer;font-size:0.75rem;">
                             💬 Comentar

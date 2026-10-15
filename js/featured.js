@@ -421,9 +421,13 @@ VV.featured = {
                 
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
                     <button class="btn-secondary" onclick="VV.featured.contactSeller('${offer.product_id}', '${userName}')" style="flex: 1;">
-                        <i class="fab fa-whatsapp"></i> Contactar al WhatsApp
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                    <button class="btn-secondary" onclick="VV.map.showBusinessLocationById('${offer.product_id}')" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                        <i class="fas fa-map-marker-alt"></i> Ubicación
                     </button>
                 </div>
+
                 
                 <div style="border-top: 1px solid var(--gray-300); padding-top: 1rem;">
                     <p style="margin: 0 0 0.5rem 0; font-size: 0.85rem; color: var(--gray-600); text-align: center;">

@@ -326,6 +326,23 @@ VV.marketplace = {
                 `           <input type="text" id="product-business-address" value="${product?.business_address || ''}" required placeholder="Ej: Calle 123, Lomas de Tafí">`
                             }
                     </div>
+                    <div class="form-group">
+                        <label>📍 Ubicación en el mapa (opcional)</label>
+                        <p style="font-size: 0.85rem; color: var(--gray-600); margin-bottom: 0.5rem;">
+                            <i class="fas fa-info-circle"></i> Hacé clic en el mapa o arrastrá el marcador para indicar dónde está tu negocio. Útil si sos ambulante.
+                        </p>
+                        <div id="product-location-map" style="height: 250px; border-radius: 8px; border: 1px solid var(--gray-300);"></div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <button type="button" class="btn-secondary" onclick="VV.map.useMyLocation()" style="flex: 1; font-size: 0.85rem;">
+                                <i class="fas fa-crosshairs"></i> Mi ubicación
+                            </button>
+                            <button type="button" class="btn-secondary" onclick="VV.map.clearProductLocation()" style="flex: 1; font-size: 0.85rem;">
+                                <i class="fas fa-times"></i> Quitar
+                            </button>
+                        </div>
+                        <p id="product-location-text" style="font-size: 0.85rem; color: var(--gray-600); margin-top: 0.5rem;"></p>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group">
                             <label>Categoría *</label>
@@ -412,6 +429,12 @@ VV.marketplace = {
         `;
 
                overlay.classList.add('active');
+       
+        // Inicializar mapa selector de ubicación
+        setTimeout(() => {
+            VV.map.initProductLocationMap(product?.location);
+        }, 100);
+
 
         document.getElementById('product-form').onsubmit = (e) => {
             e.preventDefault();
@@ -470,9 +493,12 @@ VV.marketplace = {
             contact: document.getElementById('product-contact').value.trim(),
             description: document.getElementById('product-description').value.trim(),
             //featured: document.getElementById('product-featured').checked
-	    featured: false
+	    featured: false,
+            location: VV.map.getProductLocation(),
+            is_geolocated: !!VV.map.getProductLocation()
 
         };
+
 
         if (!formData.product || !formData.category || !formData.business || !formData.price || !formData.unit || !formData.quality || !formData.contact) {
             alert('Completa todos los campos obligatorios');
@@ -539,9 +565,12 @@ VV.marketplace = {
                         contact: formData.contact,
                         description: formData.description,
                         featured: formData.featured,
-                        image_url: imageUrl
+                        image_url: imageUrl,
+                        location: formData.location,
+                        is_geolocated: formData.is_geolocated
                     })
                     .eq('id', existingProduct.id);
+
 
                 if (error) throw error;
 
@@ -567,10 +596,13 @@ VV.marketplace = {
                         contact: formData.contact,
                         description: formData.description,
                         featured: formData.featured,
-                        image_url: imageUrl
+                        image_url: imageUrl,
+                        location: formData.location,
+                        is_geolocated: formData.is_geolocated
                     })
                     .select()
                     .single();
+
 
                 if (error) throw error;
 

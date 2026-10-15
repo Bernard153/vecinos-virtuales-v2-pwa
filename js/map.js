@@ -784,6 +784,105 @@ VV.map = {
         `;
 
         overlay.classList.add('active');
+    _productLocation: null,
+    _productMap: null,
+    _productMarker: null,
+
+    initProductLocationMap(existingLocation) {
+        VV.map._productLocation = existingLocation || null;
+
+        const neighborhoodCenter =
+            VV.geo.neighborhoods[VV.data.user.current_neighborhood]?.center ||
+            { lat: -34.6037, lng: -58.3816 };
+
+        const initialLocation = existingLocation || neighborhoodCenter;
+
+        const container = document.getElementById('product-location-map');
+        if (!container) return;
+
+        VV.map._productMap = L.map('product-location-map', {
+            zoomControl: true,
+            touchZoom: true,
+            scrollWheelZoom: true
+        }).setView([initialLocation.lat, initialLocation.lng], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(VV.map._productMap);
+
+        VV.map._productMarker = L.marker([initialLocation.lat, initialLocation.lng], {
+            draggable: true,
+            icon: L.divIcon({
+                className: 'product-location-marker',
+                html: '<div style="background: #10b981; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px;">🏪</div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12]
+            })
+        }).addTo(VV.map._productMap);
+
+        if (existingLocation) {
+            VV.map.updateProductLocationText(existingLocation);
+        }
+
+        VV.map._productMarker.on('dragend', (e) => {
+            const latlng = e.target.getLatLng();
+            VV.map._productLocation = { lat: latlng.lat, lng: latlng.lng };
+            VV.map.updateProductLocationText(VV.map._productLocation);
+        });
+
+        VV.map._productMap.on('click', (e) => {
+            VV.map._productMarker.setLatLng(e.latlng);
+            VV.map._productLocation = { lat: e.latlng.lat, lng: e.latlng.lng };
+            VV.map.updateProductLocationText(VV.map._productLocation);
+        });
+    },
+
+    updateProductLocationText(loc) {
+        const text = document.getElementById('product-location-text');
+        if (text) {
+            text.innerHTML = '<i class="fas fa-check-circle" style="color: var(--success-green);"></i> Ubicación guardada: ' + loc.lat.toFixed(5) + ', ' + loc.lng.toFixed(5);
+        }
+    },
+
+    useMyLocation() {
+        if (!navigator.geolocation) {
+            alert('Tu navegador no soporta geolocalización');
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                VV.map._productLocation = loc;
+                if (VV.map._productMap && VV.map._productMarker) {
+                    VV.map._productMap.setView([loc.lat, loc.lng], 17);
+                    VV.map._productMarker.setLatLng([loc.lat, loc.lng]);
+                }
+                VV.map.updateProductLocationText(loc);
+            },
+            (err) => {
+                alert('No se pudo obtener tu ubicación: ' + err.message);
+            }
+        );
+    },
+
+    clearProductLocation() {
+        VV.map._productLocation = null;
+        const text = document.getElementById('product-location-text');
+        if (text) {
+            text.innerHTML = '<i class="fas fa-info-circle" style="color: var(--gray-500);"></i> Sin ubicación (se usará el centro del barrio)';
+        }
+        if (VV.map._productMarker) {
+            const center = VV.geo.neighborhoods[VV.data.user.current_neighborhood]?.center || { lat: -34.6037, lng: -58.3816 };
+            VV.map._productMarker.setLatLng([center.lat, center.lng]);
+            VV.map._productMap.setView([center.lat, center.lng], 15);
+        }
+    },
+
+    getProductLocation() {
+        return VV.map._productLocation;
+    },
+
 
         // Inicializar mini-mapa después de que el DOM esté listo
         setTimeout(() => {
@@ -830,6 +929,24 @@ VV.map = {
             if (e.target === overlay) VV.map.closeBusinessMap();
         };
     },
+    showFolletoLocation(itemId) {
+        const item = VV.map._folletoItems?.[itemId];
+        if (!item) {
+            console.warn('Item de folleto no encontrado:', itemId);
+            return;
+        }
+        VV.map.showBusinessLocation({
+            business: item.titulo,
+            business_address: item.descripcion || 'Anuncio del folleto',
+            neighborhood: item.neighborhood,
+            product: item.titulo,
+            price: '',
+            unit: '',
+            contact: item.nombre_vecino || '',
+            location: item.location || null
+        });
+    },
+
 
     closeBusinessMap() {
         const overlay = document.getElementById('business-map-overlay');
