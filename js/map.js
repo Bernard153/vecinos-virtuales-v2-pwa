@@ -738,7 +738,7 @@ VV.map = {
         if (overlay) overlay.classList.remove('active');
     },
 
-    // Mostrar ubicación de un comercio en mini-mapa
+        // Mostrar ubicación de un comercio en mini-mapa
     showBusinessLocationById(productId) {
         const product = VV.data.products.find(p => p.id === productId);
         if (!product) {
@@ -749,7 +749,6 @@ VV.map = {
     },
 
     showBusinessLocation(product) {
-        // Ubicación: usar la del producto si existe, sino centro del barrio
         const neighborhoodCenter = 
             VV.geo.neighborhoods[VV.data.user.current_neighborhood]?.center ||
             VV.geo.neighborhoods[product.neighborhood]?.center ||
@@ -787,7 +786,69 @@ VV.map = {
         `;
 
         overlay.classList.add('active');
-    
+
+        setTimeout(() => {
+            const miniMap = L.map('business-mini-map', {
+                zoomControl: true,
+                touchZoom: true,
+                scrollWheelZoom: true
+            }).setView([location.lat, location.lng], hasExactLocation ? 17 : 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(miniMap);
+
+            const marker = L.marker([location.lat, location.lng], {
+                icon: L.divIcon({
+                    className: 'business-marker',
+                    html: '<div style="background: #10b981; width: 28px; height: 28px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 14px;">🏪</div>',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14]
+                })
+            }).addTo(miniMap);
+
+            marker.bindPopup(`
+                <div style="min-width: 200px;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-blue);">🏪 ${VV.utils.escapeHtml(product.business)}</h4>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">
+                        <i class="fas fa-map-marker-alt"></i> ${VV.utils.escapeHtml(product.business_address || 'Dirección no especificada')}
+                    </p>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">
+                        <i class="fas fa-tag"></i> ${VV.utils.escapeHtml(product.product)} — $${VV.utils.escapeHtml(String(product.price))}/${VV.utils.escapeHtml(product.unit)}
+                    </p>
+                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">
+                        <i class="fas fa-phone"></i> ${VV.utils.escapeHtml(product.contact)}
+                    </p>
+                    ${!hasExactLocation ? '<p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle"></i> Ubicación aproximada del barrio</p>' : ''}
+                </div>
+            `).openPopup();
+
+            VV.map._miniMap = miniMap;
+        }, 100);
+
+        overlay.onclick = (e) => {
+            if (e.target === overlay) VV.map.closeBusinessMap();
+        };
+    },
+
+    showFolletoLocation(itemId) {
+        const item = VV.map._folletoItems?.[itemId];
+        if (!item) {
+            console.warn('Item de folleto no encontrado:', itemId);
+            return;
+        }
+        VV.map.showBusinessLocation({
+            business: item.titulo,
+            business_address: item.descripcion || 'Anuncio del folleto',
+            neighborhood: item.neighborhood,
+            product: item.titulo,
+            price: '',
+            unit: '',
+            contact: item.nombre_vecino || '',
+            location: item.location || null
+        });
+    },
 
     initProductLocationMap(existingLocation) {
         VV.map._productLocation = existingLocation || null;
@@ -884,71 +945,6 @@ VV.map = {
         return VV.map._productLocation;
     },
 
-
-        // Inicializar mini-mapa después de que el DOM esté listo
-        setTimeout(() => {
-            const miniMap = L.map('business-mini-map', {
-                zoomControl: true,
-                touchZoom: true,
-                scrollWheelZoom: true
-            }).setView([location.lat, location.lng], hasExactLocation ? 17 : 15);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(miniMap);
-
-            const marker = L.marker([location.lat, location.lng], {
-                icon: L.divIcon({
-                    className: 'business-marker',
-                    html: '<div style="background: #10b981; width: 28px; height: 28px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 14px;">🏪</div>',
-                    iconSize: [28, 28],
-                    iconAnchor: [14, 14]
-                })
-            }).addTo(miniMap);
-
-            marker.bindPopup(`
-                <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-blue);">🏪 ${VV.utils.escapeHtml(product.business)}</h4>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">
-                        <i class="fas fa-map-marker-alt"></i> ${VV.utils.escapeHtml(product.business_address || 'Dirección no especificada')}
-                    </p>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">
-                        <i class="fas fa-tag"></i> ${VV.utils.escapeHtml(product.product)} — $${VV.utils.escapeHtml(String(product.price))}/${VV.utils.escapeHtml(product.unit)}
-                    </p>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">
-                        <i class="fas fa-phone"></i> ${VV.utils.escapeHtml(product.contact)}
-                    </p>
-                    ${!hasExactLocation ? '<p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: #94a3b8; font-style: italic;"><i class="fas fa-info-circle"></i> Ubicación aproximada del barrio</p>' : ''}
-                </div>
-            `).openPopup();
-
-            VV.map._miniMap = miniMap;
-        }, 100);
-
-        overlay.onclick = (e) => {
-            if (e.target === overlay) VV.map.closeBusinessMap();
-        };
-    },
-    showFolletoLocation(itemId) {
-        const item = VV.map._folletoItems?.[itemId];
-        if (!item) {
-            console.warn('Item de folleto no encontrado:', itemId);
-            return;
-        }
-        VV.map.showBusinessLocation({
-            business: item.titulo,
-            business_address: item.descripcion || 'Anuncio del folleto',
-            neighborhood: item.neighborhood,
-            product: item.titulo,
-            price: '',
-            unit: '',
-            contact: item.nombre_vecino || '',
-            location: item.location || null
-        });
-    },
-
-
     closeBusinessMap() {
         const overlay = document.getElementById('business-map-overlay');
         if (overlay) overlay.classList.remove('active');
@@ -958,6 +954,8 @@ VV.map = {
         }
     }
 };
+
+
 
 
 // Agregar animación de pulso para alertas
