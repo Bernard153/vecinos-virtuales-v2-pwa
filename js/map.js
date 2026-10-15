@@ -733,8 +733,8 @@ VV.map = {
     closeEventReport() {
         const overlay = document.getElementById('event-report-overlay');
         if (overlay) overlay.classList.remove('active');
-    }
-};
+    },
+
     // Mostrar ubicación de un comercio en mini-mapa
     showBusinessLocationById(productId) {
         const product = VV.data.products.find(p => p.id === productId);
@@ -838,7 +838,8 @@ VV.map = {
             VV.map._miniMap.remove();
             VV.map._miniMap = null;
         }
-    },
+    }
+};
 
 
 // Agregar animación de pulso para alertas
