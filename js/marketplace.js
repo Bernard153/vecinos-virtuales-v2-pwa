@@ -514,6 +514,8 @@ VV.marketplace = {
             if (!VV.data.user.business_address) {
                 userUpdate.business_address = formData.business_address;
             }
+            userUpdate.location = formData.location;
+
             if (Object.keys(userUpdate).length > 0) {
                 const { error: userError } = await supabase
                     .from('users')
@@ -523,6 +525,8 @@ VV.marketplace = {
                 if (userError) throw userError;
                 VV.data.user.business_name = userUpdate.business_name || VV.data.user.business_name;
                 VV.data.user.business_address = userUpdate.business_address || VV.data.user.business_address;
+                VV.data.user.location = userUpdate.location;
+
             }
 
                    // Subir imagen si se seleccionó una

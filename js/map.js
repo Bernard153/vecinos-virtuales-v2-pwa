@@ -738,12 +738,23 @@ VV.map = {
         if (overlay) overlay.classList.remove('active');
     },
 
-        // Mostrar ubicación de un comercio en mini-mapa
-    showBusinessLocationById(productId) {
+    // Mostrar ubicación de un comercio en mini-mapa
+    async showBusinessLocationById(productId) {
         const product = VV.data.products.find(p => p.id === productId);
         if (!product) {
             console.warn('Producto no encontrado:', productId);
             return;
+        }
+        // Si el producto no tiene location, buscar la del usuario
+        if (!product.location && product.seller_id) {
+            const { data: userData } = await supabase
+                .from('users')
+                .select('location')
+                .eq('id', product.seller_id)
+                .single();
+            if (userData?.location) {
+                product.location = userData.location;
+            }
         }
         VV.map.showBusinessLocation(product);
     },
@@ -764,6 +775,7 @@ VV.map = {
             overlay.className = 'modal-overlay';
             document.body.appendChild(overlay);
         }
+        overlay.style.zIndex = '10000';
 
         overlay.innerHTML = `
             <div class="modal-form" style="max-width: 600px; padding: 0; overflow: hidden;">
@@ -832,11 +844,21 @@ VV.map = {
         };
     },
 
-    showFolletoLocation(itemId) {
+    async showFolletoLocation(itemId) {
         const item = VV.map._folletoItems?.[itemId];
         if (!item) {
             console.warn('Item de folleto no encontrado:', itemId);
             return;
+        }
+        // Buscar la ubicación del usuario que publicó el folleto
+        let userLocation = null;
+        if (item.user_id) {
+            const { data: userData } = await supabase
+                .from('users')
+                .select('location')
+                .eq('id', item.user_id)
+                .single();
+            userLocation = userData?.location || null;
         }
         VV.map.showBusinessLocation({
             business: item.titulo,
@@ -846,7 +868,7 @@ VV.map = {
             price: '',
             unit: '',
             contact: item.nombre_vecino || '',
-            location: item.location || null
+            location: userLocation || item.location || null
         });
     },
 
