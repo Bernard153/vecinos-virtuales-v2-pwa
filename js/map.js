@@ -82,7 +82,7 @@ VV.map = {
         ]);
     },
     
-    // CAPA 1: Comercios y Vendedores (productos + anunciantes)
+   // CAPA 1: Comercios y Vendedores (productos + anunciantes)
     async loadCommerce() {
   const { data: vendors, error } = await supabase.rpc(
     'get_public_vendor_locations'
