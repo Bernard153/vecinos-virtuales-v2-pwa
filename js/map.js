@@ -84,65 +84,46 @@ VV.map = {
     
     // CAPA 1: Comercios y Vendedores (productos + anunciantes)
     async loadCommerce() {
-        VV.map.layers.commerce.clearLayers();
-        
-        // Obtener productos con geolocalización activa
-        const { data: products, error } = await supabase
-            .from('products')
-            .select('*, users(name)')
-            .eq('is_geolocated', true)
-            .eq('neighborhood', VV.data.user.current_neighborhood)
-            .not('location', 'is', null);
-        
-        if (error) {
-            console.error('Error cargando vendedores:', error);
-            return;
-        }
-        
-        products?.forEach(product => {
-            if (!product.location) return;
-            
-            const marker = L.marker([product.location.lat, product.location.lng], {
-                icon: L.divIcon({
-                    className: 'vendor-marker',
-                    html: '<div style="background: #10b981; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>',
-                    iconSize: [16, 16]
-                })
-            });
-            
-            let distance = 0;
-            try {
-                distance = VV.geo.calculateDistance(
-                    VV.data.user.current_location || VV.geo.neighborhoods[VV.data.user.current_neighborhood]?.center || { lat: 0, lng: 0 },
-                    product.location
-                );
-            } catch (e) {
-                console.warn('Error calculando distancia:', e);
-            }
-            
-            marker.bindPopup(`
-                <div style="min-width: 200px;">
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--primary-blue);">🛒 ${VV.utils.escapeHtml(product.name)}</h4>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem;">${VV.utils.escapeHtml(product.description)}</p>
-                    <p style="margin: 0.5rem 0; font-weight: 600; color: var(--success-green);">$${VV.utils.escapeHtml(product.price)}</p>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">
-                        <i class="fas fa-user"></i> ${VV.utils.escapeHtml(product.users?.name || 'Vendedor')}
-                    </p>
-                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: var(--gray-600);">
-                        <i class="fas fa-map-marker-alt"></i> A ${VV.geo.formatDistance(distance)}
-                    </p>
-                    <button onclick="VV.marketplace.showProductDetail(this.dataset.id)" data-id="${VV.utils.escapeHtml(product.id)}" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: var(--primary-blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-                        Ver Detalles
-                    </button>
-                </div>
-            `);
+  const { data: vendors, error } = await supabase.rpc(
+    'get_public_vendor_locations'
+  );
 
-            
-            marker.addTo(VV.map.layers.commerce);
-        });
-        
-        console.log(`✅ ${products?.length || 0} comercios cargados`);
-    },
+  if (error) {
+    console.error('Error cargando vendedores del barrio:', error);
+    return;
+  }
+
+  this.markers ??= [];
+
+  (vendors ?? []).forEach((vendor) => {
+    const latitude = Number(vendor.latitude);
+    const longitude = Number(vendor.longitude);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+
+    const popup = document.createElement('div');
+    popup.className = 'vv-map-vendor-popup';
+
+    const name = document.createElement('h4');
+    name.textContent = vendor.business_name || 'Comercio';
+    popup.appendChild(name);
+
+    const locationLabel = document.createElement('p');
+    locationLabel.textContent =
+      vendor.location_mode === 'mobile'
+        ? 'Ubicación móvil compartida'
+        : 'Ubicación fija compartida';
+    popup.appendChild(locationLabel);
+
+    const marker = L.marker([latitude, longitude], {
+      icon: this.createCustomIcon('commerce', '💼'),
+    })
+      .bindPopup(popup)
+      .addTo(this.map);
+
+    this.markers.push(marker);
+  });
+}
     
     // CAPA 2: Emergencias y Servicios (teléfonos de emergencia + servicios profesionales)
     async loadEmergency() {
