@@ -285,10 +285,14 @@ VV.banner = {
                     <button class="btn-primary" onclick="window.open('https://wa.me/${sponsor.contact.replace(/[^0-9]/g, '')}', '_blank')" style="width: 100%; background: #25D366;">
                         <i class="fab fa-whatsapp"></i> WhatsApp
                     </button>
+                    <button class="btn-primary" onclick="VV.banner.showLocation('${sponsor.id}')" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669);">
+                        <i class="fas fa-map-marker-alt"></i> Ver ubicación
+                    </button>
                     <button class="btn-primary" onclick="window.location.href='tel:${sponsor.contact}'" style="width: 100%;">
                         <i class="fas fa-phone"></i> Llamar
                     </button>
                 </div>
+
                 
                 <div style="text-align: center;">
                     <button class="btn-secondary" onclick="VV.banner.closeSponsorDetails()">
@@ -631,7 +635,41 @@ VV.banner = {
     closeSponsorRequestForm() {
         const overlay = document.getElementById('sponsor-request-overlay');
         if (overlay) overlay.classList.remove('active');
+    },
+
+    async showLocation(sponsorId) {
+        const sponsor = VV.data.sponsors.find(s => s.id === sponsorId);
+        if (!sponsor) return;
+
+        let location = sponsor.location || null;
+
+        // Si no tiene location propia, buscar la del usuario
+        if (!location) {
+            const userId = sponsor.user_id || sponsor.userId;
+            if (userId) {
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('location, business_address')
+                    .eq('id', userId)
+                    .single();
+                if (userData?.location) {
+                    location = userData.location;
+                }
+            }
+        }
+
+        VV.map.showBusinessLocation({
+            business: sponsor.businessName || sponsor.business_name || sponsor.name,
+            business_address: sponsor.address || sponsor.business_address || '',
+            neighborhood: sponsor.neighborhood || VV.data.neighborhood,
+            product: sponsor.description || '',
+            price: '',
+            unit: '',
+            contact: sponsor.contact || '',
+            location: location
+        });
     }
 };
+
 
 console.log('✅ Módulo BANNER cargado');
