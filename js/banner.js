@@ -734,13 +734,12 @@ VV.banner = {
         if (overlay) overlay.classList.remove('active');
     },
 
-    async showLocation(sponsorId) {
+       async showLocation(sponsorId) {
         const sponsor = VV.data.sponsors.find(s => s.id === sponsorId);
         if (!sponsor) return;
 
         let location = sponsor.location || null;
 
-        // Si no tiene location propia, buscar la del usuario
         if (!location) {
             const userId = sponsor.user_id || sponsor.userId;
             if (userId) {
@@ -756,7 +755,7 @@ VV.banner = {
         }
 
         VV.map.showBusinessLocation({
-            business: businessName || sponsor.business_name || sponsor.name,
+            business: sponsor.business_name || sponsor.name || 'Negocio',
             business_address: sponsor.address || sponsor.business_address || '',
             neighborhood: sponsor.neighborhood || VV.data.neighborhood,
             product: sponsor.description || '',
@@ -765,7 +764,8 @@ VV.banner = {
             contact: sponsor.contact || '',
             location: location
         });
-    }
+    },
+
 };
 
 
