@@ -218,9 +218,31 @@ VV.banner = {
             document.body.appendChild(overlay);
         }
         
+        const hasBgImage = !!sponsor.image_url;
+        
         overlay.innerHTML = `
-            <div class="modal-form" style="max-width: 600px;">
-                <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="modal-form" style="max-width: 600px; padding: 0; overflow: hidden;">
+                
+                ${hasBgImage ? `
+                <div style="position: relative; background-image: url('${sponsor.image_url}'); background-size: cover; background-position: center; padding: 2rem 1.5rem 2.5rem;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.75));"></div>
+                    <div style="position: relative; z-index: 1; text-align: center;">
+                        ${sponsor.logo ? `
+                            <img src="${sponsor.logo}" alt="${sponsor.businessName}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.8); margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+                        ` : `
+                            <div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: 700; margin: 0 auto 1rem; border: 4px solid rgba(255,255,255,0.8);">
+                                ${sponsor.businessName.charAt(0)}
+                            </div>
+                        `}
+                        <h2 style="margin: 0 0 0.5rem 0; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.6);">${sponsor.businessName}</h2>
+                        <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 1.1rem; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">📍 ${sponsor.neighborhood || sponsor.neighborhoods || 'Sin barrio'} • ${sponsor.category || 'Negocio Local'}</p>
+                        <span style="display: inline-block; margin-top: 0.75rem; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                            ${sponsor.tier.toUpperCase()}
+                        </span>
+                    </div>
+                </div>
+                ` : `
+                <div style="text-align: center; margin-bottom: 2rem; padding: 1.5rem;">
                     ${sponsor.logo ? `
                         <img src="${sponsor.logo}" alt="${sponsor.businessName}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--warning-orange); margin-bottom: 1rem;">
                     ` : `
@@ -234,70 +256,72 @@ VV.banner = {
                         ${sponsor.tier.toUpperCase()}
                     </span>
                 </div>
+                `}
                 
-                <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
-                    <h4 style="margin: 0 0 1rem 0; color: var(--primary-blue);">
-                        <i class="fas fa-info-circle"></i> Sobre el Negocio
-                    </h4>
-                    <p style="margin: 0; color: var(--gray-700); line-height: 1.6;">
-                        ${sponsor.description || 'Negocio local de confianza en tu barrio'}
-                    </p>
-                </div>
-                
-                <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--primary-blue);">
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 40px; height: 40px; background: var(--primary-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <div>
-                                <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">Teléfono</p>
-                                <p style="margin: 0; font-weight: 600; color: var(--gray-800); font-size: 1.1rem;">
-                                    ${sponsor.contact}
-                                </p>
-                            </div>
-                        </div>
+                <div style="padding: 1.5rem;">
+                    <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                        <h4 style="margin: 0 0 1rem 0; color: var(--primary-blue);">
+                            <i class="fas fa-info-circle"></i> Sobre el Negocio
+                        </h4>
+                        <p style="margin: 0; color: var(--gray-700); line-height: 1.6;">
+                            ${sponsor.description || 'Negocio local de confianza en tu barrio'}
+                        </p>
                     </div>
                     
-                    ${sponsor.website ? `
-                        <div style="background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--primary-purple);">
+                    <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--primary-blue);">
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 40px; height: 40px; background: var(--primary-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
-                                    <i class="fas fa-globe"></i>
+                                <div style="width: 40px; height: 40px; background: var(--primary-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                    <i class="fas fa-phone"></i>
                                 </div>
-                                <div style="flex: 1; overflow: hidden;">
-                                    <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">Sitio Web</p>
-                                    <p style="margin: 0; font-weight: 600; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                        ${sponsor.website}
+                                <div>
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">Teléfono</p>
+                                    <p style="margin: 0; font-weight: 600; color: var(--gray-800); font-size: 1.1rem;">
+                                        ${sponsor.contact}
                                     </p>
                                 </div>
                             </div>
                         </div>
-                    ` : ''}
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                    ${sponsor.website ? `
-                        <button class="btn-primary" onclick="window.open('${sponsor.website}', '_blank')" style="width: 100%;">
-                            <i class="fas fa-external-link-alt"></i> Visitar Sitio
+                        
+                        ${sponsor.website ? `
+                            <div style="background: white; padding: 1rem; border-radius: 8px; border-left: 4px solid var(--primary-purple);">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 40px; height: 40px; background: var(--primary-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div style="flex: 1; overflow: hidden;">
+                                        <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">Sitio Web</p>
+                                        <p style="margin: 0; font-weight: 600; color: var(--gray-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            ${sponsor.website}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        ${sponsor.website ? `
+                            <button class="btn-primary" onclick="window.open('${sponsor.website}', '_blank')" style="width: 100%;">
+                                <i class="fas fa-external-link-alt"></i> Visitar Sitio
+                            </button>
+                        ` : ''}
+                        <button class="btn-primary" onclick="window.open('https://wa.me/${sponsor.contact.replace(/[^0-9]/g, '')}', '_blank')" style="width: 100%; background: #25D366;">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
                         </button>
-                    ` : ''}
-                    <button class="btn-primary" onclick="window.open('https://wa.me/${sponsor.contact.replace(/[^0-9]/g, '')}', '_blank')" style="width: 100%; background: #25D366;">
-                        <i class="fab fa-whatsapp"></i> WhatsApp
-                    </button>
-                    <button class="btn-primary" onclick="VV.banner.showLocation('${sponsor.id}')" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669);">
-                        <i class="fas fa-map-marker-alt"></i> Ver ubicación
-                    </button>
-                    <button class="btn-primary" onclick="window.location.href='tel:${sponsor.contact}'" style="width: 100%;">
-                        <i class="fas fa-phone"></i> Llamar
-                    </button>
-                </div>
-
-                
-                <div style="text-align: center;">
-                    <button class="btn-secondary" onclick="VV.banner.closeSponsorDetails()">
-                        <i class="fas fa-times"></i> Cerrar
-                    </button>
+                        <button class="btn-primary" onclick="VV.banner.showLocation('${sponsor.id}')" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-map-marker-alt"></i> Ver ubicación
+                        </button>
+                        <button class="btn-primary" onclick="window.location.href='tel:${sponsor.contact}'" style="width: 100%;">
+                            <i class="fas fa-phone"></i> Llamar
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button class="btn-secondary" onclick="VV.banner.closeSponsorDetails()">
+                            <i class="fas fa-times"></i> Cerrar
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -308,6 +332,7 @@ VV.banner = {
             if (e.target === overlay) VV.banner.closeSponsorDetails();
         };
     },
+
     
     // Cerrar detalles del anunciante
     closeSponsorDetails() {
