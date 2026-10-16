@@ -471,10 +471,11 @@ VV.banner = {
             return;
         }
         
-        // Mostrar máximo 3 banners en el dashboard
         const displayBanners = banners.slice(0, 3);
         
-        container.innerHTML = displayBanners.map(sponsor => `
+        container.innerHTML = displayBanners.map(sponsor => {
+            const bName = sponsor.business_name || sponsor.name || 'Negocio';
+            return `
             <div class="sponsor-card" onclick="VV.banner.trackClick('${sponsor.id}')" style="
                 background: white;
                 border-radius: 12px;
@@ -486,14 +487,14 @@ VV.banner = {
             " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
                     ${sponsor.logo ? `
-                        <img src="${sponsor.logo}" alt="${businessName}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--warning-orange);">
+                        <img src="${sponsor.logo}" alt="${bName}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--warning-orange);">
                     ` : `
                         <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; font-weight: 700;">
-                            ${sponsor.businessName.charAt(0)}
+                            ${bName.charAt(0)}
                         </div>
                     `}
                     <div style="flex: 1;">
-                        <h4 style="margin: 0 0 0.25rem 0; color: var(--gray-800);">${businessName}</h4>
+                        <h4 style="margin: 0 0 0.25rem 0; color: var(--gray-800);">${bName}</h4>
                         <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">
                             ${sponsor.neighborhood ? sponsor.neighborhood + ' • ' : ''}📍 ${sponsor.neighborhood || (Array.isArray(sponsor.neighborhoods) ? sponsor.neighborhoods.join(', ') : sponsor.neighborhoods) || 'Sin barrio'} • ${sponsor.category || 'Negocio Local'}
                         </p>
@@ -510,9 +511,10 @@ VV.banner = {
                     <span>${sponsor.contact}</span>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     },
-    
+
     // Mostrar todos los anunciantes en modal
     showAllSponsors() {
         const banners = VV.banner.getActiveBanners();
