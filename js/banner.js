@@ -158,7 +158,7 @@ VV.banner = {
                                 `<div style="width: 100%; height: 150px; background-image: url('${sponsor.imageUrl}'); background-size: cover; background-position: center; border-radius: 8px; margin-bottom: 0.5rem;"></div>` :
                                 `<div style="font-size: 3rem; text-align: center; margin: 1rem 0;">${sponsor.logo}</div>`
                             }
-                            <h4 style="margin: 0.5rem 0; color: var(--primary-blue);">${sponsor.name}</h4>
+                            <h4 style="margin: 0.5rem 0; color: var(--primary-blue);">${sponsor.business_name || sponsor.name || 'Negocio'}</h4>
                             <p style="font-size: 0.85rem; color: var(--gray-600); margin: 0.25rem 0;">${sponsor.description}</p>
                             ${sponsor.contact ? `<p style="font-size: 0.85rem; margin: 0.25rem 0;"><i class="fas fa-phone"></i> ${sponsor.contact}</p>` : ''}
                             ${sponsor.website ? `<p style="font-size: 0.85rem; margin: 0.25rem 0;"><i class="fas fa-globe"></i> ${sponsor.website}</p>` : ''}
@@ -219,6 +219,8 @@ VV.banner = {
         }
         
         const hasBgImage = !!sponsor.image_url;
+        const businessName = sponsor.business_name || sponsor.name || 'Negocio';
+
         
         overlay.innerHTML = `
             <div class="modal-form" style="max-width: 600px; padding: 0; overflow: hidden; position: relative;">
@@ -230,13 +232,13 @@ VV.banner = {
                 <div style="position: relative; z-index: 2; padding: 2rem 1.5rem;">
                     <div style="text-align: center; margin-bottom: 1.5rem;">
                         ${sponsor.logo ? `
-                            <img src="${sponsor.logo}" alt="${sponsor.businessName}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.8); margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+                            <img src="${sponsor.logo}" alt="${businessName}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.8); margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
                         ` : `
                             <div style="width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: 700; margin: 0 auto 1rem; border: 4px solid rgba(255,255,255,0.8);">
-                                ${sponsor.businessName.charAt(0)}
+                                ${businessName.charAt(0)}
                             </div>
                         `}
-                        <h2 style="margin: 0 0 0.5rem 0; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.6);">${sponsor.businessName}</h2>
+                        <h2 style="margin: 0 0 0.5rem 0; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.6);">${businessName}</h2>
                         <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 1.1rem; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">📍 ${sponsor.neighborhood || sponsor.neighborhoods || 'Sin barrio'} • ${sponsor.category || 'Negocio Local'}</p>
                         <span style="display: inline-block; margin-top: 0.75rem; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
                             ${sponsor.tier.toUpperCase()}
@@ -311,13 +313,13 @@ VV.banner = {
                 <div style="padding: 1.5rem;">
                     <div style="text-align: center; margin-bottom: 2rem;">
                         ${sponsor.logo ? `
-                            <img src="${sponsor.logo}" alt="${sponsor.businessName}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--warning-orange); margin-bottom: 1rem;">
+                            <img src="${sponsor.logo}" alt="${businessName}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--warning-orange); margin-bottom: 1rem;">
                         ` : `
                             <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; font-weight: 700; margin: 0 auto 1rem;">
-                                ${sponsor.businessName.charAt(0)}
+                                ${businessName.charAt(0)}
                             </div>
                         `}
-                        <h2 style="margin: 0 0 0.5rem 0; color: var(--gray-800);">${sponsor.businessName}</h2>
+                        <h2 style="margin: 0 0 0.5rem 0; color: var(--gray-800);">${businessName}</h2>
                         <p style="margin: 0; color: var(--gray-600); font-size: 1.1rem;">📍 ${sponsor.neighborhood || sponsor.neighborhoods || 'Sin barrio'} • ${sponsor.category || 'Negocio Local'}</p>
                         <span style="display: inline-block; margin-top: 0.5rem; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
                             ${sponsor.tier.toUpperCase()}
@@ -484,14 +486,14 @@ VV.banner = {
             " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 4px 16px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'">
                 <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
                     ${sponsor.logo ? `
-                        <img src="${sponsor.logo}" alt="${sponsor.businessName}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--warning-orange);">
+                        <img src="${sponsor.logo}" alt="${businessName}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--warning-orange);">
                     ` : `
                         <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; font-weight: 700;">
                             ${sponsor.businessName.charAt(0)}
                         </div>
                     `}
                     <div style="flex: 1;">
-                        <h4 style="margin: 0 0 0.25rem 0; color: var(--gray-800);">${sponsor.businessName}</h4>
+                        <h4 style="margin: 0 0 0.25rem 0; color: var(--gray-800);">${businessName}</h4>
                         <p style="margin: 0; font-size: 0.85rem; color: var(--gray-600);">
                             ${sponsor.neighborhood ? sponsor.neighborhood + ' • ' : ''}📍 ${sponsor.neighborhood || (Array.isArray(sponsor.neighborhoods) ? sponsor.neighborhoods.join(', ') : sponsor.neighborhoods) || 'Sin barrio'} • ${sponsor.category || 'Negocio Local'}
                         </p>
@@ -752,7 +754,7 @@ VV.banner = {
         }
 
         VV.map.showBusinessLocation({
-            business: sponsor.businessName || sponsor.business_name || sponsor.name,
+            business: businessName || sponsor.business_name || sponsor.name,
             business_address: sponsor.address || sponsor.business_address || '',
             neighborhood: sponsor.neighborhood || VV.data.neighborhood,
             product: sponsor.description || '',
