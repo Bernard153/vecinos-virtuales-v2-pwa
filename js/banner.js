@@ -221,12 +221,14 @@ VV.banner = {
         const hasBgImage = !!sponsor.image_url;
         
         overlay.innerHTML = `
-            <div class="modal-form" style="max-width: 600px; padding: 0; overflow: hidden;">
+            <div class="modal-form" style="max-width: 600px; padding: 0; overflow: hidden; position: relative;">
                 
                 ${hasBgImage ? `
-                <div style="position: relative; background-image: url('${sponsor.image_url}'); background-size: cover; background-position: center; padding: 2rem 1.5rem 2.5rem;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.75));"></div>
-                    <div style="position: relative; z-index: 1; text-align: center;">
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: url('${sponsor.image_url}'); background-size: cover; background-position: center; z-index: 0;"></div>
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.65) 40%, rgba(0,0,0,0.8) 100%); z-index: 1;"></div>
+                
+                <div style="position: relative; z-index: 2; padding: 2rem 1.5rem;">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
                         ${sponsor.logo ? `
                             <img src="${sponsor.logo}" alt="${sponsor.businessName}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.8); margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
                         ` : `
@@ -240,25 +242,88 @@ VV.banner = {
                             ${sponsor.tier.toUpperCase()}
                         </span>
                     </div>
+                    
+                    <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.2);">
+                        <h4 style="margin: 0 0 1rem 0; color: white;">
+                            <i class="fas fa-info-circle"></i> Sobre el Negocio
+                        </h4>
+                        <p style="margin: 0; color: rgba(255,255,255,0.9); line-height: 1.6;">
+                            ${sponsor.description || 'Negocio local de confianza en tu barrio'}
+                        </p>
+                    </div>
+                    
+                    <div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); padding: 1rem; border-radius: 8px; border-left: 4px solid rgba(255,255,255,0.6);">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div>
+                                    <p style="margin: 0; font-size: 0.85rem; color: rgba(255,255,255,0.7);">Teléfono</p>
+                                    <p style="margin: 0; font-weight: 600; color: white; font-size: 1.1rem;">
+                                        ${sponsor.contact}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${sponsor.website ? `
+                            <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); padding: 1rem; border-radius: 8px; border-left: 4px solid rgba(255,255,255,0.6);">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                        <i class="fas fa-globe"></i>
+                                    </div>
+                                    <div style="flex: 1; overflow: hidden;">
+                                        <p style="margin: 0; font-size: 0.85rem; color: rgba(255,255,255,0.7);">Sitio Web</p>
+                                        <p style="margin: 0; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            ${sponsor.website}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        ${sponsor.website ? `
+                            <button class="btn-primary" onclick="window.open('${sponsor.website}', '_blank')" style="width: 100%;">
+                                <i class="fas fa-external-link-alt"></i> Visitar Sitio
+                            </button>
+                        ` : ''}
+                        <button class="btn-primary" onclick="window.open('https://wa.me/${sponsor.contact.replace(/[^0-9]/g, '')}', '_blank')" style="width: 100%; background: #25D366;">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                        <button class="btn-primary" onclick="VV.banner.showLocation('${sponsor.id}')" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-map-marker-alt"></i> Ver ubicación
+                        </button>
+                        <button class="btn-primary" onclick="window.location.href='tel:${sponsor.contact}'" style="width: 100%;">
+                            <i class="fas fa-phone"></i> Llamar
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button class="btn-secondary" onclick="VV.banner.closeSponsorDetails()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4);">
+                            <i class="fas fa-times"></i> Cerrar
+                        </button>
+                    </div>
                 </div>
                 ` : `
-                <div style="text-align: center; margin-bottom: 2rem; padding: 1.5rem;">
-                    ${sponsor.logo ? `
-                        <img src="${sponsor.logo}" alt="${sponsor.businessName}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--warning-orange); margin-bottom: 1rem;">
-                    ` : `
-                        <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; font-weight: 700; margin: 0 auto 1rem;">
-                            ${sponsor.businessName.charAt(0)}
-                        </div>
-                    `}
-                    <h2 style="margin: 0 0 0.5rem 0; color: var(--gray-800);">${sponsor.businessName}</h2>
-                    <p style="margin: 0; color: var(--gray-600); font-size: 1.1rem;">📍 ${sponsor.neighborhood || sponsor.neighborhoods || 'Sin barrio'} • ${sponsor.category || 'Negocio Local'}</p>
-                    <span style="display: inline-block; margin-top: 0.5rem; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
-                        ${sponsor.tier.toUpperCase()}
-                    </span>
-                </div>
-                `}
-                
                 <div style="padding: 1.5rem;">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        ${sponsor.logo ? `
+                            <img src="${sponsor.logo}" alt="${sponsor.businessName}" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--warning-orange); margin-bottom: 1rem;">
+                        ` : `
+                            <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white; font-weight: 700; margin: 0 auto 1rem;">
+                                ${sponsor.businessName.charAt(0)}
+                            </div>
+                        `}
+                        <h2 style="margin: 0 0 0.5rem 0; color: var(--gray-800);">${sponsor.businessName}</h2>
+                        <p style="margin: 0; color: var(--gray-600); font-size: 1.1rem;">📍 ${sponsor.neighborhood || sponsor.neighborhoods || 'Sin barrio'} • ${sponsor.category || 'Negocio Local'}</p>
+                        <span style="display: inline-block; margin-top: 0.5rem; background: linear-gradient(135deg, var(--warning-orange), var(--primary-blue)); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;">
+                            ${sponsor.tier.toUpperCase()}
+                        </span>
+                    </div>
+                    
                     <div style="background: var(--gray-50); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
                         <h4 style="margin: 0 0 1rem 0; color: var(--primary-blue);">
                             <i class="fas fa-info-circle"></i> Sobre el Negocio
@@ -323,6 +388,8 @@ VV.banner = {
                         </button>
                     </div>
                 </div>
+                `}
+                
             </div>
         `;
         
@@ -332,6 +399,7 @@ VV.banner = {
             if (e.target === overlay) VV.banner.closeSponsorDetails();
         };
     },
+
 
     
     // Cerrar detalles del anunciante
