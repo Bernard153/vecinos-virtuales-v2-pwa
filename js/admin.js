@@ -2883,243 +2883,179 @@ VV.admin.toggleMensajesUsuario = async function(userId, habilitar) {
     } catch (err) {
         alert('Error: ' + err.message);
     }
-    // Gestión de rangos
-    async loadRanksManagement() {
-        const container = document.getElementById('admin-rangos') || document.getElementById('users-management-list');
-        if (!container) return;
-        container.innerHTML = '<p style="text-align: center; padding: 2rem;">Cargando rangos...</p>';
-
-        const { data: users, error } = await supabase
-            .from('users')
-            .select('*')
-            .order('neighborhood', { ascending: true })
-            .order('name', { ascending: true });
-
-        if (error) {
-            container.innerHTML = '<p style="color: red;">Error cargando usuarios</p>';
-            return;
-        }
-
-        const neighborhoods = [...new Set(users.map(u => u.neighborhood))].sort();
-
-        let html = `
-            <div style="grid-column: 1/-1; margin-bottom: 1rem; padding: 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 8px; color: white;">
-                <h3 style="margin: 0;"><i class="fas fa-crown"></i> Gestión de Rangos y VIP</h3>
-                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">
-                    Asigna puntos, cambia rangos y activa VIP para los usuarios del barrio.
-                </p>
-            </div>
-            <div style="grid-column: 1/-1; margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 8px; box-shadow: var(--shadow-sm);">
-                <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Filtrar por barrio:</label>
-                <select onchange="VV.admin.loadRanksManagement(this.value)" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
-                    <option value="all">📍 Todos los barrios (${users.length} usuarios)</option>
-                    ${neighborhoods.map(n => `<option value="${n}">${n} (${users.filter(u => u.neighborhood === n).length})</option>`).join('')}
-                </select>
-            </div>
-        `;
-
-        const usersByNeighborhood = {};
-        users.forEach(user => {
-            if (!usersByNeighborhood[user.neighborhood]) usersByNeighborhood[user.neighborhood] = [];
-            usersByNeighborhood[user.neighborhood].push(user);
-        });
-
-        Object.keys(usersByNeighborhood).sort().forEach(neighborhood => {
-            const nUsers = usersByNeighborhood[neighborhood];
-            html += `
-                <div style="grid-column: 1/-1; margin-top: 1rem; padding: 0.75rem; background: var(--gray-100); border-radius: 8px; font-weight: 600; color: var(--gray-700);">
-                    <i class="fas fa-map-marker-alt"></i> ${neighborhood} (${nUsers.length} usuarios)
-                </div>
-            `;
-
-            html += nUsers.map(user => {
-                const tier = VV.avatars.calculateTier(user);
-                const config = VV.avatars.tierConfig[tier];
-                const isVIP = tier === 'vip';
-                const vipExpires = user.vip_expires_at ? new Date(user.vip_expires_at).toLocaleDateString('es-AR') : null;
-
-                return `
-                <div class="user-card" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 200px;">
-                        <div style="flex-shrink: 0;">${VV.avatars.getAvatarWithFrame(user.id, 48)}</div>
-                        <div>
-                            <h4 style="margin: 0;">${user.name}</h4>
-                            <p style="margin: 0; font-size: 0.8rem; color: var(--gray-600);">${user.email}</p>
-                            <div style="margin-top: 0.25rem;">
-                                <span style="background: ${config.gradient}; color: white; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${config.badge} ${config.label}</span>
-                                ${isVIP && vipExpires ? `<span style="font-size: 0.7rem; color: var(--gray-500); margin-left: 0.5rem;">VIP hasta ${vipExpires}</span>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                    <div style="text-align: center; padding: 0 0.5rem;">
-                        <p style="margin: 0; font-size: 0.7rem; color: var(--gray-500);">Actividad</p>
-                        <p style="margin: 0; font-weight: 700; color: var(--warning-orange);">${user.activity_points || 0}</p>
-                    </div>
-                    <div style="text-align: center; padding: 0 0.5rem;">
-                        <p style="margin: 0; font-size: 0.7rem; color: var(--gray-500);">Reputación</p>
-                        <p style="margin: 0; font-weight: 700; color: var(--primary-blue);">${user.reputation_points || 0}</p>
-                    </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
-                        <button class="btn-approve" onclick="VV.admin.addPoints('${user.id}', 'activity', 10)" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;" title="+10 actividad">
-                            <i class="fas fa-bolt"></i> +10
-                        </button>
-                        <button class="btn-approve" onclick="VV.admin.addPoints('${user.id}', 'reputation', 5)" style="font-size: 0.75rem; padding: 0.35rem 0.6rem; background: var(--primary-blue);" title="+5 reputación">
-                            <i class="fas fa-star"></i> +5
-                        </button>
-                        <button class="btn-edit" onclick="VV.admin.showVIPModal('${user.id}')" style="font-size: 0.75rem; padding: 0.35rem 0.6rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white;" title="Activar VIP">
-                            <i class="fas fa-crown"></i> VIP
-                        </button>
-                        ${isVIP ? `
-                            <button class="btn-delete" onclick="VV.admin.removeVIP('${user.id}')" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;" title="Quitar VIP">
-                                <i class="fas fa-times"></i> Quitar VIP
-                            </button>
-                        ` : ''}
-                        <button class="btn-delete" onclick="VV.admin.resetPoints('${user.id}')" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;" title="Resetear puntos">
-                            <i class="fas fa-redo"></i> Reset
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }).join('');
-
-        container.innerHTML = html || '<p style="text-align: center; padding: 2rem;">No hay usuarios</p>';
-    },
-
-    // Agregar puntos a un usuario
-    async addPoints(userId, type, amount) {
-        try {
-            const { data: user, error: fetchError } = await supabase
-                .from('users')
-                .select(type)
-                .eq('id', userId)
-                .single();
-            if (fetchError) throw fetchError;
-
-            const currentPoints = user[type] || 0;
-            const newPoints = currentPoints + amount;
-
-            const { error: updateError } = await supabase
-                .from('users')
-                .update({ [type]: newPoints })
-                .eq('id', userId);
-            if (updateError) throw updateError;
-
-            VV.utils.showSuccess(`+${amount} ${type === 'activity' ? 'actividad' : 'reputación'} agregados`);
-            VV.admin.loadRanksManagement();
-        } catch (error) {
-            console.error('Error agregando puntos:', error);
-            alert('Error al agregar puntos');
-        }
-    },
-
-    // Resetear puntos
-    async resetPoints(userId) {
-        if (!confirm('¿Resetear todos los puntos de este usuario?')) return;
-        try {
-            const { error } = await supabase
-                .from('users')
-                .update({ activity_points: 0, reputation_points: 0, membership_tier: 'vecino', vip_expires_at: null })
-                .eq('id', userId);
-            if (error) throw error;
-
-            VV.utils.showSuccess('Puntos reseteados');
-            VV.admin.loadRanksManagement();
-        } catch (error) {
-            console.error('Error reseteando puntos:', error);
-            alert('Error al resetear puntos');
-        }
-    },
-
-    // Modal para activar VIP
-    showVIPModal(userId) {
-        let overlay = document.getElementById('vip-modal-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'vip-modal-overlay';
-            overlay.className = 'modal-overlay';
-            document.body.appendChild(overlay);
-        }
-
-        overlay.innerHTML = `
-            <div class="modal-form" style="max-width: 450px;">
-                <h3 style="color: #f59e0b;"><i class="fas fa-crown"></i> Activar VIP</h3>
-                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">Selecciona la duración del VIP para este usuario:</p>
-                <div style="display: grid; gap: 0.75rem;">
-                    <button class="btn-primary" onclick="VV.admin.activateVIP('${userId}', 7)" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                        <i class="fas fa-clock"></i> 7 días
-                    </button>
-                    <button class="btn-primary" onclick="VV.admin.activateVIP('${userId}', 30)" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                        <i class="fas fa-clock"></i> 30 días
-                    </button>
-                    <button class="btn-primary" onclick="VV.admin.activateVIP('${userId}', 90)" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                        <i class="fas fa-clock"></i> 90 días
-                    </button>
-                    <button class="btn-primary" onclick="VV.admin.activateVIP('${userId}', 365)" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
-                        <i class="fas fa-infinity"></i> 1 año
-                    </button>
-                </div>
-                <div style="margin-top: 1.5rem; text-align: center;">
-                    <button class="btn-cancel" onclick="document.getElementById('vip-modal-overlay').classList.remove('active')">Cancelar</button>
-                </div>
-            </div>
-        `;
-
-        overlay.classList.add('active');
-        overlay.onclick = (e) => {
-            if (e.target === overlay) overlay.classList.remove('active');
-        };
-    },
-
-    // Activar VIP
-    async activateVIP(userId, days) {
-        try {
-            const expiresAt = new Date();
-            expiresAt.setDate(expiresAt.getDate() + days);
-
-            const { error } = await supabase
-                .from('users')
-                .update({
-                    membership_tier: 'vip',
-                    vip_expires_at: expiresAt.toISOString()
-                })
-                .eq('id', userId);
-            if (error) throw error;
-
-            document.getElementById('vip-modal-overlay').classList.remove('active');
-            VV.utils.showSuccess(`VIP activado por ${days} días`);
-            VV.admin.loadRanksManagement();
-        } catch (error) {
-            console.error('Error activando VIP:', error);
-            alert('Error al activar VIP');
-        }
-    },
-
-    // Quitar VIP
-    async removeVIP(userId) {
-        if (!confirm('¿Quitar el VIP de este usuario?')) return;
-        try {
-            const { error } = await supabase
-                .from('users')
-                .update({
-                    membership_tier: 'vecino',
-                    vip_expires_at: null
-                })
-                .eq('id', userId);
-            if (error) throw error;
-
-            VV.utils.showSuccess('VIP removido');
-            VV.admin.loadRanksManagement();
-        } catch (error) {
-            console.error('Error removiendo VIP:', error);
-            alert('Error al remover VIP');
-        }
-    },
-
 };
 
+// ========== GESTIÓN DE RANGOS Y VIP ==========
+
+VV.admin.loadRanksManagement = async function(filterNeighborhood) {
+    filterNeighborhood = filterNeighborhood || 'all';
+    const container = document.getElementById('admin-rangos') || document.getElementById('users-management-list');
+    if (!container) return;
+    container.innerHTML = '<p style="text-align: center; padding: 2rem;">Cargando rangos...</p>';
+
+    const { data: users, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('neighborhood', { ascending: true })
+        .order('name', { ascending: true });
+
+    if (error) {
+        container.innerHTML = '<p style="color: red;">Error cargando usuarios</p>';
+        return;
+    }
+
+    const neighborhoods = [...new Set(users.map(u => u.neighborhood))].sort();
+    const filteredUsers = filterNeighborhood === 'all' ? users : users.filter(u => u.neighborhood === filterNeighborhood);
+
+    let html = `
+        <div style="grid-column: 1/-1; margin-bottom: 1rem; padding: 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 8px; color: white;">
+            <h3 style="margin: 0;"><i class="fas fa-crown"></i> Gestión de Rangos y VIP</h3>
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Asigna puntos, cambia rangos y activa VIP.</p>
+        </div>
+        <div style="grid-column: 1/-1; margin-bottom: 1rem; padding: 1rem; background: white; border-radius: 8px; box-shadow: var(--shadow-sm);">
+            <label style="font-weight: 600; margin-bottom: 0.5rem; display: block;">Filtrar por barrio:</label>
+            <select onchange="VV.admin.loadRanksManagement(this.value)" style="width: 100%; padding: 0.75rem; border: 1px solid var(--gray-300); border-radius: 8px;">
+                <option value="all">📍 Todos los barrios (${users.length} usuarios)</option>
+                ${neighborhoods.map(n => `<option value="${n}" ${filterNeighborhood === n ? 'selected' : ''}>${n} (${users.filter(u => u.neighborhood === n).length})</option>`).join('')}
+            </select>
+        </div>
+    `;
+
+    const usersByNeighborhood = {};
+    filteredUsers.forEach(user => {
+        if (!usersByNeighborhood[user.neighborhood]) usersByNeighborhood[user.neighborhood] = [];
+        usersByNeighborhood[user.neighborhood].push(user);
+    });
+
+    Object.keys(usersByNeighborhood).sort().forEach(neighborhood => {
+        const nUsers = usersByNeighborhood[neighborhood];
+        html += `<div style="grid-column: 1/-1; margin-top: 1rem; padding: 0.75rem; background: var(--gray-100); border-radius: 8px; font-weight: 600; color: var(--gray-700);"><i class="fas fa-map-marker-alt"></i> ${neighborhood} (${nUsers.length} usuarios)</div>`;
+
+        html += nUsers.map(user => {
+            const tier = VV.avatars.calculateTier(user);
+            const config = VV.avatars.tierConfig[tier];
+            const isVIP = tier === 'vip';
+            const vipExpires = user.vip_expires_at ? new Date(user.vip_expires_at).toLocaleDateString('es-AR') : null;
+
+            return `
+            <div class="user-card" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 200px;">
+                    <div style="flex-shrink: 0;">${VV.avatars.getAvatarWithFrame(user.id, 48)}</div>
+                    <div>
+                        <h4 style="margin: 0;">${user.name}</h4>
+                        <p style="margin: 0; font-size: 0.8rem; color: var(--gray-600);">${user.email}</p>
+                        <div style="margin-top: 0.25rem;">
+                            <span style="background: ${config.gradient}; color: white; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${config.badge} ${config.label}</span>
+                            ${isVIP && vipExpires ? `<span style="font-size: 0.7rem; color: var(--gray-500); margin-left: 0.5rem;">VIP hasta ${vipExpires}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: center; padding: 0 0.5rem;">
+                    <p style="margin: 0; font-size: 0.7rem; color: var(--gray-500);">Actividad</p>
+                    <p style="margin: 0; font-weight: 700; color: var(--warning-orange);">${user.activity_points || 0}</p>
+                </div>
+                <div style="text-align: center; padding: 0 0.5rem;">
+                    <p style="margin: 0; font-size: 0.7rem; color: var(--gray-500);">Reputación</p>
+                    <p style="margin: 0; font-weight: 700; color: var(--primary-blue);">${user.reputation_points || 0}</p>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    <button class="btn-approve" onclick="VV.admin.addPoints('${user.id}', 'activity', 10)" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;"><i class="fas fa-bolt"></i> +10</button>
+                    <button class="btn-approve" onclick="VV.admin.addPoints('${user.id}', 'reputation', 5)" style="font-size: 0.75rem; padding: 0.35rem 0.6rem; background: var(--primary-blue);"><i class="fas fa-star"></i> +5</button>
+                    <button class="btn-edit" onclick="VV.admin.showVIPModal('${user.id}')" style="font-size: 0.75rem; padding: 0.35rem 0.6rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white;"><i class="fas fa-crown"></i> VIP</button>
+                    ${isVIP ? `<button class="btn-delete" onclick="VV.admin.removeVIP('${user.id}')" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;"><i class="fas fa-times"></i> Quitar VIP</button>` : ''}
+                    <button class="btn-delete" onclick="VV.admin.resetPoints('${user.id}')" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;"><i class="fas fa-redo"></i> Reset</button>
+                </div>
+            </div>`;
+        }).join('');
+    }).join('');
+
+    container.innerHTML = html || '<p style="text-align: center; padding: 2rem;">No hay usuarios</p>';
+};
+
+VV.admin.addPoints = async function(userId, type, amount) {
+    try {
+        const { data: user, error: fetchError } = await supabase.from('users').select(type).eq('id', userId).single();
+        if (fetchError) throw fetchError;
+        const newPoints = (user[type] || 0) + amount;
+        const { error: updateError } = await supabase.from('users').update({ [type]: newPoints }).eq('id', userId);
+        if (updateError) throw updateError;
+        VV.utils.showSuccess('+' + amount + ' ' + (type === 'activity' ? 'actividad' : 'reputación') + ' agregados');
+        VV.admin.loadRanksManagement();
+    } catch (error) {
+        console.error('Error agregando puntos:', error);
+        alert('Error al agregar puntos');
+    }
+};
+
+VV.admin.resetPoints = async function(userId) {
+    if (!confirm('¿Resetear todos los puntos de este usuario?')) return;
+    try {
+        const { error } = await supabase.from('users').update({ activity_points: 0, reputation_points: 0, membership_tier: 'vecino', vip_expires_at: null }).eq('id', userId);
+        if (error) throw error;
+        VV.utils.showSuccess('Puntos reseteados');
+        VV.admin.loadRanksManagement();
+    } catch (error) {
+        console.error('Error reseteando puntos:', error);
+        alert('Error al resetear puntos');
+    }
+};
+
+VV.admin.showVIPModal = function(userId) {
+    let overlay = document.getElementById('vip-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'vip-modal-overlay';
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
+    }
+    overlay.innerHTML = `
+        <div class="modal-form" style="max-width: 450px;">
+            <h3 style="color: #f59e0b;"><i class="fas fa-crown"></i> Activar VIP</h3>
+            <p style="color: var(--gray-600); margin-bottom: 1.5rem;">Selecciona la duración:</p>
+            <div style="display: grid; gap: 0.75rem;">
+                <button class="btn-primary" onclick="VV.admin.activateVIP('${userId}', 7)" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i class="fas fa-clock"></i> 7 días</button>
+                <button class="btn-primary" onclick="VV.admin.activateVIP('${userId}', 30)" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i class="fas fa-clock"></i> 30 días</button>
+                <button class="btn-primary" onclick="VV.admin.activateVIP('${userId}', 90)" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i class="fas fa-clock"></i> 90 días</button>
+                <button class="btn-primary" onclick="VV.admin.activateVIP('${userId}', 365)" style="background: linear-gradient(135deg, #f59e0b, #d97706);"><i class="fas fa-infinity"></i> 1 año</button>
+            </div>
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <button class="btn-cancel" onclick="document.getElementById('vip-modal-overlay').classList.remove('active')">Cancelar</button>
+            </div>
+        </div>`;
+    overlay.classList.add('active');
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.remove('active'); };
+};
+
+VV.admin.activateVIP = async function(userId, days) {
+    try {
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + days);
+        const { error } = await supabase.from('users').update({ membership_tier: 'vip', vip_expires_at: expiresAt.toISOString() }).eq('id', userId);
+        if (error) throw error;
+        document.getElementById('vip-modal-overlay').classList.remove('active');
+        VV.utils.showSuccess('VIP activado por ' + days + ' días');
+        VV.admin.loadRanksManagement();
+    } catch (error) {
+        console.error('Error activando VIP:', error);
+        alert('Error al activar VIP');
+    }
+};
+
+VV.admin.removeVIP = async function(userId) {
+    if (!confirm('¿Quitar el VIP de este usuario?')) return;
+    try {
+        const { error } = await supabase.from('users').update({ membership_tier: 'vecino', vip_expires_at: null }).eq('id', userId);
+        if (error) throw error;
+        VV.utils.showSuccess('VIP removido');
+        VV.admin.loadRanksManagement();
+    } catch (error) {
+        console.error('Error removiendo VIP:', error);
+        alert('Error al remover VIP');
+    }
+};
 
 console.log('✅ Módulo ADMIN cargado');
+
 
 // 3. Cargar folletos publicados (aprobados)
 async function cargarFolletoPublicado() {
