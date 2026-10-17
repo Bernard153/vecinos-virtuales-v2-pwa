@@ -36,9 +36,15 @@ const VV = {
                 VV.data.sponsors = sponsors || [];
                 
                 console.log('✅ Datos de Folleto y Core cargados');
+                
+                // Cargar cache de avatares y rangos
+                if (VV.avatars && VV.avatars.loadAvatarCache) {
+                    VV.avatars.loadAvatarCache();
+                }
             } catch (error) {
                 console.error('Error en loadFromSupabase:', error);
             }
+
         }
     },
     
