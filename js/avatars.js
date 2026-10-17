@@ -52,7 +52,7 @@ VV.avatars = {
         try {
             const { data: users, error } = await supabase
                 .from('users')
-                .select('id, avatar, name')
+                .select('id, avatar, name, membership_tier, activity_points, reputation_points, role, vip_expires_at')
                 .eq('neighborhood', VV.data.neighborhood || VV.data.user?.neighborhood);
 
             if (error) throw error;
@@ -60,12 +60,14 @@ VV.avatars = {
             if (users) {
                 users.forEach(u => {
                     VV.avatars.avatarCache[u.id] = u.avatar || null;
+                    VV.avatars.tierCache[u.id] = VV.avatars.calculateTier(u);
                 });
             }
         } catch (err) {
             console.error('Error cargando cache de avatares:', err);
         }
     },
+
 
     getUserAvatar(userId) {
         // Si es el usuario actual, usar VV.data.user
@@ -209,13 +211,21 @@ VV.avatars = {
                 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin: 2rem 0;">
                     <!-- Avatar actual -->
                     <div style="text-align: center;">
-                        <div style="width: 150px; height: 150px; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 5rem; margin: 0 auto 1rem; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
-                            ${avatar.emoji}
+                        <div style="margin: 0 auto 1rem; display: inline-block;">
+                            ${VV.avatars.getAvatarWithFrame(VV.data.user.id, 150)}
                         </div>
                         <h4 style="margin: 0.5rem 0;">${avatar.name}</h4>
-                        <p style="margin: 0; color: var(--gray-600); font-size: 0.85rem;">
+                        <p style="margin: 0 0 0.5rem 0; color: var(--gray-600); font-size: 0.85rem;">
                             ${VV.avatars.getRarityBadge(avatar.rarity)}
                         </p>
+                        <div style="margin: 0.5rem 0;">
+                            ${VV.avatars.getTierBadge(VV.data.user.id)}
+                        </div>
+                        <div style="background: var(--gray-50); padding: 0.75rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.8rem; color: var(--gray-600);">
+                            <i class="fas fa-bolt"></i> Actividad: ${VV.data.user.activity_points || 0} pts<br>
+                            <i class="fas fa-heart"></i> Reputación: ${VV.data.user.reputation_points || 0} pts
+                        </div>
+
                         <button class="btn-primary" onclick="VV.avatars.showAvatarGallery()" style="margin-top: 1rem; width: auto;">
                             <i class="fas fa-edit"></i> Cambiar Avatar
                         </button>
@@ -490,6 +500,218 @@ VV.avatars.fetchAvatars = async function(userIds) {
     } catch (e) {
         console.error('Error fetch avatars:', e);
     }
+};
+// ========== SISTEMA DE RANGOS Y MARCOS ANIMADOS ==========
+
+// CSS de animaciones (se inyecta una sola vez)
+VV.avatars.injectFrameCSS = function() {
+    if (document.getElementById('avatar-frame-css')) return;
+    const style = document.createElement('style');
+    style.id = 'avatar-frame-css';
+    style.textContent = `
+        @keyframes avatar-glow-orange {
+            0%, 100% { box-shadow: 0 0 8px rgba(249, 115, 22, 0.4); }
+            50% { box-shadow: 0 0 18px rgba(249, 115, 22, 0.8); }
+        }
+        @keyframes avatar-pulse-blue {
+            0%, 100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); transform: scale(1); }
+            50% { box-shadow: 0 0 22px rgba(59, 130, 246, 0.9); transform: scale(1.03); }
+        }
+        @keyframes avatar-glow-purple {
+            0%, 100% { box-shadow: 0 0 14px rgba(139, 92, 246, 0.6); }
+            50% { box-shadow: 0 0 30px rgba(139, 92, 246, 1); }
+        }
+        @keyframes avatar-gold-rotate {
+            0% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.6), 0 0 30px rgba(245, 158, 11, 0.2); }
+            25% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.9), 0 0 50px rgba(245, 158, 11, 0.4); }
+            50% { box-shadow: 0 0 35px rgba(245, 158, 11, 1), 0 0 70px rgba(245, 158, 11, 0.5); }
+            75% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.9), 0 0 50px rgba(245, 158, 11, 0.4); }
+            100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.6), 0 0 30px rgba(245, 158, 11, 0.2); }
+        }
+        @keyframes avatar-sparkle {
+            0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1) rotate(180deg); }
+        }
+        .avatar-sparkle {
+            position: absolute;
+            color: #fbbf24;
+            font-size: 10px;
+            animation: avatar-sparkle 1.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+    `;
+    document.head.appendChild(style);
+};
+
+// Configuración de rangos
+VV.avatars.tierConfig = {
+    'vecino': {
+        label: 'Vecino',
+        color: '#94a3b8',
+        gradient: 'linear-gradient(135deg, #94a3b8, #64748b)',
+        glow: '0 0 4px rgba(148, 163, 184, 0.3)',
+        animation: 'none',
+        badge: '👤',
+        sparkles: false
+    },
+    'activo': {
+        label: 'Activo',
+        color: '#f97316',
+        gradient: 'linear-gradient(135deg, #f97316, #ea580c)',
+        glow: '0 0 8px rgba(249, 115, 22, 0.4)',
+        animation: 'avatar-glow-orange 2s ease-in-out infinite',
+        badge: '🔥',
+        sparkles: false
+    },
+    'reconocido': {
+        label: 'Reconocido',
+        color: '#3b82f6',
+        gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+        glow: '0 0 12px rgba(59, 130, 246, 0.5)',
+        animation: 'avatar-pulse-blue 1.5s ease-in-out infinite',
+        badge: '⭐',
+        sparkles: false
+    },
+    'lider': {
+        label: 'Líder',
+        color: '#8b5cf6',
+        gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+        glow: '0 0 16px rgba(139, 92, 246, 0.6)',
+        animation: 'avatar-glow-purple 2s ease-in-out infinite',
+        badge: '👑',
+        sparkles: true
+    },
+    'vip': {
+        label: 'VIP',
+        color: '#f59e0b',
+        gradient: 'linear-gradient(135deg, #fbbf24, #f59e0b, #d97706)',
+        glow: '0 0 20px rgba(245, 158, 11, 0.7)',
+        animation: 'avatar-gold-rotate 3s linear infinite',
+        badge: '💎',
+        sparkles: true
+    }
+};
+
+// Cache de tiers de otros usuarios
+VV.avatars.tierCache = {};
+
+// Cargar tiers de usuarios
+VV.avatars.loadTierCache = async function() {
+    try {
+        const { data: users, error } = await supabase
+            .from('users')
+            .select('id, membership_tier, activity_points, reputation_points, role, vip_expires_at')
+            .eq('neighborhood', VV.data.neighborhood || VV.data.user?.neighborhood);
+
+        if (error) throw error;
+        if (users) {
+            users.forEach(u => {
+                VV.avatars.tierCache[u.id] = VV.avatars.calculateTier(u);
+            });
+        }
+    } catch (err) {
+        console.error('Error cargando tiers:', err);
+    }
+};
+
+// Calcular rango según puntos y reputación
+VV.avatars.calculateTier = function(user) {
+    // VIP tiene prioridad si está vigente
+    if (user.membership_tier === 'vip' && user.vip_expires_at) {
+        if (new Date(user.vip_expires_at) > new Date()) return 'vip';
+    }
+
+    const points = user.activity_points || 0;
+    const reputation = user.reputation_points || 0;
+    const isModerator = user.role === 'moderator' || user.is_moderator;
+
+    if (points >= 150 && reputation >= 10 && isModerator) return 'lider';
+    if (points >= 100 && reputation >= 5) return 'reconocido';
+    if (points >= 50) return 'activo';
+
+    return 'vecino';
+};
+
+// Obtener rango de un usuario
+VV.avatars.getUserTier = function(userId) {
+    if (userId === VV.data.user?.id) {
+        return VV.avatars.calculateTier(VV.data.user) || 'vecino';
+    }
+    return VV.avatars.tierCache?.[userId] || 'vecino';
+};
+
+// Renderizar avatar con marco animado
+VV.avatars.getAvatarWithFrame = function(userId, size) {
+    size = size || 60;
+    VV.avatars.injectFrameCSS();
+
+    const avatar = VV.avatars.getUserAvatar(userId);
+    const tier = VV.avatars.getUserTier(userId);
+    const config = VV.avatars.tierConfig[tier] || VV.avatars.tierConfig['vecino'];
+
+    const sparklePositions = [
+        { top: '-4px', left: '50%', delay: '0s' },
+        { top: '30%', right: '-6px', delay: '0.3s' },
+        { bottom: '-4px', left: '30%', delay: '0.6s' },
+        { top: '30%', left: '-6px', delay: '0.9s' }
+    ];
+
+    return `
+        <div style="
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            padding: 3px;
+            background: ${config.gradient};
+            box-shadow: ${config.glow};
+            animation: ${config.animation};
+            position: relative;
+            display: inline-block;
+        ">
+            <div style="
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: ${Math.round(size * 0.5)}px;
+            ">
+                ${avatar.emoji}
+            </div>
+            ${tier !== 'vecino' ? `
+                <div style="
+                    position: absolute;
+                    bottom: -2px;
+                    right: -2px;
+                    background: ${config.color};
+                    color: white;
+                    font-size: ${Math.round(size * 0.22)}px;
+                    width: ${Math.round(size * 0.32)}px;
+                    height: ${Math.round(size * 0.32)}px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: 2px solid white;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                ">
+                    ${config.badge}
+                </div>
+            ` : ''}
+            ${config.sparkles ? sparklePositions.map(p => `
+                <div class="avatar-sparkle" style="${p.top ? 'top: ' + p.top + ';' : ''}${p.bottom ? 'bottom: ' + p.bottom + ';' : ''}${p.left ? 'left: ' + p.left + ';' : ''}${p.right ? 'right: ' + p.right + ';' : ''} animation-delay: ${p.delay};">✨</div>
+            `).join('') : ''}
+        </div>
+    `;
+};
+
+// Obtener badge de rango como HTML
+VV.avatars.getTierBadge = function(userId) {
+    const tier = VV.avatars.getUserTier(userId);
+    const config = VV.avatars.tierConfig[tier];
+    return `<span style="background: ${config.gradient}; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-block;">${config.badge} ${config.label}</span>`;
 };
 
 console.log('✅ Módulo AVATARS cargado');
