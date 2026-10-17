@@ -2938,36 +2938,30 @@ VV.admin.loadRanksManagement = async function(filterNeighborhood) {
             const vipExpires = user.vip_expires_at ? new Date(user.vip_expires_at).toLocaleDateString('es-AR') : null;
 
             return `
-            <div class="user-card" style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; padding: 1rem;">
-                <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 200px;">
-                    <div style="flex-shrink: 0;">${VV.avatars.getAvatarWithFrame(user.id, 48)}</div>
-                    <div>
-                        <h4 style="margin: 0;">${user.name}</h4>
-                        <p style="margin: 0; font-size: 0.8rem; color: var(--gray-600);">${user.email}</p>
-                        <div style="margin-top: 0.25rem;">
-                            <span style="background: ${config.gradient}; color: white; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600;">${config.badge} ${config.label}</span>
-                            ${isVIP && vipExpires ? `<span style="font-size: 0.7rem; color: var(--gray-500); margin-left: 0.5rem;">VIP hasta ${vipExpires}</span>` : ''}
-                        </div>
+            <div style="background: white; border-radius: 10px; padding: 0.75rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border-left: 4px solid ${config.color}; display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="flex-shrink: 0;">${VV.avatars.getAvatarWithFrame(user.id, 40)}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <h4 style="margin: 0; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${user.name}</h4>
+                        <span style="background: ${config.gradient}; color: white; padding: 0.1rem 0.4rem; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">${config.badge} ${config.label}</span>
+                        ${isVIP && vipExpires ? `<span style="font-size: 0.65rem; color: var(--gray-500); margin-left: 0.3rem;">Hasta ${vipExpires}</span>` : ''}
                     </div>
                 </div>
-                <div style="text-align: center; padding: 0 0.5rem;">
-                    <p style="margin: 0; font-size: 0.7rem; color: var(--gray-500);">Actividad</p>
-                    <p style="margin: 0; font-weight: 700; color: var(--warning-orange);">${user.activity_points || 0}</p>
+                <div style="display: flex; gap: 0.5rem; font-size: 0.75rem;">
+                    <span style="background: #fff7ed; padding: 0.15rem 0.4rem; border-radius: 4px; color: #c2410c;"><i class="fas fa-bolt"></i> ${user.activity_points || 0}</span>
+                    <span style="background: #eff6ff; padding: 0.15rem 0.4rem; border-radius: 4px; color: #1d4ed8;"><i class="fas fa-star"></i> ${user.reputation_points || 0}</span>
                 </div>
-                <div style="text-align: center; padding: 0 0.5rem;">
-                    <p style="margin: 0; font-size: 0.7rem; color: var(--gray-500);">Reputación</p>
-                    <p style="margin: 0; font-weight: 700; color: var(--primary-blue);">${user.reputation_points || 0}</p>
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
-                    <button class="btn-approve" onclick="VV.admin.addPoints('${user.id}', 'activity', 10)" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;"><i class="fas fa-bolt"></i> +10</button>
-                    <button class="btn-approve" onclick="VV.admin.addPoints('${user.id}', 'reputation', 5)" style="font-size: 0.75rem; padding: 0.35rem 0.6rem; background: var(--primary-blue);"><i class="fas fa-star"></i> +5</button>
-                    <button class="btn-edit" onclick="VV.admin.showVIPModal('${user.id}')" style="font-size: 0.75rem; padding: 0.35rem 0.6rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white;"><i class="fas fa-crown"></i> VIP</button>
-                    ${isVIP ? `<button class="btn-delete" onclick="VV.admin.removeVIP('${user.id}')" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;"><i class="fas fa-times"></i> Quitar VIP</button>` : ''}
-                    <button class="btn-delete" onclick="VV.admin.resetPoints('${user.id}')" style="font-size: 0.75rem; padding: 0.35rem 0.6rem;"><i class="fas fa-redo"></i> Reset</button>
+                <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
+                    <button onclick="VV.admin.addPoints('${user.id}', 'activity', 10)" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; background: #f97316; color: white; border: none; border-radius: 4px; cursor: pointer;"><i class="fas fa-bolt"></i> +10</button>
+                    <button onclick="VV.admin.addPoints('${user.id}', 'reputation', 5)" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;"><i class="fas fa-star"></i> +5</button>
+                    <button onclick="VV.admin.showVIPModal('${user.id}')" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 4px; cursor: pointer;"><i class="fas fa-crown"></i> VIP</button>
+                    ${isVIP ? `<button onclick="VV.admin.removeVIP('${user.id}')" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; background: #94a3b8; color: white; border: none; border-radius: 4px; cursor: pointer;"><i class="fas fa-times"></i></button>` : ''}
+                    <button onclick="VV.admin.resetPoints('${user.id}')" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;"><i class="fas fa-redo"></i></button>
                 </div>
             </div>`;
         }).join('');
     });
+
 
     container.innerHTML = html || '<p style="text-align: center; padding: 2rem;">No hay usuarios</p>';
 
