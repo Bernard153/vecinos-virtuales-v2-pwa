@@ -3054,6 +3054,17 @@ VV.admin.removeVIP = async function(userId) {
         alert('Error al remover VIP');
     }
 };
+VV.admin.loadBannerImage = function() {
+    const bannerImage = localStorage.getItem('welcomeBannerImage');
+    if (bannerImage) {
+        const bannerEl = document.getElementById('welcome-banner') || document.getElementById('dashboard-banner');
+        if (bannerEl) {
+            bannerEl.style.backgroundImage = "url('" + bannerImage + "')";
+            bannerEl.style.backgroundSize = 'cover';
+            bannerEl.style.backgroundPosition = 'center';
+        }
+    }
+};
 
 console.log('✅ Módulo ADMIN cargado');
 
