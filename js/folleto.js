@@ -83,7 +83,20 @@ async function cargarContenidoFolleto() {
 
 
         if (error) throw error;
+
+        // Ordenar: VIP primero, luego destacados
+        data.sort((a, b) => {
+            const aVIP = a.user_id && VV.avatars.getUserTier(a.user_id) === 'vip';
+            const bVIP = b.user_id && VV.avatars.getUserTier(b.user_id) === 'vip';
+            if (aVIP && !bVIP) return -1;
+            if (bVIP && !aVIP) return 1;
+            if (a.highlighted && !b.highlighted) return -1;
+            if (b.highlighted && !a.highlighted) return 1;
+            return 0;
+        });
+
         gridFolleto.innerHTML = '';
+
 
         if (!data || data.length === 0) {
         gridFolleto.innerHTML = `
@@ -109,11 +122,15 @@ async function cargarContenidoFolleto() {
             card.className = 'folleto-item';
 
             
+            // Detectar si el usuario es VIP
+            const isUserVIP = item.user_id && VV.avatars.getUserTier(item.user_id) === 'vip';
+
             // Estilo VIP/destacado
-            const vipStyle = item.highlighted ? 'border: 3px solid #f59e0b; box-shadow: 0 4px 12px rgba(251,191,36,0.3);' : '';
+            const vipStyle = (item.highlighted || isUserVIP) ? 'border: 3px solid #f59e0b; box-shadow: 0 4px 12px rgba(251,191,36,0.3);' : '';
             const vipBadge = item.vip_icon ? `<span style="position:absolute;top:5px;left:5px;background:rgba(0,0,0,0.7);color:gold;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;">${item.vip_icon}</span>` : '';
             const vipLabel = item.vip_label ? `<span style="position:absolute;top:5px;right:5px;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:0.2rem 0.5rem;border-radius:12px;font-size:0.7rem;font-weight:600;">${item.vip_label}</span>` : '';
-            
+            const userVIPBadge = isUserVIP && !item.vip_label ? `<span style="position:absolute;top:5px;right:5px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:white;padding:0.2rem 0.5rem;border-radius:12px;font-size:0.7rem;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,0.2);">💎 VIP</span>` : '';
+
             // Días restantes
             const daysLeft = Math.ceil((new Date(item.expires_at) - new Date()) / (1000 * 60 * 60 * 24));
             const expiryBadge = `<span style="font-size:0.7rem;color:${daysLeft <= 2 ? '#ef4444' : '#94a3b8'};">⏰ ${daysLeft}d restantes</span>`;
@@ -121,18 +138,20 @@ async function cargarContenidoFolleto() {
             const mensajeWS = encodeURIComponent(`¡Hola! Vi tu anuncio en Vecinos Virtuales: *${item.titulo}*`);
             
             card.innerHTML = `
-                <div style="position:relative;${vipStyle}">
+                    <div style="position:relative;${vipStyle}">
                     ${vipBadge}
                     ${vipLabel}
+                    ${userVIPBadge}
                     <img src="${item.url_imagen}" alt="${item.titulo}" loading="lazy" style="width:100%;border-radius:8px;">
                 </div>
+
                 <div class="folleto-text" style="padding:10px;">
                     <strong style="display:block; margin-bottom:5px;">${sanitizeText(item.titulo)}</strong>
                     <p style="font-size:0.85em; color:#444;">${sanitizeText(item.descripcion)}</p>
 
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;">
                         ${expiryBadge}
-                        <span style="font-size:0.7rem;color:#94a3b8;">${item.nombre_vecino || ''}</span>
+                        <span style="font-size:0.7rem;color:${isUserVIP ? '#d97706;font-weight:600;' : '#94a3b8;'}">${item.nombre_vecino || ''}</span>
                     </div>
                     <a href="https://wa.me/?text=${mensajeWS}" target="_blank" class="btn-share-ws" style="display:block; margin-top:10px; color:#25d366; text-decoration:none; font-weight:bold; font-size:0.8rem;">
                         <i class="fab fa-whatsapp"></i> Consultar
