@@ -39,8 +39,9 @@ const VV = {
                 
                 // Cargar cache de avatares y rangos
                 if (VV.avatars && VV.avatars.loadAvatarCache) {
-                    VV.avatars.loadAvatarCache();
+                    await VV.avatars.loadAvatarCache();
                 }
+
             } catch (error) {
                 console.error('Error en loadFromSupabase:', error);
             }
