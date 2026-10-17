@@ -2970,10 +2970,11 @@ VV.admin.loadRanksManagement = async function(filterNeighborhood) {
 
 VV.admin.addPoints = async function(userId, type, amount) {
     try {
-        const { data: user, error: fetchError } = await supabase.from('users').select(type).eq('id', userId).single();
+        const column = type === 'activity' ? 'activity_points' : 'reputation_points';
+        const { data: user, error: fetchError } = await supabase.from('users').select(column).eq('id', userId).single();
         if (fetchError) throw fetchError;
-        const newPoints = (user[type] || 0) + amount;
-        const { error: updateError } = await supabase.from('users').update({ [type]: newPoints }).eq('id', userId);
+        const newPoints = (user[column] || 0) + amount;
+        const { error: updateError } = await supabase.from('users').update({ [column]: newPoints }).eq('id', userId);
         if (updateError) throw updateError;
         VV.utils.showSuccess('+' + amount + ' ' + (type === 'activity' ? 'actividad' : 'reputación') + ' agregados');
         VV.admin.loadRanksManagement();
@@ -2982,6 +2983,7 @@ VV.admin.addPoints = async function(userId, type, amount) {
         alert('Error al agregar puntos');
     }
 };
+
 
 VV.admin.resetPoints = async function(userId) {
     if (!confirm('¿Resetear todos los puntos de este usuario?')) return;
