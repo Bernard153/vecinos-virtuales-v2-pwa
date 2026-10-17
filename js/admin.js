@@ -2967,9 +2967,10 @@ VV.admin.loadRanksManagement = async function(filterNeighborhood) {
                 </div>
             </div>`;
         }).join('');
-    }).join('');
+    }
 
     container.innerHTML = html || '<p style="text-align: center; padding: 2rem;">No hay usuarios</p>';
+
 };
 
 VV.admin.addPoints = async function(userId, type, amount) {
