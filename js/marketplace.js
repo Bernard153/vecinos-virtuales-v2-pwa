@@ -78,7 +78,10 @@ VV.marketplace = {
         if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0) {
             VV.avatars.loadAvatarCache().then(() => VV.marketplace.loadShopping());
             return;
+        }
+
         const container = document.getElementById('all-products');
+
 
         // Filtrar solo productos del mismo barrio
         const neighborhoodProducts = VV.data.products.filter(p =>
