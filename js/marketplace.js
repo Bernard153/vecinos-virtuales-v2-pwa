@@ -74,6 +74,10 @@ VV.marketplace = {
 
     // Cargar todos los productos (comprar)
     loadShopping() {
+        // Si el cache de rangos está vacío, cargarlo primero
+        if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0) {
+            VV.avatars.loadAvatarCache().then(() => VV.marketplace.loadShopping());
+            return;
         const container = document.getElementById('all-products');
 
         // Filtrar solo productos del mismo barrio
