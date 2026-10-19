@@ -40,7 +40,13 @@ const VV = {
                 // Cargar cache de avatares y rangos
                 if (VV.avatars && VV.avatars.loadAvatarCache) {
                     await VV.avatars.loadAvatarCache();
+                    // Re-renderizar productos si el usuario está en Comprar
+                    const productsContainer = document.getElementById('all-products');
+                    if (productsContainer && productsContainer.innerHTML !== '') {
+                        VV.marketplace.loadShopping();
+                    }
                 }
+
 
             } catch (error) {
                 console.error('Error en loadFromSupabase:', error);
