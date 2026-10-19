@@ -220,7 +220,13 @@ VV.marketplace = {
 
     // Filtrar productos
     filterProducts() {
+        if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0) {
+            VV.avatars.loadAvatarCache().then(() => VV.marketplace.filterProducts());
+            return;
+        }
+
         const search = document.getElementById('product-search').value.toLowerCase();
+
         const category = document.getElementById('category-filter').value;
 
         let filtered = VV.data.products.filter(p =>
@@ -1226,7 +1232,13 @@ VV.marketplace = {
 
     // Búsqueda de productos
     searchProducts() {
+        if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0) {
+            VV.avatars.loadAvatarCache().then(() => VV.marketplace.searchProducts());
+            return;
+        }
+
         const searchTerm = document.getElementById('product-search').value.trim();
+
         if (!searchTerm) {
             alert('Por favor escribe el nombre de un producto');
             return;
