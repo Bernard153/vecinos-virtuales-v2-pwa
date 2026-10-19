@@ -1277,9 +1277,14 @@ VV.marketplace = {
     },
 
     // Renderizar tarjeta de producto (helper)
-    renderProductCard(p) {
+        renderProductCard(p) {
+        const sellerTier = VV.avatars.getUserTier(p.seller_id);
+        const isVIP = sellerTier === 'vip';
+        const tierConfig = VV.avatars.tierConfig[sellerTier];
+
         return `
-                <div class="product-card">
+                <div class="product-card" style="${isVIP ? 'border: 2px solid #f59e0b; box-shadow: 0 2px 12px rgba(245, 158, 11, 0.25); position: relative;' : ''}">
+                ${isVIP ? `<div style="position: absolute; top: -8px; right: 12px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.6rem; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 1;">💎 VIP</div>` : ''}
 		${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
                 <div class="card-header">
                     <h3>${p.product}</h3>
@@ -1287,14 +1292,19 @@ VV.marketplace = {
                     <span class="badge" style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white;">🔖 Reservable</span>
                     <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
                 </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                    <div style="flex-shrink: 0;">${VV.avatars.getAvatarWithFrame(p.seller_id, 36)}</div>
+                    <div>
+                        <p style="margin: 0; font-size: 0.85rem;"><strong style="${isVIP ? 'color: #d97706;' : ''}">${p.seller_name} #${p.seller_number}</strong></p>
+                        <span style="font-size: 0.7rem; background: ${tierConfig.gradient}; color: white; padding: 0.1rem 0.35rem; border-radius: 6px;">${tierConfig.badge} ${tierConfig.label}</span>
+                    </div>
+                </div>
                 <p><strong>Negocio:</strong> ${p.business}</p>
-                <p><strong>Vendedor:</strong> ${VV.avatars.getUserAvatar(p.seller_id).emoji} ${p.seller_name} #${p.seller_number}</p>
                 <p><strong>Precio:</strong> <span style="font-size: 1.5rem; color: var(--success-green); font-weight: bold;">$${p.price}</span> / ${p.unit}</p>
                 <p><strong>Contacto:</strong> ${p.contact}</p>
                 <button onclick="VV.map.showBusinessLocationById('${p.id}')" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">
                     <i class="fas fa-map-marker-alt"></i> Ver ubicación en el mapa
                 </button>
-
                 ${p.description ? `<p style="color: var(--gray-600); font-size: 0.9rem;">${sanitizeText(p.description)}</p>` : ''}
                 <button class="btn-primary" onclick="VV.reservations.create('${p.id}')" style="width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, var(--primary-blue), var(--primary-purple));">
                     <i class="fas fa-calendar-check"></i> Reservar
@@ -1310,6 +1320,7 @@ VV.marketplace = {
             </div>
                 `;
     },
+
 
     // Cargar productos populares
     loadPopularProducts() {
