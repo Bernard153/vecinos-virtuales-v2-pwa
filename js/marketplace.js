@@ -74,25 +74,23 @@ VV.marketplace = {
 
     // Cargar todos los productos (comprar)
     loadShopping() {
+        const container = document.getElementById('all-products');
+
+        if (!container) return;
+
         // Si el cache de rangos está vacío, cargarlo primero
         if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0) {
             VV.avatars.loadAvatarCache().then(() => VV.marketplace.loadShopping());
             return;
         }
 
-        const container = document.getElementById('all-products');
-
-
-        // Filtrar solo productos del mismo barrio
         const neighborhoodProducts = VV.data.products.filter(p =>
             !p.neighborhood || isSameNeighborhood(p.neighborhood, VV.data.neighborhood)
         ).sort((a, b) => {
-            // Productos VIP primero
             const aVIP = VV.avatars.getUserTier(a.seller_id) === 'vip';
             const bVIP = VV.avatars.getUserTier(b.seller_id) === 'vip';
             if (aVIP && !bVIP) return -1;
             if (bVIP && !aVIP) return 1;
-            // Destacados después
             if (a.featured && !b.featured) return -1;
             if (b.featured && !a.featured) return 1;
             return 0;
@@ -119,7 +117,7 @@ VV.marketplace = {
             return `
             <div class="product-card" style="${isVIP ? 'border: 2px solid #f59e0b; box-shadow: 0 2px 12px rgba(245, 158, 11, 0.25); position: relative;' : ''}">
                 ${isVIP ? `<div style="position: absolute; top: -8px; right: 12px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.6rem; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 1;">💎 VIP</div>` : ''}
-		${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
+                ${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
                 <div class="card-header">
                     <h3>${p.product}</h3>
                     ${p.featured ? '<span class="badge featured">⭐ Destacado</span>' : ''}
@@ -138,7 +136,6 @@ VV.marketplace = {
                 <button onclick="VV.map.showBusinessLocationById('${p.id}')" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">
                     <i class="fas fa-map-marker-alt"></i> Ver ubicación en el mapa
                 </button>
-
                 <p><strong>Categoría:</strong> ${p.category}</p>
                 <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
                 <div class="card-footer">
@@ -150,7 +147,6 @@ VV.marketplace = {
                         <i class="fas fa-phone"></i> ${p.contact}
                     </div>
                 </div>
-                <!-- PRECIOS COLABORATIVOS -->
                 <div id="collab-prices-${p.id}" class="collab-prices-container" style="display: none; padding: 0.75rem; background: var(--gray-50); border: 1px dashed var(--gray-300); border-radius: 8px; margin-top: 0.5rem;">
                 </div>
                 <div style="text-align: right; margin-top: 0.25rem; margin-bottom: 0.5rem;">
@@ -163,10 +159,10 @@ VV.marketplace = {
                         <button class="btn-edit" onclick="VV.marketplace.showForm('${p.id}')">
                             <i class="fas fa-edit"></i> Editar
                         </button>
-                    <button class="btn-delete" onclick="VV.marketplace.deleteProduct('${p.id}')">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </button>
-                </div>
+                        <button class="btn-delete" onclick="VV.marketplace.deleteProduct('${p.id}')">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </div>
                 ` : canModerate ? `
                     <div style="margin-top: 1rem;">
                         <button class="btn-delete" onclick="VV.marketplace.deleteProduct('${p.id}')" style="width: 100%;">
@@ -197,7 +193,6 @@ VV.marketplace = {
         `;
         }).join('');
 
-
         VV.marketplace.setupFilters();
         VV.marketplace.updateCart();
         VV.marketplace.loadPopularProducts();
@@ -209,100 +204,6 @@ VV.marketplace = {
         }, 100);
     },
 
-    // Setup filtros
-    setupFilters() {
-        const categoryFilter = document.getElementById('category-filter');
-        const categories = [...new Set(VV.data.products.map(p => p.category))];
-
-        categoryFilter.innerHTML = '<option value="">Todas las categorías</option>';
-        categories.forEach(cat => {
-            categoryFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
-        });
-
-        document.getElementById('product-search').oninput = VV.marketplace.filterProducts;
-        categoryFilter.onchange = VV.marketplace.filterProducts;
-    },
-
-    // Filtrar productos
-    filterProducts() {
-        const search = document.getElementById('product-search').value.toLowerCase();
-        const category = document.getElementById('category-filter').value;
-
-        // Filtrar solo productos del mismo barrio
-        let filtered = VV.data.products.filter(p =>
-            !p.neighborhood || isSameNeighborhood(p.neighborhood, VV.data.neighborhood)
-        );
-
-        if (search) {
-            filtered = filtered.filter(p =>
-                p.product.toLowerCase().includes(search) ||
-                p.business.toLowerCase().includes(search) ||
-                p.seller_name.toLowerCase().includes(search)
-            );
-        }
-
-        if (category) {
-            filtered = filtered.filter(p => p.category === category);
-        }
-
-        const container = document.getElementById('all-products');
-        if (filtered.length === 0) {
-            container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--gray-600);"><i class="fas fa-search" style="font-size: 3rem; opacity: 0.5;"></i><h3>No se encontraron productos</h3></div>';
-            return;
-        }
-
-        container.innerHTML = filtered.map(p => `
-            <div class="product-card">
-		${p.image_url ? `<img src="${p.image_url}" alt="${p.product}" style="width:100%;height:180px;object-fit:cover;border-radius:8px 8px 0 0;">` : ''}
-                <div class="card-header">
-                    <h3>${p.product}</h3>
-                    ${p.featured ? '<span class="badge featured">Destacado</span>' : ''}
-                    <span class="badge quality-${p.quality.toLowerCase().replace(' ', '-')}">${p.quality}</span>
-                </div>
-                <p><strong>Vendedor:</strong> ${p.seller_avatar || '👤'} ${p.seller_name}</p>
-                <p><strong>Negocio:</strong> ${p.business}</p>
-                <p><strong>Categoría:</strong> ${p.category}</p>
-                <button onclick="VV.map.showBusinessLocationById('${p.id}')" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;">
-                    <i class="fas fa-map-marker-alt"></i> Ver ubicación en el mapa
-                </button>
-                <p style="color: var(--gray-600); margin: 0.5rem 0;">${p.description || ''}</p>
-
-                <div class="card-footer">
-                    <div class="price">
-                        <span class="price-amount">$${p.price}</span>
-                        <span class="price-unit">/ ${p.unit}</span>
-                    </div>
-                    <div class="contact">
-                        <i class="fas fa-phone"></i> ${p.contact}
-                    </div>
-                </div>
-                <!-- PRECIOS COLABORATIVOS -->
-                <div id="collab-prices-filtered-${p.id}" class="collab-prices-container" style="display: none; padding: 0.75rem; background: var(--gray-50); border: 1px dashed var(--gray-300); border-radius: 8px; margin-top: 0.5rem;">
-                </div>
-                <div style="text-align: right; margin-top: 0.25rem; margin-bottom: 0.5rem;">
-                    <button class="btn-text" onclick="VV.marketplace.showCollabPriceForm('${p.id}', '${p.product.replace(/'/g, "\\'")}')" style="background: none; border: none; color: var(--primary-purple); font-size: 0.8rem; cursor: pointer; text-decoration: underline;">
-                        <i class="fas fa-search-dollar"></i> ¿Lo viste más barato?
-                    </button>
-                </div>
-                <div class="quantity-input" style="margin-top: 1rem;">
-                    <label style="font-size: 0.85rem; color: var(--gray-600);">Cantidad:</label>
-                    <input type="number" id="qty-${p.id}" min="0.01" step="0.01" value="1" style="width: 100%; padding: 0.5rem; border: 1px solid var(--gray-300); border-radius: 4px; margin: 0.25rem 0;">
-                </div>
-                <button class="btn-primary" onclick="VV.marketplace.addToCart('${p.id}')" style="width: 100%; margin-top: 0.5rem;">
-                    <i class="fas fa-plus"></i> Agregar a Agenda
-                </button>
-                <button class="btn-secondary" onclick="VV.marketplace.compareProduct('${p.product}')" style="width: 100%; margin-top: 0.5rem;">
-                    <i class="fas fa-balance-scale"></i> Comparar Precios
-                </button>
-            </div>
-        `).join('');
-
-        setTimeout(() => {
-            if (typeof VV.marketplace.loadCollabPrices === 'function') {
-                VV.marketplace.loadCollabPrices(filtered);
-            }
-        }, 100);
-    },
 
     // Mostrar formulario
     showForm(productId = null) {
