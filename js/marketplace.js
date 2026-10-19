@@ -75,12 +75,20 @@ VV.marketplace = {
     // Cargar todos los productos (comprar)
     loadShopping() {
         const container = document.getElementById('all-products');
-
         if (!container) return;
 
-        // Si el cache de rangos está vacío, cargarlo primero
-        
+        // Si el cache está vacío, cargarlo primero (una sola vez)
+        if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0 && !VV.avatars._cacheLoading) {
+            VV.avatars._cacheLoading = true;
+            VV.avatars.loadAvatarCache().finally(() => {
+                VV.avatars._cacheLoading = false;
+                VV.marketplace.loadShopping();
+            });
+            return;
+        }
+
         const neighborhoodProducts = VV.data.products.filter(p =>
+
             !p.neighborhood || isSameNeighborhood(p.neighborhood, VV.data.neighborhood)
         ).sort((a, b) => {
             const aVIP = VV.avatars.getUserTier(a.seller_id) === 'vip';
@@ -216,8 +224,17 @@ VV.marketplace = {
 
     // Filtrar productos
     filterProducts() {
-        
+        if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0 && !VV.avatars._cacheLoading) {
+            VV.avatars._cacheLoading = true;
+            VV.avatars.loadAvatarCache().finally(() => {
+                VV.avatars._cacheLoading = false;
+                VV.marketplace.filterProducts();
+            });
+            return;
+        }
+
         const search = document.getElementById('product-search').value.toLowerCase();
+
 
         const category = document.getElementById('category-filter').value;
 
@@ -1224,7 +1241,17 @@ VV.marketplace = {
 
     // Búsqueda de productos
     searchProducts() {
+        if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0 && !VV.avatars._cacheLoading) {
+            VV.avatars._cacheLoading = true;
+            VV.avatars.loadAvatarCache().finally(() => {
+                VV.avatars._cacheLoading = false;
+                VV.marketplace.searchProducts();
+            });
+            return;
+        }
+
         const searchTerm = document.getElementById('product-search').value.trim();
+
 
         if (!searchTerm) {
             alert('Por favor escribe el nombre de un producto');
