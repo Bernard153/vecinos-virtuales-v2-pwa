@@ -77,7 +77,7 @@ VV.marketplace = {
         const container = document.getElementById('all-products');
         // DEBUG TEMPORAL - borrar después
         const dbg = document.createElement('div');
-        dbg.style.cssText = 'position:fixed;bottom:80px;right:10px;background:rgba(0,0,0,0.85);color:#0f0;padding:10px;font-size:11px;z-index:99999;border-radius:6px;max-width:250px;';
+        dbg.style.cssText = 'position:fixed;top:10px;right:10px;background:rgba(0,0,0,0.85);color:#0f0;padding:10px;font-size:11px;z-index:99999;border-radius:6px;max-width:250px;';
         dbg.innerHTML = 'Cache: ' + Object.keys(VV.avatars.tierCache).length + '<br>Barrio: ' + (VV.data.neighborhood || 'undefined') + '<br>User barrio: ' + (VV.data.user?.neighborhood || 'undefined');
         document.body.appendChild(dbg);
         setTimeout(() => { if (dbg.parentNode) dbg.remove(); }, 15000);
