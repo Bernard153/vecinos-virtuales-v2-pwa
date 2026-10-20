@@ -91,7 +91,15 @@
       "description": "Propuestas del barrio",
       "url": "/?section=improvements",
       "icons": [{ "src": "/images/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Alerta Vigía",
+      "short_name": "Vigía",
+      "description": "Activar alerta de seguridad",
+      "url": "/?alerta=1",
+      "icons": [{ "src": "/images/icon-96x96.png", "sizes": "96x96" }]
     }
+
   ],
   "share_target": {
     "action": "/share",
