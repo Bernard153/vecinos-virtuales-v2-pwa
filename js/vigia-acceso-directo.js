@@ -17,6 +17,9 @@
             sessionStorage.removeItem('vigia_alerta_directa');
             setTimeout(function() {
                 if (VV.alertas && typeof VV.alertas.startAlert === 'function') {
+                    if (typeof VV.alertas.init === 'function') {
+                        VV.alertas.init();
+                    }
                     VV.alertas.startAlert();
                 }
             }, 500);
