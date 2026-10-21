@@ -70,8 +70,19 @@ function minimizarFolleto() {
 }
 
 async function cargarContenidoFolleto() {
+    // VIP: cargar cache de avatares antes de renderizar (igual que marketplace)
+    if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0 && !VV.avatars._cacheLoading) {
+        VV.avatars._cacheLoading = true;
+        VV.avatars.loadAvatarCache().finally(() => {
+            VV.avatars._cacheLoading = false;
+            cargarContenidoFolleto();
+        });
+        return;
+    }
+
     try {
         const now = new Date().toISOString();
+
         const { data, error } = await supabase
             .from('folleto_imagenes')
             .select('*')
@@ -124,6 +135,9 @@ async function cargarContenidoFolleto() {
             
             // Detectar si el usuario es VIP
             const isUserVIP = item.user_id && VV.avatars.getUserTier(item.user_id) === 'vip';
+            const authorTier = item.user_id ? VV.avatars.getUserTier(item.user_id) : 'free';
+            const tierConfig = VV.avatars.tierConfig[authorTier] || { gradient: '#94a3b8', badge: '', label: '' };
+
 
             // Estilo VIP/destacado
             const vipStyle = (item.highlighted || isUserVIP) ? 'border: 3px solid #f59e0b; box-shadow: 0 4px 12px rgba(251,191,36,0.3);' : '';
@@ -149,10 +163,17 @@ async function cargarContenidoFolleto() {
                     <strong style="display:block; margin-bottom:5px;">${sanitizeText(item.titulo)}</strong>
                     <p style="font-size:0.85em; color:#444;">${sanitizeText(item.descripcion)}</p>
 
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px;">
+                    <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:5px;">
                         ${expiryBadge}
-                        <span style="font-size:0.7rem;color:${isUserVIP ? '#d97706;font-weight:600;' : '#94a3b8;'}">${item.nombre_vecino || ''}</span>
                     </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                        <div style="flex-shrink: 0;">${item.user_id ? VV.avatars.getAvatarWithFrame(item.user_id, 36) : '👤'}</div>
+                        <div>
+                            <p style="margin: 0; font-size: 0.85rem;"><strong style="${isUserVIP ? 'color: #d97706;' : ''}">${item.nombre_vecino || ''}</strong></p>
+                            <span style="font-size: 0.7rem; background: ${tierConfig.gradient}; color: white; padding: 0.1rem 0.35rem; border-radius: 6px;">${tierConfig.badge} ${tierConfig.label}</span>
+                        </div>
+                    </div>
+
                     <a href="https://wa.me/?text=${mensajeWS}" target="_blank" class="btn-share-ws" style="display:block; margin-top:10px; color:#25d366; text-decoration:none; font-weight:bold; font-size:0.8rem;">
                         <i class="fab fa-whatsapp"></i> Consultar
                     </a>

@@ -172,6 +172,26 @@ VV.cultural = {
         const neighborhoodPosts = VV.data.culturalPosts.filter(p => 
             !p.neighborhood || p.neighborhood === VV.data.neighborhood
         );
+
+        // VIP: cargar cache de avatares antes de renderizar (igual que marketplace)
+        if (VV.avatars && Object.keys(VV.avatars.tierCache).length === 0 && !VV.avatars._cacheLoading) {
+            VV.avatars._cacheLoading = true;
+            VV.avatars.loadAvatarCache().finally(() => {
+                VV.avatars._cacheLoading = false;
+                VV.cultural.load();
+
+            });
+            return;
+        }
+
+        // VIP: ordenar posts de VIP primero (igual que marketplace)
+        neighborhoodPosts.sort((a, b) => {
+            const aVIP = VV.avatars.getUserTier(a.author_id || a.userId) === 'vip';
+            const bVIP = VV.avatars.getUserTier(b.author_id || b.userId) === 'vip';
+            if (aVIP && !bVIP) return -1;
+            if (bVIP && !aVIP) return 1;
+            return 0;
+        });
         
         if (neighborhoodPosts.length === 0) {
             container.innerHTML = `
@@ -191,13 +211,28 @@ VV.cultural = {
             const mediaUrl = post.media_url || post.mediaUrl;
             const authorName = post.author_name || post.userName;
             
+            // VIP: detectar tier del autor (igual que marketplace)
+            const authorId = post.author_id || post.userId;
+            const authorTier = VV.avatars.getUserTier(authorId);
+            const isVIP = authorTier === 'vip';
+            const tierConfig = VV.avatars.tierConfig[authorTier];
+            
             return `
-            <div class="cultural-card">
+            <div class="cultural-card" style="${isVIP ? 'border: 2px solid #f59e0b; box-shadow: 0 2px 12px rgba(245, 158, 11, 0.25); position: relative;' : ''}">
+                ${isVIP ? `<div style="position: absolute; top: -8px; right: 12px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.15rem 0.6rem; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 1;">💎 VIP</div>` : ''}
                 <div class="card-header">
                     <h3>${post.title}</h3>
                     <span class="badge" style="background: rgba(139, 92, 246, 0.1); color: var(--primary-purple);">${VV.cultural.getTypeLabel(post.type)}</span>
                 </div>
-                <p><strong>Por:</strong> ${post.author_avatar || '👤'} ${authorName}</p>
+                
+                ${/* VIP: avatar dinámico con marco + tier badge (igual que marketplace) */ ''}
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0;">
+                    <div style="flex-shrink: 0;">${VV.avatars.getAvatarWithFrame(authorId, 36)}</div>
+                    <div>
+                        <p style="margin: 0; font-size: 0.85rem;"><strong style="${isVIP ? 'color: #d97706;' : ''}">${authorName}</strong></p>
+                        <span style="font-size: 0.7rem; background: ${tierConfig.gradient}; color: white; padding: 0.1rem 0.35rem; border-radius: 6px;">${tierConfig.badge} ${tierConfig.label}</span>
+                    </div>
+                </div>
                 
                 ${mediaType === 'image' && mediaUrl ? `
                     <div style="margin: 1rem 0;">
@@ -215,7 +250,7 @@ VV.cultural = {
                 ` : ''}
                 
                 <p style="color: var(--gray-700); margin: 0.5rem 0; white-space: pre-wrap;">${sanitizeText(post.description)}</p>
-                                <div class="card-footer">
+                <div class="card-footer">
                     <button class="like-btn" onclick="VV.cultural.like('${post.id}')">
                         <i class="fas fa-heart"></i> ${post.likes}
                     </button>
@@ -224,7 +259,6 @@ VV.cultural = {
                         <span id="comment-count-${post.id}" style="background: var(--gray-200); border-radius: 10px; padding: 0.1rem 0.4rem; font-size: 0.7rem; margin-left: 0.2rem; display: none;"></span>
                     </button>
                     <button onclick="denunciarPublicacion('${post.id}', 'cultural')" style="background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;margin-left:0.5rem;">🚩 Denunciar</button>
-
 
                     ${!isOwner ? `
                         <button class="like-btn" onclick="VV.cultural.showGiftPicker('${post.id}', '${post.author_id || post.userId}')" style="margin-left: 0.5rem; background: rgba(251,191,36,0.15); color: #f59e0b;">
@@ -252,7 +286,8 @@ VV.cultural = {
             </div>
         `;
         }).join('');
-	        // Cargar regalos de cada post
+        
+        // Cargar regalos de cada post
         neighborhoodPosts.forEach(post => {
             this.loadGifts(post.id);
         });
@@ -260,8 +295,8 @@ VV.cultural = {
         neighborhoodPosts.forEach(post => {
             this.loadCommentCount(post.id);
         });
-
     },
+
     
     // Mostrar formulario
     showForm(postId = null) {
