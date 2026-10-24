@@ -404,4 +404,48 @@ VV.vigiaVIP = {
         const enlace = this.generarEnlace(resultado.codigo);
         alert('✅ Ruta creada!\n\nEnlace para el teléfono del niño:\n' + enlace + '\n\nCopiá este enlace y abrilo en el celular del niño.');
     }
+    // ============================================================
+    // MOSTRAR PANEL COMPLETO (overlay)
+    // ============================================================
+    mostrarPanel() {
+        if (!this.isVIP()) {
+            alert('🛡️ Ruta Segura es una función exclusiva para usuarios VIP.\n\nContactá al administrador para más información.');
+            return;
+        }
+
+        let overlay = document.getElementById('vigia-panel-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'vigia-panel-overlay';
+            overlay.className = 'modal-overlay';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99998;overflow-y:auto;';
+            document.body.appendChild(overlay);
+        }
+
+        overlay.innerHTML = `
+            <div style="background:white;max-width:600px;margin:2rem auto;border-radius:12px;padding:1.5rem;min-height:80vh;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <h2 style="margin:0;color:#1a1a40;"><i class="fas fa-shield-alt"></i> Ruta Segura</h2>
+                    <button onclick="document.getElementById('vigia-panel-overlay').style.display='none'; VV.vigiaVIP.detenerMapaEnVivo();" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#94a3b8;">✕</button>
+                </div>
+                <p style="font-size:0.85rem;color:#64748b;margin-bottom:1rem;">Creá una ruta para seguir a tu hijo en tiempo real. Se generará un enlace para abrir en el teléfono del niño.</p>
+                <div id="vigia-form-container"></div>
+                <hr style="margin:1.5rem 0;border:none;border-top:1px solid #e2e8f0;">
+                <h3 style="margin:0 0 0.75rem;color:#1a1a40;">Mis rutas</h3>
+                <div id="vigia-rutas-container"></div>
+            </div>
+        `;
+
+        overlay.style.display = 'flex';
+        overlay.onclick = function(e) {
+            if (e.target === overlay) {
+                overlay.style.display = 'none';
+                VV.vigiaVIP.detenerMapaEnVivo();
+            }
+        };
+
+        this.renderFormularioNuevaRuta('vigia-form-container');
+        this.renderRutas('vigia-rutas-container');
+    },
+
 };
