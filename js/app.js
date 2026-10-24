@@ -52,5 +52,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+// ===== ACCESO DIRECTO A ALERTA VIGÍA =====
+// Detecta ?alerta=1 en la URL y dispara la alerta automáticamente
+// después de que la app esté lista (con sesión o tras login)
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('alerta') === '1') {
+        sessionStorage.setItem('vigia_alerta_directa', '1');
+    }
+
+    // Envolver startApp para interceptar cuando la app está lista
+    const startAppOriginal = VV.auth.startApp;
+    VV.auth.startApp = async function() {
+        await startAppOriginal.apply(this, arguments);
+        if (sessionStorage.getItem('vigia_alerta_directa') === '1') {
+            sessionStorage.removeItem('vigia_alerta_directa');
+            // Pequeña espera para que los modales y alertas estén listos
+            setTimeout(() => {
+                if (VV.alertas && typeof VV.alertas.startAlert === 'function') {
+                    VV.alertas.startAlert();
+                }
+            }, 500);
+        }
+    };
+})();
 
 console.log('✅ Módulo APP cargado correctamente');
