@@ -403,7 +403,7 @@ VV.vigiaVIP = {
 
         const enlace = this.generarEnlace(resultado.codigo);
         alert('✅ Ruta creada!\n\nEnlace para el teléfono del niño:\n' + enlace + '\n\nCopiá este enlace y abrilo en el celular del niño.');
-    }
+    },
     // ============================================================
     // MOSTRAR PANEL COMPLETO (overlay)
     // ============================================================
