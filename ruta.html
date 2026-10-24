@@ -110,4 +110,31 @@
 </head>
 <body>
     <div id="loading-screen">
-        <div class="loading">
+        <div class="loading"></div>
+        <p style="margin-top:1rem;font-size:0.85rem;opacity:0.6;">Iniciando ruta segura...</p>
+    </div>
+
+    <div id="error">
+        <h2>⚠️ Ruta no disponible</h2>
+        <p id="error-msg">El enlace no es válido o la ruta ya no está activa.</p>
+    </div>
+
+    <div id="ruta-activa" style="display:none;">
+        <div id="shield">🛡️</div>
+        <h1>Ruta segura activa</h1>
+        <p id="message">Tu papá te está cuidando 🌟</p>
+        <div id="timer"></div>
+        <div id="status">📍 Compartiendo ubicación...</div>
+    </div>
+
+    <div id="alerta-gracia">
+        <h2>⏰ ¿Llegaste a destino?</h2>
+        <p>Si ya llegaste, tocá el botón</p>
+        <button id="btn-llegue">✅ Sí, ya llegué</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/ruta-segura.js"></script>
+</body>
+</html>
