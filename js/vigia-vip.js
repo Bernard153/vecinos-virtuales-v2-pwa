@@ -433,17 +433,17 @@ VV.vigiaVIP = {
             overlay = document.createElement('div');
             overlay.id = 'vigia-panel-overlay';
             overlay.className = 'modal-overlay';
-            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99998;overflow-y:auto;';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:99998;overflow-y:auto;-webkit-overflow-scrolling:touch;';
             document.body.appendChild(overlay);
         }
 
         overlay.innerHTML = `
-            <div style="background:white;max-width:600px;margin:2rem auto;border-radius:12px;padding:1.5rem;min-height:80vh;">
+            <div style="background:white;max-width:600px;margin:0 auto;border-radius:12px;padding:1rem;min-height:100vh;box-sizing:border-box;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                    <h2 style="margin:0;color:#1a1a40;"><i class="fas fa-shield-alt"></i> Ruta Segura</h2>
+                    <h2 style="margin:0;color:#1a1a40;font-size:1.2rem;"><i class="fas fa-shield-alt"></i> Ruta Segura</h2>
                     <button onclick="document.getElementById('vigia-panel-overlay').style.display='none'; VV.vigiaVIP.detenerMapaEnVivo();" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:#94a3b8;">✕</button>
                 </div>
-                <p style="font-size:0.85rem;color:#64748b;margin-bottom:1rem;">Creá una ruta para seguir a tu hijo en tiempo real. Se generará un enlace para abrir en el teléfono del niño.</p>
+                <p style="font-size:0.85rem;color:#64748b;margin-bottom:1rem;">Creá una ruta para seguir a tu hijo en tiempo real.</p>
                 <div id="vigia-form-container"></div>
                 <hr style="margin:1.5rem 0;border:none;border-top:1px solid #e2e8f0;">
                 <h3 style="margin:0 0 0.75rem;color:#1a1a40;">Mis rutas</h3>
@@ -451,7 +451,7 @@ VV.vigiaVIP = {
             </div>
         `;
 
-        overlay.style.display = 'flex';
+        overlay.style.display = 'block';
         overlay.onclick = function(e) {
             if (e.target === overlay) {
                 overlay.style.display = 'none';
@@ -462,5 +462,6 @@ VV.vigiaVIP = {
         this.renderFormularioNuevaRuta('vigia-form-container');
         this.renderRutas('vigia-rutas-container');
     },
+
 
 };
