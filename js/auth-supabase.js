@@ -543,10 +543,11 @@ VV.auth = {
             VV.featured.loadFeaturedOffers();
         }
         
-        // Cargar avatar del usuario (TEMPORALMENTE DESHABILITADO - pendiente migración)
-        // if (typeof VV.avatars !== 'undefined') {
-        //     VV.avatars.updateAvatarDisplay();
-        // }
+        // Cargar avatar del usuario
+        if (typeof VV.avatars !== 'undefined') {
+            VV.avatars.updateAvatarDisplay();
+        }
+
         
         // Mostrar app
         VV.utils.showScreen('main-app');

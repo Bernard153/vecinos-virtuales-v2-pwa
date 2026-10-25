@@ -165,6 +165,9 @@ VV.avatars = {
             
             // Actualizar usuario actual
             VV.data.user.avatar = avatarId;
+            VV.data.user.avatar = avatarId;
+            localStorage.setItem('vecinosVirtualesUser', JSON.stringify(VV.data.user));
+
             
             // Actualizar UI
             VV.avatars.updateAvatarDisplay();

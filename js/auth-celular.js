@@ -130,6 +130,7 @@
             if (existingUser) {
                 // Ya tiene todo, solo loguear
                 localStorage.setItem('vv_phone_auth', existingUser.id);
+                localStorage.setItem('vecinosVirtualesUser', JSON.stringify(existingUser));
                 VV.data.user = existingUser;
                 VV.data.neighborhood = existingUser.neighborhood;
                 VV.utils.showSuccess(`¡Bienvenido de nuevo, ${existingUser.name}!`);
