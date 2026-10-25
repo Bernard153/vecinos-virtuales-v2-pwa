@@ -359,7 +359,16 @@ VV.vigiaVIP = {
         `;
 
         setTimeout(() => {
-            this.mapa = L.map('vigia-mapa-destino').setView([-34.6037, -58.3816], 12);
+            // Centrar en Tucumán por defecto
+            this.mapa = L.map('vigia-mapa-destino').setView([-26.8083, -65.2167], 13);
+
+            // Si el GPS está disponible, centrar en la ubicación actual
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(pos) {
+                    VV.vigiaVIP.mapa.setView([pos.coords.latitude, pos.coords.longitude], 15);
+                });
+            }
+
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap'
             }).addTo(this.mapa);
