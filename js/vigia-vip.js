@@ -402,8 +402,14 @@ VV.vigiaVIP = {
         }
 
         const enlace = this.generarEnlace(resultado.codigo);
-        alert('✅ Ruta creada!\n\nEnlace para el teléfono del niño:\n' + enlace + '\n\nCopiá este enlace y abrilo en el celular del niño.');
+        navigator.clipboard.writeText(enlace).then(function() {
+            alert('✅ Ruta creada!\n\nEl enlace se copió automáticamente al portapapeles.\n\nPegalo en el navegador del teléfono del niño.');
+        }).catch(function() {
+            prompt('Copia este enlace (Ctrl+C):', enlace);
+        });
+        this.renderRutas('vigia-rutas-container');
     },
+
     // ============================================================
     // MOSTRAR PANEL COMPLETO (overlay)
     // ============================================================
