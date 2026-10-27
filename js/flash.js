@@ -821,3 +821,6 @@
     };
 
 })();
+
+console.log('✅ Módulo FLASH cargado');
+
