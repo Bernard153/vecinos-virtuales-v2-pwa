@@ -31,6 +31,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             await VV.geo.init();
             VV.geo.updateLocationUI();
+            // Anuncios flash — mostrar al iniciar sesión
+            if (typeof VV.flash !== 'undefined') {
+                VV.flash.init();
+            }
+
         } else {
             // VISITANTE: mostrar landing pública
             VV.utils.showScreen('landing-screen');

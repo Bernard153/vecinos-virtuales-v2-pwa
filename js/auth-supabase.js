@@ -445,8 +445,13 @@ VV.auth = {
     },
     
     // Cerrar sesión
-        async logout() {
+    async logout() {
         if (confirm('¿Cerrar sesión?')) {
+            // Detener anuncios flash
+            if (typeof VV.flash !== 'undefined') {
+                VV.flash.detener();
+            }
+            
             localStorage.removeItem('vv_phone_auth');
             try {
                 await supabase.auth.signOut();
@@ -459,6 +464,7 @@ VV.auth = {
             }
         }
     },
+
     
     // Eliminar cuenta permanentemente
     async deleteAccount() {

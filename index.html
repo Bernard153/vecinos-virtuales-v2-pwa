@@ -34,6 +34,8 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/karaoke.css">
+    <link rel="stylesheet" href="css/flash.css">
+
 </head>
 <body>
     <!-- PANTALLA DE CARGA -->
@@ -940,6 +942,26 @@
                         <h3><i class="fas fa-star"></i> Solicitudes de Ofertas Destacadas</h3>
                         <div id="featured-requests-list"></div>
                     </div>
+                    <div id="admin-flash" class="admin-tab-content">
+                        <div style="padding: 20px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <h3 style="margin-bottom: 20px; color: #1e293b;">✨ Anuncios Flash</h3>
+                            <p style="color: #64748b; margin-bottom: 15px; font-size: 0.9rem;">
+                                Anuncios intersticiales con marco plateado que aparecen al iniciar sesión y en tandas de 2. El admin programa, edita, activa y elimina.
+                            </p>
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                                <button class="btn-primary" onclick="VV.flashAdmin.abrirForm()">
+                                    <i class="fas fa-plus"></i> Nuevo Flash
+                                </button>
+                                <button class="btn-secondary" onclick="VV.flashAdmin.cargarLista()">
+                                    <i class="fas fa-sync"></i> Refrescar
+                                </button>
+                            </div>
+                            <div id="admin-flash-lista" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+                                <p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">Cargando flashes...</p>
+                            </div>
+                        </div>
+                    </div>
+
 		    <div id="admin-mensajes" class="admin-tab-content">
     		    	<div style="padding: 20px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;">
         		    <h3 style="margin-bottom: 20px; color: #1e293b;">✉️ Mensajes a Usuarios</h3>
@@ -958,6 +980,9 @@
                         </button>
                         <button class="tab-btn" onclick="VV.admin.showTab('featured')">
                             <i class="fas fa-star"></i> Destacados
+                        </button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('flash')">
+                            <i class="fas fa-bolt"></i> Flash
                         </button>
                         <button class="tab-btn" onclick="VV.admin.showTab('avatars')">
                             <i class="fas fa-user-circle"></i> Avatares
@@ -979,7 +1004,7 @@
                         <button class="tab-btn" onclick="VV.admin.showTab('folleto')">
                             <i class="fas fa-images"></i> Folleto
                         </button>
-						<button class="tab-btn" onclick="VV.utils.showSection('admin-neighborhoods')">
+			<button class="tab-btn" onclick="VV.utils.showSection('admin-neighborhoods')">
                             <i class="fas fa-map-marked-alt"></i> Barrios
                         </button>
                         <button class="tab-btn" onclick="VV.utils.showSection('admin-products')">
@@ -988,10 +1013,10 @@
                         <button class="tab-btn" onclick="VV.utils.showSection('admin-improvements')">
                             <i class="fas fa-hammer"></i> Mejoras
                         </button>
-						<button class="tab-btn" onclick="VV.utils.showSection('admin-users')">
+			<button class="tab-btn" onclick="VV.utils.showSection('admin-users')">
                             <i class="fas fa-users"></i> Usuarios
                         </button>
-						<button class="tab-btn" onclick="VV.utils.showSection('admin-wallet')">
+			<button class="tab-btn" onclick="VV.utils.showSection('admin-wallet')">
                             <i class="fas fa-coins"></i> Billetera
                         </button>
 			<button class="tab-btn" onclick="VV.admin.showTab('denuncias')">
@@ -1531,6 +1556,7 @@
     <script src="js/geo.js"></script>
     <script src="js/map.js"></script>
     <script src="js/admin.js"></script>
+    <script src="js/flash.js"></script>
     <script src="js/moderator.js"></script>
     <script src="js/evidencia.js"></script>
     <script src="js/alertas-vigilancia.js"></script>

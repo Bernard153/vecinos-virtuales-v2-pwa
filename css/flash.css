@@ -1,0 +1,486 @@
+/* ============================================================
+   SISTEMA DE ANUNCIOS FLASH — Vecinos Virtuales
+   Marco plateado, esquinas redondeadas, animaciones alegres
+   ============================================================ */
+
+/* ===== OVERLAY (capa que cubre la pantalla) ===== */
+#flash-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+#flash-overlay.flash-activo {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ===== CAJA DEL FLASH (marco plateado, esquinas redondeadas) ===== */
+#flash-box {
+    width: 300px;
+    max-width: 90vw;
+    height: 400px;
+    max-height: 70vh;
+    border-radius: 28px;
+    background: #fff;
+    padding: 6px;
+    position: relative;
+    border: 5px solid #c0c0c0;
+    box-shadow:
+        0 0 0 3px #a8a8a8,
+        0 0 0 5px #e8e8e8,
+        0 0 30px rgba(200, 200, 220, 0.5),
+        0 15px 50px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+}
+
+/* ===== IMAGEN ===== */
+#flash-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 22px;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+/* ===== TEXTO SUPERPUESTO ===== */
+#flash-text {
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 10px 14px;
+    text-align: center;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    border-radius: 0 0 18px 18px;
+}
+#flash-text.flash-text-top {
+    align-self: stretch;
+    order: -1;
+    border-radius: 18px 18px 0 0;
+}
+#flash-text.flash-text-center {
+    align-self: center;
+    margin: auto;
+    border-radius: 12px;
+}
+#flash-text.flash-text-bottom {
+    align-self: stretch;
+    order: 1;
+}
+#flash-text.flash-text-none {
+    display: none;
+}
+
+/* ===== BOTÓN CERRAR (X) ===== */
+#flash-close {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f0f0f0, #c0c0c0);
+    border: 2px solid #a8a8a8;
+    color: #1a1a2e;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100002;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s;
+}
+#flash-close:hover {
+    transform: scale(1.15);
+}
+
+/* ===== ETIQUETA "ANUNCIO" ===== */
+#flash-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #e8e8e8, #b8b8b8);
+    color: #1a1a2e;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    z-index: 100001;
+    border: 1px solid #a8a8a8;
+}
+
+/* ===== CONTADOR DE TANDA ===== */
+#flash-counter {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 100001;
+}
+#flash-counter .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transition: background 0.3s;
+}
+#flash-counter .dot.active {
+    background: #fff;
+}
+
+/* ============================================================
+   ANIMACIONES DE ENTRADA (alegres)
+   ============================================================ */
+@keyframes flash-fade-in {
+    from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes flash-zoom-in {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+}
+@keyframes flash-slide-arriba {
+    from { opacity: 0; transform: translateY(60px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes flash-slide-izquierda {
+    from { opacity: 0; transform: translateX(60px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes flash-rebote {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.1); }
+    70% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+@keyframes flash-girar {
+    from { opacity: 0; transform: rotate(-180deg) scale(0.5); }
+    to { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+@keyframes flash-elastico {
+    0% { opacity: 0; transform: scale(0); }
+    55% { opacity: 1; transform: scale(1.15); }
+    75% { transform: scale(0.9); }
+    90% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+@keyframes flash-volar-arriba {
+    0% { opacity: 0; transform: translateY(120px) rotate(-10deg); }
+    60% { opacity: 1; transform: translateY(-10px) rotate(2deg); }
+    80% { transform: translateY(5px) rotate(-1deg); }
+    100% { transform: translateY(0) rotate(0); }
+}
+@keyframes flash-latido {
+    0% { opacity: 0; transform: scale(0.8); }
+    25% { opacity: 1; transform: scale(1.08); }
+    50% { transform: scale(0.98); }
+    75% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+/* ============================================================
+   ANIMACIONES DE SALIDA
+   ============================================================ */
+@keyframes flash-fade-out {
+    from { opacity: 1; } to { opacity: 0; }
+}
+@keyframes flash-zoom-out {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.5); }
+}
+@keyframes flash-slide-abajo {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(60px); }
+}
+@keyframes flash-girar-out {
+    from { opacity: 1; transform: rotate(0deg) scale(1); }
+    to { opacity: 0; transform: rotate(180deg) scale(0.5); }
+}
+@keyframes flash-volar-out {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-120px); }
+}
+
+/* ===== CLASES DE ANIMACIÓN ===== */
+.flash-anim-fade-in        { animation: flash-fade-in 0.5s ease forwards; }
+.flash-anim-zoom-in        { animation: flash-zoom-in 0.5s ease forwards; }
+.flash-anim-slide-arriba   { animation: flash-slide-arriba 0.5s ease forwards; }
+.flash-anim-slide-izquierda{ animation: flash-slide-izquierda 0.5s ease forwards; }
+.flash-anim-rebote         { animation: flash-rebote 0.6s ease forwards; }
+.flash-anim-girar          { animation: flash-girar 0.6s ease forwards; }
+.flash-anim-elastico       { animation: flash-elastico 0.7s ease forwards; }
+.flash-anim-volar-arriba   { animation: flash-volar-arriba 0.7s ease forwards; }
+.flash-anim-latido         { animation: flash-latido 0.6s ease forwards; }
+
+.flash-anim-fade-out       { animation: flash-fade-out 0.4s ease forwards; }
+.flash-anim-zoom-out       { animation: flash-zoom-out 0.4s ease forwards; }
+.flash-anim-slide-abajo    { animation: flash-slide-abajo 0.4s ease forwards; }
+.flash-anim-girar-out      { animation: flash-girar-out 0.5s ease forwards; }
+.flash-anim-volar-out      { animation: flash-volar-out 0.4s ease forwards; }
+
+/* ============================================================
+   PANEL DE ADMINISTRACIÓN DE FLASHES
+   ============================================================ */
+#admin-flash {
+    padding: 1rem 0;
+}
+
+.flash-admin-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.flash-admin-lista {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.flash-admin-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.2s;
+}
+.flash-admin-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.flash-admin-card-img {
+    width: 100%;
+    height: 160px;
+    background-size: cover;
+    background-position: center;
+    background-color: #f1f5f9;
+}
+
+.flash-admin-card-body {
+    padding: 0.85rem;
+}
+
+.flash-admin-card-body h4 {
+    margin: 0 0 0.35rem 0;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.flash-admin-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.flash-admin-badge.activo     { background: #dcfce7; color: #166534; }
+.flash-admin-badge.borrador   { background: #f1f5f9; color: #475569; }
+.flash-admin-badge.vencido    { background: #fee2e2; color: #991b1b; }
+.flash-admin-badge.eliminado  { background: #fee2e2; color: #991b1b; }
+.flash-admin-badge.autorizado { background: #dbeafe; color: #1e40af; }
+
+.flash-admin-card-meta {
+    font-size: 0.78rem;
+    color: #64748b;
+    margin-top: 0.4rem;
+}
+
+.flash-admin-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+.flash-admin-card-actions button {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.flash-admin-card-actions button:hover {
+    background: #e2e8f0;
+}
+.flash-admin-card-actions button.btn-activar {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+}
+.flash-admin-card-actions button.btn-eliminar {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}
+
+/* ===== FORMULARIO DE FLASH (modal) ===== */
+#flash-form-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 100010;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
+}
+#flash-form-modal.flash-modal-abierto {
+    display: flex;
+}
+
+.flash-form-contenido {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.flash-form-contenido h3 {
+    margin: 0 0 1rem 0;
+    color: #1e293b;
+    font-size: 1.2rem;
+}
+
+.flash-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+.flash-form-grid .full {
+    grid-column: 1 / -1;
+}
+
+.flash-form-group {
+    margin-bottom: 0.75rem;
+}
+.flash-form-group label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.25rem;
+}
+.flash-form-group input,
+.flash-form-group select,
+.flash-form-group textarea {
+    width: 100%;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    box-sizing: border-box;
+}
+
+/* ===== VISTA PREVIA ===== */
+.flash-vista-previa {
+    width: 100%;
+    max-width: 280px;
+    height: 360px;
+    margin: 0 auto;
+    border-radius: 28px;
+    background: #fff;
+    padding: 6px;
+    border: 5px solid #c0c0c0;
+    box-shadow:
+        0 0 0 3px #a8a8a8,
+        0 0 0 5px #e8e8e8,
+        0 8px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
+}
+.flash-vista-previa-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 22px;
+    background-size: cover;
+    background-position: center;
+    background-color: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+.flash-vista-previa-text {
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 10px 14px;
+    text-align: center;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    border-radius: 0 0 18px 18px;
+}
+.flash-vista-previa-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #e8e8e8, #b8b8b8);
+    color: #1a1a2e;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid #a8a8a8;
+}
+
+.flash-form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.flash-form-actions button {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+}
+.flash-form-actions .btn-guardar {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+}
+.flash-form-actions .btn-cancelar {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+/* ===== REPORTES ===== */
+.flash-reporte {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #475569;
+}
+.flash-reporte strong {
+    color: #1e293b;
+}
