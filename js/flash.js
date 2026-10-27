@@ -808,10 +808,11 @@
             document.getElementById('ff-intervalo').value = '10';
             document.getElementById('ff-url').value = '';
 
+            // Fecha inicio por defecto: ahora (en zona horaria local)
             var ahora = new Date();
-            ahora.setMinutes(ahora.getMinutes() - ahora.getTimezoneOffset());
-            document.getElementById('ff-fecha-inicio').value = ahora.toISOString().slice(0, 16);
-            document.getElementById('ff-fecha-fin').value = '';
+            var localISO = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('ff-fecha-inicio').value = localISO;
+
 
             var img = document.getElementById('ff-vista-img');
             img.style.backgroundImage = 'none';
