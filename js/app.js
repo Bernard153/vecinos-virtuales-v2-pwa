@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 VV.flash.init();
             }
 
+            // Cargar tiers de usuarios (para ver atributos VIP)
+            if (VV.avatars && VV.avatars.loadTierCache) {
+                VV.avatars.loadTierCache();
+            }
+
         } else {
             // VISITANTE: mostrar landing pública
             VV.utils.showScreen('landing-screen');
