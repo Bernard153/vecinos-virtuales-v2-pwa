@@ -598,19 +598,19 @@ VV.avatars.tierConfig = {
 // Cache de tiers de otros usuarios
 VV.avatars.tierCache = {};
 
-// Cargar tiers de usuarios
+// Cargar tiers de usuarios (vía función SECURITY DEFINER — bypassa RLS)
 VV.avatars.loadTierCache = async function() {
     try {
-        const { data: users, error } = await supabase
-            .from('users')
-            .select('id, membership_tier, activity_points, reputation_points, role, vip_expires_at')
-            .eq('neighborhood', VV.data.neighborhood || VV.data.user?.neighborhood);
+        const barrio = VV.data.neighborhood || VV.data.user?.neighborhood;
+        const { data, error } = await supabase
+            .rpc('get_user_tiers', { p_neighborhood: barrio });
 
         if (error) throw error;
-        if (users) {
-            users.forEach(u => {
-                VV.avatars.tierCache[u.id] = VV.avatars.calculateTier(u);
+        if (data) {
+            data.forEach(u => {
+                VV.avatars.tierCache[u.id] = u.tier;
             });
+            console.log('✅ Tiers cargados:', Object.keys(VV.avatars.tierCache).length, 'usuarios');
         }
     } catch (err) {
         console.error('Error cargando tiers:', err);
