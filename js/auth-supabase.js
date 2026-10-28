@@ -624,6 +624,9 @@ VV.auth = {
             if (editBannerBtn) editBannerBtn.style.display = 'none';
             VV.admin.loadBannerImage();
         }
+        // BUZÓN — visible para todos los roles
+        const buzonMenu = document.getElementById('buzon-menu-item');
+        if (buzonMenu) buzonMenu.style.display = 'flex';
     },
     
     // Setup menú móvil

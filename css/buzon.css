@@ -1,0 +1,302 @@
+/* ============================================================
+   BUZÓN DE MENSAJES — Vecinos Virtuales
+   ============================================================ */
+
+/* ===== BOTÓN DEL BUZÓN EN EL MENÚ ===== */
+.buzon-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 10px;
+    transition: transform 0.15s;
+}
+.buzon-btn:hover { transform: scale(1.02); }
+.buzon-btn i { font-size: 1.1rem; }
+
+/* ===== MODAL DEL BUZÓN ===== */
+#buzon-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 100020;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
+}
+#buzon-modal.buzon-abierto {
+    display: flex;
+}
+
+.buzon-contenido {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 550px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.buzon-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.buzon-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #1e293b;
+}
+.buzon-cerrar {
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #64748b;
+}
+.buzon-cerrar:hover { background: #e2e8f0; }
+
+/* ===== FORMULARIO ===== */
+.buzon-form-group {
+    margin-bottom: 0.85rem;
+}
+.buzon-form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.3rem;
+}
+.buzon-form-group select,
+.buzon-form-group input,
+.buzon-form-group textarea {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+.buzon-form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.buzon-tipo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+.buzon-tipo-btn {
+    padding: 0.6rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 0.82rem;
+    text-align: center;
+    transition: all 0.15s;
+    color: #475569;
+}
+.buzon-tipo-btn:hover { border-color: #93c5fd; }
+.buzon-tipo-btn.seleccionado {
+    border-color: #2563eb;
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.buzon-enviar {
+    width: 100%;
+    padding: 0.8rem;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+.buzon-enviar:hover { opacity: 0.9; }
+
+/* ===== LISTA DE MENSAJES DEL USUARIO ===== */
+.buzon-mensajes-lista {
+    margin-top: 1.5rem;
+}
+.buzon-mensajes-lista h4 {
+    font-size: 0.95rem;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0.4rem;
+}
+.buzon-msg-card {
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 0.85rem;
+    margin-bottom: 0.6rem;
+}
+.buzon-msg-card .msg-tipo {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+}
+.buzon-msg-card .msg-tipo.sugerencia { background: #dcfce7; color: #166534; }
+.buzon-msg-card .msg-tipo.solicitud { background: #dbeafe; color: #1e40af; }
+.buzon-msg-card .msg-tipo.reclamo { background: #fee2e2; color: #991b1b; }
+.buzon-msg-card .msg-tipo.datos_personales { background: #fef3c7; color: #92400e; }
+
+.buzon-msg-card .msg-asunto {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1e293b;
+    margin-bottom: 0.2rem;
+}
+.buzon-msg-card .msg-texto {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 0.4rem;
+}
+.buzon-msg-card .msg-fecha {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+.buzon-msg-card .msg-estado {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 0.4rem;
+}
+.buzon-msg-card .msg-estado.nuevo { background: #dbeafe; color: #1e40af; }
+.buzon-msg-card .msg-estado.respondido { background: #dcfce7; color: #166534; }
+.buzon-msg-card .msg-estado.cerrado { background: #f1f5f9; color: #64748b; }
+
+.buzon-msg-respuesta {
+    background: #eff6ff;
+    border-left: 3px solid #2563eb;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: #1e40af;
+}
+.buzon-msg-respuesta strong {
+    display: block;
+    font-size: 0.78rem;
+    margin-bottom: 0.2rem;
+}
+
+/* ===== PANEL ADMIN BUZÓN ===== */
+.buzon-admin-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.buzon-admin-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.buzon-admin-card.nuevo {
+    border-left: 4px solid #2563eb;
+}
+.buzon-admin-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+.buzon-admin-card-head h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+.buzon-admin-card-user {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 0.3rem;
+}
+.buzon-admin-card-msg {
+    font-size: 0.88rem;
+    color: #475569;
+    background: #f8fafc;
+    padding: 0.6rem;
+    border-radius: 6px;
+    margin: 0.5rem 0;
+}
+.buzon-admin-card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+.buzon-admin-card-actions button {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+}
+.buzon-admin-card-actions button:hover { background: #e2e8f0; }
+.buzon-admin-card-actions button.btn-responder {
+    background: #eff6ff;
+    color: #2563eb;
+    border-color: #93c5fd;
+}
+
+.buzon-admin-respuesta-area {
+    display: none;
+    margin-top: 0.75rem;
+}
+.buzon-admin-respuesta-area.abierta {
+    display: block;
+}
+.buzon-admin-respuesta-area textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    box-sizing: border-box;
+    font-family: inherit;
+    margin-bottom: 0.5rem;
+}
+.buzon-admin-respuesta-area button {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+}

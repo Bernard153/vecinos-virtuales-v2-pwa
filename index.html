@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="css/admin.css">
     <link rel="stylesheet" href="css/karaoke.css">
     <link rel="stylesheet" href="css/flash.css">
+    <link rel="stylesheet" href="css/buzon.css">
 
 </head>
 <body>
@@ -426,7 +427,10 @@
                     <a href="#" class="menu-item" id="vigia-ruta-menu" onclick="event.preventDefault(); VV.vigiaVIP.mostrarPanel();">
                         <i class="fas fa-shield-alt"></i><span>🛡️ Ruta Segura</span>
                     </a>
-
+		    <a href="#" class="menu-item" id="buzon-menu-item" onclick="event.preventDefault(); VV.buzon.abrir();">
+                        <i class="fas fa-inbox"></i>
+                        <span>Buzón</span>
+                    </a>
 
                     <!-- Menús de admin (ocultos por defecto) -->
                     <a href="#" class="menu-item" data-section="admin-neighborhoods" id="admin-neighborhoods-menu" style="display: none;">
@@ -452,6 +456,7 @@
                         <span>Anunciantes</span>
                     </a>
                     
+
                     <!-- Menú de moderador (oculto por defecto) -->
                     <a href="#" class="menu-item" data-section="moderator" id="moderator-menu-item" style="display: none;">
                         <i class="fas fa-shield-alt"></i>
@@ -984,6 +989,10 @@
                         <button class="tab-btn" onclick="VV.admin.showTab('flash')">
                             <i class="fas fa-bolt"></i> Flash
                         </button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('buzon')">
+                            <i class="fas fa-inbox"></i> Buzón
+                        </button>
+
                         <button class="tab-btn" onclick="VV.admin.showTab('avatars')">
                             <i class="fas fa-user-circle"></i> Avatares
                         </button>
@@ -1135,6 +1144,20 @@
 
                     <div id="admin-rangos" class="admin-tab-content">
                         <div id="admin-rangos-list" style="display: grid !important; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; padding: 1rem;">
+                    </div>
+                    <div id="admin-buzon" class="admin-tab-content">
+                        <div style="padding: 20px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <h3 style="margin-bottom: 20px; color: #1e293b;">📬 Buzón de Mensajes</h3>
+                            <p style="color: #64748b; margin-bottom: 15px; font-size: 0.9rem;">
+                                Sugerencias, solicitudes, reclamos y pedidos de datos personales de los vecinos.
+                            </p>
+                            <button class="btn-secondary" onclick="VV.buzonAdmin.cargarLista()">
+                                <i class="fas fa-sync"></i> Refrescar
+                            </button>
+                            <div id="admin-buzon-lista" style="margin-top: 15px;">
+                                <p style="text-align: center; color: #94a3b8; padding: 1rem;">Cargando mensajes...</p>
+                            </div>
+                        </div>
                     </div>
 
 
@@ -1557,6 +1580,7 @@
     <script src="js/map.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/flash.js"></script>
+    <script src="js/buzon.js"></script>
     <script src="js/moderator.js"></script>
     <script src="js/evidencia.js"></script>
     <script src="js/alertas-vigilancia.js"></script>
