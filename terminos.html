@@ -1,551 +1,427 @@
-<!DOCTYPE html>b
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Términos y Condiciones - Vecinos Virtuales</title>
+    <title>Términos y Condiciones — Vecinos Virtuales</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
-            min-height: 100vh;
-            padding: 2rem;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1e40af, #6d28d9);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .header p {
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
-
-        .content {
-            padding: 2rem;
-            max-height: 60vh;
-            overflow-y: auto;
-        }
-
-        .content h2 {
-            color: #1e40af;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
-
-        .content h3 {
-            color: #4b5563;
-            margin-top: 1.5rem;
-            margin-bottom: 0.75rem;
-            font-size: 1.1rem;
-        }
-
-        .content p, .content li {
-            color: #374151;
-            line-height: 1.8;
-            margin-bottom: 0.75rem;
-        }
-
-        .content ul {
-            margin-left: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .warning-box {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 1rem;
-            margin: 1.5rem 0;
-            border-radius: 4px;
-        }
-
-        .warning-box strong {
-            color: #92400e;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .danger-box {
-            background: #fee2e2;
-            border-left: 4px solid #ef4444;
-            padding: 1rem;
-            margin: 1.5rem 0;
-            border-radius: 4px;
-        }
-
-        .danger-box strong {
-            color: #991b1b;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .success-box {
-            background: #d1fae5;
-            border-left: 4px solid #10b981;
-            padding: 1rem;
-            margin: 1.5rem 0;
-            border-radius: 4px;
-        }
-
-        .footer {
-            background: #f3f4f6;
-            padding: 2rem;
-            border-top: 2px solid #e5e7eb;
-        }
-
-        .acceptance {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background: white;
-            border-radius: 8px;
-            border: 2px solid #e5e7eb;
-        }
-
-        .acceptance input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-        }
-
-        .acceptance label {
-            cursor: pointer;
-            color: #374151;
-            font-weight: 500;
-        }
-
-        .age-verification {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background: #fef3c7;
-            border-radius: 8px;
-            border: 2px solid #f59e0b;
-        }
-
-        .age-verification input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-        }
-
-        .age-verification label {
-            cursor: pointer;
-            color: #92400e;
-            font-weight: 600;
-        }
-
-        .buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        button {
-            padding: 1rem 2rem;
-            font-size: 1rem;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-accept {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-accept:hover:not(:disabled) {
-            background: #059669;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-accept:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-        }
-
-        .btn-decline {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-decline:hover {
-            background: #dc2626;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 1rem;
-            }
-
-            .header h1 {
-                font-size: 1.5rem;
-            }
-
-            .content {
-                padding: 1rem;
-                max-height: 50vh;
-            }
-
-            .buttons {
-                flex-direction: column;
-            }
-
-            button {
-                width: 100%;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(135deg, #2563eb, #7c3aed); min-height: 100vh; padding: 1rem; }
+        .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1e40af, #6d28d9); color: #fff; padding: 1.5rem; text-align: center; }
+        .header h1 { font-size: 1.6rem; margin-bottom: 0.3rem; }
+        .header p { opacity: 0.9; font-size: 0.85rem; }
+        .content { padding: 1.5rem; max-height: 55vh; overflow-y: auto; }
+        .content h2 { color: #1e40af; margin-top: 1.5rem; margin-bottom: 0.6rem; font-size: 1.15rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.3rem; }
+        .content h3 { color: #4b5563; margin-top: 1rem; margin-bottom: 0.4rem; font-size: 1rem; }
+        .content p, .content li { color: #374151; line-height: 1.7; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .content ul { margin-left: 1.5rem; margin-bottom: 0.75rem; }
+        strong { color: #1e293b; }
+        .warning-box { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 4px; font-size: 0.88rem; }
+        .warning-box strong { color: #92400e; display: block; margin-bottom: 0.3rem; }
+        .danger-box { background: #fee2e2; border-left: 4px solid #ef4444; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 4px; font-size: 0.88rem; }
+        .danger-box strong { color: #991b1b; display: block; margin-bottom: 0.3rem; }
+        .success-box { background: #d1fae5; border-left: 4px solid #10b981; padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 4px; font-size: 0.88rem; }
+        .success-box strong { color: #065f46; display: block; margin-bottom: 0.3rem; }
+        .footer { background: #f3f4f6; padding: 1.5rem; border-top: 2px solid #e5e7eb; }
+        .age-verification { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding: 0.85rem; background: #fef3c7; border-radius: 8px; border: 2px solid #f59e0b; }
+        .age-verification input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
+        .age-verification label { cursor: pointer; color: #92400e; font-weight: 600; font-size: 0.88rem; }
+        .acceptance { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding: 0.85rem; background: #fff; border-radius: 8px; border: 2px solid #e5e7eb; }
+        .acceptance input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; }
+        .acceptance label { cursor: pointer; color: #374151; font-weight: 500; font-size: 0.88rem; }
+        .buttons { display: flex; gap: 0.75rem; justify-content: center; }
+        .buttons button { padding: 0.85rem 1.5rem; font-size: 0.95rem; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-accept { background: #10b981; color: #fff; }
+        .btn-accept:hover:not(:disabled) { background: #059669; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(16,185,129,0.3); }
+        .btn-accept:disabled { background: #d1d5db; cursor: not-allowed; }
+        .btn-decline { background: #ef4444; color: #fff; }
+        .btn-decline:hover { background: #dc2626; }
+        .nota-legal { text-align: center; margin-top: 1rem; font-size: 0.78rem; color: #94a3b8; }
+        @media (max-width: 768px) { .content { max-height: 45vh; padding: 1rem; } .buttons { flex-direction: column; } .buttons button { width: 100%; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-file-contract"></i> Términos y Condiciones</h1>
-            <p>Vecinos Virtuales - Versión 2.1 PWA</p>
-            <p>Última actualización: 16 de Octubre de 2025</p>
-        </div>
+<div class="container">
 
-        <div class="content">
-            <div class="danger-box">
-                <strong>⚠️ IMPORTANTE - LEA CUIDADOSAMENTE</strong>
-                <p>Al utilizar esta plataforma, usted acepta estar legalmente obligado por estos términos. Si no está de acuerdo, NO utilice el servicio.</p>
-            </div>
-
-            <h2>1. NATURALEZA DEL SERVICIO</h2>
-            <p>Vecinos Virtuales es una plataforma de <strong>CONEXIÓN entre vecinos</strong>. Actuamos ÚNICAMENTE como <strong>INTERMEDIARIO TECNOLÓGICO</strong>.</p>
-
-            <div class="danger-box">
-                <strong>⚠️ IMPORTANTE - SOMOS SOLO UN INTERMEDIARIO:</strong>
-                <p>Vecinos Virtuales NO vende productos ni servicios.<br>
-                NO participamos en las transacciones entre usuarios.<br>
-                NO somos parte de ninguna compra, venta o intercambio.<br>
-                Solo CONECTAMOS vecinos. Las transacciones son DIRECTAS entre ellos.</p>
-            </div>
-
-            <div class="warning-box">
-                <strong>LA PLATAFORMA NO SE RESPONSABILIZA POR:</strong>
-                <ul>
-                    <li>Calidad, seguridad o legalidad de productos/servicios publicados</li>
-                    <li>Transacciones realizadas entre usuarios</li>
-                    <li>Veracidad de la información publicada por usuarios</li>
-                    <li>Cumplimiento de acuerdos entre usuarios</li>
-                    <li>Daños derivados del uso de productos/servicios</li>
-                    <li>Fraudes o estafas entre usuarios</li>
-                </ul>
-            </div>
-
-            <h3>Responsabilidad de las Transacciones:</h3>
-            <p>Todas las transacciones son <strong>DIRECTAS entre usuarios</strong>. Vecinos Virtuales:</p>
-            <ul>
-                <li>❌ NO procesa pagos</li>
-                <li>❌ NO cobra comisiones por transacciones</li>
-                <li>❌ NO maneja dinero de usuarios</li>
-                <li>❌ NO garantiza productos o servicios</li>
-                <li>❌ NO actúa como garante</li>
-            </ul>
-
-            <h2>2. RESTRICCIÓN DE EDAD - PROTECCIÓN DE MENORES</h2>
-            <div class="danger-box">
-                <strong>🚫 USO PROHIBIDO PARA MENORES DE 18 AÑOS</strong>
-                <p>Esta plataforma está ESTRICTAMENTE PROHIBIDA para menores de edad. Los padres o tutores son EXCLUSIVAMENTE RESPONSABLES de supervisar el uso de internet por parte de menores.</p>
-            </div>
-
-            <h3>Al registrarse, usted declara que:</h3>
-            <ul>
-                <li>✓ Es mayor de 18 años</li>
-                <li>✓ Tiene capacidad legal para aceptar estos términos</li>
-                <li>✓ No permitirá que menores usen su cuenta</li>
-            </ul>
-
-            <h2>3. RESPONSABILIDAD DEL USUARIO</h2>
-            <p>Cada usuario es <strong>ÚNICA Y EXCLUSIVAMENTE RESPONSABLE</strong> de:</p>
-            <ul>
-                <li>Todo el contenido que publique</li>
-                <li>Las transacciones que realice</li>
-                <li>Las comunicaciones que establezca</li>
-                <li>El uso de su cuenta y contraseña</li>
-                <li>Las consecuencias de sus acciones</li>
-            </ul>
-
-            <h3>Contenido Prohibido:</h3>
-            <ul>
-                <li>❌ Contenido ilegal, difamatorio u obsceno</li>
-                <li>❌ Incitación al odio o violencia</li>
-                <li>❌ Violación de derechos de autor</li>
-                <li>❌ Contenido engañoso o fraudulento</li>
-                <li>❌ Datos personales de terceros sin consentimiento</li>
-                <li>❌ Cualquier contenido que afecte a menores</li>
-            </ul>
-
-            <h2>4. NEUTRALIDAD Y NO DISCRIMINACIÓN</h2>
-            <div class="success-box">
-                <strong>✓ PRINCIPIO DE NEUTRALIDAD</strong>
-                <p>La plataforma mantiene una posición NEUTRAL respecto a creencias religiosas, afiliaciones políticas, orientación sexual, identidad de género, origen étnico o cualquier otra característica personal.</p>
-            </div>
-
-            <p>La plataforma <strong>NO promueve, respalda ni se opone</strong> a ninguna ideología política, creencia religiosa, movimiento social o corriente filosófica.</p>
-
-            <h2>5. EXENCIÓN DE RESPONSABILIDAD</h2>
-            <p><strong>LA PLATAFORMA SE PROPORCIONA "TAL CUAL"</strong> sin garantías de ningún tipo.</p>
-
-            <div class="warning-box">
-                <strong>NO GARANTIZAMOS:</strong>
-                <ul>
-                    <li>Disponibilidad continua del servicio</li>
-                    <li>Ausencia de errores</li>
-                    <li>Seguridad absoluta de datos</li>
-                    <li>Resultados específicos</li>
-                </ul>
-            </div>
-
-            <h2>6. LIMITACIÓN DE RESPONSABILIDAD</h2>
-            <p>La plataforma <strong>NO SERÁ RESPONSABLE</strong> por:</p>
-            <ul>
-                <li>Daños indirectos o consecuentes</li>
-                <li>Pérdida de beneficios o datos</li>
-                <li>Interrupción del servicio</li>
-                <li>Acciones de terceros usuarios</li>
-            </ul>
-
-            <h2>7. MAPA Y ALERTAS COMUNITARIAS</h2>
-            <div class="warning-box">
-                <strong>⚠️ INFORMACIÓN NO VERIFICADA:</strong>
-                <p>Las alertas, reportes y eventos en el mapa son publicados por USUARIOS, no por autoridades oficiales.</p>
-            </div>
-
-            <p>Vecinos Virtuales NO garantiza:</p>
-            <ul>
-                <li>La veracidad de las alertas reportadas</li>
-                <li>La exactitud de la información del mapa</li>
-                <li>La actualidad de los datos mostrados</li>
-            </ul>
-
-            <div class="danger-box">
-                <strong>🚨 ANTE EMERGENCIAS REALES:</strong>
-                <p>Contacte SIEMPRE a las autoridades oficiales:<br>
-                🔴 Policía: 911<br>
-                🔴 Bomberos: 100<br>
-                🔴 Emergencias médicas: 107</p>
-            </div>
-
-            <p>El usuario que reporta información falsa o maliciosa será suspendido permanentemente.</p>
-
-            <h2>8. SISTEMA DE ALERTAS VECINALES DE SEGURIDAD</h2>
-            <div class="warning-box">
-                <strong>⚠️ USO BAJO RESPONSABILIDAD DEL USUARIO:</strong>
-                <p>El sistema de alertas es una herramienta COMPLEMENTARIA de seguridad vecinal. NO reemplaza al 911 ni a las fuerzas de seguridad.</p>
-            </div>
-
-            <h3>¿Qué captura el sistema cuando se activa una alerta?</h3>
-            <ul>
-                <li>📸 Fotos automáticas con la cámara del dispositivo (cada 2 segundos, máximo 30 fotos)</li>
-                <li>🎤 Grabación de audio del entorno (hasta 3 minutos)</li>
-                <li>📍 Ubicación GPS en tiempo real (cada 5 segundos)</li>
-            </ul>
-
-            <h3>¿A dónde va la información?</h3>
-            <ul>
-                <li>Los datos se suben EN TIEMPO REAL a servidores seguros (Supabase)</li>
-                <li>Los MODERADORES del barrio reciben la alerta para su revisión</li>
-                <li>Si la alerta es aprobada, se publica a todos los vecinos del barrio</li>
-                <li>Si la alerta es falsa, el usuario puede borrar TODO con su código de 3 dígitos</li>
-            </ul>
-
-            <h3>Consentimiento de captura:</h3>
-            <p>Al activar el botón de alerta, el usuario ACEPTA que:</p>
-            <ul>
-                <li>Su dispositivo capture fotos, audio y ubicación automáticamente</li>
-                <li>Esta información se suba a servidores en la nube en tiempo real</li>
-                <li>Los moderadores revisen el contenido para validar la alerta</li>
-                <li>Si la alerta es aprobada, otros vecinos puedan ver las fotos, escuchar el audio y ver la ubicación</li>
-            </ul>
-
-            <div class="danger-box">
-                <strong>🚫 PROHIBIDO:</strong>
-                <ul>
-                    <li>Activar alertas falsas intencionalmente</li>
-                    <li>Usar el sistema para fines distintos a la seguridad vecinal</li>
-                    <li>Grabar a personas sin su consentimiento en espacios privados</li>
-                </ul>
-            </div>
-
-            <p>El usuario que abuse del sistema de alertas será suspendido permanentemente.</p>
-
-            <h3>Retención de datos:</h3>
-            <ul>
-                <li>Alerta falsa (susto/nada): se BORRA inmediatamente</li>
-                <li>Alerta rechazada por moderadores: se borra a las 24 horas</li>
-                <li>Alerta resuelta: se borra a las 48 horas</li>
-            </ul>
-
-            
-
-
-            <h2>9. PROTECCIÓN DE DATOS PERSONALES</h2>
-            <p>Cumplimos con la Ley 25.326 de Protección de Datos Personales (Argentina).</p>
-            
-            <h3>Datos que recopilamos:</h3>
-            <ul>
-                <li>Nombre, email, teléfono, barrio</li>
-                <li>Ubicación geográfica (solo si usted la activa)</li>
-                <li>Contenido que publica</li>
-            </ul>
-
-            <h3>Uso de datos:</h3>
-            <ul>
-                <li>Conectarlo con vecinos de su barrio</li>
-                <li>Mostrar sus publicaciones a otros usuarios</li>
-                <li>Enviar notificaciones (si las acepta)</li>
-            </ul>
-
-            <h3>Sus derechos:</h3>
-            <ul>
-                <li>✓ Acceder a sus datos</li>
-                <li>✓ Modificar sus datos</li>
-                <li>✓ Eliminar su cuenta y todos sus datos</li>
-                <li>✓ Revocar consentimientos</li>
-            </ul>
-
-            <p><strong>NO vendemos ni compartimos sus datos con terceros.</strong></p>
-
-            <div class="danger-box">
-                <strong>PROHIBIDO PUBLICAR:</strong>
-                <ul>
-                    <li>Datos personales de terceros sin consentimiento</li>
-                    <li>Información médica o financiera</li>
-                    <li>Documentos de identidad</li>
-                    <li>Información de menores de edad</li>
-                </ul>
-            </div>
-
-            <h2>10. INDEMNIZACIÓN</h2>
-            <p>El usuario acepta <strong>INDEMNIZAR Y EXIMIR DE RESPONSABILIDAD</strong> a la plataforma de cualquier reclamo derivado de:</p>
-            <ul>
-                <li>Violación de estos términos</li>
-                <li>Contenido publicado por el usuario</li>
-                <li>Uso indebido de la plataforma</li>
-                <li>Violación de derechos de terceros</li>
-            </ul>
-
-            <h2>11. JURISDICCIÓN</h2>
-            <p>Estos términos se rigen por las leyes de la <strong>República Argentina</strong>. Cualquier disputa será sometida a los tribunales de la Ciudad Autónoma de Buenos Aires.</p>
-
-            <h2>12. MODIFICACIONES</h2>
-            <p>La plataforma se reserva el derecho de modificar estos términos en cualquier momento. El uso continuado constituye aceptación de los cambios.</p>
-
-            <div class="success-box">
-                <strong>RESUMEN EJECUTIVO:</strong>
-                <ul>
-                    <li>✓ Solo mayores de 18 años</li>
-                    <li>✓ Usuario responsable de su contenido</li>
-                    <li>✓ Plataforma neutral (sin ideologías)</li>
-                    <li>✓ Sin garantías sobre transacciones</li>
-                    <li>✓ Prohibido contenido ilegal u ofensivo</li>
-                    <li>✓ Respeto a diversidad cultural</li>
-                    <li>✓ Protección de menores (uso prohibido)</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="footer">
-            <div class="age-verification">
-                <input type="checkbox" id="age-check">
-                <label for="age-check">
-                    <strong>⚠️ DECLARO BAJO JURAMENTO QUE SOY MAYOR DE 18 AÑOS</strong>
-                </label>
-            </div>
-
-            <div class="acceptance">
-                <input type="checkbox" id="terms-check">
-                <label for="terms-check">
-                    He leído, comprendido y acepto los Términos y Condiciones
-                </label>
-            </div>
-
-            <div class="buttons">
-                <button class="btn-decline" onclick="decline()">
-                    <i class="fas fa-times"></i> No Acepto
-                </button>
-                <button class="btn-accept" id="accept-btn" disabled onclick="accept()">
-                    <i class="fas fa-check"></i> Acepto los Términos
-                </button>
-            </div>
-
-            <p style="text-align: center; margin-top: 1.5rem; color: #6b7280; font-size: 0.85rem;">
-                      Versión 1.1 - Vigente desde 12/10/2026
-
-            </p>
-        </div>
+    <div class="header">
+        <h1><i class="fas fa-file-contract"></i> Términos y Condiciones</h1>
+        <p>Vecinos Virtuales — Versión 2.0</p>
+        <p>Última actualización: 28 de octubre de 2026</p>
     </div>
 
-    <script>
-        const ageCheck = document.getElementById('age-check');
-        const termsCheck = document.getElementById('terms-check');
-        const acceptBtn = document.getElementById('accept-btn');
+    <div class="content">
 
-        function updateButton() {
-            acceptBtn.disabled = !(ageCheck.checked && termsCheck.checked);
+        <div class="danger-box">
+            <strong>⚠️ IMPORTANTE — LEA CUIDADOSAMENTE</strong>
+            <p>Al utilizar esta plataforma, usted acepta estar legalmente obligado por estos términos. Si no está de acuerdo, NO utilice el servicio.</p>
+        </div>
+
+        <h2>1. Aceptación de los términos</h2>
+        <p>El uso de la aplicación "Vecinos Virtuales" (en adelante, "la App") implica la aceptación automática, libre y expresa de los presentes Términos y Condiciones de Uso. El solo hecho de registrarse, iniciar sesión o navegar la App constituye una aceptación plena de estos términos.</p>
+        <p>Si el usuario no acepta total o parcialmente estos términos, debe abstenerse de utilizar la App.</p>
+
+        <h2>2. Naturaleza del servicio</h2>
+        <p>Vecinos Virtuales es una plataforma de <strong>conexión entre vecinos</strong>. Actuamos únicamente como <strong>intermediario tecnológico</strong>.</p>
+        <div class="danger-box">
+            <strong>⚠️ SOMOS SOLO UN INTERMEDIARIO:</strong>
+            <p>Vecinos Virtuales NO vende productos ni servicios. NO participamos en las transacciones entre usuarios. NO somos parte de ninguna compra, venta o intercambio. Solo CONECTAMOS vecinos. Las transacciones son DIRECTAS entre ellos.</p>
+        </div>
+        <div class="warning-box">
+            <strong>LA PLATAFORMA NO SE RESPONSABILIZA POR:</strong>
+            <ul>
+                <li>Calidad, seguridad o legalidad de productos/servicios publicados</li>
+                <li>Transacciones realizadas entre usuarios</li>
+                <li>Veracidad de la información publicada por usuarios</li>
+                <li>Cumplimiento de acuerdos entre usuarios</li>
+                <li>Daños derivados del uso de productos/servicios</li>
+                <li>Fraudes o estafas entre usuarios</li>
+            </ul>
+        </div>
+        <p>La App es un servicio <strong>gratuito</strong> para sus usuarios. No se cobra ningún importe por registrarse ni por utilizar las funciones básicas de la plataforma.</p>
+
+        <h2>3. Registro y cuenta de usuario</h2>
+        <h3>3.1. Requisitos de registro</h3>
+        <ul>
+            <li>Para registrarse, el usuario debe proporcionar: <strong>nombre completo, correo electrónico y/o número de teléfono celular, y barrio al que pertenece</strong>.</li>
+            <li>Los datos proporcionados deben ser veraces y correctos. El usuario es responsable de mantenerlos actualizados.</li>
+            <li>Se permite una cuenta por persona.</li>
+        </ul>
+        <h3>3.2. Responsabilidad sobre la cuenta</h3>
+        <ul>
+            <li>El usuario es responsable de mantener la confidencialidad de su PIN y/o contraseña y de todas las actividades que ocurran bajo su cuenta.</li>
+            <li>El usuario debe notificar de inmediato al administrador cualquier uso no autorizado de su cuenta.</li>
+            <li>Vecinos Virtuales no se responsabiliza por pérdidas derivadas del uso indebido de la cuenta.</li>
+        </ul>
+
+        <h2>4. Restricción de edad — Protección de menores</h2>
+        <div class="danger-box">
+            <strong>🚫 USO PROHIBIDO PARA MENORES DE 18 AÑOS</strong>
+            <p>Esta plataforma está estrictamente prohibida para menores de edad. Los padres o tutores son exclusivamente responsables de supervisar el uso de internet por parte de menores.</p>
+        </div>
+        <p>Al registrarse, el usuario declara que:</p>
+        <ul>
+            <li>✓ Es mayor de 18 años</li>
+            <li>✓ Tiene capacidad legal para aceptar estos términos</li>
+            <li>✓ No permitirá que menores usen su cuenta</li>
+        </ul>
+
+        <h2>5. Uso aceptable de la plataforma</h2>
+        <p>El usuario se compromete a utilizar la App de forma responsable y respetuosa. <strong>Está prohibido:</strong></p>
+        <ul>
+            <li>Publicar contenido ofensivo, discriminatorio, xenófobo, racista, violento o que atente contra la dignidad de las personas.</li>
+            <li>Realizar acosos, amenazas o intimidaciones a otros usuarios.</li>
+            <li>Publicar contenido falso, engañoso o que genere pánico infundado en la comunidad.</li>
+            <li>Compartir información personal o datos de terceros sin su consentimiento expreso.</li>
+            <li>Usar la App para fines ilegales o que violen normas provinciales o nacionales.</li>
+            <li>Suplantar la identidad de otra persona o entidad.</li>
+            <li>Enviar publicidad o mensajes masivos no autorizados (spam).</li>
+            <li>Intentar acceder a cuentas ajenas, hackear o comprometer la seguridad de la plataforma.</li>
+            <li>Publicar datos personales de terceros, información médica o financiera, documentos de identidad o información de menores.</li>
+        </ul>
+
+        <h2>6. Neutralidad y no discriminación</h2>
+        <div class="success-box">
+            <strong>✓ PRINCIPIO DE NEUTRALIDAD</strong>
+            <p>La plataforma mantiene una posición NEUTRAL respecto a creencias religiosas, afiliaciones políticas, orientación sexual, identidad de género, origen étnico o cualquier otra característica personal.</p>
+        </div>
+        <p>La plataforma <strong>no promueve, respalda ni se opone</strong> a ninguna ideología política, creencia religiosa, movimiento social o corriente filosófica.</p>
+
+        <h2>7. Contenido generado por el usuario</h2>
+        <ul>
+            <li>El usuario es <strong>único y exclusivamente responsable</strong> del contenido que publica (mensajes, avisos, ofertas, comentarios, imágenes, videos, audios).</li>
+            <li>Al publicar contenido, el usuario otorga a Vecinos Virtuales una <strong>licencia no exclusiva, gratuita y limitada</strong> para mostrar dicho contenido dentro de la App.</li>
+            <li>El usuario declara que posee los derechos sobre el contenido que publica o cuenta con la autorización necesaria.</li>
+            <li>Vecinos Virtuales puede <strong>eliminar o ocultar</strong> cualquier contenido que viole estos términos, sin necesidad de previo aviso.</li>
+            <li>Vecinos Virtuales no se responsabiliza por el contenido publicado por los usuarios ni por los daños que dicho contenido pudiera causar a terceros.</li>
+        </ul>
+
+        <h2>8. Moderación y roles</h2>
+        <p>La App cuenta con un sistema de moderación integrado por:</p>
+        <ul>
+            <li><strong>Administrador:</strong> responsable de la gestión general, autorización de anuncios, gestión de usuarios y aplicación de estos términos.</li>
+            <li><strong>Moderadores:</strong> colaboran en la revisión de contenido y la convivencia dentro de la comunidad del barrio.</li>
+        </ul>
+        <p>El equipo de moderación puede eliminar contenido que viole estos términos, suspender o bloquear cuentas de usuarios que reincidan en infracciones, y resolver conflictos entre vecinos. El bloqueo puede ser temporal o definitivo.</p>
+
+        <h2>9. Privacidad y protección de datos personales</h2>
+        <p>El tratamiento de datos personales se rige por la <strong>Ley 25.326 de Protección de Datos Personales</strong> de la República Argentina y su decreto reglamentario 1558/2001.</p>
+
+        <h3>9.1. Responsable del tratamiento</h3>
+        <p>El responsable del tratamiento de los datos personales es el administrador de Vecinos Virtuales, con domicilio en la localidad de Tafí Viejo, provincia de Tucumán, Argentina.</p>
+
+        <h3>9.2. Datos que se recogen</h3>
+        <ul>
+            <li>Nombre completo</li>
+            <li>Correo electrónico y/o número de teléfono celular</li>
+            <li>Barrio o vecindad declarado</li>
+            <li>Número de identificación interno (generado por la App)</li>
+            <li>Contenido que el usuario publica</li>
+            <li>Datos de uso (accesos, interacciones dentro de la App)</li>
+            <li>Ubicación geográfica (solo si el usuario la activa)</li>
+        </ul>
+
+        <h3>9.3. Datos que NO se recogen (minimización)</h3>
+        <p>La App aplica el principio de minimización de datos. <strong>No se solicitan:</strong></p>
+        <ul>
+            <li>Documento de identidad (DNI)</li>
+            <li>Datos biométricos</li>
+            <li>Datos financieros o bancarios</li>
+        </ul>
+
+        <h3>9.4. Finalidad del tratamiento</h3>
+        <ul>
+            <li>Funcionamiento de la comunidad de vecinos</li>
+            <li>Verificación de pertenencia al barrio</li>
+            <li>Moderación de contenido</li>
+            <li>Mostrar publicidad segmentada por barrio (sin entregar datos personales del usuario a los anunciantes)</li>
+            <li>Enviar notificaciones (si el usuario las acepta)</li>
+        </ul>
+
+        <h3>9.5. Base legal — Consentimiento</h3>
+        <p>El tratamiento de los datos se basa en el <strong>consentimiento libre, expreso e informado</strong> que el usuario presta al registrarse. Este consentimiento es revocable en cualquier momento, lo que implica la baja de la cuenta y la supresión de los datos.</p>
+
+        <h3>9.6. Derechos del titular (ARCO/PAR)</h3>
+        <p>De acuerdo al artículo 14 de la Ley 25.326, el usuario tiene derecho a:</p>
+        <ul>
+            <li><strong>Acceso:</strong> conocer qué datos personales se tienen sobre él.</li>
+            <li><strong>Rectificación:</strong> corregir datos inexactos o incompletos.</li>
+            <li><strong>Cancelación / Supresión:</strong> solicitar el borrado de sus datos.</li>
+            <li><strong>Oposición:</strong> oponerse al tratamiento de sus datos.</li>
+        </ul>
+        <p>El plazo de respuesta es de <strong>10 días hábiles</strong> (art. 15). Las solicitudes se realizan a través del Buzón interno de la App.</p>
+
+        <h3>9.7. Cesión a terceros</h3>
+        <ul>
+            <li>Los datos personales <strong>no se venden ni se ceden</strong> a terceros con fines comerciales.</li>
+            <li>La segmentación de anuncios se realiza internamente por barrio, <strong>sin entregar datos personales del usuario a los anunciantes</strong>.</li>
+            <li>Los datos solo se cederán cuando lo exija una autoridad competente mediante orden judicial o requerimiento legal válido.</li>
+        </ul>
+
+        <h3>9.8. Seguridad</h3>
+        <p>La App implementa medidas técnicas y organizativas: cifrado en tránsito (HTTPS/TLS), control de acceso a la base de datos mediante políticas de seguridad a nivel de fila (Row Level Security), y acceso restringido por roles.</p>
+
+        <h3>9.9. Conservación de datos</h3>
+        <ul>
+            <li>Los datos se conservan mientras la cuenta esté activa.</li>
+            <li>Al cerrar la cuenta, los datos personales se suprimen o anonimizan, salvo aquellos que deban conservarse por obligaciones legales.</li>
+        </ul>
+
+        <h3>9.10. Transferencia internacional</h3>
+        <p>La base de datos se encuentra alojada en servicios de computación en la nube. Si el proveedor procesa datos fuera de Argentina, se garantiza que el país de destino ofrezca un nivel adecuado de protección de datos personales conforme a la Ley 25.326, o se cuenta con el consentimiento del titular.</p>
+
+        <h2>10. Publicidad y anuncios</h2>
+        <p>La App puede mostrar publicidad en los siguientes espacios:</p>
+        <ul>
+            <li><strong>Ofertas Destacadas:</strong> productos o servicios destacados de comerciantes del barrio.</li>
+            <li><strong>Folleto:</strong> folletos digitales de comercios.</li>
+            <li><strong>Anunciantes:</strong> sección de comercios y servicios anunciados.</li>
+            <li><strong>Banners:</strong> espacios publicitarios rotativos.</li>
+            <li><strong>Anuncios Flash:</strong> anuncios intersticiales que aparecen al iniciar sesión y en intervalos, con botón de cierre (X) disponible en todo momento.</li>
+        </ul>
+        <ul>
+            <li>Todos los anuncios se identifican claramente como contenido publicitario.</li>
+            <li>La App <strong>no vende los datos personales</strong> de los usuarios a los anunciantes.</li>
+            <li>La segmentación se realiza por barrio, sin revelar información personal del usuario al anunciante.</li>
+            <li>El administrador es responsable de la carga, edición, programación, activación y eliminación de los anuncios.</li>
+            <li>Los anunciantes son responsables del contenido de sus anuncios.</li>
+        </ul>
+
+        <h2>11. Mapa y alertas comunitarias</h2>
+        <div class="warning-box">
+            <strong>⚠️ INFORMACIÓN NO VERIFICADA:</strong>
+            <p>Las alertas, reportes y eventos en el mapa son publicados por USUARIOS, no por autoridades oficiales.</p>
+        </div>
+        <p>Vecinos Virtuales no garantiza la veracidad de las alertas reportadas, la exactitud de la información del mapa, ni la actualidad de los datos mostrados.</p>
+        <div class="danger-box">
+            <strong>🚨 ANTE EMERGENCIAS REALES:</strong>
+            <p>Contacte SIEMPRE a las autoridades oficiales:<br>
+            🔴 Policía: 911<br>
+            🔴 Bomberos: 100<br>
+            🔴 Emergencias médicas: 107</p>
+        </div>
+        <p>El usuario que reporte información falsa o maliciosa será suspendido permanentemente.</p>
+
+        <h2>12. Sistema de Alertas Vecinales de Seguridad (Vigía)</h2>
+        <div class="warning-box">
+            <strong>⚠️ USO BAJO RESPONSABILIDAD DEL USUARIO:</strong>
+            <p>El sistema de alertas es una herramienta COMPLEMENTARIA de seguridad vecinal. NO reemplaza al 911 ni a las fuerzas de seguridad.</p>
+        </div>
+        <h3>¿Qué captura el sistema cuando se activa una alerta?</h3>
+        <ul>
+            <li>📸 Fotos automáticas con la cámara del dispositivo (cada 2 segundos, máximo 30 fotos)</li>
+            <li>🎤 Grabación de audio del entorno (hasta 3 minutos)</li>
+            <li>📍 Ubicación GPS en tiempo real (cada 5 segundos)</li>
+        </ul>
+        <h3>¿A dónde va la información?</h3>
+        <ul>
+            <li>Los datos se suben en tiempo real a servidores seguros (Supabase)</li>
+            <li>Los moderadores del barrio reciben la alerta para su revisión</li>
+            <li>Si la alerta es aprobada, se publica a todos los vecinos del barrio</li>
+            <li>Si la alerta es falsa, el usuario puede borrar TODO con su código de 3 dígitos</li>
+        </ul>
+        <h3>Consentimiento de captura:</h3>
+        <p>Al activar el botón de alerta, el usuario ACEPTA que:</p>
+        <ul>
+            <li>Su dispositivo capture fotos, audio y ubicación automáticamente</li>
+            <li>Esta información se suba a servidores en la nube en tiempo real</li>
+            <li>Los moderadores revisen el contenido para validar la alerta</li>
+            <li>Si la alerta es aprobada, otros vecinos puedan ver las fotos, escuchar el audio y ver la ubicación</li>
+        </ul>
+        <div class="danger-box">
+            <strong>🚫 PROHIBIDO:</strong>
+            <ul>
+                <li>Activar alertas falsas intencionalmente</li>
+                <li>Usar el sistema para fines distintos a la seguridad vecinal</li>
+                <li>Grabar a personas sin su consentimiento en espacios privados</li>
+            </ul>
+        </div>
+        <p>El usuario que abuse del sistema de alertas será suspendido permanentemente.</p>
+        <h3>Retención de datos:</h3>
+        <ul>
+            <li>Alerta falsa (susto/nada): se BORRA inmediatamente</li>
+            <li>Alerta rechazada por moderadores: se borra a las 24 horas</li>
+            <li>Alerta resuelta: se borra a las 48 horas</li>
+        </ul>
+
+        <h2>13. Limitación de responsabilidad</h2>
+        <p>La App se proporciona <strong>"tal cual"</strong> y "según disponibilidad", sin garantías de ningún tipo.</p>
+        <div class="warning-box">
+            <strong>NO GARANTIZAMOS:</strong>
+            <ul>
+                <li>Disponibilidad continua del servicio (100% uptime)</li>
+                <li>Ausencia de errores</li>
+                <li>Seguridad absoluta de datos</li>
+                <li>Resultados específicos</li>
+            </ul>
+        </div>
+        <p>La plataforma <strong>no será responsable</strong> por daños indirectos o consecuentes, pérdida de beneficios o datos, interrupción del servicio, ni acciones de terceros usuarios.</p>
+        <p>Las transacciones comerciales entre usuarios o con anunciantes son responsabilidad exclusiva de las partes involucradas. La App actúa únicamente como canal de comunicación.</p>
+
+        <h2>14. Indemnización</h2>
+        <p>El usuario acepta <strong>indemnizar y eximir de responsabilidad</strong> a la plataforma de cualquier reclamo derivado de:</p>
+        <ul>
+            <li>Violación de estos términos</li>
+            <li>Contenido publicado por el usuario</li>
+            <li>Uso indebido de la plataforma</li>
+            <li>Violación de derechos de terceros</li>
+        </ul>
+
+        <h2>15. Propiedad intelectual</h2>
+        <ul>
+            <li>El diseño, código, marca y elementos visuales de Vecinos Virtuales son propiedad de su creador.</li>
+            <li>El contenido publicado por los usuarios mantiene los derechos de su autor. Al publicar, el usuario otorga a la App una licencia para mostrarlo dentro de la plataforma.</li>
+            <li>Los anunciantes mantienen los derechos sobre sus imágenes, logos y contenidos publicitarios, autorizando a la App a mostrarlos durante el período contratado.</li>
+        </ul>
+
+        <h2>16. Terminación de la cuenta</h2>
+        <ul>
+            <li>El usuario puede dar de baja su cuenta en cualquier momento, lo que implica la supresión de sus datos personales conforme a la Ley 25.326.</li>
+            <li>Vecinos Virtuales puede suspender o bloquear cuentas que violen estos términos, sin necesidad de previo aviso.</li>
+            <li>El bloqueo puede ser temporal (suspensión) o definitivo (eliminación de la cuenta).</li>
+        </ul>
+
+        <h2>17. Cambios a los términos</h2>
+        <ul>
+            <li>Vecinos Virtuales puede modificar estos términos en cualquier momento.</li>
+            <li>Los cambios se notificarán a través de la App y se indicará la fecha de última actualización.</li>
+            <li>El uso continuado de la App después de los cambios constituye la aceptación de los nuevos términos.</li>
+        </ul>
+
+        <h2>18. Jurisdicción y ley aplicable</h2>
+        <ul>
+            <li>Estos términos se rigen por las leyes de la <strong>República Argentina</strong>.</li>
+            <li>Para cualquier controversia, las partes se someten a la jurisdicción de los tribunales competentes de la <strong>provincia de Tucumán</strong>, República Argentina.</li>
+        </ul>
+
+        <h2>19. Contacto</h2>
+        <p>Para consultas, reclamos, ejercicio de derechos sobre datos personales (ARCO/PAR) o cualquier cuestión relacionada con estos términos, el usuario puede contactar al administrador a través de:</p>
+        <ul>
+            <li>El <strong>Buzón interno de la App</strong> (menú → Buzón), donde puede enviar sugerencias, solicitudes, reclamos o pedidos sobre sus datos personales y recibir respuesta del administrador.</li>
+            <li>Los canales de contacto habilitados dentro de la App.</li>
+        </ul>
+
+        <div class="success-box">
+            <strong>RESUMEN EJECUTIVO:</strong>
+            <ul>
+                <li>✓ Solo mayores de 18 años</li>
+                <li>✓ Usuario responsable de su contenido y transacciones</li>
+                <li>✓ Plataforma neutral (sin ideologías)</li>
+                <li>✓ Sin garantías sobre transacciones</li>
+                <li>✓ Prohibido contenido ilegal u ofensivo</li>
+                <li>✓ Protección de datos personales (Ley 25.326)</li>
+                <li>✓ Buzón interno para reclamos y derechos ARCO/PAR</li>
+                <li>✓ Sistema de alertas Vigía con consentimiento de captura</li>
+            </ul>
+        </div>
+
+        <div class="nota-legal">
+            <strong>Aviso legal:</strong> Este documento es un borrador elaborado como base para la redacción formal. Se recomienda su revisión por parte de un abogado matriculado en la provincia de Tucumán antes de su publicación definitiva.
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <div class="age-verification">
+            <input type="checkbox" id="age-check">
+            <label for="age-check"><strong>⚠️ DECLARO BAJO JURAMENTO QUE SOY MAYOR DE 18 AÑOS</strong></label>
+        </div>
+
+        <div class="acceptance">
+            <input type="checkbox" id="terms-check">
+            <label for="terms-check">He leído, comprendido y acepto los Términos y Condiciones</label>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-decline" onclick="decline()">
+                <i class="fas fa-times"></i> No Acepto
+            </button>
+            <button class="btn-accept" id="accept-btn" disabled onclick="accept()">
+                <i class="fas fa-check"></i> Acepto los Términos
+            </button>
+        </div>
+
+        <p style="text-align:center;margin-top:1rem;color:#6b7280;font-size:0.82rem;">
+            Versión 2.0 — Vigente desde el 28 de octubre de 2026
+        </p>
+    </div>
+
+</div>
+
+<script>
+    const ageCheck = document.getElementById('age-check');
+    const termsCheck = document.getElementById('terms-check');
+    const acceptBtn = document.getElementById('accept-btn');
+
+    function updateButton() {
+        acceptBtn.disabled = !(ageCheck.checked && termsCheck.checked);
+    }
+
+    ageCheck.addEventListener('change', updateButton);
+    termsCheck.addEventListener('change', updateButton);
+
+    function accept() {
+        localStorage.setItem('termsAccepted', JSON.stringify({
+            accepted: true,
+            date: new Date().toISOString(),
+            version: '2.0'
+        }));
+        window.location.href = 'index.html';
+    }
+
+    function decline() {
+        if (confirm('Si no acepta los términos, no podrá utilizar la plataforma.\n\n¿Está seguro de que desea salir?')) {
+            localStorage.removeItem('termsAccepted');
+            window.location.href = 'about:blank';
         }
+    }
 
-        ageCheck.addEventListener('change', updateButton);
-        termsCheck.addEventListener('change', updateButton);
+    const termsAccepted = JSON.parse(localStorage.getItem('termsAccepted') || 'null');
+    if (termsAccepted && termsAccepted.accepted) {
+        window.location.href = 'index.html';
+    }
+</script>
 
-        function accept() {
-            localStorage.setItem('termsAccepted', JSON.stringify({
-                accepted: true,
-                date: new Date().toISOString(),
-                version: '1.0'
-            }));
-            alert('✓ Términos aceptados. Redirigiendo a la aplicación...');
-            window.location.href = 'index.html';
-        }
-
-        function decline() {
-            if (confirm('Si no acepta los términos, no podrá utilizar la plataforma.\n\n¿Está seguro de que desea salir?')) {
-                alert('Ha rechazado los términos. Cerrando aplicación...');
-                window.location.href = 'about:blank';
-            }
-        }
-
-        // Verificar si ya aceptó los términos
-        const termsAccepted = JSON.parse(localStorage.getItem('termsAccepted') || 'null');
-        if (termsAccepted && termsAccepted.accepted) {
-            if (confirm('Ya has aceptado los términos anteriormente.\n\n¿Deseas ir directamente a la aplicación?')) {
-                window.location.href = 'index.html';
-            }
-        }
-    </script>
 </body>
 </html>
