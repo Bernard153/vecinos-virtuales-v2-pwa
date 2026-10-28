@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vecinos Virtuales — Presentación</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  body { background: #0f172a; color: #e2e8f0; overflow: hidden; }
+  .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 60px; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+  .slide.active { opacity: 1; pointer-events: auto; }
+  .slide h1 { font-size: 2.8rem; text-align: center; margin-bottom: 1rem; }
+  .slide h2 { font-size: 1.8rem; margin-bottom: 1.5rem; color: #93c5fd; }
+  .slide p { font-size: 1.2rem; max-width: 800px; text-align: center; line-height: 1.7; margin-bottom: 0.8rem; }
+  .slide ul { font-size: 1.15rem; max-width: 750px; line-height: 1.8; }
+  .slide li { margin-bottom: 0.5rem; }
+  .gradient-text { background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .badge { display: inline-block; background: rgba(96,165,250,0.15); border: 1px solid rgba(96,165,250,0.4); color: #93c5fd; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.9rem; margin: 0.3rem; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 900px; width: 100%; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; max-width: 950px; width: 100%; }
+  .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1.5rem; text-align: center; }
+  .card .icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+  .card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; color: #93c5fd; }
+  .card p { font-size: 0.95rem; }
+  .numero { font-size: 3rem; font-weight: 800; color: #60a5fa; }
+  .numero small { font-size: 1rem; color: #94a3b8; font-weight: 400; }
+  .nav-controls { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 1rem; z-index: 100; }
+  .nav-controls button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e2e8f0; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+  .nav-controls button:hover { background: rgba(255,255,255,0.2); }
+  .progress { position: fixed; top: 0; left: 0; height: 4px; background: linear-gradient(90deg, #60a5fa, #a78bfa); transition: width 0.3s; z-index: 101; }
+  .slide-num { position: fixed; top: 15px; right: 20px; font-size: 0.85rem; color: #64748b; z-index: 101; }
+  .notas { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: rgba(15,23,42,0.95); border: 1px solid rgba(96,165,250,0.3); border-radius: 10px; padding: 0.8rem 1.2rem; font-size: 0.85rem; color: #94a3b8; max-width: 700px; text-align: center; display: none; z-index: 102; }
+  .notas.visible { display: block; }
+  .footer-note { position: fixed; bottom: 15px; left: 20px; font-size: 0.75rem; color: #475569; z-index: 100; }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="slide-num" id="slideNum">1 / 12</div>
+<div class="footer-note">Vecinos Virtuales — Presentación institucional</div>
+
+<div class="slide active">
+  <h1 class="gradient-text">🏠 Vecinos Virtuales</h1>
+  <p style="font-size:1.4rem; color:#93c5fd;">La red social del barrio que conecta a la comunidad</p>
+  <p style="font-size:1rem; color:#94a3b8; margin-top:1.5rem;">Tafí Viejo · Tucumán · Argentina</p>
+  <div style="margin-top:2rem;">
+    <span class="badge">📱 PWA</span>
+    <span class="badge">🔒 Datos protegidos</span>
+    <span class="badge">🏘️ Comunidad</span>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>El problema</h2>
+  <p>Los vecinos de un barrio necesitan comunicarse, pero hoy dependen de:</p>
+  <div class="grid-3" style="margin-top:2rem;">
+    <div class="card"><div class="icon">📱</div><h3>Grupos de WhatsApp</h3><p>Caóticos, sin moderación, con spam y sin estructura</p></div>
+    <div class="card"><div class="icon">🗣️</div><h3>Boca a boca</h3><p>La información no llega a todos los vecinos</p></div>
+    <div class="card"><div class="icon">📄</div><h3>Carteles impresos</h3><p>Obsoletos, se pierden, no se actualizan</p></div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Nuestra solución</h2>
+  <p>Una plataforma digital <strong>exclusiva por barrio</strong> donde los vecinos:</p>
+  <div class="grid-3" style="margin-top:2rem;">
+    <div class="card"><div class="icon">🛒</div><h3>Compran y venden</h3><p>Marketplace local entre vecinos del mismo barrio</p></div>
+    <div class="card"><div class="icon">📢</div><h3>Se informan</h3><p>Alertas, avisos, eventos y novedades de la comunidad</p></div>
+    <div class="card"><div class="icon">🚨</div><h3>Se protegen</h3><p>Sistema de alertas vecinales de seguridad (Vigía)</p></div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Funcionalidades</h2>
+  <div class="grid-2" style="margin-top:1.5rem;">
+    <div class="card"><h3>🏘️ Comunidad por barrio</h3><p>Registro con verificación de pertenencia al barrio</p></div>
+    <div class="card"><h3>🛒 Marketplace local</h3><p>Productos, ofertas destacadas y folleto digital</p></div>
+    <div class="card"><h3>🚨 Alertas Vigía</h3><p>Fotos, audio y GPS ante situaciones de seguridad</p></div>
+    <div class="card"><h3>📬 Buzón ciudadano</h3><p>Sugerencias, solicitudes y reclamos con respuesta</p></div>
+    <div class="card"><h3>🎭 Cultura y eventos</h3><p>Agenda cultural del barrio</p></div>
+    <div class="card"><h3>🎤 Voces Virtuales</h3><p>Contenido multimedia de la comunidad</p></div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Seguridad y protección de datos</h2>
+  <div class="grid-2" style="margin-top:1.5rem;">
+    <div class="card"><div class="icon">🔐</div><h3>Acceso por roles</h3><p>Administrador, moderadores y vecinos con permisos diferenciados</p></div>
+    <div class="card"><div class="icon">🛡️</div><h3>RLS en base de datos</h3><p>Row Level Security: cada usuario solo ve lo que le corresponde</p></div>
+    <div class="card"><div class="icon">🔒</div><h3>Ley 25.326</h3><p>Protección de datos personales de la República Argentina</p></div>
+    <div class="card"><div class="icon">📋</div><h3>Derechos ARCO/PAR</h3><p>Acceso, rectificación, cancelación y oposición — 10 días hábiles</p></div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Moderación responsable</h2>
+  <ul>
+    <li>✅ <strong>Moderadores por barrio</strong> que revisan el contenido</li>
+    <li>✅ <strong>Denuncias de usuarios</strong> con seguimiento</li>
+    <li>✅ <strong>Bloqueo de cuentas</strong> ante infracciones</li>
+    <li>✅ <strong>Términos y condiciones</strong> claros y aceptación explícita</li>
+    <li>✅ <strong>Registro de actividad</strong> de moderadores (auditoría)</li>
+    <li>✅ <strong>Alertas Vigía validadas</strong> antes de publicarse</li>
+  </ul>
+</div>
+
+<div class="slide">
+  <h2>Un canal directo con la comunidad</h2>
+  <p>Vecinos Virtuales puede ser el <strong>puente digital</strong> entre el municipio y los vecinos:</p>
+  <div class="grid-3" style="margin-top:2rem;">
+    <div class="card"><div class="icon">📢</div><h3>Comunicados oficiales</h3><p>El municipio llega a todos los barrios en segundos</p></div>
+    <div class="card"><div class="icon">📬</div><h3>Buzón ciudadano</h3><p>Los vecinos canalizan sugerencias y reclamos</p></div>
+    <div class="card"><div class="icon">🚨</div><h3>Alertas de emergencia</h3><p>Cortes de servicios, emergencias, eventos oficiales</p></div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Apoyo al comercio local</h2>
+  <p>Espacios publicitarios que <strong>impulsan la economía del barrio</strong>:</p>
+  <div class="grid-3" style="margin-top:2rem;">
+    <div class="card"><div class="icon">⭐</div><h3>Ofertas Destacadas</h3><p>Productos y servicios de comercios del barrio</p></div>
+    <div class="card"><div class="icon">📄</div><h3>Folleto digital</h3><p>El folleto del comercio, siempre actualizado</p></div>
+    <div class="card"><div class="icon">⚡</div><h3>Anuncios Flash</h3><p>Publicidad visual con programación y segmentación por barrio</p></div>
+  </div>
+  <p style="font-size:0.95rem; color:#94a3b8; margin-top:1.5rem;">🔒 Los datos de los vecinos <strong>no se venden</strong> a los anunciantes. Segmentación interna por barrio.</p>
+</div>
+
+<div class="slide">
+  <h2>Tecnología</h2>
+  <div class="grid-2" style="margin-top:1.5rem;">
+    <div class="card"><div class="icon">📱</div><h3>PWA (Progressive Web App)</h3><p>Funciona en cualquier celular sin instalar desde tienda. Se instala desde el navegador.</p></div>
+    <div class="card"><div class="icon">☁️</div><h3>Nube segura</h3><p>Cloudflare CDN + Supabase (PostgreSQL) con cifrado en tránsito</p></div>
+    <div class="card"><div class="icon">🌐</div><h3>Disponibilidad global</h3><p>CDN de Cloudflare: carga rápida desde cualquier lugar</p></div>
+    <div class="card"><div class="icon">📊</div><h3>Reportes y estadísticas</h3><p>Impresiones de anuncios, actividad de usuarios, métricas</p></div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Estado actual del proyecto</h2>
+  <div class="grid-3" style="margin-top:2rem;">
+    <div class="card"><div class="numero">100%</div><small>App funcional</small><p style="margin-top:0.5rem;">Registro, login, marketplace, alertas, folleto, cultura</p></div>
+    <div class="card"><div class="numero">+15</div><small>Anunciantes activos</small><p style="margin-top:0.5rem;">Comercios locales ya publican en la plataforma</p></div>
+    <div class="card"><div class="numero">44</div><small>Tablas en la base de datos</small><p style="margin-top:0.5rem;">Estructura completa con RLS</p></div>
+  </div>
+</div>
+
+<div class="slide">
+  <h2>Proyección con apoyo institucional</h2>
+  <ul>
+    <li>📈 <strong>Escalar a todos los barrios</strong> de Tafí Viejo y la provincia</li>
+    <li>🏛️ <strong>Integración con servicios municipales</strong> (trámites, avisos, emergencias)</li>
+    <li>🤝 <strong>Alianzas con comercios locales</strong> para impulsar la economía</li>
+    <li>🚨 <strong>Red de alertas comunitaria</strong> coordinada con las autoridades</li>
+    <li>📊 <strong>Datos para la toma de decisiones</strong> del municipio (con privacidad garantizada)</li>
+    <li>🎓 <strong>Inclusión digital</strong> para todos los vecinos</li>
+  </ul>
+</div>
+
+<div class="slide">
+  <h1 class="gradient-text">Gracias</h1>
+  <p style="font-size:1.3rem; margin-top:1rem;">Vecinos Virtuales — Conectando comunidades</p>
+  <p style="color:#94a3b8; margin-top:2rem;">Estamos listos para trabajar junto al municipio<br>por una comunidad más conectada y segura.</p>
+  <div style="margin-top:2rem;">
+    <span class="badge">🏠 Vecinos Virtuales</span>
+    <span class="badge">📍 Tafí Viejo, Tucumán</span>
+  </div>
+</div>
+<div class="nav-controls">
+  <button onclick="prevSlide()">← Anterior</button>
+  <button onclick="toggleNotas()">📝 Notas</button>
+  <button onclick="nextSlide()">Siguiente →</button>
+</div>
+
+<div class="notas" id="notas"></div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const notas = document.getElementById('notas');
+  let current = 0;
+
+  const notasTexto = {
+    0: 'Portada: presentación breve. Nombre, ciudad y propuesta de valor en una frase.',
+    1: 'Problema: los vecinos dependen de WhatsApp, boca a boca y carteles. Nada estructurado.',
+    2: 'Solución: plataforma por barrio con marketplace, información y seguridad.',
+    3: 'Funcionalidades: recorrer rápido cada una. Destacar el buzón ciudadano y las alertas.',
+    4: 'Seguridad: enfatizar Ley 25.326, RLS y derechos ARCO/PAR. Esto responde las preguntas del ente.',
+    5: 'Moderación: mostrar que hay control, auditoría y términos claros.',
+    6: 'Canal institucional: el punto clave. Cómo el municipio puede usar la app para llegar a los vecinos.',
+    7: 'Publicidad: apoyo al comercio local. Aclarar que los datos no se venden.',
+    8: 'Tecnología: PWA, Cloudflare, Supabase. Simple y robusto.',
+    9: 'Estado actual: la app ya funciona, hay anunciantes. Mostrar el demo en vivo.',
+    10: 'Proyección: qué se puede lograr con apoyo institucional.',
+    11: 'Cierre: agradecer y ofrecer trabajar juntos. Invitar a probar la app.'
+  };
+
+  function showSlide(n) {
+    slides.forEach((s, i) => s.classList.toggle('active', i === n));
+    document.getElementById('slideNum').textContent = (n + 1) + ' / ' + slides.length;
+    document.getElementById('progress').style.width = ((n + 1) / slides.length * 100) + '%';
+    notas.textContent = notasTexto[n] || '';
+    notas.classList.remove('visible');
+  }
+  function nextSlide() { if (current < slides.length - 1) { current++; showSlide(current); } }
+  function prevSlide() { if (current > 0) { current--; showSlide(current); } }
+  function toggleNotas() { notas.classList.toggle('visible'); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+    if (e.key === 'ArrowLeft') prevSlide();
+    if (e.key === 'n' || e.key === 'N') toggleNotas();
+  });
+
+  showSlide(0);
+</script>
+
+</body>
+</html>
