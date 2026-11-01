@@ -1609,6 +1609,7 @@
                         window.addEventListener('beforeinstallprompt', (e) => {
                             e.preventDefault();
                             deferredPrompt = e;
+                            alert('Evento beforeinstallprompt detectado'); // TEMPORAL
                             
                             // Crear botón de instalación si no existe
                             if (!document.getElementById('install-button')) {
