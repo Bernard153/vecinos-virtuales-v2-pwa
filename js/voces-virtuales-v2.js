@@ -940,7 +940,7 @@ VV_VOCES_V2.renderVideoCard = function(video) {
         <div class="vv-video-card" onclick="VV_VOCES_V2.openVideoPlayer('${video.id}')">
             <div class="vv-video-thumb">
                 <video preload="metadata" muted>
-                    <source src="${video.video_url}" type="video/webm">
+                    <source src="${video.video_url}" type="${this.getVideoType(video.video_url)}">
                 </video>
                 <div class="vv-play-overlay"><i class="fas fa-play"></i></div>
             </div>
@@ -1405,7 +1405,7 @@ VV_VOCES_V2.cargarWidgetDashboard = async function() {
                  onmouseout="this.style.transform='';this.style.boxShadow=''">
                 <div style="position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;">
                     <video preload="metadata" muted style="width:100%;height:100%;object-fit:cover;">
-                        <source src="${video.video_url}" type="video/webm">
+                        <source src="${video.video_url}" type="${this.getVideoType(video.video_url)}">
                     </video>
                     <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:rgba(0,0,0,0.6);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;">
                         <i class="fas fa-play"></i>
@@ -1639,6 +1639,162 @@ VV_VOCES_V2.applyAudioBoost = async function() {
         btn.innerHTML = '<i class="fas fa-volume-up"></i> Aplicar Volumen';
     }
 };
+// ============================================================
+// SUBIR VIDEO EDITADO (SUNO, editor externo, etc.)
+// ============================================================
+VV_VOCES_V2.uploadEditedVideo = async function() {
+    const fileInput = document.getElementById('vv-upload-edited-file');
+    const titleInput = document.getElementById('vv-upload-edited-title');
+
+    if (!fileInput || !fileInput.files.length) {
+        alert('Seleccioná un archivo de video');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const title = titleInput?.value?.trim() || 'Obra sin título';
+
+    // Validar tamaño (50MB máximo en Supabase free)
+    if (file.size > 50 * 1024 * 1024) {
+        alert('⚠️ El video es muy grande. Máximo 50MB.');
+        return;
+    }
+
+    // Validar permisos
+    const perms = window.VV_ROLES ? VV_ROLES.getPermissions() : {};
+    if (!perms.canFullKaraoke) {
+        alert("Necesitás ser vecino verificado para publicar obras.");
+        return;
+    }
+
+    // Mostrar progreso
+    const btn = document.getElementById('vv-btn-upload-edited');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Subiendo...';
+    }
+
+    try {
+        this.audioTrackBlobURL = null; // No hay pista de acompañamiento
+        await VV_VOCES.uploadVideo(file, {
+            title: title,
+            is_original: true,
+            author_name: perms.displayRole || 'Artista',
+            track_id: null
+        });
+        alert('🎉 ¡Tu video fue publicado en Voces Virtuales!');
+        fileInput.value = '';
+        if (titleInput) titleInput.value = '';
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '📤 Publicar';
+        }
+        this.cargarFeed();
+    } catch (err) {
+        console.error('Error subiendo video editado:', err);
+        alert('Error al publicar: ' + err.message);
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '📤 Publicar';
+        }
+    }
+};
+
+VV_VOCES_V2.onEditedFileSelected = function() {
+    const fileInput = document.getElementById('vv-upload-edited-file');
+    const nameDisplay = document.getElementById('vv-edited-file-name');
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+        if (nameDisplay) nameDisplay.textContent = `🎬 ${file.name} (${sizeMB}MB)`;
+    }
+};
+// ============================================================
+// SUBIR VIDEO EDITADO + FIX DE TIPO DE VIDEO
+// ============================================================
+
+// Detectar tipo de video según la URL
+VV_VOCES_V2.getVideoType = function(url) {
+    if (!url) return 'video/webm';
+    if (url.includes('.mp4')) return 'video/mp4';
+    if (url.includes('.mov')) return 'video/quicktime';
+    return 'video/webm';
+};
+
+VV_VOCES_V2.uploadEditedVideo = async function() {
+    const fileInput = document.getElementById('vv-upload-edited-file');
+    const titleInput = document.getElementById('vv-upload-edited-title');
+    const checkDerechos = document.getElementById('vv-check-derechos-editado');
+
+    if (!fileInput || !fileInput.files.length) {
+        alert('Seleccioná un archivo de video');
+        return;
+    }
+
+    if (!checkDerechos || !checkDerechos.checked) {
+        alert('Debés confirmar que sos el autor de la obra');
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const title = titleInput?.value?.trim() || 'Obra sin título';
+
+    if (file.size > 50 * 1024 * 1024) {
+        alert('⚠️ El video es muy grande. Máximo 50MB.');
+        return;
+    }
+
+    const perms = window.VV_ROLES ? VV_ROLES.getPermissions() : {};
+    if (!perms.canFullKaraoke) {
+        alert("Necesitás ser vecino verificado para publicar obras.");
+        return;
+    }
+
+    const btn = document.getElementById('vv-btn-upload-edited');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Subiendo...';
+    }
+
+    try {
+        this.audioTrackBlobURL = null;
+        await VV_VOCES.uploadVideo(file, {
+            title: title,
+            is_original: true,
+            author_name: perms.displayRole || 'Artista',
+            track_id: null
+        });
+        alert('🎉 ¡Tu video fue publicado en Voces Virtuales!');
+        fileInput.value = '';
+        if (titleInput) titleInput.value = '';
+        if (checkDerechos) checkDerechos.checked = false;
+        const nameDisplay = document.getElementById('vv-edited-file-name');
+        if (nameDisplay) nameDisplay.textContent = '';
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '📤 Publicar en el Barrio';
+        }
+        this.cargarFeed();
+    } catch (err) {
+        console.error('Error subiendo video editado:', err);
+        alert('Error al publicar: ' + err.message);
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '📤 Publicar en el Barrio';
+        }
+    }
+};
+
+VV_VOCES_V2.onEditedFileSelected = function() {
+    const fileInput = document.getElementById('vv-upload-edited-file');
+    const nameDisplay = document.getElementById('vv-edited-file-name');
+    if (fileInput && fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+        if (nameDisplay) nameDisplay.textContent = `🎬 ${file.name} (${sizeMB}MB)`;
+    }
+};
+
 
 });
 

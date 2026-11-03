@@ -1782,6 +1782,28 @@
                 <i class="fas fa-upload"></i> Cargar Pista y Entrar al Estudio
             </button>
         </div>
+<div id="vv-zona-subir-editado" class="vv-card" style="margin-top: 1rem; border: 2px dashed #10b981;">
+    <h3><i class="fas fa-film"></i> Subir Video Ya Editado</h3>
+    <p style="text-align: center; color: #94a3b8; font-size: 0.8rem; margin: 0 0 1rem 0;">
+        ¿Compusiste con SUNO o editaste tu video? Subilo directamente.
+    </p>
+    <label class="vv-file-label" style="background: linear-gradient(135deg, #10b981, #059669);">
+        <i class="fas fa-video"></i> Seleccionar Video (MP4, WebM, MOV)
+        <input type="file" id="vv-upload-edited-file" accept="video/mp4,video/webm,video/quicktime" onchange="VV_VOCES_V2.onEditedFileSelected()">
+    </label>
+    <p id="vv-edited-file-name" class="vv-file-name"></p>
+    <div class="vv-form-group">
+        <label>Título de tu obra *</label>
+        <input type="text" id="vv-upload-edited-title" placeholder="Ej: Mi Canción de Verano">
+    </div>
+    <label class="vv-checkbox">
+        <input type="checkbox" id="vv-check-derechos-editado">
+        <span>✅ Confirmo que soy el autor de esta obra y tengo derechos sobre ella.</span>
+    </label>
+    <button id="vv-btn-upload-edited" class="vv-btn-success" onclick="VV_VOCES_V2.uploadEditedVideo()">
+        <i class="fas fa-rocket"></i> 📤 Publicar en el Barrio
+    </button>
+</div>
 
          <div id="vv-zona-grabacion" class="vv-estudio-container oculto">
             <video id="vv-camara-preview" autoplay muted playsinline></video>
