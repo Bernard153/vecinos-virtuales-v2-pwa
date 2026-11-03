@@ -862,6 +862,19 @@
                                 top: 0 !important;
                             }
                         }
+                        .agenda-badge {
+                            padding: 4px 10px;
+                            border-radius: 12px;
+                            font-size: 0.8rem;
+                            font-weight: 600;
+                            text-transform: capitalize;
+                        }
+                        .agenda-banner { background: #dbeafe; color: #1e40af; }
+                        .agenda-folleto { background: #fef3c7; color: #92400e; }
+                        .agenda-destacado { background: #fce7f3; color: #9d174d; }
+                        .agenda-flash { background: #fff7ed; color: #c2410c; }
+                        .agenda-vip { background: #f3e8ff; color: #6b21a8; }
+
                     </style>
                 </section>
 
@@ -1141,6 +1154,68 @@
                             </div>
                         </div>
                     </div>
+                    <!-- AGENDA COMERCIAL -->
+<div id="agenda-section" style="display: none; padding: 1rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="margin: 0;">📋 Agenda Comercial</h2>
+        <div style="display: flex; gap: 0.5rem;">
+            <button onclick="VV.agenda.openAddModal()" class="btn-primary">+ Nuevo espacio</button>
+            <button onclick="VV.agenda.exportCSV()" class="btn-secondary">📥 Exportar CSV</button>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+        <select onchange="VV.agenda.setFilter('status', this.value)" style="padding: 0.5rem; border-radius: 8px; border: 1px solid var(--gray-300);">
+            <option value="all">Todos los estados</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+            <option value="expired">Vencidos</option>
+        </select>
+        <select onchange="VV.agenda.setFilter('space', this.value)" style="padding: 0.5rem; border-radius: 8px; border: 1px solid var(--gray-300);">
+            <option value="all">Todos los espacios</option>
+            <option value="banner">Banner</option>
+            <option value="folleto">Folleto</option>
+            <option value="destacado">Destacado</option>
+            <option value="flash">Flash</option>
+            <option value="vip">VIP</option>
+        </select>
+        <select onchange="VV.agenda.setFilter('payment', this.value)" style="padding: 0.5rem; border-radius: 8px; border: 1px solid var(--gray-300);">
+            <option value="all">Todos los pagos</option>
+            <option value="paid">Pagos</option>
+            <option value="unpaid">No pagos</option>
+            <option value="free">Sin cargo</option>
+        </select>
+        <input type="text" placeholder="🔍 Buscar comercio..." oninput="VV.agenda.setFilter('search', this.value)" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--gray-300); flex: 1; min-width: 200px;">
+    </div>
+
+    <!-- Tabla -->
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead>
+                <tr style="background: var(--gray-100); text-align: left;">
+                    <th style="padding: 0.75rem;">Comercio</th>
+                    <th style="padding: 0.75rem;">Espacio</th>
+                    <th style="padding: 0.75rem;">Inicio</th>
+                    <th style="padding: 0.75rem;">Fin</th>
+                    <th style="padding: 0.75rem;">Importe</th>
+                    <th style="padding: 0.75rem;">Abonado</th>
+                    <th style="padding: 0.75rem;">Estado</th>
+                    <th style="padding: 0.75rem;"></th>
+                    <th style="padding: 0.75rem;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="agenda-table-body"></tbody>
+        </table>
+    </div>
+
+    <p style="text-align: right; color: var(--gray-500); margin-top: 0.5rem;">
+        <span id="agenda-count">0</span> registros
+    </p>
+</div>
+
+<!-- Overlay para editar/crear -->
+<div id="agenda-edit-overlay" class="modal-overlay" style="display: none;"></div>
 
                     <div id="admin-rangos" class="admin-tab-content">
                         <div id="admin-rangos-list" style="display: grid !important; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.75rem; padding: 1rem;">
@@ -1193,6 +1268,7 @@
                         <button class="tab-btn" onclick="VV.moderator.showTab('alertas')">
                             <i class="fas fa-shield-alt"></i> Alertas
                         </button>
+                        <button onclick="document.getElementById('agenda-section').style.display='block'; VV.agenda.init();">📋 Agenda Comercial</button>
 
                         <button class="tab-btn" onclick="VV.moderator.showTab('voces')">
                             <i class="fas fa-microphone"></i> Voces
@@ -2122,6 +2198,7 @@ window.addEventListener('hashchange', function() {
 </div>
 
 <script src="js/alertas.js"></script>
+<script src="js/agenda-comercial.js"></script>
 
 </body>
 </html>
