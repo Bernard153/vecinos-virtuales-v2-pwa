@@ -38,6 +38,26 @@
     <link rel="stylesheet" href="css/buzon.css">
 
 </head>
+// DIAGNÓSTICO TEMPORAL — quitar después
+window.addEventListener('load', () => {
+    const link = document.querySelector('link[rel="manifest"]');
+    let msg = 'URL: ' + window.location.href + '\n';
+    msg += 'Manifest link: ' + (link ? link.href : 'NO ENCONTRADO') + '\n';
+    fetch('/manifest.json')
+        .then(r => {
+            msg += 'Manifest status: ' + r.status + '\n';
+            return r.text();
+        })
+        .then(text => {
+            msg += 'Manifest contenido (primeros 100 chars): ' + text.substring(0, 100);
+            alert(msg);
+        })
+        .catch(e => {
+            msg += 'Manifest error: ' + e.message;
+            alert(msg);
+        });
+});
+
 <body>
     <!-- PANTALLA DE CARGA -->
     <div id="loading-screen" class="screen active">
