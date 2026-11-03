@@ -16,24 +16,35 @@ VV.agenda = {
         await this.loadSpaces();
     },
 
-    async loadSpaces() {
-        try {
-            const { data, error } = await supabase
-                .from('sponsor_spaces')
-                .select(`
-                    *,
-                    sponsor:sponsors(id, business_name, contact, neighborhoods, active)
-                `)
-                .order('created_at', { ascending: false });
+   async loadSpaces() {
+    try {
+        // Cargar espacios
+        const { data: spaces, error: err1 } = await supabase
+            .from('sponsor_spaces')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-            if (error) throw error;
-            this.data = data || [];
-            this.applyFilters();
-        } catch (e) {
-            console.error('Error cargando espacios:', e);
-            VV.utils.showSuccess('Error al cargar agenda comercial');
-        }
-    },
+        if (err1) throw err1;
+
+        // Cargar sponsors por separado
+        const { data: sponsors, error: err2 } = await supabase
+            .from('sponsors')
+            .select('id, business_name, contact, neighborhoods, active');
+
+        if (err2) throw err2;
+
+        // Unir manualmente
+        this.data = (spaces || []).map(space => {
+            space.sponsor = sponsors?.find(s => s.id === space.sponsor_id) || null;
+            return space;
+        });
+
+        this.applyFilters();
+    } catch (e) {
+        console.error('Error cargando espacios:', e);
+    }
+},
+
 
     applyFilters() {
         let result = [...this.data];
