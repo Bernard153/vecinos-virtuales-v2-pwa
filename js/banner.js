@@ -734,7 +734,7 @@ VV.banner = {
         if (overlay) overlay.classList.remove('active');
     },
 
-       async showLocation(sponsorId) {
+     async showLocation(sponsorId) {
         const sponsor = VV.data.sponsors.find(s => s.id === sponsorId);
         if (!sponsor) return;
 
@@ -751,6 +751,18 @@ VV.banner = {
                 if (userData?.location) {
                     location = userData.location;
                 }
+            } else if (sponsor.contact) {
+                // Buscar usuario por teléfono
+                const cleanPhone = sponsor.contact.replace(/[^0-9]/g, '');
+                const lastDigits = cleanPhone.slice(-10);
+                const { data: users } = await supabase
+                    .from('users')
+                    .select('location, business_address')
+                    .ilike('phone', `%${lastDigits}%`)
+                    .limit(1);
+                if (users && users.length > 0 && users[0].location) {
+                    location = users[0].location;
+                }
             }
         }
 
@@ -765,6 +777,7 @@ VV.banner = {
             location: location
         });
     },
+
 
 };
 
