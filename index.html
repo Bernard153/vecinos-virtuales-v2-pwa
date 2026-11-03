@@ -1005,7 +1005,9 @@
                         <button class="tab-btn" onclick="VV.admin.showTab('buzon')">
                             <i class="fas fa-inbox"></i> Buzón
                         </button>
-
+                        <button class="tab-btn" onclick="VV.admin.showTab('agenda'); VV.agenda.init();">
+                            <i class="fas fa-clipboard-list"></i> Agenda
+                        </button>
                         <button class="tab-btn" onclick="VV.admin.showTab('avatars')">
                             <i class="fas fa-user-circle"></i> Avatares
                         </button>
@@ -1155,7 +1157,7 @@
                         </div>
                     </div>
                     <!-- AGENDA COMERCIAL -->
-<div id="agenda-section" style="display: none; padding: 1rem;">
+<div id="admin-agenda" class="admin-tab-content">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <h2 style="margin: 0;">📋 Agenda Comercial</h2>
         <div style="display: flex; gap: 0.5rem;">
@@ -1268,8 +1270,7 @@
                         <button class="tab-btn" onclick="VV.moderator.showTab('alertas')">
                             <i class="fas fa-shield-alt"></i> Alertas
                         </button>
-                        <button onclick="document.getElementById('agenda-section').style.display='block'; VV.agenda.init();">📋 Agenda Comercial</button>
-
+                        
                         <button class="tab-btn" onclick="VV.moderator.showTab('voces')">
                             <i class="fas fa-microphone"></i> Voces
                         </button>
