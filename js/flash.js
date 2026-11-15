@@ -121,19 +121,24 @@
         mostrarTanda: function () {
             if (this.flashesActivos.length === 0 || this.mostrando) return;
             this.mostrando = true;
-            this.indexActual = 0;
+            this.indexActual = this.indexInicioTanda || 0;
+            this.contadorTanda = 0;
             this.mostrarSiguiente();
         },
+
 
         /**
          * Muestra el siguiente flash en la tanda
          */
         mostrarSiguiente: function () {
             var self = this;
+            var maxPorTanda = Math.min(2, this.flashesActivos.length);
 
-            if (this.indexActual >= this.flashesActivos.length || this.indexActual >= 2) {
+            if (this.contadorTanda >= maxPorTanda) {
                 this.mostrando = false;
                 this.actualizarCounter(-1);
+                // Rotar: la próxima tanda empieza donde terminó esta
+                this.indexInicioTanda = (this.indexInicioTanda + maxPorTanda) % this.flashesActivos.length;
                 var intervalo = this.calcularIntervalo();
                 this.timerIntervalo = setTimeout(function () {
                     self.mostrarTanda();
@@ -143,12 +148,13 @@
 
             var flash = this.flashesActivos[this.indexActual];
             this.mostrarFlash(flash);
-            this.actualizarCounter(this.indexActual);
+            this.actualizarCounter(this.contadorTanda);
 
             this.timerActual = setTimeout(function () {
                 self.cerrarYAvanzar();
             }, flash.duracion_seg * 1000);
         },
+
 
         /**
          * Muestra un flash individual con su animación de entrada
@@ -213,7 +219,8 @@
 
             setTimeout(function () {
                 overlay.classList.remove('flash-activo');
-                self.indexActual++;
+                self.indexActual = (self.indexActual + 1) % self.flashesActivos.length;
+                self.contadorTanda++;
                 self.mostrarSiguiente();
             }, 450);
         },
@@ -274,9 +281,12 @@
             this.mostrando = false;
             this.flashesActivos = [];
             this.indexActual = 0;
+            this.indexInicioTanda = 0;
+            this.contadorTanda = 0;
             var overlay = document.getElementById('flash-overlay');
             if (overlay) overlay.classList.remove('flash-activo');
         }
+
     };
     // ============================================================
     //  PARTE 2: PANEL DE ADMINISTRACIÓN
