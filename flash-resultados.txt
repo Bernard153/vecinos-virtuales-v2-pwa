@@ -1,0 +1,169 @@
+js\agenda-comercial.js:                            <option value="flash" ${space.space_type === 'flash' ? 'selected' : ''}>Flash</option>
+js\agenda-comercial.js:                            <option value="flash">Flash</option>
+js\app.js:            // Anuncios flash — mostrar al iniciar sesión
+js\app.js:            if (typeof VV.flash !== 'undefined') {
+js\app.js:                VV.flash.init();
+js\auth-supabase.js:            // Detener anuncios flash
+js\auth-supabase.js:            if (typeof VV.flash !== 'undefined') {
+js\auth-supabase.js:                VV.flash.detener();
+js\flash.js:   SISTEMA DE ANUNCIOS FLASH — Vecinos Virtuales
+js\flash.js:   js/flash.js
+js\flash.js:   Namespace: VV.flash (display) + VV.flashAdmin (admin)
+js\flash.js:    VV.flash = {
+js\flash.js:        flashesActivos: [],
+js\flash.js:        flashesVistosHoy: [],
+js\flash.js:            'fade': 'flash-anim-fade-in',
+js\flash.js:            'zoom': 'flash-anim-zoom-in',
+js\flash.js:            'slide_arriba': 'flash-anim-slide-arriba',
+js\flash.js:            'slide_izquierda': 'flash-anim-slide-izquierda',
+js\flash.js:            'rebote': 'flash-anim-rebote',
+js\flash.js:            'girar': 'flash-anim-girar',
+js\flash.js:            'elastico': 'flash-anim-elastico',
+js\flash.js:            'volar_arriba': 'flash-anim-volar-arriba',
+js\flash.js:            'latido': 'flash-anim-latido'
+js\flash.js:            'fade': 'flash-anim-fade-out',
+js\flash.js:            'zoom_out': 'flash-anim-zoom-out',
+js\flash.js:            'slide_abajo': 'flash-anim-slide-abajo',
+js\flash.js:            'girar_out': 'flash-anim-girar-out',
+js\flash.js:            'volar_out': 'flash-anim-volar-out'
+js\flash.js:         * Inicializa el sistema de flash.
+js\flash.js:            if (!document.getElementById('flash-overlay')) {
+js\flash.js:            this.cargarFlashes();
+js\flash.js:                '<div id="flash-overlay">' +
+js\flash.js:                    '<div id="flash-box">' +
+js\flash.js:                        '<span id="flash-label">ANUNCIO</span>' +
+js\flash.js:                        '<div id="flash-close">✕</div>' +
+js\flash.js:                        '<div id="flash-image">' +
+js\flash.js:                            '<div id="flash-text"></div>' +
+js\flash.js:                    '<div id="flash-counter"></div>' +
+js\flash.js:            document.getElementById('flash-close').addEventListener('click', function () {
+js\flash.js:         * Carga los flashes activos para el barrio del usuario
+js\flash.js:        cargarFlashes: async function () {
+js\flash.js:                    .from('anuncios_flash')
+js\flash.js:                    console.error('Flash: error cargando flashes:', error);
+js\flash.js:                var flashes = data.filter(function (f) {
+js\flash.js:                        if (self.flashesVistosHoy.indexOf(key) !== -1) return false;
+js\flash.js:                this.flashesActivos = flashes;
+js\flash.js:                if (flashes.length > 0) {
+js\flash.js:                console.error('Flash: error inesperado:', err);
+js\flash.js:         * Muestra una tanda de hasta 2 flashes
+js\flash.js:            if (this.flashesActivos.length === 0 || this.mostrando) return;
+js\flash.js:         * Muestra el siguiente flash en la tanda
+js\flash.js:            if (this.indexActual >= this.flashesActivos.length || this.indexActual >= 2) {
+js\flash.js:            var flash = this.flashesActivos[this.indexActual];
+js\flash.js:            this.mostrarFlash(flash);
+js\flash.js:            }, flash.duracion_seg * 1000);
+js\flash.js:         * Muestra un flash individual con su animación de entrada
+js\flash.js:        mostrarFlash: function (flash) {
+js\flash.js:            var overlay = document.getElementById('flash-overlay');
+js\flash.js:            var box = document.getElementById('flash-box');
+js\flash.js:            var image = document.getElementById('flash-image');
+js\flash.js:            var text = document.getElementById('flash-text');
+js\flash.js:            image.style.backgroundImage = 'url("' + flash.imagen_url + '")';
+js\flash.js:            if (flash.texto_posicion === 'none' || !flash.texto_superpuesto) {
+js\flash.js:                text.classList.add('flash-text-none');
+js\flash.js:                text.classList.add('flash-text-' + flash.texto_posicion);
+js\flash.js:                text.textContent = flash.texto_superpuesto;
+js\flash.js:                text.style.color = flash.texto_color || '#fff';
+js\flash.js:                text.style.fontSize = (flash.texto_tamano || 15) + 'px';
+js\flash.js:                if (flash.texto_fondo === false) {
+js\flash.js:            box.classList.add(this.mapaEntrada[flash.efecto_entrada] || 'flash-anim-zoom-in');
+js\flash.js:            overlay.classList.add('flash-activo');
+js\flash.js:            this.registrarImpresion(flash.id);
+js\flash.js:            this.flashesVistosHoy.push(flash.id + '_' + hoy);
+js\flash.js:         * Cierra el flash actual y avanza al siguiente
+js\flash.js:            var box = document.getElementById('flash-box');
+js\flash.js:            var flash = this.flashesActivos[this.indexActual];
+js\flash.js:            var overlay = document.getElementById('flash-overlay');
+js\flash.js:            if (flash) {
+js\flash.js:                box.classList.add(this.mapaSalida[flash.efecto_salida] || 'flash-anim-fade-out');
+js\flash.js:                overlay.classList.remove('flash-activo');
+js\flash.js:            if (this.flashesActivos.length > 0 && this.flashesActivos[0].intervalo_min) {
+js\flash.js:                return this.flashesActivos[0].intervalo_min * 60 * 1000;
+js\flash.js:            var counter = document.getElementById('flash-counter');
+js\flash.js:            var total = Math.min(this.flashesActivos.length, 2);
+js\flash.js:        registrarImpresion: async function (flashId) {
+js\flash.js:                await supabase.from('flash_impresiones').insert({
+js\flash.js:                    flash_id: flashId,
+js\flash.js:                console.warn('Flash: no se pudo registrar impresión:', e);
+js\flash.js:         * Detiene el sistema de flash (al cerrar sesión)
+js\flash.js:            this.flashesActivos = [];
+js\flash.js:            var overlay = document.getElementById('flash-overlay');
+js\flash.js:            if (overlay) overlay.classList.remove('flash-activo');
+js\flash.js:    VV.flashAdmin = {
+js\flash.js:         * Muestra el panel de administración de flashes
+js\flash.js:            VV.admin.showTab('flash');
+js\flash.js:         * Carga la lista de flashes en el panel admin
+js\flash.js:            var contenedor = document.getElementById('admin-flash-lista');
+js\flash.js:            contenedor.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:1rem;">Cargando flashes...</p>';
+js\flash.js:                    .from('anuncios_flash')
+js\flash.js:                    contenedor.innerHTML = '<p style="text-align:center;color:#94a3b8;padding:2rem;">No hay anuncios flash creados aún.<br>Presioná "Nuevo Flash" para crear el primero.</p>';
+js\flash.js:                    html += '<div class="flash-admin-card">' +
+js\flash.js:                        '<div class="flash-admin-card-img" style="background-image:url(\'' + f.imagen_url + '\')"></div>' +
+js\flash.js:                        '<div class="flash-admin-card-body">' +
+js\flash.js:                            '<span class="flash-admin-badge ' + f.estado + '">' + f.estado + '</span>' +
+js\flash.js:                            '<div class="flash-admin-card-meta">' +
+js\flash.js:                            '<div class="flash-admin-card-actions">' +
+js\flash.js:                                (f.estado !== 'activo' ? '<button class="btn-activar" onclick="VV.flashAdmin.activar(\'' + f.id + '\')"><i class="fas fa-check"></i> Activar</button>' : '') +
+js\flash.js:                                '<button onclick="VV.flashAdmin.editar(\'' + f.id + '\')"><i class="fas fa-edit"></i> Editar</button>' +
+js\flash.js:                                '<button onclick="VV.flashAdmin.verReporte(\'' + f.id + '\')"><i class="fas fa-chart-bar"></i> Reporte</button>' +
+js\flash.js:                                '<button class="btn-eliminar" onclick="VV.flashAdmin.eliminar(\'' + f.id + '\')"><i class="fas fa-trash"></i> Eliminar</button>' +
+js\flash.js:         * Abre el formulario para crear/editar un flash
+js\flash.js:            var modal = document.getElementById('flash-form-modal');
+js\flash.js:            document.getElementById('flash-form-modal').classList.add('flash-modal-abierto');
+js\flash.js:                '<div id="flash-form-modal">' +
+js\flash.js:                    '<div class="flash-form-contenido">' +
+js\flash.js:                        '<h3 id="flash-form-titulo">✨ Nuevo Anuncio Flash</h3>' +
+js\flash.js:                        '<div class="flash-form-grid">' +
+js\flash.js:                            '<div class="flash-form-group full">' +
+js\flash.js:                            '<div class="flash-form-group full">' +
+js\flash.js:                                '<input type="file" id="ff-imagen" accept="image/*" onchange="VV.flashAdmin.onImagenSeleccionada()">' +
+js\flash.js:                            '<div class="flash-form-group full">' +
+js\flash.js:                                '<textarea id="ff-texto" rows="2" placeholder="Ej: Oferta de frutas hoy!" oninput="VV.flashAdmin.actualizarVistaPrevia()"></textarea>' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                                '<select id="ff-posicion" onchange="VV.flashAdmin.actualizarVistaPrevia()">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                                '<input type="color" id="ff-color" value="#ffffff" onchange="VV.flashAdmin.actualizarVistaPrevia()">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                                '<input type="number" id="ff-tamano" value="15" min="10" max="30" onchange="VV.flashAdmin.actualizarVistaPrevia()">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                                '<select id="ff-fondo" onchange="VV.flashAdmin.actualizarVistaPrevia()">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                            '<div class="flash-form-group">' +
+js\flash.js:                            '<div class="flash-form-group full">' +
+js\flash.js:                        '<div class="flash-vista-previa" id="ff-vista-previa">' +
+js\flash.js:                            '<span class="flash-vista-previa-label">ANUNCIO</span>' +
+js\flash.js:                            '<div class="flash-vista-previa-img" id="ff-vista-img">' +
+js\flash.js:                                '<div class="flash-vista-previa-text" id="ff-vista-text"></div>' +
+js\flash.js:                        '<div class="flash-form-actions">' +
+js\flash.js:                            '<button class="btn-guardar" onclick="VV.flashAdmin.guardar()"><i class="fas fa-save"></i> Guardar</button>' +
+js\flash.js:                            '<button class="btn-cancelar" onclick="VV.flashAdmin.cerrarForm()">Cancelar</button>' +
+js\flash.js:                console.warn('Flash: no se pudieron cargar barrios:', e);
+js\flash.js:            var nombreArchivo = 'flash_' + Date.now() + '_' + file.name.replace(/\s/g, '_');
+js\flash.js:                    .from('anuncios-flash')
+js\flash.js:                var url = supabase.storage.from('anuncios-flash').getPublicUrl(nombreArchivo).data.publicUrl;
+js\flash.js:         * Guarda el flash en la base de datos
+js\flash.js:                    result = await supabase.from('anuncios_flash').update(datos).eq('id', this.editandoId);
+js\flash.js:                    result = await supabase.from('anuncios_flash').insert(datos);
+js\flash.js:                alert(this.editandoId ? 'Flash actualizado correctamente.' : 'Flash creado y activado correctamente.');
+js\flash.js:         * Carga un flash existente para editar
+js\flash.js:                    .from('anuncios_flash')
+js\flash.js:                document.getElementById('flash-form-titulo').textContent = '✏️ Editar Flash';
+js\flash.js:                console.error('Flash: error cargando para editar:', e);
+js\flash.js:         * Activa un flash (cambia estado a activo)
+js\flash.js:                    .from('anuncios_flash')
+js\flash.js:         * Elimina un flash (soft delete)
+js\flash.js:            if (!confirm('¿Eliminar este anuncio flash? Esta acción no se puede deshacer.')) return;
+js\flash.js:                    .from('anuncios_flash')
+js\flash.js:         * Muestra el reporte de impresiones de un flash
+js\flash.js:                    .from('flash_impresiones')
+js\flash.js:                    .eq('flash_id', id);
+js\flash.js:                alert('📊 Reporte del Flash\n\n' +
+js\flash.js:            document.getElementById('flash-form-modal').classList.remove('flash-modal-abierto');
+js\flash.js:            document.getElementById('flash-form-titulo').textContent = '✨ Nuevo Anuncio Flash';
+js\flash.js:console.log('✅ Módulo FLASH cargado');
