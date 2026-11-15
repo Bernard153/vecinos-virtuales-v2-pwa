@@ -1,5 +1,5 @@
 // Service Worker para Vecinos Virtuales
-const CACHE_NAME = 'vecinos-virtuales-v1';
+const CACHE_NAME = 'vecinos-virtuales-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -18,7 +18,7 @@ const urlsToCache = [
   '/js/geo.js',
   '/js/map.js',
   '/js/banner.js',
-  '/manifest.json'
+  '/manifest.webmanifest'
 ];
 
 // Instalación del Service Worker
@@ -60,24 +60,39 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Para navegación (HTML): network-first para siempre tener la versión nueva
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Para otros archivos: cache-first
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Cache hit - devolver respuesta del cache
         if (response) {
           return response;
         }
 
-        // Clonar la petición
         const fetchRequest = event.request.clone();
 
         return fetch(fetchRequest).then(response => {
-          // Verificar si es una respuesta válida
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;
           }
 
-          // Clonar la respuesta
           const responseToCache = response.clone();
 
           caches.open(CACHE_NAME)
@@ -90,7 +105,6 @@ self.addEventListener('fetch', event => {
       })
       .catch(err => {
         console.error('❌ Error en fetch:', err);
-        // Aquí podrías devolver una página offline personalizada
       })
   );
 });
@@ -104,7 +118,6 @@ self.addEventListener('sync', event => {
 });
 
 async function syncData() {
-  // Aquí podrías sincronizar datos pendientes cuando vuelva la conexión
   console.log('📡 Sincronizando datos...');
 }
 
@@ -114,8 +127,7 @@ self.addEventListener('push', event => {
   
   const options = {
     body: event.data ? event.data.text() : 'Nueva notificación de Vecinos Virtuales',
-    icon: '/images/icon-192x192.png',
-    badge: '/images/icon-72x72.png',
+    icon: '/images/Vecinos_x192.png',
     vibrate: [200, 100, 200],
     data: {
       dateOfArrival: Date.now(),
@@ -124,13 +136,11 @@ self.addEventListener('push', event => {
     actions: [
       {
         action: 'explore',
-        title: 'Ver',
-        icon: '/images/checkmark.png'
+        title: 'Ver'
       },
       {
         action: 'close',
-        title: 'Cerrar',
-        icon: '/images/xmark.png'
+        title: 'Cerrar'
       }
     ]
   };
