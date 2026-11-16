@@ -3,25 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <meta name="description" content="Red social de barrio para comprar, vender, mejorar y conectar con tu comunidad">
+    
+    <!-- SEO básico -->
+    <title>Vecinos Virtuales - Conectá con tu Barrio</title>
+    <meta name="description" content="Red social de barrio para comprar, vender, mejorar y conectar con tu comunidad. Publicá productos, alertá a tus vecinos, participá en cultura y eventos.">
+    <meta name="keywords" content="barrio, vecinos, comunidad, marketplace, compras, ventas, alertas, seguridad, cultura, eventos">
+    <meta name="author" content="Vecinos Virtuales">
+    <link rel="canonical" href="https://vecinos-virtuales-v2-pwa.pages.dev/">
+    
+    <!-- Open Graph (WhatsApp, Facebook) -->
+    <meta property="og:title" content="Vecinos Virtuales - Conectá con tu Barrio">
+    <meta property="og:description" content="Red social de barrio para comprar, vender, mejorar y conectar con tu comunidad.">
+    <meta property="og:image" content="https://vecinos-virtuales-v2-pwa.pages.dev/images/Vecinos_x512.png">
+    <meta property="og:url" content="https://vecinos-virtuales-v2-pwa.pages.dev/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Vecinos Virtuales">
+    <meta property="og:locale" content="es_AR">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Vecinos Virtuales - Conectá con tu Barrio">
+    <meta name="twitter:description" content="Red social de barrio para comprar, vender, mejorar y conectar con tu comunidad.">
+    <meta name="twitter:image" content="https://vecinos-virtuales-v2-pwa.pages.dev/images/Vecinos_x512.png">
+    
+    <!-- PWA -->
     <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Vecinos Virtuales">
-    <title>Vecinos Virtuales - Conecta con tu Barrio</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.webmanifest">
     
     <!-- Iconos para iOS -->
-    <link rel="apple-touch-icon" href="/images/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="/images/icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/images/icon-192x192.png">
-    <link rel="apple-touch-icon" sizes="167x167" href="/images/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/images/Vecinos_x192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/images/Vecinos_x192.png">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/images/icon-72x72.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/images/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/Vecinos_x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/images/Vecinos_x512.png">
+    
+    <!-- Datos estructurados (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Vecinos Virtuales",
+      "description": "Red social de barrio para comprar, vender, mejorar y conectar con tu comunidad",
+      "url": "https://vecinos-virtuales-v2-pwa.pages.dev/",
+      "applicationCategory": "SocialApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "ARS"
+      }
+    }
+    </script>
     
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -38,6 +77,7 @@
     <link rel="stylesheet" href="css/buzon.css">
 
 </head>
+
 <body>
     <!-- PANTALLA DE CARGA -->
     <div id="loading-screen" class="screen active">
