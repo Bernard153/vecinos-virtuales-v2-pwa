@@ -215,39 +215,33 @@
             gap: 0.75rem;
         }
         #landing-screen .barrio-card {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
             border-radius: 10px;
-            padding: 0.75rem;
+            overflow: hidden;
             cursor: pointer;
-            text-align: center;
-            transition: transform 0.2s, background 0.2s;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
         }
         #landing-screen .barrio-card:hover {
-            transform: translateY(-3px);
-            background: rgba(192,132,252,0.2);
-            border-color: rgba(192,132,252,0.4);
-        }
-        #landing-screen .barrio-card .barrio-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        #landing-screen .barrio-card .barrio-count {
-            font-size: 0.75rem;
-            opacity: 0.6;
-            margin-top: 0.25rem;
+            transform: translateY(-5px) scale(1.03);
+            background: rgba(192,132,252,0.15);
+            border-color: rgba(192,132,252,0.5);
+            box-shadow: 0 8px 25px rgba(139,92,246,0.3);
         }
         #landing-screen .barrio-card.destacado {
             border-color: #c084fc;
-            background: rgba(192,132,252,0.15);
+            box-shadow: 0 4px 15px rgba(192,132,252,0.3);
         }
         #landing-screen .barrio-card.destacado::after {
             content: '📍 Hoy destacado';
             display: block;
             font-size: 0.65rem;
             color: #c084fc;
-            margin-top: 0.25rem;
+            text-align: center;
+            padding: 0.25rem 0;
+            background: rgba(192,132,252,0.1);
         }
+
         /* Efemérides */
         #landing-screen .efemerides-box {
             background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(139,92,246,0.15));

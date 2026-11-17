@@ -27,54 +27,77 @@ VV.landingWeb = {
 
     // Cargar barrios con conteo de vecinos
     async loadBarrios() {
-        const container = document.getElementById('landing-barrios');
-        if (!container) return;
+    const container = document.getElementById('landing-barrios');
+    if (!container) return;
 
-        try {
-            const { data, error } = await supabase
-                .from('barrios_publicos')
-                .select('neighborhood');
+    try {
+        // Cargar barrios con conteo de vecinos
+        const { data: usersData, error: err1 } = await supabase
+            .from('barrios_publicos')
+            .select('neighborhood');
 
-            if (error) throw error;
+        if (err1) throw err1;
 
-            // Contar vecinos por barrio
-            const conteo = {};
-            data.forEach(u => {
-                const b = u.neighborhood;
-                if (b) conteo[b] = (conteo[b] || 0) + 1;
-            });
+        // Cargar imágenes de barrios
+        const { data: barriosData } = await supabase
+            .from('barrios')
+            .select('nombre, imagen_url, descripcion');
 
-            let barrios = Object.keys(conteo).map(nombre => ({
-                nombre,
-                vecinos: conteo[nombre]
-            })).sort((a, b) => b.vecinos - a.vecinos);
+        const imagenesBarrios = {};
+        (barriosData || []).forEach(b => {
+            imagenesBarrios[b.nombre] = { img: b.imagen_url, desc: b.descripcion };
+        });
 
-            if (barrios.length === 0) {
-                container.innerHTML = '<p style="opacity:0.6;">Aún no hay barrios registrados. ¡Sé el primero!</p>';
-                return;
-            }
+        // Contar vecinos por barrio
+        const conteo = {};
+        usersData.forEach(u => {
+            const b = u.neighborhood;
+            if (b) conteo[b] = (conteo[b] || 0) + 1;
+        });
 
-            // Rotar: el barrio destacado cambia cada día
-            const dia = this.getDiaDelAno();
-            const indiceInicio = dia % barrios.length;
-            const destacado = barrios[indiceInicio];
+        let barrios = Object.keys(conteo).map(nombre => ({
+            nombre,
+            vecinos: conteo[nombre],
+            imagen: imagenesBarrios[nombre]?.img || null,
+            descripcion: imagenesBarrios[nombre]?.desc || ''
+        })).sort((a, b) => b.vecinos - a.vecinos);
 
-            // Reordenar: el destacado va primero
-            barrios = barrios.filter(b => b.nombre !== destacado.nombre);
-            barrios.unshift(destacado);
-
-            container.innerHTML = barrios.map((b, i) => `
-                <div class="barrio-card ${i === 0 ? 'destacado' : ''}" onclick="VV.landingWeb.verBarrio('${b.nombre.replace(/'/g, "\\'")}')">
-                    <div class="barrio-name">${b.nombre}</div>
-                    <div class="barrio-count">${b.vecinos} vecino${b.vecinos !== 1 ? 's' : ''}</div>
-                </div>
-            `).join('');
-
-        } catch (e) {
-            console.error('Error cargando barrios:', e);
-            container.innerHTML = '<p style="opacity:0.6;">Error cargando barrios</p>';
+        if (barrios.length === 0) {
+            container.innerHTML = '<p style="opacity:0.6;">Aún no hay barrios registrados. ¡Sé el primero!</p>';
+            return;
         }
-    },
+
+        // Rotar: el barrio destacado cambia cada día
+        const dia = this.getDiaDelAno();
+        const indiceInicio = dia % barrios.length;
+        const destacado = barrios[indiceInicio];
+
+        // Reordenar: el destacado va primero
+        barrios = barrios.filter(b => b.nombre !== destacado.nombre);
+        barrios.unshift(destacado);
+
+        container.innerHTML = barrios.map((b, i) => {
+            const inicial = b.nombre.charAt(0).toUpperCase();
+            const imgHtml = b.imagen 
+                ? `<img src="${b.imagen}" alt="${b.nombre}" style="width:100%;height:80px;object-fit:cover;border-radius:8px 8px 0 0;">`
+                : `<div style="width:100%;height:80px;background:linear-gradient(135deg,#8b5cf6,#312e81);display:flex;align-items:center;justify-content:center;border-radius:8px 8px 0 0;font-size:2rem;font-weight:800;color:rgba(255,255,255,0.5);">${inicial}</div>`;
+            return `
+                <div class="barrio-card ${i === 0 ? 'destacado' : ''}" onclick="VV.landingWeb.verBarrio('${b.nombre.replace(/'/g, "\\'")}')">
+                    ${imgHtml}
+                    <div style="padding:0.5rem;">
+                        <div class="barrio-name">${b.nombre}</div>
+                        <div class="barrio-count">${b.vecinos} vecino${b.vecinos !== 1 ? 's' : ''}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (e) {
+        console.error('Error cargando barrios:', e);
+        container.innerHTML = '<p style="opacity:0.6;">Error cargando barrios</p>';
+    }
+},
+
 
     verBarrio(nombre) {
         // Por ahora lleva al registro. Después: mostrar contenido del barrio
