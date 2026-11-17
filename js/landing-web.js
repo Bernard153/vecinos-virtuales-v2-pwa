@@ -32,10 +32,8 @@ VV.landingWeb = {
 
         try {
             const { data, error } = await supabase
-                .from('users')
-                .select('neighborhood')
-                .not('neighborhood', 'is', null)
-                .neq('neighborhood', '');
+                .from('barrios_publicos')
+                .select('neighborhood');
 
             if (error) throw error;
 
