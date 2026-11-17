@@ -95,12 +95,18 @@ VV.landingWeb = {
             const hoy = new Date();
             const mesDia = hoy.toISOString().substring(5, 10); // "MM-DD"
 
-            const { data, error } = await supabase
-                .from('efemerides')
-                .select('*')
-                .eq('activa', true)
-                .ilike('fecha', `%-${mesDia}`)
-                .order('tipo', { ascending: true });
+            const hoy = new Date();
+            const mes = hoy.getMonth() + 1;
+            const dia = hoy.getDate();
+
+        const { data, error } = await supabase
+            .from('efemerides')
+            .select('*')
+            .eq('activa', true)
+            .eq('mes', mes)
+            .eq('dia', dia)
+            .order('tipo', { ascending: true });
+
 
             if (error) throw error;
 
@@ -173,7 +179,7 @@ VV.landingWeb = {
             const { data, error } = await supabase
                 .from('featured_offers')
                 .select('*')
-                .eq('activa', true)
+                .eq('blocked', false)
                 .order('created_at', { ascending: false })
                 .limit(6);
 
