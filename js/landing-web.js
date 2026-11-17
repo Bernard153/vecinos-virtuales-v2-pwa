@@ -394,3 +394,12 @@ VV.landingWeb = {
         }
     }
 };
+// Auto-inicializar cuando la landing está visible
+function initLandingWeb() {
+    if (typeof VV !== 'undefined' && VV.landingWeb && window.supabase) {
+        VV.landingWeb.init();
+    } else {
+        setTimeout(initLandingWeb, 500);
+    }
+}
+initLandingWeb();
