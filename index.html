@@ -91,97 +91,239 @@
         </div>
     </div>
         <!-- ========== LANDING PÚBLICA (VISITANTE SIN REGISTRO) ========== -->
-    <div id="landing-screen" class="screen">
-        <div style="min-height:100vh; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%); color: white; display: flex; flex-direction: column;">
-            
-            <!-- Header -->
-            <div style="text-align: center; padding: 2rem 1.5rem 1rem;">
-                <h1 style="font-size: 2rem; font-weight: 800; margin: 0;">
-                    Vecinos Virtuales
-                </h1>
-                <p style="opacity: 0.8; margin-top: 0.5rem;">Conectá con tu barrio de forma simple</p>
-            </div>
+<div id="landing-screen" class="screen">
+    <style>
+        #landing-screen .landing-wrap {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        #landing-screen .landing-container {
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 1rem;
+        }
+        #landing-screen .landing-hero {
+            text-align: center;
+            padding: 3rem 1.5rem 2rem;
+        }
+        #landing-screen .landing-hero h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        #landing-screen .landing-hero p {
+            opacity: 0.85;
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+        }
+        #landing-screen .landing-cta {
+            text-align: center;
+            padding: 0 1.5rem 2rem;
+        }
+        #landing-screen .landing-cta button {
+            background: linear-gradient(135deg, #c084fc, #8b5cf6);
+            border: none; color: white;
+            padding: 0.85rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(139,92,246,0.4);
+            transition: transform 0.2s;
+        }
+        #landing-screen .landing-cta button:hover {
+            transform: scale(1.05);
+        }
+        #landing-screen .landing-steps {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 1.5rem 0;
+        }
+        #landing-screen .landing-step {
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 1.2rem;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #landing-screen .landing-step .step-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        #landing-screen .landing-step h4 {
+            margin: 0 0 0.3rem;
+            font-size: 1rem;
+        }
+        #landing-screen .landing-step p {
+            margin: 0;
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+        #landing-screen .landing-section {
+            margin-bottom: 2rem;
+        }
+        #landing-screen .landing-section h3 {
+            font-size: 1.1rem;
+            margin: 0 0 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        #landing-screen .landing-section .ver-mas {
+            background: rgba(192,132,252,0.2);
+            border: 1px solid rgba(192,132,252,0.4);
+            color: #c084fc;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        #landing-screen .landing-scroll {
+            display: flex;
+            gap: 0.75rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+        #landing-screen .landing-scroll::-webkit-scrollbar { display: none; }
+        #landing-screen .landing-footer {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            opacity: 0.6;
+            font-size: 0.8rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        #landing-screen .landing-footer button {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+        }
+        @media (min-width: 768px) {
+            #landing-screen .landing-steps {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            #landing-screen .landing-hero h1 {
+                font-size: 3rem;
+            }
+            #landing-screen .landing-hero p {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
 
-            <!-- Botón registrarse -->
-            <div style="text-align: center; padding: 0 1.5rem 1rem;">
-                <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();"
-			 style="background: linear-gradient(135deg, #c084fc, #8b5cf6); border: none; color: white; padding: 0.75rem 2rem; border-radius: 50px; font-weight: 600; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(139,92,246,0.4);">
-                    🏠 Unirme a mi barrio
-                </button>
-            </div>
+    <div class="landing-wrap">
 
-            <!-- Contenido público -->
-            <div style="flex: 1; padding: 0 1rem 2rem; overflow-y: auto;">
-                
-                <!-- El Folleto -->
-                <div style="margin-bottom: 2rem;">
-                    <h3 style="font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🏪 El Folleto
-                    </h3>
-                    <div id="landing-folleto" style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
-                        <p style="opacity: 0.6; padding: 1rem;">Cargando folleto...</p>
-                    </div>
-                    <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();" style="background: rgba(192,132,252,0.2); border: 1px solid rgba(192,132,252,0.4); color: #c084fc; padding: 0.4rem 1rem; border-radius: 50px; cursor: pointer; font-size: 0.8rem; margin-top: 0.5rem;">Ver más →</button>
-
-                </div>
-
-                <!-- Ofertas Destacadas -->
-                <div style="margin-bottom: 2rem;">
-                    <h3 style="font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                        ⭐ Ofertas Destacadas
-                    </h3>
-                    <div id="landing-destacadas" style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
-                        <p style="opacity: 0.6; padding: 1rem;">Cargando ofertas...</p>
-                    </div>
-                    <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();" style="background: rgba(251,191,36,0.2); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24; padding: 0.4rem 1rem; border-radius: 50px; cursor: pointer; font-size: 0.8rem; margin-top: 0.5rem;">Ver más →</button>
-
-                </div>
-
-                <!-- Cultura -->
-                <div style="margin-bottom: 2rem;">
-                    <h3 style="font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🎭 Cultura y Eventos
-                    </h3>
-                    <div id="landing-cultura" style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
-                        <p style="opacity: 0.6; padding: 1rem;">Cargando eventos...</p>
-                    </div>
-                    <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();" style="background: rgba(236,72,153,0.2); border: 1px solid rgba(236,72,153,0.4); color: #f472b6; padding: 0.4rem 1rem; border-radius: 50px; cursor: pointer; font-size: 0.8rem; margin-top: 0.5rem;">Ver más →</button>
-
-                </div>
-
-                <!-- Voces Virtuales -->
-                <div style="margin-bottom: 2rem;">
-                    <h3 style="font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                        🎤 Voces Virtuales
-                    </h3>
-                    <div id="landing-voces" style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
-                        <p style="opacity: 0.6; padding: 1rem;">Cargando videos...</p>
-                    </div>
-                    <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();" style="background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4); color: #f59e0b; padding: 0.4rem 1rem; border-radius: 50px; cursor: pointer; font-size: 0.8rem; margin-top: 0.5rem;">Ver más →</button>
-                <!-- Anunciantes -->
-                <div style="margin-bottom: 2rem;">
-                    <h3 style="font-size: 1.1rem; margin: 0 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                        📢 Anunciantes
-                    </h3>
-                    <div id="landing-anunciantes" style="display: flex; gap: 0.75rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: none;">
-                        <p style="opacity: 0.6; padding: 1rem;">Cargando anunciantes...</p>
-                    </div>
-                    <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();" style="background: rgba(34,197,94,0.2); border: 1px solid rgba(34,197,94,0.4); color: #22c55e; padding: 0.4rem 1rem; border-radius: 50px; cursor: pointer; font-size: 0.8rem; margin-top: 0.5rem;">Ver más →</button>
-                </div>
-
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div style="text-align: center; padding: 1rem; opacity: 0.6; font-size: 0.8rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                <p>Para publicar, comentar o interactuar necesitás una cuenta.</p>
-                <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();"
- 			style="background: none; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 0.5rem 1.5rem; border-radius: 50px; cursor: pointer; margin-top: 0.5rem; font-size: 0.85rem;">
-                    Crear cuenta / Iniciar sesión
-                </button>
+        <!-- Hero -->
+        <div class="landing-hero">
+            <div class="landing-container">
+                <h1>🏠 Vecinos Virtuales</h1>
+                <p>Conectá con tu barrio — comprá, vendé, alertá y participá</p>
             </div>
         </div>
+
+        <!-- CTA -->
+        <div class="landing-cta">
+            <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                🏠 Unirme a mi barrio
+            </button>
+        </div>
+
+        <!-- Cómo funciona -->
+        <div class="landing-container">
+            <div class="landing-steps">
+                <div class="landing-step">
+                    <div class="step-icon">📍</div>
+                    <h4>1. Elegí tu barrio</h4>
+                    <p>Decinos dónde vivís y conectamos con tu comunidad</p>
+                </div>
+                <div class="landing-step">
+                    <div class="step-icon">🏪</div>
+                    <h4>2. Explá el barrio</h4>
+                    <p>Comprá, vendé, publicá alertas y participá en eventos</p>
+                </div>
+                <div class="landing-step">
+                    <div class="step-icon">🤝</div>
+                    <h4>3. Conectá</h4>
+                    <p>Chateá con vecinos, compartí y mejorá tu comunidad</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contenido público -->
+        <div class="landing-container" style="flex: 1; padding-bottom: 2rem;">
+
+            <!-- El Folleto -->
+            <div class="landing-section">
+                <h3>🏪 El Folleto</h3>
+                <div id="landing-folleto" class="landing-scroll">
+                    <p style="opacity: 0.6; padding: 1rem;">Cargando folleto...</p>
+                </div>
+                <button class="ver-mas" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+            </div>
+
+            <!-- Ofertas Destacadas -->
+            <div class="landing-section">
+                <h3>⭐ Ofertas Destacadas</h3>
+                <div id="landing-destacadas" class="landing-scroll">
+                    <p style="opacity: 0.6; padding: 1rem;">Cargando ofertas...</p>
+                </div>
+                <button class="ver-mas" style="background: rgba(251,191,36,0.2); border-color: rgba(251,191,36,0.4); color: #fbbf24;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+            </div>
+
+            <!-- Cultura -->
+            <div class="landing-section">
+                <h3>🎭 Cultura y Eventos</h3>
+                <div id="landing-cultura" class="landing-scroll">
+                    <p style="opacity: 0.6; padding: 1rem;">Cargando eventos...</p>
+                </div>
+                <button class="ver-mas" style="background: rgba(236,72,153,0.2); border-color: rgba(236,72,153,0.4); color: #f472b6;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+            </div>
+
+            <!-- Voces Virtuales -->
+            <div class="landing-section">
+                <h3>🎤 Voces Virtuales</h3>
+                <div id="landing-voces" class="landing-scroll">
+                    <p style="opacity: 0.6; padding: 1rem;">Cargando videos...</p>
+                </div>
+                <button class="ver-mas" style="background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.4); color: #f59e0b;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+            </div>
+
+            <!-- Anunciantes -->
+            <div class="landing-section">
+                <h3>📢 Anunciantes</h3>
+                <div id="landing-anunciantes" class="landing-scroll">
+                    <p style="opacity: 0.6; padding: 1rem;">Cargando anunciantes...</p>
+                </div>
+                <button class="ver-mas" style="background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); color: #22c55e;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="landing-footer">
+            <div class="landing-container">
+                <p>Para publicar, comentar o interactuar necesitás una cuenta.</p>
+                <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                    Crear cuenta / Iniciar sesión
+                </button>
+                <p style="margin-top: 1rem; opacity: 0.5;">© 2026 Vecinos Virtuales — v2.1 PWA</p>
+            </div>
+        </div>
+
     </div>
+</div>
 
     <!-- PANTALLA DE UBICACIÓN -->
     <div id="location-screen" class="screen">
