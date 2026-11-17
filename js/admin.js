@@ -683,6 +683,8 @@ VV.admin = {
 	if (tabName === 'denuncias') VV.admin.loadDenuncias();
 	if (tabName === 'rangos') VV.admin.loadRanksManagement();
         if (tabName === 'agenda') VV.agenda.init();
+        if (tabName === 'web') VV.adminWeb.init();
+
 
 
     },

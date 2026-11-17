@@ -1371,6 +1371,9 @@
                         <button class="tab-btn" onclick="VV.admin.showTab('flash')">
                             <i class="fas fa-bolt"></i> Flash
                         </button>
+                        <button class="tab-btn" onclick="VV.admin.showTab('web')">
+                            <i class="fas fa-globe"></i> Web
+                        </button>
                         <button class="tab-btn" onclick="VV.admin.showTab('buzon')">
                             <i class="fas fa-inbox"></i> Buzón
                         </button>
@@ -1585,6 +1588,67 @@
         <span id="agenda-count">0</span> registros
     </p>
 </div>
+<div id="admin-web" class="admin-tab-content">
+    <div style="padding: 20px; background: #fff; border-radius: 12px; border: 1px solid #e2e8f0;">
+        
+        <!-- Sponsors en web -->
+        <h3 style="margin-bottom: 15px; color: #1e293b;">📢 Anunciantes en la Web</h3>
+        <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 15px;">Activá los anunciantes que querés mostrar en la landing web pública.</p>
+        <div id="web-sponsors-list" style="display: grid; gap: 10px;">
+            <p style="text-align: center; color: #94a3b8;">Cargando anunciantes...</p>
+        </div>
+
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
+
+        <!-- Folletos en web -->
+        <h3 style="margin-bottom: 15px; color: #1e293b;">📄 Folletos en la Web</h3>
+        <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 15px;">Activá los folletos que querés mostrar en la landing web pública.</p>
+        <div id="web-folletos-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;">
+            <p style="text-align: center; color: #94a3b8; grid-column: 1/-1;">Cargando folletos...</p>
+        </div>
+
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
+
+        <!-- Efemérides -->
+        <h3 style="margin-bottom: 15px; color: #1e293b;">📅 Efemérides</h3>
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 15px;">
+            <button class="btn-primary" onclick="VV.adminWeb.showEfemerideForm()">
+                <i class="fas fa-plus"></i> Nueva efeméride
+            </button>
+        </div>
+        <div id="web-efemerides-list" style="display: grid; gap: 10px;">
+            <p style="text-align: center; color: #94a3b8;">Cargando efemérides...</p>
+        </div>
+
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
+
+        <!-- Textos de la landing -->
+        <h3 style="margin-bottom: 15px; color: #1e293b;">✏️ Textos de la Landing</h3>
+        <div style="display: grid; gap: 1rem; max-width: 500px;">
+            <div>
+                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Título principal</label>
+                <input type="text" id="web-hero-title" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+            </div>
+            <div>
+                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Subtítulo</label>
+                <input type="text" id="web-hero-subtitle" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+            </div>
+            <div>
+                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Texto del botón</label>
+                <input type="text" id="web-cta-text" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+            </div>
+            <div>
+                <label style="font-weight: 600; display: block; margin-bottom: 0.25rem;">Texto del footer</label>
+                <input type="text" id="web-footer-text" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+            </div>
+            <button class="btn-primary" onclick="VV.adminWeb.saveLandingContent()" style="max-width: 200px;">
+                <i class="fas fa-save"></i> Guardar textos
+            </button>
+        </div>
+
+    </div>
+</div>
+
 
 <!-- Overlay para editar/crear -->
 <div id="agenda-edit-overlay" class="modal-overlay" style="display: none;"></div>
@@ -2593,6 +2657,7 @@ window.addEventListener('hashchange', function() {
 
 <script src="js/alertas.js"></script>
 <script src="js/agenda-comercial.js"></script>
+<script src="js/admin-web.js"></script>
 
 </body>
 </html>
