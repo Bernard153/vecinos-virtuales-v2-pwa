@@ -92,9 +92,7 @@ VV.landingWeb = {
         if (!container) return;
 
         try {
-            const hoy = new Date();
-            const mesDia = hoy.toISOString().substring(5, 10); // "MM-DD"
-
+            
             const hoy = new Date();
             const mes = hoy.getMonth() + 1;
             const dia = hoy.getDate();
