@@ -1,0 +1,396 @@
+// ============================================================
+// LANDING WEB — Carga de contenido agregado de todos los barrios
+// ============================================================
+
+VV.landingWeb = {
+
+    async init() {
+        await Promise.all([
+            this.loadBarrios(),
+            this.loadEfemerides(),
+            this.loadFolletos(),
+            this.loadDestacadas(),
+            this.loadEventos(),
+            this.loadVoces(),
+            this.loadAnunciantes(),
+            this.loadAdSpaces(),
+            this.loadLandingContent()
+        ]);
+    },
+
+    // Rotación de barrios según el día del año
+    getDiaDelAno() {
+        const ahora = new Date();
+        const inicio = new Date(ahora.getFullYear(), 0, 0);
+        return Math.floor((ahora - inicio) / 86400000);
+    },
+
+    // Cargar barrios con conteo de vecinos
+    async loadBarrios() {
+        const container = document.getElementById('landing-barrios');
+        if (!container) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('users')
+                .select('neighborhood')
+                .not('neighborhood', 'is', null)
+                .neq('neighborhood', '');
+
+            if (error) throw error;
+
+            // Contar vecinos por barrio
+            const conteo = {};
+            data.forEach(u => {
+                const b = u.neighborhood;
+                if (b) conteo[b] = (conteo[b] || 0) + 1;
+            });
+
+            let barrios = Object.keys(conteo).map(nombre => ({
+                nombre,
+                vecinos: conteo[nombre]
+            })).sort((a, b) => b.vecinos - a.vecinos);
+
+            if (barrios.length === 0) {
+                container.innerHTML = '<p style="opacity:0.6;">Aún no hay barrios registrados. ¡Sé el primero!</p>';
+                return;
+            }
+
+            // Rotar: el barrio destacado cambia cada día
+            const dia = this.getDiaDelAno();
+            const indiceInicio = dia % barrios.length;
+            const destacado = barrios[indiceInicio];
+
+            // Reordenar: el destacado va primero
+            barrios = barrios.filter(b => b.nombre !== destacado.nombre);
+            barrios.unshift(destacado);
+
+            container.innerHTML = barrios.map((b, i) => `
+                <div class="barrio-card ${i === 0 ? 'destacado' : ''}" onclick="VV.landingWeb.verBarrio('${b.nombre.replace(/'/g, "\\'")}')">
+                    <div class="barrio-name">${b.nombre}</div>
+                    <div class="barrio-count">${b.vecinos} vecino${b.vecinos !== 1 ? 's' : ''}</div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error('Error cargando barrios:', e);
+            container.innerHTML = '<p style="opacity:0.6;">Error cargando barrios</p>';
+        }
+    },
+
+    verBarrio(nombre) {
+        // Por ahora lleva al registro. Después: mostrar contenido del barrio
+        if (confirm(`¿Querés ver el contenido de ${nombre}? Te pediremos que elijas tu barrio para continuar.`)) {
+            VV.utils.showScreen('location-screen');
+            VV.auth.requestGeolocation();
+        }
+    },
+
+    // Efemérides del día
+    async loadEfemerides() {
+        const container = document.getElementById('landing-efemerides');
+        if (!container) return;
+
+        try {
+            const hoy = new Date();
+            const mesDia = hoy.toISOString().substring(5, 10); // "MM-DD"
+
+            const { data, error } = await supabase
+                .from('efemerides')
+                .select('*')
+                .eq('activa', true)
+                .ilike('fecha', `%-${mesDia}`)
+                .order('tipo', { ascending: true });
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = `
+                    <h3>📅 ${hoy.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</h3>
+                    <p style="opacity:0.6;font-size:0.85rem;">No hay efemérides para hoy. ¡Cargá una desde el panel admin!</p>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <h3>📅 ${hoy.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })}</h3>
+                ${data.map(e => `
+                    <div style="margin-bottom:0.75rem;">
+                        <div class="efem-titulo">${e.titulo}</div>
+                        <div class="efem-desc">${e.descripcion || ''}</div>
+                        ${e.barrio ? `<div style="font-size:0.75rem;color:#c084fc;margin-top:0.25rem;">📍 ${e.barrio}</div>` : ''}
+                    </div>
+                `).join('')}
+            `;
+
+        } catch (e) {
+            console.error('Error cargando efemérides:', e);
+            container.innerHTML = '<p style="opacity:0.6;">Error cargando efemérides</p>';
+        }
+    },
+
+    // Folletos (mostrar_web = true)
+    async loadFolletos() {
+        const container = document.getElementById('landing-folleto');
+        if (!container) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('folleto_imagenes')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(6);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="opacity:0.6;padding:1rem;">No hay folletos para mostrar</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(f => `
+                <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                    <img src="${f.imagen_url || f.url || ''}" alt="Folleto" onerror="this.style.display='none'">
+                    <div class="card-body">
+                        <p class="card-title">${f.barrio || 'Barrio'}</p>
+                        <p class="card-meta">${f.anunciante_nombre || ''}</p>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error('Error cargando folletos:', e);
+            container.innerHTML = '<p style="opacity:0.6;padding:1rem;">Error cargando folletos</p>';
+        }
+    },
+
+    // Ofertas destacadas
+    async loadDestacadas() {
+        const container = document.getElementById('landing-destacadas');
+        if (!container) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('featured_offers')
+                .select('*')
+                .eq('activa', true)
+                .order('created_at', { ascending: false })
+                .limit(6);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                // Fallback: cargar productos
+                const { data: productos } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(6);
+
+                if (!productos || productos.length === 0) {
+                    container.innerHTML = '<p style="opacity:0.6;padding:1rem;">No hay ofertas para mostrar</p>';
+                    return;
+                }
+
+                container.innerHTML = productos.map(p => `
+                    <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                        <img src="${p.imagen_url || p.image_url || ''}" alt="${p.titulo || p.name || ''}" onerror="this.style.display='none'">
+                        <div class="card-body">
+                            <p class="card-title">${p.titulo || p.name || 'Producto'}</p>
+                            <p class="card-meta">${p.precio ? '$' + p.precio : ''} ${p.neighborhood || ''}</p>
+                        </div>
+                    </div>
+                `).join('');
+                return;
+            }
+
+            container.innerHTML = data.map(o => `
+                <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                    <img src="${o.imagen_url || ''}" alt="${o.titulo || ''}" onerror="this.style.display='none'">
+                    <div class="card-body">
+                        <p class="card-title">${o.titulo || 'Oferta'}</p>
+                        <p class="card-meta">${o.barrio || ''}</p>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error('Error cargando ofertas:', e);
+            container.innerHTML = '<p style="opacity:0.6;padding:1rem;">Error cargando ofertas</p>';
+        }
+    },
+
+    // Eventos culturales
+    async loadEventos() {
+        const container = document.getElementById('landing-cultura');
+        if (!container) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('cultural_posts')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(4);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="opacity:0.6;padding:1rem;">No hay eventos para mostrar</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(e => `
+                <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                    <img src="${e.imagen_url || ''}" alt="${e.titulo || ''}" onerror="this.style.display='none'">
+                    <div class="card-body">
+                        <p class="card-title">${e.titulo || 'Evento'}</p>
+                        <p class="card-meta">${e.neighborhood || ''} ${e.fecha ? '· ' + new Date(e.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }) : ''}</p>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error('Error cargando eventos:', e);
+            container.innerHTML = '<p style="opacity:0.6;padding:1rem;">Error cargando eventos</p>';
+        }
+    },
+
+    // Voces Virtuales
+    async loadVoces() {
+        const container = document.getElementById('landing-voces');
+        if (!container) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('karaoke_videos')
+                .select('*')
+                .eq('visible', true)
+                .eq('estado_moderacion', 'aprobado')
+                .order('views_count', { ascending: false })
+                .limit(4);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="opacity:0.6;padding:1rem;">No hay videos para mostrar</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(v => `
+                <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                    <video preload="metadata" muted style="width:100%;height:120px;object-fit:cover;">
+                        <source src="${v.video_url}" type="${v.video_url && v.video_url.includes('.mp4') ? 'video/mp4' : 'video/webm'}">
+                    </video>
+                    <div class="card-body">
+                        <p class="card-title">${v.title || 'Sin título'}</p>
+                        <p class="card-meta">${v.user_name || ''} · 👁 ${v.views_count || 0}</p>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error('Error cargando voces:', e);
+            container.innerHTML = '<p style="opacity:0.6;padding:1rem;">Error cargando videos</p>';
+        }
+    },
+
+    // Anunciantes (mostrar_web = true)
+    async loadAnunciantes() {
+        const container = document.getElementById('landing-anunciantes');
+        if (!container) return;
+
+        try {
+            const { data, error } = await supabase
+                .from('sponsors')
+                .select('*')
+                .eq('active', true)
+                .order('created_at', { ascending: false })
+                .limit(6);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="opacity:0.6;padding:1rem;">No hay anunciantes para mostrar</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(s => `
+                <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+                    ${s.logo ? `<img src="${s.logo}" alt="${s.business_name || ''}" onerror="this.style.display='none'">` : `<div style="width:100%;height:120px;background:linear-gradient(135deg,#312e81,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:2rem;">📢</div>`}
+                    <div class="card-body">
+                        <p class="card-title">${s.business_name || 'Anunciante'}</p>
+                        <p class="card-meta">${s.neighborhoods || 'Todos los barrios'}</p>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error('Error cargando anunciantes:', e);
+            container.innerHTML = '<p style="opacity:0.6;padding:1rem;">Error cargando anunciantes</p>';
+        }
+    },
+
+    // Espacios publicitarios web
+    async loadAdSpaces() {
+        try {
+            const { data, error } = await supabase
+                .from('sponsor_spaces')
+                .select(`
+                    *,
+                    sponsor:sponsors(id, business_name, logo, image_url, contact, website)
+                `)
+                .in('space_type', ['web_top', 'web_sidebar', 'web_infeed', 'web_footer', 'web_sticky'])
+                .eq('active', true);
+
+            if (error) throw error;
+
+            if (!data) return;
+
+            data.forEach(space => {
+                const sponsor = space.sponsor;
+                if (!sponsor) return;
+
+                const imageUrl = sponsor.image_url || sponsor.logo || '';
+                const link = sponsor.website || '#';
+                const adId = `ad-${space.space_type.replace('web_', '')}`;
+
+                const el = document.getElementById(adId);
+                if (el && imageUrl) {
+                    el.innerHTML = `<a href="${link}" target="_blank"><img src="${imageUrl}" alt="${sponsor.business_name || ''}"></a>`;
+                }
+            });
+
+        } catch (e) {
+            console.error('Error cargando espacios publicitarios:', e);
+        }
+    },
+
+    // Cargar textos editables de landing_content
+    async loadLandingContent() {
+        try {
+            const { data, error } = await supabase
+                .from('landing_content')
+                .select('key, value');
+
+            if (error || !data) return;
+
+            const textos = {};
+            data.forEach(item => textos[item.key] = item.value);
+
+            const heroTitle = document.getElementById('landing-hero-title');
+            if (heroTitle && textos.hero_title) heroTitle.textContent = '🏠 ' + textos.hero_title;
+
+            const heroSub = document.getElementById('landing-hero-subtitle');
+            if (heroSub && textos.hero_subtitle) heroSub.textContent = textos.hero_subtitle;
+
+            const ctaBtn = document.getElementById('landing-cta-btn');
+            if (ctaBtn && textos.cta_text) ctaBtn.textContent = '🏠 ' + textos.cta_text;
+
+            const footerText = document.getElementById('landing-footer-text');
+            if (footerText && textos.footer_text) footerText.textContent = textos.footer_text;
+
+        } catch (e) {
+            console.error('Error cargando landing_content:', e);
+        }
+    }
+};

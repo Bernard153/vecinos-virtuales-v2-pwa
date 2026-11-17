@@ -90,7 +90,7 @@
             <div class="loading-spinner"></div>
         </div>
     </div>
-        <!-- ========== LANDING PÚBLICA (VISITANTE SIN REGISTRO) ========== -->
+        <!-- ========== LANDING PÚBLICA WEB (VISITANTE SIN REGISTRO) ========== -->
 <div id="landing-screen" class="screen">
     <style>
         #landing-screen .landing-wrap {
@@ -101,17 +101,17 @@
             flex-direction: column;
         }
         #landing-screen .landing-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             width: 100%;
             padding: 0 1rem;
         }
         #landing-screen .landing-hero {
             text-align: center;
-            padding: 3rem 1.5rem 2rem;
+            padding: 3rem 1.5rem 1.5rem;
         }
         #landing-screen .landing-hero h1 {
-            font-size: 2.2rem;
+            font-size: 2.4rem;
             font-weight: 800;
             margin: 0;
             text-shadow: 0 2px 10px rgba(0,0,0,0.3);
@@ -119,7 +119,7 @@
         #landing-screen .landing-hero p {
             opacity: 0.85;
             margin-top: 0.5rem;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
         }
         #landing-screen .landing-cta {
             text-align: center;
@@ -139,32 +139,155 @@
         #landing-screen .landing-cta button:hover {
             transform: scale(1.05);
         }
-        #landing-screen .landing-steps {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-            padding: 1.5rem 0;
+        /* Top banner publicitario */
+        #landing-screen .ad-top, #landing-screen .ad-footer {
+            max-width: 728px;
+            margin: 0 auto;
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
         }
-        #landing-screen .landing-step {
+        #landing-screen .ad-top a, #landing-screen .ad-footer a {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        #landing-screen .ad-top img, #landing-screen .ad-footer img {
+            max-width: 100%; max-height: 90px; object-fit: cover; border-radius: 8px;
+        }
+        /* Sidebar publicitario (solo desktop) */
+        #landing-screen .ad-sidebar {
+            display: none;
+            min-width: 300px;
+            min-height: 600px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #landing-screen .ad-sidebar img {
+            max-width: 100%; max-height: 600px; object-fit: cover;
+        }
+        /* In-feed publicitario */
+        #landing-screen .ad-infeed {
+            max-width: 300px;
+            margin: 1rem auto;
+            min-height: 250px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #landing-screen .ad-infeed img {
+            max-width: 100%; max-height: 250px; object-fit: cover; border-radius: 8px;
+        }
+        /* Sticky mobile */
+        #landing-screen .ad-sticky {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 50px;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            display: none;
+        }
+        /* Selector de barrios */
+        #landing-screen .barrios-section {
+            background: rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        #landing-screen .barrios-section h3 {
+            margin: 0 0 1rem;
+            font-size: 1.1rem;
+        }
+        #landing-screen .barrios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+        #landing-screen .barrio-card {
             background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 0.75rem;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s, background 0.2s;
+        }
+        #landing-screen .barrio-card:hover {
+            transform: translateY(-3px);
+            background: rgba(192,132,252,0.2);
+            border-color: rgba(192,132,252,0.4);
+        }
+        #landing-screen .barrio-card .barrio-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        #landing-screen .barrio-card .barrio-count {
+            font-size: 0.75rem;
+            opacity: 0.6;
+            margin-top: 0.25rem;
+        }
+        #landing-screen .barrio-card.destacado {
+            border-color: #c084fc;
+            background: rgba(192,132,252,0.15);
+        }
+        #landing-screen .barrio-card.destacado::after {
+            content: '📍 Hoy destacado';
+            display: block;
+            font-size: 0.65rem;
+            color: #c084fc;
+            margin-top: 0.25rem;
+        }
+        /* Efemérides */
+        #landing-screen .efemerides-box {
+            background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(139,92,246,0.15));
+            border: 1px solid rgba(245,158,11,0.3);
             border-radius: 12px;
             padding: 1.2rem;
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 2rem;
         }
-        #landing-screen .landing-step .step-icon {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+        #landing-screen .efemerides-box h3 {
+            margin: 0 0 0.5rem;
+            font-size: 1.1rem;
+            color: #fbbf24;
         }
-        #landing-screen .landing-step h4 {
-            margin: 0 0 0.3rem;
-            font-size: 1rem;
+        #landing-screen .efemerides-box .efem-titulo {
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin-bottom: 0.25rem;
         }
-        #landing-screen .landing-step p {
-            margin: 0;
+        #landing-screen .efemerides-box .efem-desc {
             font-size: 0.85rem;
-            opacity: 0.7;
+            opacity: 0.8;
+            line-height: 1.5;
         }
+        /* Layout principal: contenido + sidebar */
+        #landing-screen .landing-layout {
+            display: flex;
+            gap: 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 1rem 2rem;
+        }
+        #landing-screen .landing-content {
+            flex: 1;
+            min-width: 0;
+        }
+        #landing-screen .landing-sidebar {
+            flex-shrink: 0;
+        }
+        /* Secciones de contenido */
         #landing-screen .landing-section {
             margin-bottom: 2rem;
         }
@@ -175,7 +298,15 @@
             align-items: center;
             gap: 0.5rem;
         }
-        #landing-screen .landing-section .ver-mas {
+        #landing-screen .landing-scroll {
+            display: flex;
+            gap: 0.75rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+        #landing-screen .landing-scroll::-webkit-scrollbar { display: none; }
+        #landing-screen .ver-mas {
             background: rgba(192,132,252,0.2);
             border: 1px solid rgba(192,132,252,0.4);
             color: #c084fc;
@@ -185,14 +316,35 @@
             font-size: 0.8rem;
             margin-top: 0.5rem;
         }
-        #landing-screen .landing-scroll {
-            display: flex;
-            gap: 0.75rem;
-            overflow-x: auto;
-            padding-bottom: 0.5rem;
-            scrollbar-width: none;
+        /* Tarjetas de contenido */
+        #landing-screen .landing-card {
+            flex-shrink: 0;
+            width: 160px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        #landing-screen .landing-scroll::-webkit-scrollbar { display: none; }
+        #landing-screen .landing-card img {
+            width: 100%; height: 120px; object-fit: cover;
+        }
+        #landing-screen .landing-card .card-body {
+            padding: 0.5rem;
+        }
+        #landing-screen .landing-card .card-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #landing-screen .landing-card .card-meta {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 0.2rem;
+        }
+        /* Footer */
         #landing-screen .landing-footer {
             text-align: center;
             padding: 1.5rem 1rem;
@@ -210,118 +362,159 @@
             margin-top: 0.5rem;
             font-size: 0.85rem;
         }
+        #landing-screen .landing-footer a {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+        /* Desktop */
         @media (min-width: 768px) {
-            #landing-screen .landing-steps {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            #landing-screen .landing-hero h1 {
-                font-size: 3rem;
-            }
-            #landing-screen .landing-hero p {
-                font-size: 1.3rem;
-            }
+            #landing-screen .landing-hero h1 { font-size: 3rem; }
+            #landing-screen .landing-hero p { font-size: 1.3rem; }
+            #landing-screen .ad-sidebar { display: flex; align-items: center; justify-content: center; }
+            #landing-screen .ad-sticky { display: none !important; }
+        }
+        /* Mobile */
+        @media (max-width: 767px) {
+            #landing-screen .landing-layout { flex-direction: column; }
+            #landing-screen .ad-sidebar { display: none; }
+            #landing-screen .ad-sticky { display: flex; }
         }
     </style>
 
     <div class="landing-wrap">
 
-        <!-- Hero -->
+        <!-- TOP BANNER -->
+        <div class="landing-container" style="padding-top: 1rem;">
+            <div class="ad-top" id="ad-top">
+                <p style="opacity:0.4;font-size:0.75rem;">Espacio publicitario — Top Banner</p>
+            </div>
+        </div>
+
+        <!-- HERO -->
         <div class="landing-hero">
             <div class="landing-container">
-                <h1>🏠 Vecinos Virtuales</h1>
-                <p>Conectá con tu barrio — comprá, vendé, alertá y participá</p>
+                <h1 id="landing-hero-title">🏠 Vecinos Virtuales</h1>
+                <p id="landing-hero-subtitle">La red social de tu barrio — comprá, vendé, alertá y participá</p>
             </div>
         </div>
 
         <!-- CTA -->
         <div class="landing-cta">
-            <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
+            <button id="landing-cta-btn" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
                 🏠 Unirme a mi barrio
             </button>
         </div>
 
-        <!-- Cómo funciona -->
+        <!-- SELECTOR DE BARRIOS -->
         <div class="landing-container">
-            <div class="landing-steps">
-                <div class="landing-step">
-                    <div class="step-icon">📍</div>
-                    <h4>1. Elegí tu barrio</h4>
-                    <p>Decinos dónde vivís y conectamos con tu comunidad</p>
-                </div>
-                <div class="landing-step">
-                    <div class="step-icon">🏪</div>
-                    <h4>2. Explá el barrio</h4>
-                    <p>Comprá, vendé, publicá alertas y participá en eventos</p>
-                </div>
-                <div class="landing-step">
-                    <div class="step-icon">🤝</div>
-                    <h4>3. Conectá</h4>
-                    <p>Chateá con vecinos, compartí y mejorá tu comunidad</p>
+            <div class="barrios-section">
+                <h3>📍 Explorá los barrios</h3>
+                <div class="barrios-grid" id="landing-barrios">
+                    <p style="opacity:0.6;">Cargando barrios...</p>
                 </div>
             </div>
         </div>
 
-        <!-- Contenido público -->
-        <div class="landing-container" style="flex: 1; padding-bottom: 2rem;">
-
-            <!-- El Folleto -->
-            <div class="landing-section">
-                <h3>🏪 El Folleto</h3>
-                <div id="landing-folleto" class="landing-scroll">
-                    <p style="opacity: 0.6; padding: 1rem;">Cargando folleto...</p>
-                </div>
-                <button class="ver-mas" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+        <!-- EFEMERIDES -->
+        <div class="landing-container">
+            <div class="efemerides-box" id="landing-efemerides">
+                <p style="opacity:0.6;">Cargando efemérides...</p>
             </div>
-
-            <!-- Ofertas Destacadas -->
-            <div class="landing-section">
-                <h3>⭐ Ofertas Destacadas</h3>
-                <div id="landing-destacadas" class="landing-scroll">
-                    <p style="opacity: 0.6; padding: 1rem;">Cargando ofertas...</p>
-                </div>
-                <button class="ver-mas" style="background: rgba(251,191,36,0.2); border-color: rgba(251,191,36,0.4); color: #fbbf24;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
-            </div>
-
-            <!-- Cultura -->
-            <div class="landing-section">
-                <h3>🎭 Cultura y Eventos</h3>
-                <div id="landing-cultura" class="landing-scroll">
-                    <p style="opacity: 0.6; padding: 1rem;">Cargando eventos...</p>
-                </div>
-                <button class="ver-mas" style="background: rgba(236,72,153,0.2); border-color: rgba(236,72,153,0.4); color: #f472b6;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
-            </div>
-
-            <!-- Voces Virtuales -->
-            <div class="landing-section">
-                <h3>🎤 Voces Virtuales</h3>
-                <div id="landing-voces" class="landing-scroll">
-                    <p style="opacity: 0.6; padding: 1rem;">Cargando videos...</p>
-                </div>
-                <button class="ver-mas" style="background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.4); color: #f59e0b;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
-            </div>
-
-            <!-- Anunciantes -->
-            <div class="landing-section">
-                <h3>📢 Anunciantes</h3>
-                <div id="landing-anunciantes" class="landing-scroll">
-                    <p style="opacity: 0.6; padding: 1rem;">Cargando anunciantes...</p>
-                </div>
-                <button class="ver-mas" style="background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.4); color: #22c55e;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
-            </div>
-
         </div>
 
-        <!-- Footer -->
+        <!-- CONTENIDO + SIDEBAR -->
+        <div class="landing-layout">
+            <div class="landing-content">
+
+                <!-- Folletos -->
+                <div class="landing-section">
+                    <h3>🏪 Folletos del barrio</h3>
+                    <div id="landing-folleto" class="landing-scroll">
+                        <p style="opacity:0.6;padding:1rem;">Cargando folletos...</p>
+                    </div>
+                    <button class="ver-mas" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+                </div>
+
+                <!-- In-feed banner -->
+                <div class="ad-infeed" id="ad-infeed">
+                    <p style="opacity:0.4;font-size:0.75rem;">Espacio publicitario — In-feed</p>
+                </div>
+
+                <!-- Ofertas destacadas -->
+                <div class="landing-section">
+                    <h3>⭐ Ofertas destacadas</h3>
+                    <div id="landing-destacadas" class="landing-scroll">
+                        <p style="opacity:0.6;padding:1rem;">Cargando ofertas...</p>
+                    </div>
+                    <button class="ver-mas" style="background:rgba(251,191,36,0.2);border-color:rgba(251,191,36,0.4);color:#fbbf24;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+                </div>
+
+                <!-- Eventos -->
+                <div class="landing-section">
+                    <h3>🎭 Próximos eventos</h3>
+                    <div id="landing-cultura" class="landing-scroll">
+                        <p style="opacity:0.6;padding:1rem;">Cargando eventos...</p>
+                    </div>
+                    <button class="ver-mas" style="background:rgba(236,72,153,0.2);border-color:rgba(236,72,153,0.4);color:#f472b6;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+                </div>
+
+                <!-- Voces Virtuales -->
+                <div class="landing-section">
+                    <h3>🎤 Voces Virtuales</h3>
+                    <div id="landing-voces" class="landing-scroll">
+                        <p style="opacity:0.6;padding:1rem;">Cargando videos...</p>
+                    </div>
+                    <button class="ver-mas" style="background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.4);color:#f59e0b;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+                </div>
+
+                <!-- Anunciantes -->
+                <div class="landing-section">
+                    <h3>📢 Anunciantes de la comunidad</h3>
+                    <div id="landing-anunciantes" class="landing-scroll">
+                        <p style="opacity:0.6;padding:1rem;">Cargando anunciantes...</p>
+                    </div>
+                    <button class="ver-mas" style="background:rgba(34,197,94,0.2);border-color:rgba(34,197,94,0.4);color:#22c55e;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
+                </div>
+
+            </div>
+
+            <!-- SIDEBAR publicitario (solo desktop) -->
+            <div class="landing-sidebar">
+                <div class="ad-sidebar" id="ad-sidebar">
+                    <p style="opacity:0.4;font-size:0.75rem;text-align:center;">Espacio publicitario<br>Sidebar 300×600</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER BANNER -->
+        <div class="landing-container">
+            <div class="ad-footer" id="ad-footer">
+                <p style="opacity:0.4;font-size:0.75rem;">Espacio publicitario — Footer Banner</p>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
         <div class="landing-footer">
             <div class="landing-container">
                 <p>Para publicar, comentar o interactuar necesitás una cuenta.</p>
                 <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
                     Crear cuenta / Iniciar sesión
                 </button>
-                <p style="margin-top: 1rem; opacity: 0.5;">© 2026 Vecinos Virtuales — v2.1 PWA</p>
+                <p style="margin-top:1rem;opacity:0.5;" id="landing-footer-text">© 2026 Vecinos Virtuales — Red social comunitaria</p>
+                <p style="margin-top:0.5rem;">
+                    <a href="#">Privacidad</a>
+                    <a href="#">Términos</a>
+                    <a href="#">Contacto</a>
+                </p>
             </div>
         </div>
 
+    </div>
+
+    <!-- STICKY MOBILE (solo celular) -->
+    <div class="ad-sticky" id="ad-sticky">
+        <p style="opacity:0.4;font-size:0.7rem;">Espacio publicitario — Sticky</p>
     </div>
 </div>
 
@@ -1851,6 +2044,7 @@
     <script src="js/app.js"></script>
     <script src="js/vigia-acceso-directo.js"></script>
     <script src="js/landing.js"></script>
+    <script src="js/landing-web.js"></script>
     <script src="js/vv-roles.js"></script>
     <script src="js/wallet.js"></script>
     <script src="js/voces-virtuales-v2.js"></script>
