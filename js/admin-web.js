@@ -254,7 +254,8 @@ VV.adminWeb = {
             for (const item of items) {
                 await supabase
                     .from('landing_content')
-                    .upsert({ key: item.key, value: item.value, updated_at: new Date().toISOString() });
+                    .upsert({ key: item.key, value: item.value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+
             }
 
             VV.utils.showSuccess('Textos guardados');
