@@ -16,7 +16,7 @@ VV.adminWeb = {
             this.loadSponsors(),
             this.loadFolletos(),
             this.loadEfemerides(),
-            this.loadLandingContent()
+            this.loadLandingContent(),
             this.loadAdSpacesAdmin()
         ]);
     },
