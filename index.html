@@ -136,9 +136,44 @@
             box-shadow: 0 4px 15px rgba(139,92,246,0.4);
             transition: transform 0.2s;
         }
+
         #landing-screen .landing-cta button:hover {
             transform: scale(1.05);
         }
+        #landing-screen .landing-counters {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.06);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        #landing-screen .counter-item {
+            text-align: center;
+        }
+        #landing-screen .counter-number {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #c084fc;
+            text-shadow: 0 0 20px rgba(192,132,252,0.4);
+        }
+        #landing-screen .counter-label {
+            display: block;
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+        @media (min-width: 768px) {
+            #landing-screen .landing-counters {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            #landing-screen .counter-number {
+                font-size: 2.2rem;
+            }
+        }
+
         /* Top banner publicitario */
         #landing-screen .ad-top, #landing-screen .ad-footer {
             max-width: 728px;
@@ -398,6 +433,35 @@
             <button id="landing-cta-btn" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
                 🏠 Unirme a mi barrio
             </button>
+        </div>
+        <!-- CONTADORES EN VIVO -->
+        <div class="landing-container" style="margin-bottom: 2rem;">
+            <div class="landing-counters">
+                <div class="counter-item">
+                    <span class="counter-number" id="counter-vecinos">0</span>
+                    <span class="counter-label">🏠 Vecinos</span>
+                </div>
+                <div class="counter-item">
+                    <span class="counter-number" id="counter-productos">0</span>
+                    <span class="counter-label">📦 Productos</span>
+                </div>
+                <div class="counter-item">
+                    <span class="counter-number" id="counter-eventos">0</span>
+                    <span class="counter-label">🎭 Eventos</span>
+                </div>
+                <div class="counter-item">
+                    <span class="counter-number" id="counter-videos">0</span>
+                    <span class="counter-label">🎤 Videos</span>
+                </div>
+                <div class="counter-item">
+                    <span class="counter-number" id="counter-comercios">0</span>
+                    <span class="counter-label">📢 Comercios</span>
+                </div>
+                <div class="counter-item">
+                    <span class="counter-number" id="counter-barrios">0</span>
+                    <span class="counter-label">📍 Barrios</span>
+                </div>
+            </div>
         </div>
 
         <!-- SELECTOR DE BARRIOS -->

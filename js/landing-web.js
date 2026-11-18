@@ -14,7 +14,8 @@ VV.landingWeb = {
             this.loadVoces(),
             this.loadAnunciantes(),
             this.loadAdSpaces(),
-            this.loadLandingContent()
+            this.loadLandingContent(),
+            this.loadCounters()
         ]);
     },
 
@@ -392,6 +393,57 @@ VV.landingWeb = {
         console.error('Error cargando espacios publicitarios:', e);
     }
 },
+    // ===== CONTADORES EN VIVO =====
+    async loadCounters() {
+        try {
+            // Vecinos y barrios (una consulta)
+            const { data: usersData } = await supabase
+                .from('barrios_publicos')
+                .select('neighborhood');
+
+            const vecinos = usersData?.length || 0;
+            const barriosCount = new Set(usersData?.map(u => u.neighborhood).filter(Boolean)).size;
+
+            // Contadores con head: true (eficiente)
+            const [
+                { count: productos },
+                { count: eventos },
+                { count: videos },
+                { count: comercios }
+            ] = await Promise.all([
+                supabase.from('products').select('*', { count: 'exact', head: true }),
+                supabase.from('cultural_posts').select('*', { count: 'exact', head: true }),
+                supabase.from('karaoke_videos').select('*', { count: 'exact', head: true }).eq('visible', true),
+                supabase.from('sponsors').select('*', { count: 'exact', head: true }).eq('active', true)
+            ]);
+
+            this.animateCounter('counter-vecinos', vecinos);
+            this.animateCounter('counter-productos', productos || 0);
+            this.animateCounter('counter-eventos', eventos || 0);
+            this.animateCounter('counter-videos', videos || 0);
+            this.animateCounter('counter-comercios', comercios || 0);
+            this.animateCounter('counter-barrios', barriosCount);
+
+        } catch (e) {
+            console.error('Error cargando contadores:', e);
+        }
+    },
+
+    animateCounter(elementId, target) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        let current = 0;
+        const steps = 30;
+        const increment = Math.max(1, Math.ceil(target / steps));
+        const interval = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(interval);
+            }
+            el.textContent = current.toLocaleString('es-AR');
+        }, 40);
+    },
 
 
     // Cargar textos editables de landing_content
@@ -432,3 +484,4 @@ function initLandingWeb() {
     }
 }
 initLandingWeb();
+
