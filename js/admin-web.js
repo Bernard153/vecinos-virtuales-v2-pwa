@@ -210,11 +210,8 @@ VV.adminWeb = {
             console.error('Error guardando espacio publicitario:', e);
             alert('Error al guardar: ' + e.message);
         }
-     }
-};
+     },
 
-
-    
 
     async toggleSponsorWeb(sponsorId, value) {
         try {
