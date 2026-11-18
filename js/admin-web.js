@@ -76,7 +76,7 @@ VV.adminWeb = {
         try {
             const { data, error } = await supabase
                 .from('folleto_imagenes')
-                .select('id, imagen_url, barrio, mostrar_web, created_at')
+                .select('id, image_url, barrio, mostrar_web, created_at')
                 .order('created_at', { ascending: false })
                 .limit(20);
 
@@ -89,7 +89,7 @@ VV.adminWeb = {
 
             container.innerHTML = data.map(f => `
                 <div style="padding:0.5rem;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;text-align:center;">
-                    <img src="${f.imagen_url}" alt="folleto" style="width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:0.5rem;">
+                    <img src="${f.image_url}" alt="folleto" style="width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:0.5rem;">
                     <p style="font-size:0.8rem;margin:0 0 0.25rem;">${f.barrio || 'Sin barrio'}</p>
                     <label style="display:flex;align-items:center;justify-content:center;gap:0.5rem;cursor:pointer;">
                         <input type="checkbox" ${f.mostrar_web ? 'checked' : ''} 
