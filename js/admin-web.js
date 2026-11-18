@@ -3,6 +3,13 @@
 // ============================================
 
 VV.adminWeb = {
+    WEB_AD_SPACES: [
+        { type: 'web_top', name: 'Top Banner', size: '728×90px', hint: 'Banner horizontal arriba de todo' },
+        { type: 'web_sidebar', name: 'Sidebar', size: '300×600px', hint: 'Banner vertical lateral (solo PC)' },
+        { type: 'web_infeed', name: 'In-feed', size: '300×250px', hint: 'Banner entre secciones de contenido' },
+        { type: 'web_footer', name: 'Footer Banner', size: '728×90px', hint: 'Banner horizontal abajo de todo' },
+        { type: 'web_sticky', name: 'Sticky Mobile', size: '320×50px', hint: 'Banner fijo abajo (solo celular)' }
+    ],
 
     async init() {
         await Promise.all([
@@ -12,15 +19,49 @@ VV.adminWeb = {
             this.loadLandingContent()
             this.loadAdSpacesAdmin()
         ]);
-        // ===== ESPACIOS PUBLICITARIOS WEB =====
-    WEB_AD_SPACES: [
-        { type: 'web_top', name: 'Top Banner', size: '728×90px', hint: 'Banner horizontal arriba de todo' },
-        { type: 'web_sidebar', name: 'Sidebar', size: '300×600px', hint: 'Banner vertical lateral (solo PC)' },
-        { type: 'web_infeed', name: 'In-feed', size: '300×250px', hint: 'Banner entre secciones de contenido' },
-        { type: 'web_footer', name: 'Footer Banner', size: '728×90px', hint: 'Banner horizontal abajo de todo' },
-        { type: 'web_sticky', name: 'Sticky Mobile', size: '320×50px', hint: 'Banner fijo abajo (solo celular)' }
-    ],
+    },
+// ===== SPONSORS EN WEB =====
+    async loadSponsors() {
+        const container = document.getElementById('web-sponsors-list');
+        if (!container) return;
 
+        try {
+            const { data, error } = await supabase
+                .from('sponsors')
+                .select('id, business_name, contact, active, mostrar_web, tier')
+                .order('business_name', { ascending: true });
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#94a3b8;">No hay anunciantes creados.</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(s => `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+                    <div>
+                        <strong>${s.business_name || 'Sin nombre'}</strong>
+                        <span style="margin-left:0.5rem;font-size:0.75rem;padding:2px 8px;border-radius:10px;background:${s.active ? '#d1fae5' : '#fee2e2'};color:${s.active ? '#065f46' : '#991b1b'};">${s.active ? 'Activo' : 'Inactivo'}</span>
+                        <span style="margin-left:0.5rem;font-size:0.75rem;color:#64748b;">${s.tier || ''}</span>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
+                        <input type="checkbox" ${s.mostrar_web ? 'checked' : ''} 
+                               onchange="VV.adminWeb.toggleSponsorWeb('${s.id}', this.checked)"
+                               style="width:20px;height:20px;cursor:pointer;">
+                        <span style="font-size:0.85rem;font-weight:600;">Web</span>
+                    </label>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error('Error cargando sponsors web:', e);
+            container.innerHTML = '<p style="color:#ef4444;text-align:center;">Error al cargar</p>';
+        }
+    },
+
+        // ===== ESPACIOS PUBLICITARIOS WEB =====
+    
     async loadAdSpacesAdmin() {
         const container = document.getElementById('web-adspaces-list');
         if (!container) return;
@@ -169,49 +210,11 @@ VV.adminWeb = {
             console.error('Error guardando espacio publicitario:', e);
             alert('Error al guardar: ' + e.message);
         }
-    },
+     }
+};
 
-    },
 
-    // ===== SPONSORS EN WEB =====
-    async loadSponsors() {
-        const container = document.getElementById('web-sponsors-list');
-        if (!container) return;
-
-        try {
-            const { data, error } = await supabase
-                .from('sponsors')
-                .select('id, business_name, contact, active, mostrar_web, tier')
-                .order('business_name', { ascending: true });
-
-            if (error) throw error;
-
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p style="text-align:center;color:#94a3b8;">No hay anunciantes creados.</p>';
-                return;
-            }
-
-            container.innerHTML = data.map(s => `
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
-                    <div>
-                        <strong>${s.business_name || 'Sin nombre'}</strong>
-                        <span style="margin-left:0.5rem;font-size:0.75rem;padding:2px 8px;border-radius:10px;background:${s.active ? '#d1fae5' : '#fee2e2'};color:${s.active ? '#065f46' : '#991b1b'};">${s.active ? 'Activo' : 'Inactivo'}</span>
-                        <span style="margin-left:0.5rem;font-size:0.75rem;color:#64748b;">${s.tier || ''}</span>
-                    </div>
-                    <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-                        <input type="checkbox" ${s.mostrar_web ? 'checked' : ''} 
-                               onchange="VV.adminWeb.toggleSponsorWeb('${s.id}', this.checked)"
-                               style="width:20px;height:20px;cursor:pointer;">
-                        <span style="font-size:0.85rem;font-weight:600;">Web</span>
-                    </label>
-                </div>
-            `).join('');
-
-        } catch (e) {
-            console.error('Error cargando sponsors web:', e);
-            container.innerHTML = '<p style="color:#ef4444;text-align:center;">Error al cargar</p>';
-        }
-    },
+    
 
     async toggleSponsorWeb(sponsorId, value) {
         try {
