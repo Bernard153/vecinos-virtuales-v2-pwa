@@ -177,8 +177,9 @@ VV.landingWeb = {
                 <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
                     <img src="${f.image_url || f.url || ''}" alt="Folleto" onerror="this.style.display='none'">
                     <div class="card-body">
-                        <p class="card-title">${f.barrio || 'Barrio'}</p>
-                        <p class="card-meta">${f.anunciante_nombre || ''}</p>
+                        <p class="card-title">${f.neighborhood || 'Barrio'}</p>
+                        <p class="card-meta">${f.titulo || f.autor_name || ''}</p>
+
                     </div>
                 </div>
             `).join('');
