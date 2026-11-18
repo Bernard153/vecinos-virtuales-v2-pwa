@@ -10,7 +10,167 @@ VV.adminWeb = {
             this.loadFolletos(),
             this.loadEfemerides(),
             this.loadLandingContent()
+            this.loadAdSpacesAdmin()
         ]);
+        // ===== ESPACIOS PUBLICITARIOS WEB =====
+    WEB_AD_SPACES: [
+        { type: 'web_top', name: 'Top Banner', size: '728×90px', hint: 'Banner horizontal arriba de todo' },
+        { type: 'web_sidebar', name: 'Sidebar', size: '300×600px', hint: 'Banner vertical lateral (solo PC)' },
+        { type: 'web_infeed', name: 'In-feed', size: '300×250px', hint: 'Banner entre secciones de contenido' },
+        { type: 'web_footer', name: 'Footer Banner', size: '728×90px', hint: 'Banner horizontal abajo de todo' },
+        { type: 'web_sticky', name: 'Sticky Mobile', size: '320×50px', hint: 'Banner fijo abajo (solo celular)' }
+    ],
+
+    async loadAdSpacesAdmin() {
+        const container = document.getElementById('web-adspaces-list');
+        if (!container) return;
+
+        try {
+            const { data: sponsors } = await supabase
+                .from('sponsors')
+                .select('id, business_name')
+                .eq('active', true)
+                .order('business_name', { ascending: true });
+
+            const { data: spaces } = await supabase
+                .from('sponsor_spaces')
+                .select('*')
+                .in('space_type', ['web_top', 'web_sidebar', 'web_infeed', 'web_footer', 'web_sticky'])
+                .order('created_at', { ascending: false });
+
+            const spacesMap = {};
+            (spaces || []).forEach(s => {
+                if (!spacesMap[s.space_type]) spacesMap[s.space_type] = s;
+            });
+
+            container.innerHTML = this.WEB_AD_SPACES.map(space => {
+                const existing = spacesMap[space.type];
+                const selectedSponsor = existing?.sponsor_id || '';
+                const imageUrl = existing?.image_url || '';
+                const isActive = existing ? existing.active !== false : false;
+
+                const sponsorOptions = (sponsors || []).map(s => 
+                    `<option value="${s.id}" ${selectedSponsor === s.id ? 'selected' : ''}>${s.business_name}</option>`
+                ).join('');
+
+                return `
+                    <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <div>
+                                <strong>${space.name}</strong>
+                                <span style="margin-left: 0.5rem; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; background: #ede9fe; color: #5b21b6;">${space.size}</span>
+                            </div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="ad-active-${space.type}" ${isActive ? 'checked' : ''} style="width: 18px; height: 18px; cursor: pointer;">
+                                <span style="font-size: 0.85rem; font-weight: 600;">Activo</span>
+                            </label>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #64748b; margin: 0 0 0.75rem;">${space.hint}</p>
+                        <div style="display: grid; gap: 0.5rem;">
+                            <select id="ad-sponsor-${space.type}" style="padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+                                <option value="">Sin asignar</option>
+                                ${sponsorOptions}
+                            </select>
+                            <input type="file" id="ad-image-${space.type}" accept="image/*" onchange="VV.adminWeb.previewAdImage('${space.type}', this)" style="font-size: 0.8rem;">
+                            <div id="ad-preview-${space.type}" style="margin-top: 0.5rem;">
+                                ${imageUrl ? `<img src="${imageUrl}" alt="${space.name}" style="max-width: 200px; max-height: 80px; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0;">` : '<p style="font-size: 0.8rem; color: #94a3b8;">Sin imagen</p>'}
+                            </div>
+                        </div>
+                        <button onclick="VV.adminWeb.saveAdSpace('${space.type}')" class="btn-primary" style="margin-top: 0.75rem; width: 100%;">
+                            <i class="fas fa-save"></i> Guardar espacio
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (e) {
+            console.error('Error cargando espacios publicitarios:', e);
+            container.innerHTML = '<p style="color: #ef4444; text-align: center;">Error al cargar</p>';
+        }
+    },
+
+    previewAdImage(spaceType, input) {
+        const preview = document.getElementById('ad-preview-' + spaceType);
+        if (!preview || !input.files.length) return;
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="max-width: 200px; max-height: 80px; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0;">';
+        };
+        reader.readAsDataURL(file);
+    },
+
+    async saveAdSpace(spaceType) {
+        const sponsorId = document.getElementById('ad-sponsor-' + spaceType).value;
+        const isActive = document.getElementById('ad-active-' + spaceType).checked;
+        const fileInput = document.getElementById('ad-image-' + spaceType);
+
+        try {
+            let imageUrl = null;
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const ext = file.name.split('.').pop();
+                const fileName = 'web-ads/' + spaceType + '_' + Date.now() + '.' + ext;
+
+                const { error: uploadError } = await supabase.storage
+                    .from('barrio-media')
+                    .upload(fileName, file, { contentType: file.type });
+
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = supabase.storage
+                    .from('barrio-media')
+                    .getPublicUrl(fileName);
+
+                imageUrl = urlData.publicUrl;
+            }
+
+            const { data: existing } = await supabase
+                .from('sponsor_spaces')
+                .select('id, image_url')
+                .eq('space_type', spaceType)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (existing && existing.length > 0) {
+                const updateData = {
+                    sponsor_id: sponsorId || null,
+                    active: isActive
+                };
+                if (imageUrl) updateData.image_url = imageUrl;
+
+                const { error } = await supabase
+                    .from('sponsor_spaces')
+                    .update(updateData)
+                    .eq('id', existing[0].id);
+
+                if (error) throw error;
+            } else {
+                const { error } = await supabase
+                    .from('sponsor_spaces')
+                    .insert({
+                        sponsor_id: sponsorId || null,
+                        space_type: spaceType,
+                        active: isActive,
+                        amount: 0,
+                        paid: false,
+                        image_url: imageUrl,
+                        start_date: new Date().toISOString().split('T')[0]
+                    });
+
+                if (error) throw error;
+            }
+
+            VV.utils.showSuccess('Espacio publicitario guardado');
+            this.loadAdSpacesAdmin();
+
+        } catch (e) {
+            console.error('Error guardando espacio publicitario:', e);
+            alert('Error al guardar: ' + e.message);
+        }
+    },
+
     },
 
     // ===== SPONSORS EN WEB =====

@@ -358,38 +358,41 @@ VV.landingWeb = {
 
     // Espacios publicitarios web
     async loadAdSpaces() {
-        try {
-            const { data, error } = await supabase
-                .from('sponsor_spaces')
-                .select(`
-                    *,
-                    sponsor:sponsors(id, business_name, logo, image_url, contact, website)
-                `)
-                .in('space_type', ['web_top', 'web_sidebar', 'web_infeed', 'web_footer', 'web_sticky'])
-                .eq('active', true);
+    try {
+        const { data: spaces, error: err1 } = await supabase
+            .from('sponsor_spaces')
+            .select('*')
+            .in('space_type', ['web_top', 'web_sidebar', 'web_infeed', 'web_footer', 'web_sticky'])
+            .eq('active', true);
 
-            if (error) throw error;
+        if (err1) throw err1;
 
-            if (!data) return;
+        if (!spaces || spaces.length === 0) return;
 
-            data.forEach(space => {
-                const sponsor = space.sponsor;
-                if (!sponsor) return;
+        const { data: sponsors } = await supabase
+            .from('sponsors')
+            .select('id, business_name, logo, image_url, contact, website');
 
-                const imageUrl = sponsor.image_url || sponsor.logo || '';
-                const link = sponsor.website || '#';
-                const adId = `ad-${space.space_type.replace('web_', '')}`;
+        const sponsorsMap = {};
+        (sponsors || []).forEach(s => { sponsorsMap[s.id] = s; });
 
-                const el = document.getElementById(adId);
-                if (el && imageUrl) {
-                    el.innerHTML = `<a href="${link}" target="_blank"><img src="${imageUrl}" alt="${sponsor.business_name || ''}"></a>`;
-                }
-            });
+        spaces.forEach(space => {
+            const sponsor = space.sponsor_id ? sponsorsMap[space.sponsor_id] : null;
+            const imageUrl = space.image_url || (sponsor && (sponsor.image_url || sponsor.logo)) || '';
+            const link = (sponsor && sponsor.website) || '#';
+            const adId = 'ad-' + space.space_type.replace('web_', '');
+            const el = document.getElementById(adId);
+            if (el && imageUrl) {
+                el.innerHTML = '<a href="' + link + '" target="_blank"><img src="' + imageUrl + '" alt="Publicidad"></a>';
+                el.style.display = 'flex';
+            }
+        });
 
-        } catch (e) {
-            console.error('Error cargando espacios publicitarios:', e);
-        }
-    },
+    } catch (e) {
+        console.error('Error cargando espacios publicitarios:', e);
+    }
+},
+
 
     // Cargar textos editables de landing_content
     async loadLandingContent() {
