@@ -17,7 +17,9 @@ VV.adminWeb = {
             this.loadFolletos(),
             this.loadEfemerides(),
             this.loadLandingContent(),
+            this.loadSecciones(),
             this.loadAdSpacesAdmin()
+
         ]);
     },
 // ===== SPONSORS EN WEB =====
@@ -423,5 +425,74 @@ VV.adminWeb = {
             console.error('Error guardando landing content:', e);
             alert('Error al guardar');
         }
+    // ===== TEXTOS POR SECCIÓN =====
+    SECCIONES: [
+        { slug: 'barrios',  emoji: '📍', nombre: 'Explora los Barrios', defecto: 'Elegí tu barrio y mirá qué está pasando cerca tuyo.' },
+        { slug: 'folletos', emoji: '🏪', nombre: 'Folletos del barrio', defecto: 'Ofertas y promos de los comercios de tu zona, en un solo lugar.' },
+        { slug: 'ofertas',  emoji: '⭐', nombre: 'Ofertas destacadas',  defecto: 'Los descuentos que los vecinos están usando esta semana.' },
+        { slug: 'eventos',  emoji: '🎭', nombre: 'Próximos eventos',    defecto: 'Fechas, ferias y actividades de la comunidad.' },
+        { slug: 'voces',    emoji: '🎤', nombre: 'Voces Virtuales',     defecto: 'Lo que dicen los vecinos y los avisos de la comunidad.' }
+    ],
+
+    async loadSecciones() {
+        const cont = document.getElementById('web-secciones-list');
+        if (!cont) return;
+
+        cont.innerHTML = this.SECCIONES.map(s => `
+            <div style="border:1px solid #e2e8f0;border-radius:10px;padding:0.9rem;background:#f8fafc;">
+                <div style="font-weight:600;color:#1e293b;margin-bottom:0.6rem;">${s.emoji} ${s.nombre}</div>
+                <input type="text" id="web-sec-${s.slug}-titulo" placeholder="${s.nombre}"
+                       style="width:100%;padding:0.6rem;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:0.5rem;">
+                <input type="text" id="web-sec-${s.slug}-subtitulo" maxlength="140" placeholder="${s.defecto}"
+                       style="width:100%;padding:0.6rem;border-radius:8px;border:1px solid #cbd5e1;">
+            </div>
+        `).join('');
+
+        try {
+            const { data, error } = await supabase
+                .from('landing_content')
+                .select('key, value');
+
+            if (error) throw error;
+
+            (data || []).forEach(r => {
+                if (!r.key || !r.key.startsWith('sec_')) return;
+                const el = document.getElementById('web-' + r.key.replace(/_/g, '-'));
+                if (el) el.value = r.value || '';
+            });
+
+        } catch (e) {
+            console.error('Error cargando secciones:', e);
+        }
+    },
+
+    async saveSecciones() {
+        try {
+            const items = [];
+            this.SECCIONES.forEach(s => {
+                items.push({
+                    key: 'sec_' + s.slug + '_titulo',
+                    value: (document.getElementById('web-sec-' + s.slug + '-titulo')?.value || '').trim()
+                });
+                items.push({
+                    key: 'sec_' + s.slug + '_subtitulo',
+                    value: (document.getElementById('web-sec-' + s.slug + '-subtitulo')?.value || '').trim()
+                });
+            });
+
+            for (const item of items) {
+                await supabase
+                    .from('landing_content')
+                    .upsert({ key: item.key, value: item.value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+            }
+
+            VV.utils.showSuccess('Textos de sección guardados');
+
+        } catch (e) {
+            console.error('Error guardando secciones:', e);
+            alert('Error al guardar');
+        }
+    }
+
     }
 };

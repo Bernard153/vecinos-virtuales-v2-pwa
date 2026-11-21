@@ -467,12 +467,28 @@ VV.landingWeb = {
             const ctaBtn = document.getElementById('landing-cta-btn');
             if (ctaBtn && textos.cta_text) ctaBtn.textContent = '🏠 ' + textos.cta_text;
 
-            const footerText = document.getElementById('landing-footer-text');
+                       const footerText = document.getElementById('landing-footer-text');
             if (footerText && textos.footer_text) footerText.textContent = textos.footer_text;
+
+            // ===== Título y bajada editables por sección =====
+            ['barrios', 'folletos', 'ofertas', 'eventos', 'voces'].forEach(slug => {
+                const titulo = textos['sec_' + slug + '_titulo'];
+                const sub = textos['sec_' + slug + '_subtitulo'];
+
+                const elTitulo = document.getElementById('sec-' + slug + '-titulo');
+                if (elTitulo && titulo) elTitulo.textContent = titulo;
+
+                const elSub = document.getElementById('sec-' + slug + '-subtitulo');
+                if (elSub && sub !== undefined) {
+                    elSub.textContent = sub;
+                    elSub.style.display = sub.trim() ? '' : 'none';
+                }
+            });
 
         } catch (e) {
             console.error('Error cargando landing_content:', e);
         }
+
     }
 };
 // Auto-inicializar cuando la landing está visible

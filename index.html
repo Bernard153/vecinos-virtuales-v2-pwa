@@ -331,6 +331,17 @@
             align-items: center;
             gap: 0.5rem;
         }
+                /* Bajada editable de cada sección */
+        #landing-screen .sec-sub {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            line-height: 1.45;
+            margin: -0.25rem 0 0.75rem;
+        }
+        #landing-screen .barrios-section .sec-sub {
+            margin: -0.5rem 0 1rem;
+        }
+
         #landing-screen .landing-scroll {
             display: flex;
             gap: 0.75rem;
@@ -472,7 +483,8 @@
         <!-- SELECTOR DE BARRIOS -->
         <div class="landing-container">
             <div class="barrios-section">
-                <h3>📍 Explorá los barrios</h3>
+                <h3><span>📍</span> <span id="sec-barrios-titulo">Explorá los barrios</span></h3>
+                <p class="sec-sub" id="sec-barrios-subtitulo">Elegí tu barrio y mirá qué está pasando cerca tuyo.</p>
                 <div class="barrios-grid" id="landing-barrios">
                     <p style="opacity:0.6;">Cargando barrios...</p>
                 </div>
@@ -492,7 +504,8 @@
 
                 <!-- Folletos -->
                 <div class="landing-section">
-                    <h3>🏪 Folletos del barrio</h3>
+                    <h3><span>🏪</span> <span id="sec-folletos-titulo">Folletos del barrio</span></h3>
+                    <p class="sec-sub" id="sec-folletos-subtitulo">Ofertas y promos de los comercios de tu zona, en un solo lugar.</p>
                     <div id="landing-folleto" class="landing-scroll">
                         <p style="opacity:0.6;padding:1rem;">Cargando folletos...</p>
                     </div>
@@ -510,7 +523,8 @@
 
                 <!-- Ofertas destacadas -->
                 <div class="landing-section">
-                    <h3>⭐ Ofertas destacadas</h3>
+                    <h3><span>⭐</span> <span id="sec-ofertas-titulo">Ofertas destacadas</span></h3>
+                    <p class="sec-sub" id="sec-ofertas-subtitulo">Los descuentos que los vecinos están usando esta semana.</p>
                     <div id="landing-destacadas" class="landing-scroll">
                         <p style="opacity:0.6;padding:1rem;">Cargando ofertas...</p>
                     </div>
@@ -523,7 +537,8 @@
 
                 <!-- Eventos -->
                 <div class="landing-section">
-                    <h3>🎭 Próximos eventos</h3>
+                    <h3><span>🎭</span> <span id="sec-eventos-titulo">Próximos eventos</span></h3>
+                    <p class="sec-sub" id="sec-eventos-subtitulo">Fechas, ferias y actividades de la comunidad.</p>
                     <div id="landing-cultura" class="landing-scroll">
                         <p style="opacity:0.6;padding:1rem;">Cargando eventos...</p>
                     </div>
@@ -536,7 +551,8 @@
 
                 <!-- Voces Virtuales -->
                 <div class="landing-section">
-                    <h3>🎤 Voces Virtuales</h3>
+                    <h3><span>🎤</span> <span id="sec-voces-titulo">Voces Virtuales</span></h3>
+                    <p class="sec-sub" id="sec-voces-subtitulo">Lo que dicen los vecinos y los avisos de la comunidad.</p>
                     <div id="landing-voces" class="landing-scroll">
                         <p style="opacity:0.6;padding:1rem;">Cargando videos...</p>
                     </div>
@@ -1734,6 +1750,20 @@
                 <i class="fas fa-save"></i> Guardar textos
             </button>
         </div>
+                <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
+
+        <!-- Textos por sección -->
+        <h3 style="margin-bottom: 8px; color: #1e293b;">🧩 Textos por sección</h3>
+        <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 15px;">
+            Título y bajada que aparecen arriba de cada bloque de la landing. Si dejás la bajada vacía, no se muestra.
+        </p>
+        <div id="web-secciones-list" style="display: grid; gap: 1rem; max-width: 640px;">
+            <p style="text-align: center; color: #94a3b8;">Cargando secciones...</p>
+        </div>
+        <button class="btn-primary" onclick="VV.adminWeb.saveSecciones()" style="max-width: 220px; margin-top: 1rem;">
+            <i class="fas fa-save"></i> Guardar secciones
+        </button>
+
         <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
         <h3 style="margin-bottom: 15px; color: #1e293b;">📐 Espacios Publicitarios Web</h3>
         <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 15px;">Asigná un anunciante y subí la imagen con el tamaño correspondiente a cada espacio.</p>
