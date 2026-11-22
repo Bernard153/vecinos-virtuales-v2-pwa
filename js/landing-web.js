@@ -80,7 +80,7 @@ VV.landingWeb = {
         container.innerHTML = barrios.map((b, i) => {
             const inicial = b.nombre.charAt(0).toUpperCase();
             const imgHtml = b.imagen 
-                ? `<img src="${b.imagen}" alt="${b.nombre}" style="width:100%;height:80px;object-fit:cover;border-radius:8px 8px 0 0;">`
+                ? `<img src="${b.imagen}" alt="${b.nombre}" loading="lazy" decoding="async" style="width:100%;height:80px;object-fit:cover;border-radius:8px 8px 0 0;">`
                 : `<div style="width:100%;height:80px;background:linear-gradient(135deg,#8b5cf6,#312e81);display:flex;align-items:center;justify-content:center;border-radius:8px 8px 0 0;font-size:2rem;font-weight:800;color:rgba(255,255,255,0.5);">${inicial}</div>`;
             return `
                 <div class="barrio-card ${i === 0 ? 'destacado' : ''}" onclick="VV.landingWeb.verBarrio('${b.nombre.replace(/'/g, "\\'")}')">
@@ -176,7 +176,7 @@ VV.landingWeb = {
 
             container.innerHTML = data.map(f => `
                 <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                    <img src="${f.image_url || f.url || ''}" alt="Folleto" onerror="this.style.display='none'">
+                    <img src="${f.image_url || f.url || ''}" alt="Folleto" loading="lazy" decoding="async" onerror="this.style.display='none'">
                     <div class="card-body">
                         <p class="card-title">${f.neighborhood || 'Barrio'}</p>
                         <p class="card-meta">${f.titulo || f.autor_name || ''}</p>
@@ -221,7 +221,7 @@ VV.landingWeb = {
 
                 container.innerHTML = productos.map(p => `
                     <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                        <img src="${p.imagen_url || p.image_url || ''}" alt="${p.titulo || p.name || ''}" onerror="this.style.display='none'">
+                        <img src="${p.imagen_url || p.image_url || ''}" alt="${p.titulo || p.name || ''}" loading="lazy" decoding="async" onerror="this.style.display='none'">
                         <div class="card-body">
                             <p class="card-title">${p.titulo || p.name || 'Producto'}</p>
                             <p class="card-meta">${p.precio ? '$' + p.precio : ''} ${p.neighborhood || ''}</p>
@@ -233,7 +233,7 @@ VV.landingWeb = {
 
             container.innerHTML = data.map(o => `
                 <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                    <img src="${o.imagen_url || ''}" alt="${o.titulo || ''}" onerror="this.style.display='none'">
+                    <img src="${o.imagen_url || ''}" alt="${o.titulo || ''}" loading="lazy" decoding="async" onerror="this.style.display='none'">
                     <div class="card-body">
                         <p class="card-title">${o.titulo || 'Oferta'}</p>
                         <p class="card-meta">${o.barrio || ''}</p>
@@ -268,7 +268,7 @@ VV.landingWeb = {
 
             container.innerHTML = data.map(e => `
                 <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                    <img src="${e.imagen_url || ''}" alt="${e.titulo || ''}" onerror="this.style.display='none'">
+                    <img src="${e.imagen_url || ''}" alt="${e.titulo || ''}" loading="lazy" decoding="async" onerror="this.style.display='none'">
                     <div class="card-body">
                         <p class="card-title">${e.titulo || 'Evento'}</p>
                         <p class="card-meta">${e.neighborhood || ''} ${e.fecha ? '· ' + new Date(e.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' }) : ''}</p>
@@ -329,7 +329,7 @@ VV.landingWeb = {
     },
 
 
-    // Anunciantes (mostrar_web = true)
+        // Anunciantes (mostrar_web = true)
     async loadAnunciantes() {
         const container = document.getElementById('landing-anunciantes');
         if (!container) return;
@@ -351,7 +351,7 @@ VV.landingWeb = {
 
             container.innerHTML = data.map(s => `
                 <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                    ${s.logo ? `<img src="${s.logo}" alt="${s.business_name || ''}" onerror="this.style.display='none'">` : `<div style="width:100%;height:120px;background:linear-gradient(135deg,#312e81,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:2rem;">📢</div>`}
+                    ${s.logo ? `<img src="${s.logo}" alt="${s.business_name || ''}" loading="lazy" decoding="async" onerror="this.style.display='none'">` : `<div style="width:100%;height:120px;background:linear-gradient(135deg,#312e81,#4c1d95);display:flex;align-items:center;justify-content:center;font-size:2rem;">📢</div>`}
                     <div class="card-body">
                         <p class="card-title">${s.business_name || 'Anunciante'}</p>
                         <p class="card-meta">${s.neighborhoods || 'Todos los barrios'}</p>
@@ -392,9 +392,11 @@ VV.landingWeb = {
             const adId = 'ad-' + space.space_type.replace('web_', '');
             const el = document.getElementById(adId);
             if (el && imageUrl) {
-                el.innerHTML = '<a href="' + link + '" target="_blank"><img src="' + imageUrl + '" alt="Publicidad"></a>';
+                const lazyAttr = space.space_type === 'web_top' ? '' : ' loading="lazy"';
+                el.innerHTML = '<a href="' + link + '" target="_blank"><img src="' + imageUrl + '" alt="Publicidad" decoding="async"' + lazyAttr + '></a>';
                 el.style.display = 'flex';
             }
+
         });
 
     } catch (e) {
