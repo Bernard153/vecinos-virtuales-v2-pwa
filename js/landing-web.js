@@ -282,7 +282,7 @@ VV.landingWeb = {
         }
     },
 
-    // Voces Virtuales
+        // Voces Virtuales
     async loadVoces() {
         const container = document.getElementById('landing-voces');
         if (!container) return;
@@ -303,23 +303,31 @@ VV.landingWeb = {
                 return;
             }
 
-            container.innerHTML = data.map(v => `
+            container.innerHTML = data.map(v => {
+                const thumb = v.thumbnail_url || v.poster_url || '';
+
+                const miniatura = thumb
+                    ? `<img src="${thumb}" alt="${v.title || 'Video'}" loading="lazy" decoding="async"
+                            style="width:100%;height:120px;object-fit:cover;">`
+                    : `<div style="width:100%;height:120px;display:flex;align-items:center;justify-content:center;
+                            background:linear-gradient(135deg,#4c1d95,#8b5cf6);font-size:2rem;">▶</div>`;
+
+                return `
                 <div class="landing-card" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">
-                    <video preload="metadata" muted style="width:100%;height:120px;object-fit:cover;">
-                        <source src="${v.video_url}" type="${v.video_url && v.video_url.includes('.mp4') ? 'video/mp4' : 'video/webm'}">
-                    </video>
+                    ${miniatura}
                     <div class="card-body">
                         <p class="card-title">${v.title || 'Sin título'}</p>
                         <p class="card-meta">${v.user_name || ''} · 👁 ${v.views_count || 0}</p>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
 
         } catch (e) {
             console.error('Error cargando voces:', e);
             container.innerHTML = '<p style="opacity:0.6;padding:1rem;">Error cargando videos</p>';
         }
     },
+
 
     // Anunciantes (mostrar_web = true)
     async loadAnunciantes() {
