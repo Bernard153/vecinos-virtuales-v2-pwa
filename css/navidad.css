@@ -47,18 +47,27 @@ body.tema-navidad::after {
 /* ---------- 3. Nieve (opcional) ---------- */
 .nav-nieve {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     pointer-events: none;
     z-index: 9997;
-    opacity: .45;
+    opacity: .9;
     background-image:
-        radial-gradient(2px 2px at 20px 30px,  #fff, transparent),
-        radial-gradient(2px 2px at 90px 70px,  #fff, transparent),
-        radial-gradient(1px 1px at 150px 20px, #fff, transparent),
-        radial-gradient(2px 2px at 210px 90px, #fff, transparent);
+        radial-gradient(3px 3px at 20px 30px,     #ffffff, transparent),
+        radial-gradient(3px 3px at 90px 70px,     #ffffff, transparent),
+        radial-gradient(2px 2px at 150px 20px,    #eaf4ff, transparent),
+        radial-gradient(3px 3px at 210px 90px,    #ffffff, transparent),
+        radial-gradient(2px 2px at 60px 100px,    #eaf4ff, transparent),
+        radial-gradient(3px 3px at 180px 55px,    #ffffff, transparent),
+        radial-gradient(2px 2px at 120px 110px,   #eaf4ff, transparent),
+        radial-gradient(2px 2px at 30px 75px,     #eaf4ff, transparent);
     background-size: 240px 120px;
     animation: nav-caer 14s linear infinite;
 }
+
+
 
 @keyframes nav-caer {
     from { background-position: 0 0; }
