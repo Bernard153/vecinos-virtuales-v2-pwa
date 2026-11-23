@@ -819,22 +819,77 @@ VV_VOCES_V2.cargarFeed = function() {
 // ============================================================
 // SUBIDA DE VIDEOS A SUPABASE
 // ============================================================
+VV_VOCES_V2.MAX_VIDEO_MB = 40;
+VV_VOCES_V2.MAX_VIDEO_SEG = 300;   // 5 minutos
+
+VV_VOCES_V2.validarVideo = async function (blob) {
+    const mb = blob.size / 1048576;
+    if (mb > this.MAX_VIDEO_MB) {
+        throw new Error(`El video pesa ${mb.toFixed(1)} MB. El máximo es ${this.MAX_VIDEO_MB} MB.`);
+    }
+
+    const duracion = await new Promise((resolve, reject) => {
+        const v = document.createElement('video');
+        v.preload = 'metadata';
+        v.onloadedmetadata = () => {
+            const d = v.duration;
+            URL.revokeObjectURL(v.src);
+            resolve(d);
+        };
+        v.onerror = () => reject(new Error('No se pudo leer el video'));
+        v.src = URL.createObjectURL(blob);
+    });
+
+    if (duracion > this.MAX_VIDEO_SEG) {
+        throw new Error(`El video dura ${Math.round(duracion)}s. El máximo es ${this.MAX_VIDEO_SEG}s.`);
+    }
+    return duracion;
+};
+
+VV_VOCES_V2.generarMiniatura = async function (blob, ancho = 320) {
+    const url = URL.createObjectURL(blob);
+    const v = document.createElement('video');
+    v.src = url;
+    v.muted = true;
+    v.playsInline = true;
+
+    await new Promise((resolve, reject) => {
+        v.onloadeddata = resolve;
+        v.onerror = () => reject(new Error('No se pudo generar la miniatura'));
+    });
+
+    v.currentTime = Math.min(2, (v.duration || 2) / 2);
+    await new Promise((resolve) => { v.onseeked = resolve; });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = ancho;
+    canvas.height = Math.round(ancho * (v.videoHeight || 9) / (v.videoWidth || 16));
+    canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
+
+    const thumbBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8));
+    URL.revokeObjectURL(url);
+    return thumbBlob;
+};
+
 VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
     const user = VV_ROLES.getCurrentUser();
     if (!user) {
         throw new Error('Debés iniciar sesión para subir videos');
     }
 
-    // Generar nombre único para el archivo
-    const ext = videoBlob.type.includes('mp4') ? 'mp4' : 'webm';
-    const fileName = `voces-virtuales/${user.id}_${Date.now()}.${ext}`;
+    // 0. Validar tamaño y duración ANTES de subir nada
+    await this.validarVideo(videoBlob);
 
-    // 1. Subir el video a Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const ext = videoBlob.type.includes('mp4') ? 'mp4' : 'webm';
+    const baseName = `${user.id}_${Date.now()}`;
+    const fileName = `voces-virtuales/${baseName}.${ext}`;
+
+    // 1. Subir el video
+    const { error: uploadError } = await supabase.storage
         .from('barrio-media')
         .upload(fileName, videoBlob, {
             contentType: videoBlob.type,
-            cacheControl: '3600'
+            cacheControl: '31536000'
         });
 
     if (uploadError) {
@@ -842,19 +897,45 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
         throw new Error('No se pudo subir el video: ' + uploadError.message);
     }
 
-    // 2. Obtener la URL pública
     const { data: urlData } = supabase.storage
         .from('barrio-media')
         .getPublicUrl(fileName);
 
     const videoUrl = urlData.publicUrl;
 
-    // 3. Insertar el registro en la tabla karaoke_videos
+    // 2. Generar y subir la miniatura
+    let thumbnailUrl = null;
+    let thumbPath = null;
+
+    try {
+        const thumbBlob = await this.generarMiniatura(videoBlob);
+        thumbPath = `voces-virtuales/thumbs/${baseName}.jpg`;
+
+        const { error: thErr } = await supabase.storage
+            .from('barrio-media')
+            .upload(thumbPath, thumbBlob, {
+                contentType: 'image/jpeg',
+                cacheControl: '31536000'
+            });
+
+        if (thErr) throw thErr;
+
+        thumbnailUrl = supabase.storage
+            .from('barrio-media')
+            .getPublicUrl(thumbPath).data.publicUrl;
+
+    } catch (e) {
+        console.warn('No se pudo generar la miniatura:', e);
+        thumbPath = null;
+    }
+
+    // 3. Insertar el registro en la tabla
     const registro = {
         user_id: user.id,
-        user_name: user.name || user.email || 'An├│nimo',
-        title: metadata.title || 'Sin t├¡tulo',
+        user_name: user.name || user.email || 'Anónimo',
+        title: metadata.title || 'Sin título',
         video_url: videoUrl,
+        thumbnail_url: thumbnailUrl,
         audio_url: this.audioTrackBlobURL || null,
         track_id: metadata.track_id || '',
         track_title: metadata.track_title || null,
@@ -870,7 +951,6 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
         neighborhood: VV.data.neighborhood || user.neighborhood
     };
 
-
     const { data: insertData, error: insertError } = await supabase
         .from('karaoke_videos')
         .insert([registro])
@@ -879,18 +959,24 @@ VV_VOCES_V2.uploadVideo = async function(videoBlob, metadata) {
 
     if (insertError) {
         console.error('Error insertando en tabla:', insertError);
+
+        // LIMPIEZA: si falla el registro, borrar los archivos subidos.
+        // Esto es lo que evitaba los 12 huérfanos.
+        const aBorrar = [fileName, thumbPath].filter(Boolean);
+        await supabase.storage.from('barrio-media').remove(aBorrar);
+
         throw new Error('No se pudo registrar el video: ' + insertError.message);
     }
 
     console.log('✅ Video subido:', videoUrl);
-    
-    // Recompensa por subir video
+
     if (window.VV_WALLET) {
         VV_WALLET.rewardVideoUpload(user.id);
     }
-    
+
     return { success: true, url: videoUrl, data: insertData };
 };
+
 // ============================================================
 // TAB 3: EXPLORAR — Feed público de videos
 // ============================================================
