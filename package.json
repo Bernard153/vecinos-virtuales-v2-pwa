@@ -1,0 +1,27 @@
+{
+  "name": "vecinos-virtuales-v2-pwa",
+  "version": "1.0.0",
+  "description": "**Red social hiperlocal para conectar vecinos y fortalecer comunidades**",
+  "main": "old_marketplace.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bernard153/vecinos-virtuales-v2-pwa.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Bernard153/vecinos-virtuales-v2-pwa/issues"
+  },
+  "homepage": "https://github.com/Bernard153/vecinos-virtuales-v2-pwa#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.2"
+  }
+}

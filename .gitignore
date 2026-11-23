@@ -41,3 +41,5 @@ build/
 # (descomenta si los tienes)
 # config-private.js
 # keys.js
+node_modules/
+scripts/.env.local
