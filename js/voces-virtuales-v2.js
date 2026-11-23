@@ -936,12 +936,14 @@ VV_VOCES_V2.renderVideoCard = function(video) {
     const tipo = video.is_original ? '✨ Original' : '🎵 Cover';
     const acustico = video.is_acoustic ? '🎸 Acústico' : '';
 
+    const miniatura = video.thumbnail_url
+        ? `<img src="${video.thumbnail_url}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;">`
+        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4c1d95,#8b5cf6);font-size:2rem;">🎤</div>`;
+
     return `
         <div class="vv-video-card" onclick="VV_VOCES_V2.openVideoPlayer('${video.id}')">
             <div class="vv-video-thumb">
-                <video preload="metadata" muted>
-                    <source src="${video.video_url}" type="${this.getVideoType(video.video_url)}">
-                </video>
+                ${miniatura}
                 <div class="vv-play-overlay"><i class="fas fa-play"></i></div>
             </div>
             <div class="vv-video-info">
@@ -960,6 +962,7 @@ VV_VOCES_V2.renderVideoCard = function(video) {
         </div>
     `;
 };
+
 
 
 
@@ -1001,7 +1004,7 @@ VV_VOCES_V2.openVideoPlayer = async function(videoId) {
         <div class="modal-form" style="max-width:600px;padding:0;">
             <button class="vv-modal-close" onclick="VV_VOCES_V2.closeVideoPlayer()" style="position:absolute;top:0.5rem;right:0.5rem;background:rgba(0,0,0,0.5);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;z-index:1;">✕</button>
             <video controls autoplay style="width:100%;border-radius:12px 12px 0 0;background:#000;">
-                <source src="${video.video_url}" type="video/webm">
+                <source src="${video.video_url}" type="${this.getVideoType(video.video_url)}">
             </video>
             <div style="padding:1rem;">
                 <h3 style="margin:0 0 0.25rem;color:#1e293b;">${video.title}</h3>
@@ -1403,10 +1406,10 @@ VV_VOCES_V2.cargarWidgetDashboard = async function() {
                  style="background: rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; border: 1px solid rgba(255,255,255,0.08);"
                  onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)'"
                  onmouseout="this.style.transform='';this.style.boxShadow=''">
-                <div style="position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;">
-                    <video preload="metadata" muted style="width:100%;height:100%;object-fit:cover;">
-                        <source src="${video.video_url}" type="${this.getVideoType(video.video_url)}">
-                    </video>
+                 <div style="position:relative;aspect-ratio:16/9;background:#000;overflow:hidden;">
+                    ${video.thumbnail_url
+                        ? `<img src="${video.thumbnail_url}" alt="" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;">`
+                        : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4c1d95,#8b5cf6);font-size:1.5rem;">🎤</div>`}
                     <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;background:rgba(0,0,0,0.6);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.9rem;">
                         <i class="fas fa-play"></i>
                     </div>
