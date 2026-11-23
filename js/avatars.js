@@ -652,6 +652,21 @@ VV.avatars.getAvatarWithFrame = function(userId, size) {
     const tier = VV.avatars.getUserTier(userId);
     const config = VV.avatars.tierConfig[tier] || VV.avatars.tierConfig['vecino'];
 
+    // Adorno navideño: solo VIP, y solo si el tema está activo
+    const navidadActiva = document.body.classList.contains('tema-navidad');
+    const gorro = (navidadActiva && tier === 'vip') ? `
+        <div style="
+            position: absolute;
+            top: -${Math.round(size * 0.20)}px;
+            right: -${Math.round(size * 0.14)}px;
+            font-size: ${Math.round(size * 0.45)}px;
+            line-height: 1;
+            transform: rotate(16deg);
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .35));
+            pointer-events: none;
+        ">🎅</div>
+    ` : '';
+
     const sparklePositions = [
         { top: '-4px', left: '50%', delay: '0s' },
         { top: '30%', right: '-6px', delay: '0.3s' },
@@ -703,12 +718,14 @@ VV.avatars.getAvatarWithFrame = function(userId, size) {
                     ${config.badge}
                 </div>
             ` : ''}
+            ${gorro}
             ${config.sparkles ? sparklePositions.map(p => `
                 <div class="avatar-sparkle" style="${p.top ? 'top: ' + p.top + ';' : ''}${p.bottom ? 'bottom: ' + p.bottom + ';' : ''}${p.left ? 'left: ' + p.left + ';' : ''}${p.right ? 'right: ' + p.right + ';' : ''} animation-delay: ${p.delay};">✨</div>
             `).join('') : ''}
         </div>
     `;
 };
+
 
 // Obtener badge de rango como HTML
 VV.avatars.getTierBadge = function(userId) {
