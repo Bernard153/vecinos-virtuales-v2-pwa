@@ -21,9 +21,32 @@
             return { balance: 0, puntos_xp: 0 };
         }
     },
+    waitForSession: async function (intentos = 20, espera = 150) {
+        for (let i = 0; i < intentos; i++) {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session && session.expires_at * 1000 > Date.now() + 30000) {
+                return session;
+            }
+
+            if (session) {
+                const { data } = await supabase.auth.refreshSession();
+                if (data && data.session) return data.session;
+            }
+
+            await new Promise(r => setTimeout(r, espera));
+        }
+
+        console.warn('Billetera: no se obtuvo sesión válida tras esperar');
+        return null;
+    },
 
     initWallet: async function(userId) {
         if (!userId) return;
+
+        const session = await this.waitForSession();
+        if (!session) return;
+
         try {
             await supabase.from('billeteras').upsert([{
                 user_id: userId, saldo_monedas: 10, puntos_xp: 0
@@ -35,8 +58,11 @@
         }
     },
 
+
     earnCredits: async function(userId, amount, description, refId, refType) {
         if (!userId || amount <= 0) return false;
+        const session = await this.waitForSession();
+        if (!session) return false;
         try {
             const { data: wallet } = await supabase
                 .from('billeteras')
@@ -65,6 +91,8 @@
 
     spendCredits: async function(userId, amount, description, refId, refType) {
         if (!userId || amount <= 0) return { success: false, error: 'Cantidad inválida' };
+        const session = await this.waitForSession();
+        if (!session) return { success: false, error: 'Sin sesión activa' };
         try {
             const { data: wallet } = await supabase
                 .from('billeteras')
@@ -88,6 +116,9 @@
     },
 
     addTransaction: async function(userId, amount, type, description, refId, refType) {
+        const session = await this.waitForSession();
+        if (!session) return;
+
         try {
             await supabase.from('wallet_transactions').insert([{
                 user_id: userId, amount: amount, type: type,
