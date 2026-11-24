@@ -32,10 +32,9 @@ VV.landingWeb = {
     if (!container) return;
 
     try {
-        // Cargar barrios con conteo de vecinos
-        const { data: usersData, error: err1 } = await supabase
-            .from('barrios_publicos')
-            .select('neighborhood');
+         // Conteo por barrio (una fila por barrio, no por usuario)
+        const { data: conteoData, error: err1 } = await supabase
+            .rpc('conteo_barrios');
 
         if (err1) throw err1;
 
@@ -49,19 +48,13 @@ VV.landingWeb = {
             imagenesBarrios[b.nombre] = { img: b.imagen_url, desc: b.descripcion };
         });
 
-        // Contar vecinos por barrio
-        const conteo = {};
-        usersData.forEach(u => {
-            const b = u.neighborhood;
-            if (b) conteo[b] = (conteo[b] || 0) + 1;
-        });
-
-        let barrios = Object.keys(conteo).map(nombre => ({
-            nombre,
-            vecinos: conteo[nombre],
-            imagen: imagenesBarrios[nombre]?.img || null,
-            descripcion: imagenesBarrios[nombre]?.desc || ''
+        let barrios = (conteoData || []).map(row => ({
+            nombre: row.neighborhood,
+            vecinos: Number(row.vecinos),
+            imagen: imagenesBarrios[row.neighborhood]?.img || null,
+            descripcion: imagenesBarrios[row.neighborhood]?.desc || ''
         })).sort((a, b) => b.vecinos - a.vecinos);
+
 
         if (barrios.length === 0) {
             container.innerHTML = '<p style="opacity:0.6;">Aún no hay barrios registrados. ¡Sé el primero!</p>';
@@ -406,13 +399,12 @@ VV.landingWeb = {
     // ===== CONTADORES EN VIVO =====
     async loadCounters() {
         try {
-            // Vecinos y barrios (una consulta)
-            const { data: usersData } = await supabase
-                .from('barrios_publicos')
-                .select('neighborhood');
+            // Vecinos y barrios en una sola llamada
+            const { data: conteo } = await supabase.rpc('conteo_barrios');
 
-            const vecinos = usersData?.length || 0;
-            const barriosCount = new Set(usersData?.map(u => u.neighborhood).filter(Boolean)).size;
+            const vecinos = (conteo || []).reduce((s, r) => s + Number(r.vecinos), 0);
+            const barriosCount = (conteo || []).length;
+
 
             // Contadores con head: true (eficiente)
             const [
