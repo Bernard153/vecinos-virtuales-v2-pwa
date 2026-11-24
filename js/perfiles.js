@@ -54,8 +54,7 @@ VV.perfiles = {
             html += '<div style="display:flex;align-items:center;gap:1rem;">';
 
             var miAvatar = VV.avatars.getUserAvatar(user.id);
-
-            html += '<div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:2rem;">' + miAvatar.emoji + '</div>';
+            html += '<div>' + VV.avatars.getAvatarWithFrame(user.id, 60) + '</div>';
             html += '<div style="flex:1;"><h3 style="margin:0;">' + user.name + '</h3>';
             html += '<p style="margin:0;opacity:0.8;font-size:0.85rem;">#' + (user.unique_number || '') + ' - Este es tu perfil</p></div>';
             html += '<button onclick="VV.perfiles.editarMiPerfil()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:bold;">Editar mi perfil</button>';
@@ -81,18 +80,16 @@ VV.perfiles = {
                 if (!perfil) return;
 
                 visibles++;
-
-                var avatar = VV.avatars.getUserAvatar(u.id);
-                var avatarEmoji = avatar.emoji;
-
+               
                 html += '<div style="background:white;border-radius:12px;padding:1.5rem;box-shadow:0 2px 8px rgba(0,0,0,0.1);border:1px solid var(--gray-200);">';
                 html += '<div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">';
 
                 if (perfil.photo_url) {
                     html += '<img src="' + perfil.photo_url + '" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--primary-blue);">';
                 } else {
-                    html += '<div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--primary-blue),var(--primary-purple));display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:white;">' + avatarEmoji + '</div>';
+                    html += VV.avatars.getAvatarWithFrame(u.id, 50);
                 }
+
 
                 html += '<div><h4 style="margin:0;color:var(--gray-800);">' + u.name + '</h4>';
 
@@ -167,7 +164,7 @@ VV.perfiles = {
 
             // Avatar actual
             html += '<div style="text-align:center;margin-bottom:1rem;">';
-            html += '<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary-blue),var(--primary-purple));display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:white;margin:0 auto 0.5rem;">' + avatar.emoji + '</div>';
+            html += '<div style="display:flex;justify-content:center;margin-bottom:0.5rem;">' + VV.avatars.getAvatarWithFrame(user.id, 80) + '</div>';
             html += '<p style="font-size:0.8rem;color:var(--gray-500);margin:0;">Avatar: ' + avatar.name + '</p>';
             html += '</div>';
 
