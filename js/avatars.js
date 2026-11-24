@@ -180,17 +180,33 @@ VV.avatars = {
         }
     },
     
-        // Actualizar visualización del avatar en el header
+            // Actualizar visualización del avatar en el header
     updateAvatarDisplay() {
         const avatar = VV.avatars.getUserAvatar(VV.data.user.id);
         const tier = VV.avatars.getUserTier(VV.data.user.id);
         const navidad = document.body.classList.contains('tema-navidad');
+        const config = VV.avatars.tierConfig[tier] || VV.avatars.tierConfig['vecino'];
+
+        VV.avatars.injectFrameCSS();
 
         document.querySelectorAll('.user-avatar').forEach(el => {
             el.textContent = avatar.emoji;
             el.classList.toggle('nav-gorro', navidad && tier === 'vip');
+
+            if (tier !== 'vecino') {
+                el.style.background = config.gradient;
+                el.style.boxShadow = config.glow;
+                el.style.animation = config.animation;
+                el.style.textShadow = '0 1px 2px rgba(0,0,0,.35)';
+            } else {
+                el.style.background = '';
+                el.style.boxShadow = '';
+                el.style.animation = '';
+                el.style.textShadow = '';
+            }
         });
     },
+
 
     // Mostrar perfil del usuario
     showProfile() {
