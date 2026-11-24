@@ -103,3 +103,18 @@ body.tema-navidad::after {
         animation: none;
     }
 }
+/* ---------- 7. Gorro en el avatar del header ---------- */
+.nav-gorro {
+    position: relative;
+}
+
+.nav-gorro::after {
+    content: '🎅';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 16px;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .45));
+    pointer-events: none;
+}

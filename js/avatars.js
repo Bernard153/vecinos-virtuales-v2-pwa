@@ -180,16 +180,18 @@ VV.avatars = {
         }
     },
     
-    // Actualizar visualización del avatar en el header
+        // Actualizar visualización del avatar en el header
     updateAvatarDisplay() {
         const avatar = VV.avatars.getUserAvatar(VV.data.user.id);
-        const avatarElements = document.querySelectorAll('.user-avatar');
-        
-        avatarElements.forEach(el => {
+        const tier = VV.avatars.getUserTier(VV.data.user.id);
+        const navidad = document.body.classList.contains('tema-navidad');
+
+        document.querySelectorAll('.user-avatar').forEach(el => {
             el.textContent = avatar.emoji;
+            el.classList.toggle('nav-gorro', navidad && tier === 'vip');
         });
     },
-    
+
     // Mostrar perfil del usuario
     showProfile() {
         const avatar = VV.avatars.getUserAvatar(VV.data.user.id);
