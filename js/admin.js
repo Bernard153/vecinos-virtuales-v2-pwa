@@ -1859,6 +1859,21 @@ VV.admin.rejectFeaturedRequest = async function (requestId) {
         alert('Error al rechazar la oferta: ' + error.message);
     }
 };
+// ===== Helpers y filtro de destacados =====
+VV.admin._featuredFilter = VV.admin._featuredFilter || '';
+
+VV.admin._esc = function (s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+};
+
+VV.admin.setFeaturedFilter = function (barrio) {
+    VV.admin._featuredFilter = barrio || '';
+    VV.admin.loadFeaturedOffers();
+};
 
 VV.admin.loadFeaturedOffers = async function () {
     const container = document.getElementById('featured-management');
@@ -1879,15 +1894,33 @@ VV.admin.loadFeaturedOffers = async function () {
             return;
         }
 
+               // Filtro por barrio
+        const esc = VV.admin._esc;
+        const barriosDisponibles = [...new Set(allFeatured.map(f => f.neighborhood || 'Sin barrio'))].sort();
+        const filtro = VV.admin._featuredFilter || '';
+        const visibles = filtro
+            ? allFeatured.filter(f => (f.neighborhood || 'Sin barrio') === filtro)
+            : allFeatured;
+
         // Agrupar por barrio
         const byNeighborhood = {};
-        allFeatured.forEach(f => {
+        visibles.forEach(f => {
             const barrio = f.neighborhood || 'Sin barrio';
             if (!byNeighborhood[barrio]) byNeighborhood[barrio] = [];
             byNeighborhood[barrio].push(f);
         });
 
-        let html = '';
+        let html = `
+            <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+                <label style="font-weight:600; color:var(--gray-700);">Filtrar por barrio:</label>
+                <select onchange="VV.admin.setFeaturedFilter(this.value)"
+                        style="padding:0.5rem 0.75rem; border:1px solid var(--gray-300); border-radius:8px; min-width:220px;">
+                    <option value="">Todos (${allFeatured.length})</option>
+                    ${barriosDisponibles.map(b => `<option value="${esc(b)}"${b === filtro ? ' selected' : ''}>${esc(b)}</option>`).join('')}
+                </select>
+            </div>
+        `;
+
 
         for (const [barrio, offers] of Object.entries(byNeighborhood)) {
             const active = offers.filter(f => f.status === 'active' && !f.blocked && new Date(f.expires_at) > new Date());
@@ -1979,6 +2012,10 @@ VV.admin.renderFeaturedCard = function (offer) {
                         <i class="fas fa-times"></i> Rechazar
                     </button>
                 ` : ''}
+                <button class="btn-primary" onclick="VV.admin.editFeatured('${offer.id}')" style="flex: none; padding: 0.5rem 1rem; min-width: auto;">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+
                 <button class="btn-delete" onclick="VV.admin.deleteFeatured('${offer.id}')" style="flex: none; padding: 0.5rem 1rem; min-width: auto;">
 
                     <i class="fas fa-trash"></i> Eliminar
@@ -2023,6 +2060,158 @@ VV.admin.deleteFeatured = async function (offerId) {
     } catch (err) {
         console.error('Error eliminando oferta:', err);
         alert('Error: ' + err.message);
+    }
+};
+// ===== EDITOR DE OFERTAS DESTACADAS =====
+VV.admin.editFeatured = async function (offerId) {
+    try {
+        const { data: offer, error } = await supabase
+            .from('featured_offers')
+            .select('*')
+            .eq('id', offerId)
+            .single();
+
+        if (error) throw error;
+
+        const esc = VV.admin._esc;
+        const viejo = document.getElementById('featured-edit-overlay');
+        if (viejo) viejo.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'featured-edit-overlay';
+        overlay.className = 'modal-overlay active';
+        overlay.style.zIndex = '9999';
+        overlay.innerHTML = `
+            <div class="modal-form" style="max-width:560px; max-height:90vh; overflow-y:auto;">
+                <h3 style="margin-top:0;"><i class="fas fa-edit"></i> Editar oferta destacada</h3>
+
+                <label style="display:block; font-weight:600; margin:0.75rem 0 0.25rem;">Título</label>
+                <input type="text" id="fe-title" value="${esc(offer.title || '')}"
+                       style="width:100%; padding:0.6rem; border:1px solid var(--gray-300); border-radius:8px;">
+
+                <label style="display:block; font-weight:600; margin:0.75rem 0 0.25rem;">Descripción</label>
+                <textarea id="fe-description" rows="3"
+                          style="width:100%; padding:0.6rem; border:1px solid var(--gray-300); border-radius:8px;">${esc(offer.description || '')}</textarea>
+
+                <label style="display:block; font-weight:600; margin:0.75rem 0 0.25rem;">Barrio</label>
+                <input type="text" id="fe-neighborhood" value="${esc(offer.neighborhood || '')}"
+                       style="width:100%; padding:0.6rem; border:1px solid var(--gray-300); border-radius:8px;">
+
+                <label style="display:block; font-weight:600; margin:0.75rem 0 0.25rem;">Duración (días desde hoy)</label>
+                <input type="number" id="fe-duration" min="1" max="90" value="${offer.duration || 7}"
+                       style="width:100%; padding:0.6rem; border:1px solid var(--gray-300); border-radius:8px;">
+
+                <label style="display:block; font-weight:600; margin:0.75rem 0 0.25rem;">Estado</label>
+                <select id="fe-status" style="width:100%; padding:0.6rem; border:1px solid var(--gray-300); border-radius:8px;">
+                    <option value="active"   ${offer.status === 'active' ? 'selected' : ''}>Activa</option>
+                    <option value="pending"  ${offer.status === 'pending' ? 'selected' : ''}>Pendiente</option>
+                    <option value="inactive" ${offer.status === 'inactive' ? 'selected' : ''}>Inactiva</option>
+                    <option value="rejected" ${offer.status === 'rejected' ? 'selected' : ''}>Rechazada</option>
+                </select>
+
+                <label style="display:flex; align-items:center; gap:0.5rem; margin:0.75rem 0;">
+                    <input type="checkbox" id="fe-blocked" ${offer.blocked ? 'checked' : ''}> Bloqueada
+                </label>
+
+                <label style="display:block; font-weight:600; margin:0.75rem 0 0.25rem;">Imagen</label>
+                <img id="fe-preview" src="${esc(offer.image_url || '')}"
+                     style="max-width:100%; max-height:180px; border-radius:8px; border:1px solid var(--gray-300); margin-bottom:0.5rem; ${offer.image_url ? '' : 'display:none;'}">
+                <input type="file" id="fe-image" accept="image/*"
+                       onchange="VV.admin.previewFeaturedImage(this)"
+                       style="width:100%; padding:0.4rem;">
+
+                <div style="display:flex; gap:0.5rem; margin-top:1.5rem;">
+                    <button class="btn-primary" onclick="VV.admin.saveFeaturedEdit('${offer.id}')" style="flex:1;">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                    <button class="btn-delete" onclick="document.getElementById('featured-edit-overlay').remove()" style="flex:1;">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+        overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+    } catch (err) {
+        console.error('Error abriendo editor:', err);
+        alert('No se pudo abrir el editor: ' + err.message);
+    }
+};
+
+VV.admin.previewFeaturedImage = function (input) {
+    const file = input.files && input.files[0];
+    const img = document.getElementById('fe-preview');
+    if (!file || !img) return;
+    img.src = URL.createObjectURL(file);
+    img.style.display = 'block';
+};
+
+VV.admin.saveFeaturedEdit = async function (offerId) {
+    try {
+        const title = document.getElementById('fe-title').value.trim();
+        const description = document.getElementById('fe-description').value.trim();
+        const neighborhood = document.getElementById('fe-neighborhood').value.trim();
+        const duration = parseInt(document.getElementById('fe-duration').value, 10);
+        const status = document.getElementById('fe-status').value;
+        const blocked = document.getElementById('fe-blocked').checked;
+        const fileInput = document.getElementById('fe-image');
+        const file = fileInput && fileInput.files && fileInput.files[0];
+
+        if (!title) { alert('El título no puede estar vacío'); return; }
+        if (!duration || duration < 1 || duration > 90) { alert('Duración inválida (1 a 90 días)'); return; }
+
+        let imageUrl = null;
+
+        if (file) {
+            const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+            const path = `featured/${offerId}-${Date.now()}.${ext}`;
+
+            const { error: upErr } = await supabase.storage
+                .from('barrio-media')
+                .upload(path, file, {
+                    cacheControl: '31536000',
+                    contentType: file.type,
+                    upsert: false
+                });
+
+            if (upErr) throw upErr;
+
+            imageUrl = supabase.storage.from('barrio-media').getPublicUrl(path).data.publicUrl;
+        }
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + duration);
+
+        const cambios = {
+            title,
+            description,
+            neighborhood,
+            duration,
+            status,
+            blocked,
+            expires_at: expiresAt.toISOString(),
+            updated_at: new Date().toISOString()
+        };
+
+        if (imageUrl) cambios.image_url = imageUrl;
+
+        const { error } = await supabase
+            .from('featured_offers')
+            .update(cambios)
+            .eq('id', offerId);
+
+        if (error) throw error;
+
+        document.getElementById('featured-edit-overlay').remove();
+        VV.admin.loadFeaturedOffers();
+        if (VV.featured && VV.featured.loadFeaturedOffers) VV.featured.loadFeaturedOffers();
+        VV.utils.showSuccess('Oferta actualizada');
+
+    } catch (err) {
+        console.error('Error guardando oferta:', err);
+        alert('Error al guardar: ' + err.message);
     }
 };
 
