@@ -359,43 +359,135 @@ VV.landingWeb = {
     },
 
     // Espacios publicitarios web
-    async loadAdSpaces() {
-    try {
-        const { data: spaces, error: err1 } = await supabase
-            .from('sponsor_spaces')
-            .select('*')
-            .in('space_type', ['web_top', 'web_sidebar', 'web_infeed', 'web_footer', 'web_sticky'])
-            .eq('active', true);
+      async loadAdSpaces() {
+        try {
+            const { data: spaces, error: err1 } = await supabase
+                .from('sponsor_spaces')
+                .select('*')
+                .in('space_type', ['web_top', 'web_sidebar', 'web_infeed', 'web_footer', 'web_sticky'])
+                .eq('active', true);
 
-        if (err1) throw err1;
+            if (err1) throw err1;
+            if (!spaces || spaces.length === 0) return;
 
-        if (!spaces || spaces.length === 0) return;
+            const { data: sponsors } = await supabase
+                .from('sponsors')
+                .select('id, business_name, logo, image_url, contact, website');
 
-        const { data: sponsors } = await supabase
-            .from('sponsors')
-            .select('id, business_name, logo, image_url, contact, website');
+            const sponsorsMap = {};
+            (sponsors || []).forEach(s => { sponsorsMap[s.id] = s; });
 
-        const sponsorsMap = {};
-        (sponsors || []).forEach(s => { sponsorsMap[s.id] = s; });
+            const creativos = spaces.map(space => {
+                const sponsor = space.sponsor_id ? sponsorsMap[space.sponsor_id] : null;
+                return {
+                    type: space.space_type,
+                    sponsorId: space.sponsor_id || null,
+                    imageUrl: space.image_url || (sponsor && (sponsor.image_url || sponsor.logo)) || '',
+                    link: (sponsor && sponsor.website) || space.link_url || '#',
+                    alt: (sponsor && sponsor.business_name) || 'Publicidad'
+                };
+            }).filter(c => c.imageUrl);
 
-        spaces.forEach(space => {
-            const sponsor = space.sponsor_id ? sponsorsMap[space.sponsor_id] : null;
-            const imageUrl = space.image_url || (sponsor && (sponsor.image_url || sponsor.logo)) || '';
-            const link = (sponsor && sponsor.website) || '#';
-            const adId = 'ad-' + space.space_type.replace('web_', '');
-            const el = document.getElementById(adId);
-            if (el && imageUrl) {
-                const lazyAttr = space.space_type === 'web_top' ? '' : ' loading="lazy"';
-                el.innerHTML = '<a href="' + link + '" target="_blank"><img src="' + imageUrl + '" alt="Publicidad" decoding="async"' + lazyAttr + '></a>';
-                el.style.display = 'flex';
-            }
+            if (!creativos.length) return;
 
-        });
+            const SLOTS = { web_top: 1, web_footer: 1, web_sticky: 1, web_sidebar: 2, web_infeed: 2 };
 
-    } catch (e) {
-        console.error('Error cargando espacios publicitarios:', e);
-    }
-},
+            this._adPools = {};
+            this._adSlots = SLOTS;
+
+            Object.keys(SLOTS).forEach(type => {
+                const el = document.getElementById('ad-' + type.replace('web_', ''));
+                if (!el) return;
+
+                // Pool: primero los propios de ese espacio, después el resto
+                const propios = creativos.filter(c => c.type === type);
+                const otros = creativos.filter(c => c.type !== type);
+                const pool = propios.concat(otros);
+
+                if (!pool.length) { el.style.display = 'none'; return; }
+
+                this._adPools[type] = pool;
+
+                const visibles = this._pickAds(pool, SLOTS[type]);
+                this._renderAdUnits(type, el, visibles);
+
+                if (type === 'web_sidebar') el.classList.add('ad-loaded');
+                else el.style.display = 'flex';
+            });
+
+            this._startAdRotation();
+
+        } catch (e) {
+            console.error('Error cargando espacios publicitarios:', e);
+        }
+    },
+
+    // Elige N creativos evitando repetir el mismo anunciante
+    _pickAds(pool, n) {
+        const out = [];
+        const usados = new Set();
+
+        for (const c of pool) {
+            if (out.length >= n) break;
+            if (c.sponsorId && usados.has(c.sponsorId)) continue;
+            out.push(c);
+            if (c.sponsorId) usados.add(c.sponsorId);
+        }
+
+        // Si no alcanzan los anunciantes distintos, completar repitiendo
+        let i = 0;
+        while (out.length < n && pool.length && i < pool.length) {
+            out.push(pool[i % pool.length]);
+            i++;
+        }
+
+        return out;
+    },
+
+    _renderAdUnits(type, el, items) {
+        const lazy = type === 'web_top' ? '' : ' loading="lazy"';
+        el.innerHTML = items.map(c => `
+            <div class="ad-unit">
+                <a href="${c.link}" target="_blank" rel="noopener">
+                    <img src="${c.imageUrl}" alt="${c.alt}" decoding="async"${lazy}>
+                </a>
+            </div>
+        `).join('');
+    },
+
+    _startAdRotation() {
+        if (this._adTimer) clearInterval(this._adTimer);
+
+        this._adTimer = setInterval(() => {
+            if (document.hidden) return;
+
+            Object.keys(this._adPools || {}).forEach(type => {
+                const pool = this._adPools[type];
+                if (!pool || pool.length < 2) return;
+
+                const el = document.getElementById('ad-' + type.replace('web_', ''));
+                if (!el) return;
+
+                const unidades = el.querySelectorAll('.ad-unit');
+                if (!unidades.length) return;
+
+                // Rotar el pool una posición
+                pool.push(pool.shift());
+
+                const visibles = this._pickAds(pool, unidades.length);
+
+                unidades.forEach((unit, i) => {
+                    const c = visibles[i];
+                    if (!c) return;
+                    const img = unit.querySelector('img');
+                    const a = unit.querySelector('a');
+                    if (img) { img.src = c.imageUrl; img.alt = c.alt; }
+                    if (a) a.href = c.link;
+                });
+            });
+        }, 10000);
+    },
+
     // ===== CONTADORES EN VIVO =====
     async loadCounters() {
         try {
