@@ -288,8 +288,45 @@
 
             VV_grupos.abrirGrupo(grupoActual);
         }
+        
+
     };
+
+        // ===== Botón flotante de acceso =====
+    function montarBoton(intentos) {
+        intentos = intentos || 0;
+
+        // Esperar a que la sesión esté disponible (evita la carrera de auth)
+        if (!usuario()) {
+            if (intentos < 20) {
+                setTimeout(function () { montarBoton(intentos + 1); }, 300);
+            }
+            return;
+        }
+
+        if (document.getElementById('vv-grupos-fab')) return;
+
+        var b = document.createElement('button');
+        b.id = 'vv-grupos-fab';
+        b.innerHTML = '👥';
+        b.title = 'Grupos del barrio';
+        b.setAttribute('aria-label', 'Grupos del barrio');
+        b.style.cssText =
+            'position:fixed;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;' +
+            'border:none;background:linear-gradient(135deg,#c084fc,#8b5cf6);color:white;' +
+            'font-size:1.4rem;cursor:pointer;box-shadow:0 4px 14px rgba(139,92,246,.45);z-index:9000;';
+        b.onclick = function () { VV_grupos.abrir(); };
+
+        document.body.appendChild(b);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { montarBoton(0); });
+    } else {
+        montarBoton(0);
+    }
 
     window.VV = window.VV || {};
     window.VV.grupos = VV_grupos;
 })();
+
