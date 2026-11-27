@@ -267,18 +267,7 @@
                         '</span></div>';
                 }).join('');
             }
-
-                        // Nombres de los integrantes
-            var ids = lista.map(function (m) { return m.user_id; });
-            var nombres = {};
-            if (ids.length) {
-                var us = await supabase.from('users').select('id,name').in('id', ids);
-                (us.data || []).forEach(function (u) { nombres[u.id] = u.name; });
-            }
-            function nombreDe(id) {
-                return nombres[id] || ('Vecino ' + String(id).slice(0, 8));
-            }
-
+                       
             // Lista de miembros con selector de cargo
             var yo = usuario().id;
             html += '<h4 style="margin:1.25rem 0 0.5rem;">Integrantes</h4>';
