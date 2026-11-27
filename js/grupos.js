@@ -245,6 +245,45 @@
                     (mi.data.estado === 'pendiente' ? ' · <span style="color:#f59e0b;">pendiente de aprobacion</span>' : '') +
                 '</div>';
             }
+            // ===== Muro del grupo =====
+            var pubs = await supabase.from('grupo_publicaciones')
+                .select('id,autor_id,visibilidad,titulo,contenido,imagen_url,created_at')
+                .eq('grupo_id', grupoId)
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;margin:1.25rem 0 0.5rem;">' +
+                '<h4 style="margin:0;">📌 Muro del grupo</h4>' +
+                (nivel > 0
+                    ? '<button onclick="VV.grupos.formPublicar()" style="padding:0.4rem 0.8rem;border-radius:8px;border:none;background:#8b5cf6;color:white;cursor:pointer;font-size:0.8rem;font-weight:600;">+ Publicar</button>'
+                    : '') +
+            '</div>';
+
+            var BADGE = {
+                comision: { txt: '🔒 Comisión', bg: '#fee2e2', fg: '#991b1b' },
+                grupo:    { txt: '👥 Grupo',    bg: '#ede9fe', fg: '#5b21b6' },
+                barrio:   { txt: '📢 Barrio',   bg: '#dcfce7', fg: '#166534' }
+            };
+
+            var listaPubs = pubs.data || [];
+
+            if (!listaPubs.length) {
+                html += '<p style="color:#94a3b8;font-size:0.85rem;">Todavía no hay publicaciones.</p>';
+            } else {
+                html += listaPubs.map(function (p) {
+                    var b = BADGE[p.visibilidad] || BADGE.grupo;
+                    return '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:0.75rem;margin-bottom:0.5rem;">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;margin-bottom:0.35rem;">' +
+                            '<strong style="font-size:0.9rem;color:#1e293b;">' + esc(p.titulo || 'Sin título') + '</strong>' +
+                            '<span style="background:' + b.bg + ';color:' + b.fg + ';font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:50px;white-space:nowrap;">' + b.txt + '</span>' +
+                        '</div>' +
+                        (p.contenido ? '<p style="font-size:0.85rem;color:#475569;margin:0 0 0.35rem;">' + esc(p.contenido) + '</p>' : '') +
+                        (p.imagen_url ? '<img src="' + esc(p.imagen_url) + '" loading="lazy" decoding="async" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:0.35rem;">' : '') +
+                        '<div style="font-size:0.75rem;color:#94a3b8;">' + esc(nombreDe(p.autor_id)) + ' · ' + new Date(p.created_at).toLocaleDateString('es-AR') + '</div>' +
+                    '</div>';
+                }).join('');
+            }
+
 
             html += '<h4 style="margin:1rem 0 0.5rem;">Comision y miembros (' + activos.length + ')</h4>';
             html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.5rem;">';
@@ -314,6 +353,69 @@
             VV_grupos.abrirGrupo(grupoActual);
         },
 
+                formPublicar: function () {
+            var el = overlay();
+            var html = cabecera('📌 Publicar en el grupo', true);
+            html += '<label style="display:block;font-weight:600;margin:0.5rem 0 0.25rem;">Título</label>';
+            html += '<input id="gp-titulo" type="text" maxlength="80" style="width:100%;padding:0.6rem;border:1px solid #cbd5e1;border-radius:8px;">';
+            html += '<label style="display:block;font-weight:600;margin:0.75rem 0 0.25rem;">Contenido</label>';
+            html += '<textarea id="gp-contenido" rows="3" maxlength="1000" style="width:100%;padding:0.6rem;border:1px solid #cbd5e1;border-radius:8px;"></textarea>';
+            html += '<label style="display:block;font-weight:600;margin:0.75rem 0 0.25rem;">¿Quién lo ve?</label>';
+            html += '<select id="gp-visibilidad" style="width:100%;padding:0.6rem;border:1px solid #cbd5e1;border-radius:8px;">' +
+                '<option value="comision">🔒 Solo la comisión</option>' +
+                '<option value="grupo" selected>👥 Solo el grupo</option>' +
+                '<option value="barrio">📢 Todo el barrio</option>' +
+            '</select>';
+            html += '<label style="display:block;font-weight:600;margin:0.75rem 0 0.25rem;">Imagen (opcional)</label>';
+            html += '<input id="gp-imagen" type="file" accept="image/*" style="width:100%;padding:0.4rem;">';
+            html += '<button onclick="VV.grupos.publicar()" style="width:100%;margin-top:1rem;padding:0.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#c084fc,#8b5cf6);color:white;font-weight:700;cursor:pointer;">Publicar</button>';
+            el.innerHTML = caja(html);
+        },
+
+        publicar: async function () {
+            var user = usuario();
+            if (!user || !grupoActual) return;
+
+            var titulo = (document.getElementById('gp-titulo').value || '').trim();
+            var contenido = (document.getElementById('gp-contenido').value || '').trim();
+            var vis = document.getElementById('gp-visibilidad').value;
+            var fileInput = document.getElementById('gp-imagen');
+            var file = fileInput && fileInput.files && fileInput.files[0];
+
+            if (!titulo && !contenido) { alert('Escribí un título o un contenido'); return; }
+
+            var imagenUrl = null;
+
+            if (file) {
+                if (file.size > 5 * 1048576) { alert('La imagen supera los 5 MB'); return; }
+
+                var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+                var path = 'grupos/' + grupoActual + '/' + Date.now() + '.' + ext;
+
+                var up = await supabase.storage.from('barrio-media').upload(path, file, {
+                    cacheControl: '31536000',
+                    contentType: file.type,
+                    upsert: false
+                });
+
+                if (up.error) { alert('Error subiendo imagen: ' + up.error.message); return; }
+
+                imagenUrl = supabase.storage.from('barrio-media').getPublicUrl(path).data.publicUrl;
+            }
+
+            var res = await supabase.from('grupo_publicaciones').insert({
+                grupo_id: grupoActual,
+                autor_id: user.id,
+                visibilidad: vis,
+                titulo: titulo || null,
+                contenido: contenido || null,
+                imagen_url: imagenUrl
+            });
+
+            if (res.error) { alert('Error: ' + res.error.message); return; }
+
+            VV_grupos.abrirGrupo(grupoActual);
+        },
 
         resolver: async function (miembroId, estado) {
             var res = await supabase.from('grupo_miembros')
