@@ -268,16 +268,63 @@
                 }).join('');
             }
 
+                        // Nombres de los integrantes
+            var ids = lista.map(function (m) { return m.user_id; });
+            var nombres = {};
+            if (ids.length) {
+                var us = await supabase.from('users').select('id,name').in('id', ids);
+                (us.data || []).forEach(function (u) { nombres[u.id] = u.name; });
+            }
+            function nombreDe(id) {
+                return nombres[id] || ('Vecino ' + String(id).slice(0, 8));
+            }
+
+            // Lista de miembros con selector de cargo
+            var yo = usuario().id;
             html += '<h4 style="margin:1.25rem 0 0.5rem;">Integrantes</h4>';
             html += activos.map(function (m) {
-                return '<div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid #f1f5f9;font-size:0.85rem;">' +
+                var puede = nivel >= 3 && nivel > ROLES[m.rol].nivel && m.user_id !== yo;
+                var control;
+
+                if (puede) {
+                    var opciones = ORDEN.filter(function (r) {
+                        return ROLES[r].nivel < nivel;
+                    }).map(function (r) {
+                        return '<option value="' + r + '"' + (r === m.rol ? ' selected' : '') + '>' +
+                            ROLES[r].icon + ' ' + ROLES[r].label + '</option>';
+                    }).join('');
+
+                    control = '<select onchange="VV.grupos.cambiarRol(\'' + m.id + '\', this.value)" ' +
+                        'style="padding:0.3rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;">' +
+                        opciones + '</select>';
+                } else {
+                    control = '<span style="color:#64748b;font-size:0.8rem;">' +
+                        ROLES[m.rol].label + ' · ' + (m.puntos_merito || 0) + ' pts</span>';
+                }
+
+                return '<div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;padding:0.5rem 0;border-bottom:1px solid #f1f5f9;font-size:0.85rem;">' +
                     '<span>' + ROLES[m.rol].icon + ' ' + esc(nombreDe(m.user_id)) + '</span>' +
-                    '<span style="color:#64748b;">' + ROLES[m.rol].label + ' · ' + (m.puntos_merito || 0) + ' pts</span>' +
+                    control +
                 '</div>';
             }).join('');
 
+
             el.innerHTML = caja(html);
         },
+        cambiarRol: async function (miembroId, rol) {
+            var res = await supabase.from('grupo_miembros')
+                .update({ rol: rol })
+                .eq('id', miembroId);
+
+            if (res.error) {
+                alert('No se pudo cambiar el cargo: ' + res.error.message);
+                VV_grupos.abrirGrupo(grupoActual);
+                return;
+            }
+
+            VV_grupos.abrirGrupo(grupoActual);
+        },
+
 
         resolver: async function (miembroId, estado) {
             var res = await supabase.from('grupo_miembros')
