@@ -126,7 +126,11 @@
 
                     var boton = m
                         ? '<button onclick="VV.grupos.abrirGrupo(\'' + g.id + '\')" style="padding:0.5rem 0.9rem;border-radius:8px;border:1px solid #cbd5e1;background:white;cursor:pointer;font-size:0.85rem;">Abrir</button>'
-                        : '<button onclick="VV.grupos.unirse(\'' + g.id + '\')" style="padding:0.5rem 0.9rem;border-radius:8px;border:none;background:#8b5cf6;color:white;cursor:pointer;font-size:0.85rem;font-weight:600;">Unirme</button>';
+                        : '<span style="display:flex;gap:0.4rem;">' +
+                            '<button onclick="VV.grupos.abrirGrupo(\'' + g.id + '\')" style="padding:0.5rem 0.9rem;border-radius:8px;border:1px solid #cbd5e1;background:white;cursor:pointer;font-size:0.85rem;">Ver</button>' +
+                            '<button onclick="VV.grupos.unirse(\'' + g.id + '\')" style="padding:0.5rem 0.9rem;border-radius:8px;border:none;background:#8b5cf6;color:white;cursor:pointer;font-size:0.85rem;font-weight:600;">Unirme</button>' +
+                          '</span>';
+
 
                     return '<div style="border:1px solid #e2e8f0;border-radius:12px;padding:1rem;margin-bottom:0.75rem;display:flex;gap:0.75rem;align-items:center;">' +
                         '<div style="width:44px;height:44px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#312e81);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:white;overflow:hidden;">' +
@@ -259,8 +263,13 @@
             '</div>';
 
             if (!esMiembro) {
-                html += '<button onclick="VV.grupos.unirse(\'' + grupoId + '\')" style="width:100%;padding:0.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#c084fc,#8b5cf6);color:white;font-weight:700;cursor:pointer;margin-bottom:1rem;">Unirme al grupo</button>';
+                if (mi.data && mi.data.estado === 'pendiente') {
+                    html += '<div style="width:100%;padding:0.7rem;border-radius:10px;background:#fef3c7;color:#92400e;text-align:center;font-weight:600;margin-bottom:1rem;">⏳ Solicitud pendiente de aprobación</div>';
+                } else {
+                    html += '<button onclick="VV.grupos.unirse(\'' + grupoId + '\')" style="width:100%;padding:0.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#c084fc,#8b5cf6);color:white;font-weight:700;cursor:pointer;margin-bottom:1rem;">Unirme al grupo</button>';
+                }
             }
+
 
             if (mi.data) {
                 html += '<div style="background:#f1f5f9;border-radius:10px;padding:0.75rem;margin:0.75rem 0;font-size:0.9rem;">' +
@@ -420,15 +429,49 @@
             var msgs = res.data || [];
             var yo = usuario().id;
 
+            // Nombres de los autores
+            var ids = [];
+            msgs.forEach(function (m) {
+                if (ids.indexOf(m.autor_id) === -1) ids.push(m.autor_id);
+            });
+
+            var nombres = {};
+            if (ids.length) {
+                var us = await supabase.from('users').select('id,name').in('id', ids);
+                (us.data || []).forEach(function (u) { nombres[u.id] = u.name; });
+            }
+
+            function nombreDe(id) {
+                return nombres[id] || 'Vecino';
+            }
+
+            function avatarDe(id) {
+                try {
+                    if (window.VV && VV.avatars && VV.avatars.getUserAvatar) {
+                        var a = VV.avatars.getUserAvatar(id);
+                        if (a && a.emoji) return a.emoji;
+                    }
+                } catch (e) {}
+                return '👤';
+            }
+
             cont.innerHTML = msgs.length
                 ? msgs.map(function (m) {
                     var mio = m.autor_id === yo;
-                    return '<div style="display:flex;justify-content:flex-end;margin-bottom:0.4rem;">' +
-                        '<div style="max-width:75%;padding:0.4rem 0.7rem;border-radius:10px;font-size:0.85rem;' +
-                            (mio ? 'background:#8b5cf6;color:white;' : 'background:white;border:1px solid #e2e8f0;color:#1e293b;') + '">' +
-                            esc(m.contenido) +
-                            '<div style="font-size:0.65rem;opacity:0.7;margin-top:0.15rem;">' +
-                                new Date(m.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) +
+                    return '<div style="display:flex;gap:0.4rem;margin-bottom:0.5rem;' + (mio ? 'flex-direction:row-reverse;' : '') + '">' +
+                        '<div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#312e81);display:flex;align-items:center;justify-content:center;font-size:0.9rem;">' +
+                            avatarDe(m.autor_id) +
+                        '</div>' +
+                        '<div style="max-width:75%;">' +
+                            '<div style="font-size:0.7rem;color:#64748b;margin-bottom:0.1rem;' + (mio ? 'text-align:right;' : '') + '">' +
+                                esc(nombreDe(m.autor_id)) +
+                            '</div>' +
+                            '<div style="padding:0.4rem 0.7rem;border-radius:10px;font-size:0.85rem;' +
+                                (mio ? 'background:#8b5cf6;color:white;' : 'background:white;border:1px solid #e2e8f0;color:#1e293b;') + '">' +
+                                esc(m.contenido) +
+                                '<div style="font-size:0.65rem;opacity:0.7;margin-top:0.15rem;">' +
+                                    new Date(m.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }) +
+                                '</div>' +
                             '</div>' +
                         '</div>' +
                     '</div>';
@@ -437,6 +480,7 @@
 
             cont.scrollTop = cont.scrollHeight;
         },
+
 
         enviarMensaje: async function (grupoId) {
             var input = document.getElementById('vv-chat-input');
