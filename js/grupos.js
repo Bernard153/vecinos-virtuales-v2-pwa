@@ -289,7 +289,7 @@
 
             html += '<div style="display:flex;justify-content:space-between;align-items:center;margin:1.25rem 0 0.5rem;">' +
                 '<h4 style="margin:0;">📌 ' + (esMiembro ? 'Muro del grupo' : 'Publicado al barrio') + '</h4>' +
-                (esMiembro ? '<button onclick="VV.grupos.formPublicar()" style="padding:0.4rem 0.8rem;border-radius:8px;border:none;background:#8b5cf6;color:white;cursor:pointer;font-size:0.8rem;font-weight:600;">+ Publicar</button>' : '') +
+                (esMiembro ? '<button onclick="VV.grupos.formPublicar(' + nivel + ')" style="padding:0.4rem 0.8rem;border-radius:8px;border:none;background:#8b5cf6;color:white;cursor:pointer;font-size:0.8rem;font-weight:600;">+ Publicar</button>' : '') +
             '</div>';
 
             var BADGE = {
@@ -314,7 +314,11 @@
                         '</div>' +
                         (p.contenido ? '<p style="font-size:0.85rem;color:#475569;margin:0 0 0.35rem;">' + esc(p.contenido) + '</p>' : '') +
                         (p.imagen_url ? '<img src="' + esc(p.imagen_url) + '" loading="lazy" decoding="async" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-bottom:0.35rem;">' : '') +
-                        '<div style="font-size:0.75rem;color:#94a3b8;">' + esc(nombreDe(p.autor_id)) + ' · ' + new Date(p.created_at).toLocaleDateString('es-AR') + '</div>' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">' +
+                            '<span style="font-size:0.75rem;color:#94a3b8;">' + esc(nombreDe(p.autor_id)) + ' · ' + new Date(p.created_at).toLocaleDateString('es-AR') + '</span>' +
+                            '<button onclick="event.stopPropagation(); denunciarPublicacion(\'' + p.id + '\', \'grupo\')" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:0.7rem;">🚩 Denunciar</button>' +
+                        '</div>' +
+
                     '</div>';
                 }).join('');
             }
@@ -389,6 +393,55 @@
 
             VV_grupos.abrirGrupo(grupoActual);
         },
+        adminPanel: async function () {
+            var esAdmin = window.VV && VV.utils && VV.utils.isAdmin && VV.utils.isAdmin();
+            if (!esAdmin) { alert('Solo el administrador puede acceder'); return; }
+
+            var el = overlay();
+            el.innerHTML = caja('<p style="text-align:center;color:#94a3b8;">Cargando grupos...</p>');
+
+            var res = await supabase.rpc('admin_grupos');
+
+            if (res.error) {
+                el.innerHTML = caja('<p style="color:#ef4444;">Error: ' + esc(res.error.message) + '</p>');
+                return;
+            }
+
+            var lista = res.data || [];
+
+            var html = cabecera('🛡️ Administración de grupos', true);
+            html += '<p style="font-size:0.8rem;color:#64748b;margin-top:-0.5rem;">' + lista.length + ' grupos en total</p>';
+
+            if (!lista.length) {
+                html += '<p style="color:#94a3b8;">No hay grupos creados.</p>';
+            } else {
+                html += lista.map(function (g) {
+                    return '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:0.75rem;margin-bottom:0.5rem;">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;">' +
+                            '<div style="min-width:0;">' +
+                                '<div style="font-weight:700;color:#1e293b;">' + esc(g.nombre) + '</div>' +
+                                '<div style="font-size:0.75rem;color:#64748b;">' + esc(g.barrio || 'Sin barrio') + ' · ' +
+                                    g.miembros + ' miembros · ' + g.publicaciones + ' publicaciones · ' + g.mensajes + ' mensajes</div>' +
+                            '</div>' +
+                            '<button onclick="VV.grupos.toggleGrupo(\'' + g.id + '\',' + (!g.activo) + ')" ' +
+                                'style="padding:0.4rem 0.8rem;border-radius:8px;border:none;cursor:pointer;font-size:0.8rem;font-weight:600;' +
+                                (g.activo ? 'background:#ef4444;color:white;' : 'background:#22c55e;color:white;') + '">' +
+                                (g.activo ? 'Desactivar' : 'Activar') +
+                            '</button>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+            }
+
+            el.innerHTML = caja(html);
+        },
+
+        toggleGrupo: async function (grupoId, activo) {
+            var res = await supabase.from('grupos').update({ activo: activo }).eq('id', grupoId);
+            if (res.error) { alert('Error: ' + res.error.message); return; }
+            VV_grupos.adminPanel();
+        },
+
                 abrirChat: async function (grupoId) {
             var el = overlay();
 
@@ -528,7 +581,8 @@
                 .subscribe();
         },
 
-                formPublicar: function () {
+        formPublicar: function (nivel) {
+            nivel = nivel || 0;
             var el = overlay();
             var html = cabecera('📌 Publicar en el grupo', true);
             html += '<label style="display:block;font-weight:600;margin:0.5rem 0 0.25rem;">Título</label>';
@@ -536,16 +590,28 @@
             html += '<label style="display:block;font-weight:600;margin:0.75rem 0 0.25rem;">Contenido</label>';
             html += '<textarea id="gp-contenido" rows="3" maxlength="1000" style="width:100%;padding:0.6rem;border:1px solid #cbd5e1;border-radius:8px;"></textarea>';
             html += '<label style="display:block;font-weight:600;margin:0.75rem 0 0.25rem;">¿Quién lo ve?</label>';
-            html += '<select id="gp-visibilidad" style="width:100%;padding:0.6rem;border:1px solid #cbd5e1;border-radius:8px;">' +
-                '<option value="comision">🔒 Solo la comisión</option>' +
-                '<option value="grupo" selected>👥 Solo el grupo</option>' +
-                '<option value="barrio">📢 Todo el barrio</option>' +
-            '</select>';
+            html += '<select id="gp-visibilidad" style="width:100%;padding:0.6rem;border:1px solid #cbd5e1;border-radius:8px;">';
+
+            if (nivel >= 3) {
+                html += '<option value="comision">🔒 Solo la comisión</option>';
+                html += '<option value="grupo" selected>👥 Solo el grupo</option>';
+                html += '<option value="barrio">📢 Todo el barrio</option>';
+            } else {
+                html += '<option value="grupo" selected>👥 Solo el grupo</option>';
+            }
+
+            html += '</select>';
+            html += '<p style="font-size:0.75rem;color:#94a3b8;margin:0.35rem 0 0;">' +
+                (nivel >= 3
+                    ? 'Como ' + ROLES[mi_rol_actual].label + ' podés publicar al barrio.'
+                    : 'Para publicar al barrio necesitás ser Secretario o superior.') +
+            '</p>';
             html += '<label style="display:block;font-weight:600;margin:0.75rem 0 0.25rem;">Imagen (opcional)</label>';
             html += '<input id="gp-imagen" type="file" accept="image/*" style="width:100%;padding:0.4rem;">';
             html += '<button onclick="VV.grupos.publicar()" style="width:100%;margin-top:1rem;padding:0.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#c084fc,#8b5cf6);color:white;font-weight:700;cursor:pointer;">Publicar</button>';
             el.innerHTML = caja(html);
         },
+
 
         publicar: async function () {
             var user = usuario();
