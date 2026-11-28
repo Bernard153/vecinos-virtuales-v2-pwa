@@ -28,27 +28,32 @@
       "name": "Marketplace",
       "short_name": "Comprar",
       "description": "Ver productos disponibles",
-      "url": "/?section=marketplace"
+      "url": "/?section=marketplace",
+      "icons": [{ "src": "/images/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
       "name": "Mapa",
       "short_name": "Mapa",
       "description": "Ver mapa del barrio",
-      "url": "/?section=map"
+      "url": "/?section=map",
+      "icons": [{ "src": "/images/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
       "name": "Mejoras",
       "short_name": "Mejoras",
       "description": "Propuestas del barrio",
-      "url": "/?section=improvements"
+      "url": "/?section=improvements",
+      "icons": [{ "src": "/images/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     },
     {
       "name": "Alerta Vigía",
       "short_name": "Vigía",
       "description": "Activar alerta de seguridad",
-      "url": "/?alerta=1"
+      "url": "/?alerta=1",
+      "icons": [{ "src": "/images/icon-96.png", "sizes": "96x96", "type": "image/png" }]
     }
   ],
+
   "share_target": {
     "action": "/share",
     "method": "POST",
@@ -65,4 +70,19 @@
       ]
     }
   }
+    "screenshots": [
+    {
+      "src": "/images/captura-movil.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/images/captura-escritorio.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+
 }
