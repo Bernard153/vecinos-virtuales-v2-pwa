@@ -12,6 +12,7 @@ VV.landingWeb = {
             this.loadDestacadas(),
             this.loadEventos(),
             this.loadVoces(),
+            this.loadGrupos(),
             this.loadAnunciantes(),
             this.loadAdSpaces(),
             this.loadLandingContent(),
@@ -318,6 +319,40 @@ VV.landingWeb = {
         } catch (e) {
             console.error('Error cargando voces:', e);
             container.innerHTML = '<p style="opacity:0.6;padding:1rem;">Error cargando videos</p>';
+        }
+    },
+    // Grupos del barrio
+    async loadGrupos() {
+        const container = document.getElementById('landing-grupos');
+        if (!container) return;
+
+        try {
+            const { data, error } = await supabase.rpc('grupos_publicos', {
+                p_barrio: (window.VV && VV.data && VV.data.neighborhood) || null
+            });
+
+            if (error) throw error;
+
+            if (!data || !data.length) {
+                container.innerHTML = '<p style="opacity:0.6;padding:1rem;">Todavía no hay grupos en el barrio.</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(g => `
+                <div class="landing-card" onclick="VV.grupos.abrir()">
+                    ${g.avatar_url
+                        ? `<img src="${g.avatar_url}" alt="" loading="lazy" decoding="async" style="width:100%;height:120px;object-fit:cover;">`
+                        : `<div style="width:100%;height:120px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4c1d95,#8b5cf6);font-size:2rem;">👥</div>`}
+                    <div class="card-body">
+                        <p class="card-title">${g.nombre}</p>
+                        <p class="card-meta">${g.barrio || ''} · 👥 ${g.miembros}</p>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) {
+            console.error('Error cargando grupos:', e);
+            container.innerHTML = '<p style="opacity:0.6;padding:1rem;">Error cargando grupos</p>';
         }
     },
 

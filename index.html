@@ -560,7 +560,16 @@
                     </div>
                     <button class="ver-mas" style="background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.4);color:#f59e0b;" onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();">Ver más →</button>
                 </div>
-           
+                <!-- Grupos del barrio -->
+                <div class="landing-section">
+                    <h3><span>👥</span> <span id="sec-grupos-titulo">Grupos del barrio</span></h3>
+                    <p class="sec-sub" id="sec-grupos-subtitulo">Comisiones y equipos que ya están organizados en tu zona.</p>
+                    <div id="landing-grupos" class="landing-scroll">
+                        <p style="opacity:0.6;padding:1rem;">Cargando grupos...</p>
+                    </div>
+                    <button class="ver-mas" style="background:rgba(139,92,246,0.2);border-color:rgba(139,92,246,0.4);color:#a78bfa;" onclick="VV.grupos.abrir()">Ver todos →</button>
+                </div>
+
                 <div style="text-align:center;margin:1rem 0;">
                     <button onclick="VV.utils.showScreen('location-screen'); VV.auth.requestGeolocation();" style="background:linear-gradient(135deg,#c084fc,#8b5cf6);border:none;color:white;padding:0.6rem 1.5rem;border-radius:50px;font-weight:600;cursor:pointer;font-size:0.9rem;">🏠 Unirme a mi barrio</button>
                 </div>
@@ -1771,6 +1780,19 @@
         <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 15px;">Asigná un anunciante y subí la imagen con el tamaño correspondiente a cada espacio.</p>
         <div id="web-adspaces-list" style="display: grid; gap: 1.5rem;">
             <p style="text-align: center; color: #94a3b8;">Cargando espacios...</p>
+        </div>
+        
+        <hr style="margin: 2rem 0; border: none; border-top: 1px solid #e2e8f0;">
+
+        <h3 style="margin-bottom: 8px; color: #1e293b;">👥 Grupos del barrio</h3>
+        <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 15px;">
+            Todos los grupos creados. Podés desactivar uno para ocultarlo sin borrar sus datos.
+        </p>
+        <button class="btn-primary" onclick="VV.grupos.renderAdmin('admin-grupos-list')" style="max-width: 200px; margin-bottom: 1rem;">
+            <i class="fas fa-sync"></i> Actualizar
+        </button>
+        <div id="admin-grupos-list" style="display: grid; gap: 10px;">
+            <p style="text-align: center; color: #94a3b8;">Tocá "Actualizar" para cargar los grupos.</p>
         </div>
 
     </div>

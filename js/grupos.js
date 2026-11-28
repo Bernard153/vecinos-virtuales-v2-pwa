@@ -435,11 +435,48 @@
 
             el.innerHTML = caja(html);
         },
+                renderAdmin: async function (containerId) {
+            var cont = document.getElementById(containerId || 'admin-grupos-list');
+            if (!cont) return;
+
+            cont.innerHTML = '<p style="text-align:center;color:#94a3b8;">Cargando grupos...</p>';
+
+            var res = await supabase.rpc('admin_grupos');
+
+            if (res.error) {
+                cont.innerHTML = '<p style="color:#ef4444;font-size:0.85rem;">Error: ' + esc(res.error.message) + '</p>';
+                return;
+            }
+
+            var lista = res.data || [];
+
+            if (!lista.length) {
+                cont.innerHTML = '<p style="text-align:center;color:#94a3b8;">No hay grupos creados.</p>';
+                return;
+            }
+
+            cont.innerHTML = lista.map(function (g) {
+                return '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:0.75rem;display:flex;justify-content:space-between;align-items:center;gap:0.75rem;">' +
+                    '<div style="min-width:0;">' +
+                        '<div style="font-weight:700;color:#1e293b;">' + esc(g.nombre) + '</div>' +
+                        '<div style="font-size:0.75rem;color:#64748b;">' +
+                            esc(g.barrio || 'Sin barrio') + ' · ' + g.miembros + ' miembros · ' +
+                            g.publicaciones + ' publicaciones · ' + g.mensajes + ' mensajes' +
+                        '</div>' +
+                    '</div>' +
+                    '<button onclick="VV.grupos.toggleGrupo(\'' + g.id + '\',' + (!g.activo) + ')" ' +
+                        'style="padding:0.45rem 0.9rem;border-radius:8px;border:none;cursor:pointer;font-size:0.8rem;font-weight:600;white-space:nowrap;' +
+                        (g.activo ? 'background:#ef4444;color:white;' : 'background:#22c55e;color:white;') + '">' +
+                        (g.activo ? 'Desactivar' : 'Activar') +
+                    '</button>' +
+                '</div>';
+            }).join('');
+        },
 
         toggleGrupo: async function (grupoId, activo) {
             var res = await supabase.from('grupos').update({ activo: activo }).eq('id', grupoId);
             if (res.error) { alert('Error: ' + res.error.message); return; }
-            VV_grupos.adminPanel();
+            VV_grupos.renderAdmin('admin-grupos-list');
         },
 
                 abrirChat: async function (grupoId) {
