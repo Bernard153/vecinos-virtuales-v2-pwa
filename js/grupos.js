@@ -376,6 +376,21 @@
                     '</div>';
                 }).join('');
             }
+                        if (esMiembro) {
+                if (nivel >= 4) {
+                    html += '<button onclick="VV.grupos.toggleVisible(\'' + grupoId + '\',' + (!g.data.visible_en_barrio) + ')" style="width:100%;padding:0.55rem;border-radius:10px;border:1px solid #cbd5e1;background:white;cursor:pointer;font-size:0.85rem;margin-top:0.75rem;">' +
+                        (g.data.visible_en_barrio ? '🙈 Dejar de mostrar al barrio' : '📢 Mostrar al barrio') +
+                    '</button>';
+                }
+
+                if (nivel >= 3) {
+                    html += '<button onclick="VV.grupos.formAgregar()" style="width:100%;padding:0.55rem;border-radius:10px;border:1px solid #cbd5e1;background:white;cursor:pointer;font-size:0.85rem;margin-top:0.5rem;">➕ Agregar integrante por teléfono</button>';
+                }
+
+                if (mi.data && mi.data.rol !== 'presidente') {
+                    html += '<button onclick="VV.grupos.salirGrupo(\'' + grupoId + '\')" style="width:100%;padding:0.55rem;border-radius:10px;border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;cursor:pointer;font-size:0.85rem;margin-top:0.5rem;">🚪 Salir del grupo</button>';
+                }
+            }
 
             el.innerHTML = caja(html);
         },
@@ -393,6 +408,60 @@
 
             VV_grupos.abrirGrupo(grupoActual);
         },
+                toggleVisible: async function (grupoId, visible) {
+            var res = await supabase.from('grupos')
+                .update({ visible_en_barrio: visible })
+                .eq('id', grupoId);
+
+            if (res.error) { alert('Error: ' + res.error.message); return; }
+
+            VV_grupos.abrirGrupo(grupoId);
+        },
+
+        formAgregar: function () {
+            var el = overlay();
+            var html = cabecera('➕ Agregar integrante', true);
+            html += '<p style="font-size:0.85rem;color:#64748b;">Ingresá el teléfono con el que se registró la persona. Se suma directamente, sin aprobación.</p>';
+            html += '<label style="display:block;font-weight:600;margin:0.75rem 0 0.25rem;">Teléfono</label>';
+            html += '<input id="gr-tel" type="tel" placeholder="3814000111" style="width:100%;padding:0.6rem;border:1px solid #cbd5e1;border-radius:8px;">';
+            html += '<button onclick="VV.grupos.agregarIntegrante()" style="width:100%;margin-top:1rem;padding:0.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#c084fc,#8b5cf6);color:white;font-weight:700;cursor:pointer;">Agregar al grupo</button>';
+            el.innerHTML = caja(html);
+        },
+
+        agregarIntegrante: async function () {
+            var tel = (document.getElementById('gr-tel').value || '').trim();
+            if (!tel) { alert('Ingresá un teléfono'); return; }
+
+            var res = await supabase.rpc('agregar_miembro_por_telefono', {
+                gid: grupoActual,
+                tel: tel
+            });
+
+            if (res.error) { alert('Error: ' + res.error.message); return; }
+
+            if (res.data === 'no_encontrado') {
+                alert('No hay ningún vecino registrado con ese teléfono.');
+                return;
+            }
+
+            alert('Integrante agregado.');
+            VV_grupos.abrirGrupo(grupoActual);
+        },
+
+        salirGrupo: async function (grupoId) {
+            if (!confirm('¿Salir de este grupo? Vas a dejar de ver sus publicaciones y el chat.')) return;
+
+            var res = await supabase.from('grupo_miembros')
+                .delete()
+                .eq('grupo_id', grupoId)
+                .eq('user_id', usuario().id);
+
+            if (res.error) { alert('Error: ' + res.error.message); return; }
+
+            grupoActual = null;
+            VV_grupos.render();
+        },
+
         adminPanel: async function () {
             var esAdmin = window.VV && VV.utils && VV.utils.isAdmin && VV.utils.isAdmin();
             if (!esAdmin) { alert('Solo el administrador puede acceder'); return; }
@@ -673,9 +742,10 @@
             html += '</select>';
             html += '<p style="font-size:0.75rem;color:#94a3b8;margin:0.35rem 0 0;">' +
                 (nivel >= 3
-                    ? 'Como ' + ROLES[mi_rol_actual].label + ' podés publicar al barrio.'
+                    ? 'Podés publicar al barrio y a la comisión.'
                     : 'Para publicar al barrio necesitás ser Secretario o superior.') +
             '</p>';
+
             html += '<label style="display:block;font-weight:600;margin:0.75rem 0 0.25rem;">Imagen (opcional)</label>';
             html += '<input id="gp-imagen" type="file" accept="image/*" style="width:100%;padding:0.4rem;">';
             html += '<button onclick="VV.grupos.publicar()" style="width:100%;margin-top:1rem;padding:0.7rem;border-radius:10px;border:none;background:linear-gradient(135deg,#c084fc,#8b5cf6);color:white;font-weight:700;cursor:pointer;">Publicar</button>';
