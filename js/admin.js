@@ -969,11 +969,17 @@ VV.admin = {
             const portadaUrl = urlData.publicUrl;
 
             // Guardar URL en tabla de configuración
-            await supabase.from('app_config').upsert([{
+                       const { error: cfgError } = await supabase.from('app_config').upsert([{
                 key: 'welcome_banner_image',
                 value: portadaUrl,
                 updated_at: new Date().toISOString()
             }], { onConflict: 'key' });
+
+            if (cfgError) {
+                console.error('No se pudo guardar en app_config:', cfgError);
+                alert('La imagen se guardó localmente pero no para todos los usuarios: ' + cfgError.message);
+            }
+
 
             // También en localStorage para carga rápida
             localStorage.setItem('welcomeBannerImage', portadaUrl);
@@ -3243,17 +3249,7 @@ VV.admin.removeVIP = async function(userId) {
         alert('Error al remover VIP');
     }
 };
-VV.admin.loadBannerImage = function() {
-    const bannerImage = localStorage.getItem('welcomeBannerImage');
-    if (bannerImage) {
-        const bannerEl = document.getElementById('welcome-banner') || document.getElementById('dashboard-banner');
-        if (bannerEl) {
-            bannerEl.style.backgroundImage = "url('" + bannerImage + "')";
-            bannerEl.style.backgroundSize = 'cover';
-            bannerEl.style.backgroundPosition = 'center';
-        }
-    }
-};
+
 
 console.log('✅ Módulo ADMIN cargado');
 

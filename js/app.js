@@ -49,6 +49,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }, 1500);
+        setTimeout(function () {
+        if (window.VV && VV.admin && typeof VV.admin.loadBannerImage === 'function') {
+            VV.admin.loadBannerImage();
+        }
+    }, 800);
+
     
     // Setup navegación del menú
     document.addEventListener('click', (e) => {
