@@ -213,7 +213,6 @@
 
             var nivelRes = await supabase.rpc('mi_nivel', { gid: grupoId });
             var nivel = nivelRes.data || 0;
-            var esMiembro = nivel > 0;
             var yo = usuario().id;
 
             var mi = await supabase.from('grupo_miembros')
@@ -221,6 +220,9 @@
                 .eq('grupo_id', grupoId)
                 .eq('user_id', yo)
                 .maybeSingle();
+
+            var esMiembro = !!(mi.data && mi.data.estado === 'activo');
+
 
             var resumen = await supabase.rpc('grupo_resumen', { gid: grupoId });
             var res = (resumen.data && resumen.data[0]) || { miembros: 0, publicaciones: 0 };
@@ -399,6 +401,12 @@
                     '</div>' +
                 '</div>' +
                 '<div id="vv-chat-lista" style="height:320px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:10px;padding:0.75rem;background:#f8fafc;margin-bottom:0.75rem;"></div>' +
+                '<div style="display:flex;gap:0.35rem;margin-bottom:0.5rem;flex-wrap:wrap;">' +
+                    ['😀','😂','😍','👍','👏','🎉','❤️','🔥','⚽','😮','😢','🙏'].map(function (e) {
+                        return '<button onclick="VV.grupos.insertarEmoji(this.dataset.e)" data-e="' + e + '" style="background:none;border:none;font-size:1.2rem;cursor:pointer;">' + e + '</button>';
+                    }).join('') +
+                '</div>' +
+
                 '<div style="display:flex;gap:0.5rem;">' +
                     '<input id="vv-chat-input" type="text" maxlength="500" placeholder="Escribí un mensaje..." ' +
                         'style="flex:1;padding:0.6rem;border:1px solid #cbd5e1;border-radius:8px;" ' +
@@ -499,6 +507,13 @@
 
             await VV_grupos.cargarMensajes(grupoId);
         },
+        insertarEmoji: function (emoji) {
+            var input = document.getElementById('vv-chat-input');
+            if (!input) return;
+            input.value += emoji;
+            input.focus();
+        },
+
 
         suscribirChat: function (grupoId) {
             if (VV_grupos._canal) {
