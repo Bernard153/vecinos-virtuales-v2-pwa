@@ -70,19 +70,20 @@
       ]
     }
   },
-    "screenshots": [
+      "screenshots": [
     {
       "src": "/images/captura-movil.png",
-      "sizes": "1080x1920",
+      "sizes": "576x1280",
       "type": "image/png",
       "form_factor": "narrow"
     },
     {
       "src": "/images/captura-escritorio.png",
-      "sizes": "1280x720",
+      "sizes": "1360x768",
       "type": "image/png",
       "form_factor": "wide"
     }
   ]
+
 
 }
