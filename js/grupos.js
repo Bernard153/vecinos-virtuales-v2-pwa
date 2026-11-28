@@ -435,7 +435,7 @@
 
             el.innerHTML = caja(html);
         },
-                renderAdmin: async function (containerId) {
+        renderAdmin: async function (containerId) {
             var cont = document.getElementById(containerId || 'admin-grupos-list');
             if (!cont) return;
 
@@ -472,6 +472,39 @@
                 '</div>';
             }).join('');
         },
+        cargarWidget: async function () {
+            var cont = document.getElementById('widget-grupos-feed');
+            if (!cont) return;
+
+            var barrio = (window.VV && VV.data && VV.data.neighborhood) || null;
+
+            var res = await supabase.rpc('grupos_publicos', { p_barrio: barrio });
+
+            if (res.error) {
+                cont.innerHTML = '<p style="text-align:center;color:#ef4444;grid-column:1/-1;padding:1rem;font-size:0.85rem;">Error al cargar grupos</p>';
+                return;
+            }
+
+            var lista = (res.data || []).slice(0, 3);
+
+            if (!lista.length) {
+                cont.innerHTML = '<p style="text-align:center;color:#94a3b8;grid-column:1/-1;padding:1rem;font-size:0.85rem;">Todavía no hay grupos en tu barrio.</p>';
+                return;
+            }
+
+            cont.innerHTML = lista.map(function (g) {
+                return '<div onclick="VV.grupos.abrir()" style="cursor:pointer;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;">' +
+                    (g.avatar_url
+                        ? '<img src="' + esc(g.avatar_url) + '" alt="" loading="lazy" decoding="async" style="width:100%;height:90px;object-fit:cover;">'
+                        : '<div style="width:100%;height:90px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#065f46,#10b981);font-size:1.8rem;">👥</div>') +
+                    '<div style="padding:0.5rem;">' +
+                        '<div style="font-size:0.8rem;font-weight:600;color:#f1f5f9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + esc(g.nombre) + '</div>' +
+                        '<div style="font-size:0.7rem;color:#94a3b8;margin-top:0.15rem;">👥 ' + g.miembros + ' integrantes</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        },
+
 
         toggleGrupo: async function (grupoId, activo) {
             var res = await supabase.from('grupos').update({ activo: activo }).eq('id', grupoId);
@@ -736,11 +769,31 @@
         document.body.appendChild(b);
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function () { montarBoton(0); });
-    } else {
-        montarBoton(0);
+    function iniciarWidget(intentos) {
+        intentos = intentos || 0;
+        var cont = document.getElementById('widget-grupos-feed');
+
+        if (!cont) {
+            if (intentos < 20) setTimeout(function () { iniciarWidget(intentos + 1); }, 300);
+            return;
+        }
+
+        if (cont.dataset.cargado === '1') return;
+        cont.dataset.cargado = '1';
+        VV_grupos.cargarWidget();
     }
+
+    function iniciar() {
+        montarBoton(0);
+        iniciarWidget(0);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', iniciar);
+    } else {
+        iniciar();
+    }
+
 
     window.VV = window.VV || {};
     window.VV.grupos = VV_grupos;
