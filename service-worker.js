@@ -1,5 +1,5 @@
 // Service Worker para Vecinos Virtuales
-const CACHE_NAME = 'vecinos-virtuales-v31';
+const CACHE_NAME = 'vecinos-virtuales-v32';
 const urlsToCache = [
   '/',
   '/index.html',
