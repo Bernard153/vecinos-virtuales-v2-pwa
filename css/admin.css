@@ -627,6 +627,30 @@
         flex-wrap: wrap !important;
         width: 100% !important;
     }
+    /* PC: todas visibles, en varias filas si hace falta */
+    .admin-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    }
+
+    /* Móvil: una sola fila con deslizamiento */
+    @media (max-width: 767px) {
+    .admin-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .admin-tabs > * {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+}
+
+
 }
 
 }

@@ -1031,7 +1031,7 @@ VV.admin = {
         }
 
         if (imageUrl) {
-            banner.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('${imageUrl}')`;
+            banner.style.backgroundImage = `url('${imageUrl}')`;
             banner.style.backgroundSize = 'cover';
             banner.style.backgroundPosition = 'center';
             banner.style.minHeight = '250px';
