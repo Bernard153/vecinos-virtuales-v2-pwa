@@ -31,15 +31,18 @@
             'font-weight:700;font-size:0.85rem;cursor:pointer;' +
             'box-shadow:0 4px 14px rgba(139,92,246,.45);';
 
-        b.onclick = async function () {
-            if (!deferredPrompt) {
-                VV.instalar.compartir();
+               b.onclick = async function () {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                var r = await deferredPrompt.userChoice;
+                if (r.outcome === 'accepted') ocultarBoton();
+                deferredPrompt = null;
                 return;
             }
-            deferredPrompt.prompt();
-            var r = await deferredPrompt.userChoice;
-            if (r.outcome === 'accepted') ocultarBoton();
-            deferredPrompt = null;
+
+            // Sin prompt nativo (iPhone, o Chrome aún no habilitó la instalación):
+            // mostrar las instrucciones paso a paso
+            VV.instalar.mostrar();
         };
 
         document.body.appendChild(b);
